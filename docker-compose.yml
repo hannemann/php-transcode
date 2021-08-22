@@ -18,6 +18,7 @@ services:
         volumes:
             - '.:/var/www/html'
             - './docker/8.0/php.ini:/etc/php/8.0/cli/conf.d/99-sail.ini'
+            - '${RECORDINGS_DOCKER_SRC}:${RECORDINGS_PATH}'
         networks:
             - sail
         depends_on:

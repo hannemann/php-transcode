@@ -4,6 +4,9 @@ up::
 down::
 	./vendor/bin/sail down
 
+restart::
+	$(MAKE) down && $(MAKE) up
+
 shell::
 	./vendor/bin/sail shell
 

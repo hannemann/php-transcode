@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,5 +15,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    //return view('welcome');
+    $directories = Storage::disk('recordings')->directories();
+    echo "<pre>";
+    collect($directories)->filter(fn($dir) => $dir[0] !== '.')->each(function($dir) { echo $dir."\n"; });
 });
