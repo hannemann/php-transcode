@@ -12,3 +12,6 @@ shell::
 
 build::
 	./vendor/bin/sail build --no-cache $(s)
+
+run-dev::
+	./vendor/bin/sail npm run watch

@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\Recording;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Recording\Vdr;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,8 +17,16 @@ use Illuminate\Support\Facades\Storage;
 */
 
 Route::get('/', function () {
-    //return view('welcome');
-    $directories = Storage::disk('recordings')->directories();
-    echo "<pre>";
-    collect($directories)->filter(fn($dir) => $dir[0] !== '.')->each(function($dir) { echo $dir."\n"; });
+    return view('home', ['directories' => Recording::getDirectories()]);
 });
+
+Route::get('/{directory}', function ($directory) {
+
+    if (Recording::getDirectories()->contains($directory)) {
+
+        $streams = Vdr::getMediaInfo($directory)->getStreams();
+
+        return view('home', ['directories' => Recording::getDirectories(), 'streams' => $streams]);
+    }
+
+})->name('directory');
