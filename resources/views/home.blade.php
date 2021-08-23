@@ -11,7 +11,7 @@
 @endsection
 
 @section('content')
-@if ($streams)
+@if (isset($streams))
 @foreach($streams as $stream)
 @include('partials.streamInfo', ['stream' => $stream])
 @endforeach

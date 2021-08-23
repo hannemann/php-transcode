@@ -4,6 +4,7 @@ use App\Models\Recording;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Recording\Vdr;
+use App\Events\TestEvent;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +19,10 @@ use App\Models\Recording\Vdr;
 
 Route::get('/', function () {
     return view('home', ['directories' => Recording::getDirectories()]);
+});
+
+Route::get('/bc', function () {
+    TestEvent::dispatch('Ein Test');
 });
 
 Route::get('/{directory}', function ($directory) {
