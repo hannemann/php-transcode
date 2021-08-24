@@ -1,0 +1,12 @@
+main {
+    display: grid;
+    grid-template-areas: "files content";
+}
+
+aside {
+    grid-area: 'files';
+}
+
+section.content {
+    grid-area: 'content';
+}

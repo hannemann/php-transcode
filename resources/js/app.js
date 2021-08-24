@@ -1,2 +1,2 @@
 require('./bootstrap');
-require('./slim-test');
+require('./components/filePicker/Directory');

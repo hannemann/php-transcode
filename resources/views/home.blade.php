@@ -1,19 +1,23 @@
 @extends('layout.app')
 
+<h1>Transcoder</h1>
+
+<my-awesome-component></my-awesome-component>
+
 @section('directories')
 
-<ul>
+<div>
 @foreach($directories as $name)
-    <li><a href="{{ route('directory', ['directory' => $name]) }}">{{ $name }}</a></li>
+    <filepicker-directory>{{ $name }}</filepicker-directory>
 @endforeach
-</ul>
+</div>
 
 @endsection
 
 @section('content')
-@if (isset($streams))
-@foreach($streams as $stream)
-@include('partials.streamInfo', ['stream' => $stream])
-@endforeach
-@endif
+    @if (isset($streams))
+        @foreach($streams as $stream)
+            @include('partials.streamInfo', ['stream' => $stream])
+        @endforeach
+    @endif
 @endsection

@@ -17,7 +17,10 @@
         "axios": "^0.21",
         "laravel-mix": "^6.0.6",
         "lodash": "^4.17.19",
-        "postcss": "^8.1.14"
+        "postcss": "^8.3.6",
+        "postcss-custom-media": "^8.0.0",
+        "postcss-custom-selectors": "^6.0.0",
+        "postcss-nested": "^5.0.6"
     },
     "dependencies": {
         "laravel-echo": "^1.11.1",
