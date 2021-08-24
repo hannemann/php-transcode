@@ -1,5 +1,17 @@
 const mix = require('laravel-mix');
 
+mix.babelConfig({
+    presets: [
+        "@babel/preset-env"
+    ],
+    plugins: [
+        ['@babel/plugin-proposal-decorators', { decoratorsBeforeExport: true }],
+        ["@babel/plugin-proposal-class-properties", { loose: true }],
+        ["@babel/plugin-proposal-private-property-in-object", { "loose": true }],
+        ["@babel/plugin-proposal-private-methods", { "loose": true }]
+    ],
+});
+
 /*
  |--------------------------------------------------------------------------
  | Mix Asset Management
@@ -12,6 +24,5 @@ const mix = require('laravel-mix');
  */
 
 mix.js('resources/js/app.js', 'public/js')
-    .postCss('resources/css/app.css', 'public/css', [
-        //
-    ]);
+    .postCss('resources/css/app.css', 'public/css', [])
+    .sourceMaps();
