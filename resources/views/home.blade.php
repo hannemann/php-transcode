@@ -5,9 +5,7 @@
 @section('directories')
 
 <div>
-@foreach($directories as $name)
-    <filepicker-item data-type="d">{{ $name }}</filepicker-item>
-@endforeach
+    <filepicker-root data-channel="{{ sha1('root') }}"></filepicker-root>
 </div>
 
 @endsection

@@ -13,13 +13,22 @@ class Recording
         return Recording\Vdr::isRecording($dir);
     }
 
-    public static function getDirectories(): Collection
+    public static function getDirectories(string $subdir = null): Collection
     {
         $directories = collect(
-            Storage::disk('recordings')->directories()
+            Storage::disk('recordings')->directories($subdir)
         )->filter(fn($dir) => $dir[0] !== '.');
 
         return $directories;
+    }
+
+    public static function getFiles(string $subdir = null): Collection
+    {
+        $files = collect(
+            Storage::disk('recordings')->files($subdir)
+        )->filter(fn($file) => $file[0] !== '.');
+
+        return $files;
     }
 
     public static function getAllDirectories(): Collection

@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\FilePicker;
 use App\Models\Recording;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
@@ -25,7 +26,7 @@ Route::get('/bc', function () {
     TestEvent::dispatch('Ein Test');
 });
 
-Route::get('/{directory}', function ($directory) {
+Route::get('/file/{directory}', function ($directory) {
 
     if (Recording::getDirectories()->contains($directory)) {
 
@@ -35,3 +36,27 @@ Route::get('/{directory}', function ($directory) {
     }
 
 })->name('directory');
+
+
+Route::get('/file-picker/{directory?}', function (string $directory = null) {
+
+    $directories = Recording::getDirectories($directory)
+        ->map(fn($item) => [
+            'name' => basename($item),
+            'type' => 'd',
+            'path' => $item,
+            'channel' => sha1($item)
+        ]
+    );
+    $files = Recording::getFiles($directory)
+        ->map(fn($item) => [
+            'name' => basename($item),
+            'type' => 'f',
+            'path' => $item,
+            'channel' => sha1($item)
+        ]
+    );
+    
+    FilePicker::dispatch($directories->merge($files)->toArray(), $directory ?? 'root');
+
+})->where('directory', '(.*)')->name('filepicker');
