@@ -23,6 +23,8 @@
         "postcss-nested": "^5.0.6"
     },
     "dependencies": {
+        "@iconify/iconify": "^2.0.4",
+        "@iconify/icons-mdi": "^1.1.21",
         "laravel-echo": "^1.11.1",
         "pusher-js": "^7.0.3",
         "slim-js": "^5.0.9"

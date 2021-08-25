@@ -1,14 +1,5 @@
-main {
-    display: grid;
-    grid-template-areas: "files content";
-}
-
-aside {
-    grid-area: 'files';
-}
-
-section.content {
-    grid-area: 'content';
+:root {
+    --gutter-base: 1rem;
 }
 :root {
 
@@ -24,6 +15,18 @@ section.content {
     --clr-text-0: hsl(var(--clr-base-hue) calc(var(--clr-base-sat) - 30%) calc(var(--clr-base-lit) + 60%));
     --clr-text-100: hsl(var(--clr-base-hue) calc(var(--clr-base-sat) - 10%) calc(var(--clr-base-lit) + 60%));
 
+}
+main {
+    display: grid;
+    grid-template-areas: "files content";
+}
+
+aside {
+    grid-area: 'files';
+}
+
+section.content {
+    grid-area: 'content';
 }
 body {
     background-color: var(--clr-bg-0);

@@ -1,2 +1,5 @@
 require('./bootstrap');
-require('./components/filePicker/Directory');
+import Iconify from '@iconify/iconify';
+
+import './slim-test';
+import './components/FilePicker';

@@ -2,13 +2,11 @@
 
 <h1>Transcoder</h1>
 
-<my-awesome-component></my-awesome-component>
-
 @section('directories')
 
 <div>
 @foreach($directories as $name)
-    <filepicker-directory>{{ $name }}</filepicker-directory>
+    <filepicker-item data-type="d">{{ $name }}</filepicker-item>
 @endforeach
 </div>
 

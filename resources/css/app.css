@@ -1,8 +1,9 @@
 @custom-media --breakpoint-sm (min-width: 40em);
 @custom-selector :--heading h1, h2, h3;
 
-@import 'grid';
+@import 'properties/layout';
 @import 'properties/colors';
+@import 'grid';
 
 body {
     background-color: var(--clr-bg-0);
