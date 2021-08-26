@@ -29,6 +29,42 @@ class FilePickerItem extends FilePickerBase {
             this.items = []
         }
     }
+
+    get icon() {
+        if (this.isDirectory) {
+            return 'mdi-folder'
+        }
+        switch(this.dataset.mime.split('/').shift().toLowerCase()) {
+            case 'video':
+                return 'mdi-filmstrip'
+            case 'text':
+                return 'mdi-note-text-outline'
+            case 'image':
+                return 'mdi-file-image-outline'
+            default:
+                return 'mdi-file'
+        }
+    }
+
+    get title() {
+        let parts = [
+            this.dataset.path.trim()
+        ]
+        let result = parts.join(this.ds)
+        if (this.dataset.mime) {
+            result += ` - ${this.dataset.mime}`
+        }
+        if (this.dataset.size) {
+            result += ` - ${this.dataset.size}`
+        }
+        if (this.dataset.lastModified) {
+            let d = new Date(this.dataset.lastModified * 1000)
+            let date = d.toLocaleDateString(d.getTimezoneOffset(), {year: 'numeric', month: '2-digit', day: '2-digit'})
+            let time = d.toLocaleTimeString(d.getTimezoneOffset())
+            result += ` - ${date} ${time}`
+        }
+        return result
+    }
 }
 
 const CSS = /*css*/`
@@ -65,8 +101,7 @@ const CSS = /*css*/`
 `
 
 const ICONS_TEMPLATE = /*html*/`
-<span *if="{{ this.isDirectory }}" class="iconify" data-icon="mdi-folder"></span>
-<span *if="{{ this.isFile }}" class="iconify" data-icon="mdi-file"></span>
+<span class="iconify" data-icon="{{ this.icon }}"></span>
 `
 
 /** preserve whitespaces! */
@@ -76,6 +111,9 @@ const ITEM_TEMPLATE = /*html*/`
     data-type="{{ item.type }}"
     data-path="{{ item.path }}"
     data-channel="{{ item.channel }}"
+    data-mime="{{ item.mime }}"
+    data-size="{{ item.size }}"
+    data-last-modified="{{ item.lastModified }}"
 >
         {{ item.name }}
 </filepicker-item>
@@ -85,7 +123,9 @@ FilePickerItem.template = /*html*/`
 ${CSS}
 <div>
     ${ICONS_TEMPLATE}
-    <span @click="this.handleClick()"><slot></slot></span>
+    <span @click="this.handleClick()" title="{{ this.title }}">
+        <slot></slot>
+    </span>
     ${ITEM_TEMPLATE}
 </div>
 `;

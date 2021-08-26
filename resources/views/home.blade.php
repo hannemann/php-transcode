@@ -5,7 +5,7 @@
 @section('directories')
 
 <div>
-    <filepicker-root data-channel="{{ sha1('root') }}"></filepicker-root>
+    <filepicker-root data-channel="{{ sha1('root') }}" data-ds="{{ DIRECTORY_SEPERATOR }}"></filepicker-root>
 </div>
 
 @endsection

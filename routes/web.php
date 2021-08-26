@@ -1,11 +1,9 @@
 <?php
 
-use App\Events\FilePicker;
-use App\Models\Recording;
+use App\Events\FilePicker as FilePickerEvent;
+use App\Models\FilePicker;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Storage;
 use App\Models\Recording\Vdr;
-use App\Events\TestEvent;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,8 +26,8 @@ Route::get('/file/{path}', function ($path) {
 })->name('directory');
 
 
-Route::get('/file-picker/{directory?}', function (string $directory = null) {
+Route::get('/file-picker/{subdir?}', function (string $subdir = null) {
     
-    FilePicker::dispatch(Recording::getItems($directory), $directory ?? 'root');
+    FilePickerEvent::dispatch(FilePicker::getItems($subdir), $subdir ?? 'root');
 
-})->where('directory', '(.*)')->name('filepicker');
+})->where('subdir', '(.*)')->name('filepicker');

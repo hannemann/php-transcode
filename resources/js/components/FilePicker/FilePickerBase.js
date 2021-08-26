@@ -36,5 +36,6 @@ class FilePickerBase extends Slim {
 FilePickerBase.prototype.wsBaseUrl = '/file-picker/'
 FilePickerBase.prototype.wsEvent = 'FilePicker'
 FilePickerBase.prototype.loadingClass = 'loading'
+FilePickerBase.prototype.ds = ''
 
 export default FilePickerBase

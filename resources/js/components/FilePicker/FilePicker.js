@@ -7,6 +7,7 @@ class FilePicker extends FilePickerBase {
 
     onAdded() {
         super.onAdded()
+        this.ds = this.dataset.ds
         this.channel.subscribed(this.fetch.bind(this))
     }
 }
