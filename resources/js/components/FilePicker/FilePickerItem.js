@@ -47,10 +47,7 @@ class FilePickerItem extends FilePickerBase {
     }
 
     get title() {
-        let parts = [
-            this.dataset.path.trim()
-        ]
-        let result = parts.join(this.ds)
+        let result = this.dataset.path.trim()
         if (this.dataset.mime) {
             result += ` - ${this.dataset.mime}`
         }
