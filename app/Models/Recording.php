@@ -13,6 +13,27 @@ class Recording
         return Recording\Vdr::isRecording($dir);
     }
 
+    public static function getItems(string $subdir = null): array
+    {
+        $directories = Recording::getDirectories($subdir)
+            ->map(fn($item) => [
+                'name' => basename($item),
+                'type' => 'd',
+                'path' => $item,
+                'channel' => sha1($item)
+            ]
+        );
+        $files = Recording::getFiles($subdir)
+            ->map(fn($item) => [
+                'name' => basename($item),
+                'type' => 'f',
+                'path' => $item,
+                'channel' => sha1($item)
+            ]
+        );
+        return $directories->merge($files)->toArray();
+    }
+
     public static function getDirectories(string $subdir = null): Collection
     {
         $directories = collect(

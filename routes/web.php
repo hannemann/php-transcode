@@ -18,45 +18,18 @@ use App\Events\TestEvent;
 |
 */
 
-Route::get('/', function () {
-    return view('home', ['directories' => Recording::getDirectories()]);
-});
+Route::get('/', fn() => view('home'));
 
-Route::get('/bc', function () {
-    TestEvent::dispatch('Ein Test');
-});
+Route::get('/file/{path}', function ($path) {
 
-Route::get('/file/{directory}', function ($directory) {
-
-    if (Recording::getDirectories()->contains($directory)) {
-
-        $streams = Vdr::getMediaInfo($directory)->getStreams();
-
-        return view('home', ['directories' => Recording::getDirectories(), 'streams' => $streams]);
-    }
+    $streams = Vdr::getMediaInfo($path)->getStreams();
+    return view('home', ['streams' => $streams]);
 
 })->name('directory');
 
 
 Route::get('/file-picker/{directory?}', function (string $directory = null) {
-
-    $directories = Recording::getDirectories($directory)
-        ->map(fn($item) => [
-            'name' => basename($item),
-            'type' => 'd',
-            'path' => $item,
-            'channel' => sha1($item)
-        ]
-    );
-    $files = Recording::getFiles($directory)
-        ->map(fn($item) => [
-            'name' => basename($item),
-            'type' => 'f',
-            'path' => $item,
-            'channel' => sha1($item)
-        ]
-    );
     
-    FilePicker::dispatch($directories->merge($files)->toArray(), $directory ?? 'root');
+    FilePicker::dispatch(Recording::getItems($directory), $directory ?? 'root');
 
 })->where('directory', '(.*)')->name('filepicker');
