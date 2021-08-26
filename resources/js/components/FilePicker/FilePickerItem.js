@@ -15,7 +15,7 @@ class FilePickerItem extends FilePickerBase {
 
     onAdded() {
         super.onAdded()
-        setTimeout(() => Iconify.scan(this.shadowRoot))
+        requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
     }
 
     handleClick() {
@@ -36,16 +36,30 @@ const CSS = /*css*/`
     :host {
         display: block;
     }
+    :host(.${FilePickerBase.prototype.loadingClass}) {
+        animation: pulse 1s infinite;
+    }
     span {
         display: inline-block;
         cursor: pointer;
-        padding: calc(var(--gutter-base) / 4) calc(var(--gutter-base) / 2)
+        padding: calc(var(--gutter-base) / 4) calc(var(--gutter-base) / 2);
     }
     span:hover {
         background-color: var(--clr-bg-100);
     }
     filepicker-item {
         margin-left: var(--gutter-base);
+    }
+    @keyframes pulse {
+        0% {
+            opacity: 1;
+        }
+        50% {
+            opacity: .5;
+        }
+        100% {
+            opacity: 1;
+        }
     }
 </style>
 `

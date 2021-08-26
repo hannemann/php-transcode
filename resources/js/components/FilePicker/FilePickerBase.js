@@ -12,9 +12,7 @@ class FilePickerBase extends Slim {
     onAdded() {
         this.wsChannel = `${this.wsEvent}.${this.dataset.channel}`
         this.channel = window.Echo.channel(this.wsChannel)
-        this.channel.listen(this.wsEvent, (e) => {
-            this.items = e.items
-        });
+        this.channel.listen(this.wsEvent, (e) => this.items = e.items);
     }
 
     onRemoved() {
@@ -26,12 +24,17 @@ class FilePickerBase extends Slim {
 
     async fetch() {
         try {
+            this.classList.add(this.loadingClass)
             await fetch(this.wsUrl.join(''));
-        } catch (error) {}
+            this.classList.remove(this.loadingClass)
+        } catch (error) {
+            console.error(error)
+        }
     }
 }
 
 FilePickerBase.prototype.wsBaseUrl = '/file-picker/'
 FilePickerBase.prototype.wsEvent = 'FilePicker'
+FilePickerBase.prototype.loadingClass = 'loading'
 
 export default FilePickerBase
