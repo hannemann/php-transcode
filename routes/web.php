@@ -28,6 +28,6 @@ Route::get('/file/{path}', function ($path) {
 
 Route::get('/file-picker/{subdir?}', function (string $subdir = null) {
     
-    FilePickerEvent::dispatch(FilePicker::getItems($subdir), $subdir ?? 'root');
+    FilePickerEvent::dispatch(FilePicker::root('recordings')::getItems($subdir), $subdir ?? 'root');
 
 })->where('subdir', '(.*)')->name('filepicker');

@@ -6,9 +6,21 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Helper\File as FileHelper;
+use App\Models\Recording\Vdr;
+use Illuminate\Filesystem\FilesystemAdapter;
 
 class FilePicker
 {
+    private static ?FilesystemAdapter $disk = null;
+
+    private static ?string $root = null;
+
+    public static function root(string $root): string
+    {
+        static::$root = $root;
+        return FilePicker::class;
+    }
+
     /**
      * obtain all items of a subdirectory
      */
@@ -36,9 +48,9 @@ class FilePicker
             static::getBaseData($item),
             [
                 'type' => 'f',
-                'mime' => Storage::disk('recordings')->mimeType($item),
-                'size' => FileHelper::fileSizeH((int)Storage::disk('recordings')->size($item)),
-                'lastModified' => Storage::disk('recordings')->lastModified($item),
+                'mime' => static::getMimeType($item),
+                'size' => FileHelper::fileSizeH((int)static::disk()->size($item)),
+                'lastModified' => static::disk()->lastModified($item),
             ]
         );
     }
@@ -60,13 +72,8 @@ class FilePicker
      */
     public static function getDirectories(string $subdir = null, bool $hidden = false): Collection
     {
-        $items = collect(
-            Storage::disk('recordings')->directories($subdir)
-        );
-        
-        $hidden || $items = static::filterHidden($items);
-
-        return $items;
+        $items = collect(static::disk()->directories($subdir));
+        return $hidden ? $items : static::filterHidden($items);
     }
 
     /**
@@ -74,13 +81,8 @@ class FilePicker
      */
     public static function getFiles(string $subdir = null, bool $hidden = false): Collection
     {
-        $items = collect(
-            Storage::disk('recordings')->files($subdir)
-        );
-        
-        $hidden || $items = static::filterHidden($items);
-
-        return $items;
+        $items = collect(static::disk()->files($subdir));
+        return $hidden ? $items : static::filterHidden($items);
     }
 
     /**
@@ -88,13 +90,20 @@ class FilePicker
      */
     public static function getAllDirectories(bool $hidden = false): Collection
     {
-        $items = collect(
-            Storage::disk('recordings')->allDirectories()
-        );
-        
-        $hidden || $items = static::filterHidden($items);
+        $items = collect(static::disk()->allDirectories());
+        return $hidden ? $items : static::filterHidden($items);
+    }
 
-        return $items;
+    /**
+     * obtain mime type
+     */
+    public static function getMimeType(string $file): string
+    {
+        $fullFileName = static::disk()->getAdapter()->getPathPrefix() . $file;
+        if (Vdr::isLegacy($fullFileName) && ($mime = Vdr::getMimeType($fullFileName))) {
+            return $mime;
+        }
+        return static::disk()->mimeType($file);
     }
 
     /**
@@ -103,5 +112,16 @@ class FilePicker
     private static function filterHidden(Collection $items): Collection
     {
         return $items->filter(fn($item) => $item[0] !== '.' && !Str::contains($item, '/.'));
+    }
+
+    /**
+     * obtain disk instance
+     */
+    private static function disk(): FilesystemAdapter
+    {
+        if (!static::$disk) {
+            static::$disk = Storage::disk(static::$root);
+        }
+        return static::$disk;
     }
 }
