@@ -1,12 +1,10 @@
 <?php
 
 use App\Events\FilePicker as FilePickerEvent;
-use App\Events\FfmpegDone as FfmpegDoneEvent;
-use App\Models\FFMpeg\Concat;
 use App\Models\FilePicker;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\File;
 use App\Models\Recording\Vdr;
+use App\Jobs\ProcessVideo;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,7 +34,6 @@ Route::get('/file-picker/{subdir?}', function (string $subdir = null) {
 
 Route::get('/concat/{path?}', function (string $path = null) {
     
-    (new Concat('recordings', $path))->execute();
-    FfmpegDoneEvent::dispatch('concat', $path);
+    ProcessVideo::dispatch('concat', 'recordings', $path)->onQueue('ffmpeg');
 
 })->where('path', '(.*)');
