@@ -117,7 +117,7 @@ class FilePicker
     /**
      * obtain disk instance
      */
-    private static function disk(): FilesystemAdapter
+    public static function disk(): FilesystemAdapter
     {
         if (!static::$disk) {
             static::$disk = Storage::disk(static::$root);

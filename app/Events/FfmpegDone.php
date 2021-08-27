@@ -10,20 +10,23 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class TestEvent implements ShouldBroadcast
+class FfmpegDone implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public string $message;
+    private string $action;
+
+    private string $path;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(string $message)
+    public function __construct(string $action, string $path)
     {
-        $this->message = $message;
+        $this->action = $action;
+        $this->path = $path;
     }
 
     /**
@@ -33,6 +36,6 @@ class TestEvent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new Channel('test');
+        return new Channel($this->action . '.' . sha1($this->path));
     }
 }

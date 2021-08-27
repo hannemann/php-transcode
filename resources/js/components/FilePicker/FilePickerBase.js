@@ -12,14 +12,17 @@ class FilePickerBase extends Slim {
     onAdded() {
         this.wsChannel = `${this.wsEvent}.${this.dataset.channel}`
         this.channel = window.Echo.channel(this.wsChannel)
-        this.channel.listen(this.wsEvent, (e) => this.items = e.items);
+        this.channel.listen(this.wsEvent, this.onWsEvent.bind(this));
     }
 
     onRemoved() {
         this.items = []
         this.channel.stopListening(this.wsEvent)
-        this.channel.unsubscribe()
         window.Echo.leave(this.wsChannel)
+    }
+
+    onWsEvent(e) {
+        this.items = e.items
     }
 
     async fetch() {

@@ -11,11 +11,17 @@ class FilePickerItem extends FilePickerBase {
         this.wsUrl.push(encodeURIComponent(this.dataset.path))
         this.isDirectory = this.dataset.type === TYPE_DIRECTORY
         this.isFile = this.dataset.type === TYPE_FILE
+        this.canConcat = false
     }
 
     onAdded() {
         super.onAdded()
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
+    }
+
+    onWsEvent(e) {
+        super.onWsEvent(e)
+        this.canConcat = this.videoFiles.length > 1
     }
 
     handleClick() {
@@ -30,11 +36,31 @@ class FilePickerItem extends FilePickerBase {
         }
     }
 
+    async requestConcat() {
+        try {
+            let eventName = 'FfmpegDone'
+            let channel = window.Echo.channel(`concat.${this.dataset.channel}`)
+            channel.listen(eventName, this.handleConcatDone.bind(this, channel, eventName))
+            await fetch(`/concat/${this.dataset.path}`)
+        } catch (error) {
+            console.error(error)
+        }
+     }
+
+     handleConcatDone(channel, eventName) {
+        channel.stopListening(eventName)
+        window.Echo.leave(channel.name)
+        if (this.items.length) {
+            this.items = []
+            requestAnimationFrame(this.fetch.bind(this))
+        }
+     }
+
     get icon() {
         if (this.isDirectory) {
             return 'mdi-folder'
         }
-        switch(this.dataset.mime.split('/').shift().toLowerCase()) {
+        switch(this.fileType) {
             case 'video':
                 return 'mdi-filmstrip'
             case 'text':
@@ -61,6 +87,30 @@ class FilePickerItem extends FilePickerBase {
             result += ` - ${date} ${time}`
         }
         return result
+    }
+
+    get fileType() {
+        let mime = this.dataset.mime.split('/').shift().toLowerCase() 
+        switch(mime) {
+            case 'video':
+            case 'text':
+            case 'image':
+                return mime
+            default:
+                return 'unknown'
+        }
+    }
+
+    get hasFiles() {
+        return this.isDirectory &&
+                this.items.filter(i => i.type === TYPE_FILE).length > 0
+    }
+
+    get videoFiles() {
+        if (this.hasFiles) {
+            return this.items.filter(i => i.type === TYPE_FILE && 'video' === i.mime.split('/').shift().toLowerCase())
+        }
+        return []
     }
 }
 
@@ -97,7 +147,7 @@ const CSS = /*css*/`
 </style>
 `
 
-const ICONS_TEMPLATE = /*html*/`
+const ICON_TEMPLATE = /*html*/`
 <span class="iconify" data-icon="{{ this.icon }}"></span>
 `
 
@@ -119,10 +169,14 @@ const ITEM_TEMPLATE = /*html*/`
 FilePickerItem.template = /*html*/`
 ${CSS}
 <div>
-    ${ICONS_TEMPLATE}
-    <span @click="this.handleClick()" title="{{ this.title }}">
-        <slot></slot>
-    </span>
+    <div>
+        ${ICON_TEMPLATE}
+        <span @click="this.handleClick()" title="{{ this.title }}">
+            <slot></slot>
+        </span>
+        <span *if="{{ this.canConcat }}" @click="this.requestConcat()">Concat?</span>
+        <span *if="{{ this.dataset.mime.toLowerCase().indexOf('video') === 0 }}">Transcode?</span>
+    </div>
     ${ITEM_TEMPLATE}
 </div>
 `;

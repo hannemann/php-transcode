@@ -1,8 +1,11 @@
 <?php
 
 use App\Events\FilePicker as FilePickerEvent;
+use App\Events\FfmpegDone as FfmpegDoneEvent;
+use App\Models\FFMpeg\Concat;
 use App\Models\FilePicker;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\File;
 use App\Models\Recording\Vdr;
 
 /*
@@ -25,9 +28,15 @@ Route::get('/file/{path}', function ($path) {
 
 })->name('directory');
 
-
 Route::get('/file-picker/{subdir?}', function (string $subdir = null) {
     
     FilePickerEvent::dispatch(FilePicker::root('recordings')::getItems($subdir), $subdir ?? 'root');
 
 })->where('subdir', '(.*)')->name('filepicker');
+
+Route::get('/concat/{path?}', function (string $path = null) {
+    
+    (new Concat('recordings', $path))->execute();
+    FfmpegDoneEvent::dispatch('concat', $path);
+
+})->where('path', '(.*)');
