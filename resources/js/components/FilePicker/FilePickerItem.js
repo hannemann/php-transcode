@@ -1,8 +1,12 @@
-import FilePickerBase from './FilePickerBase';
-import Iconify from '@iconify/iconify';
+import FilePickerBase from './FilePickerBase'
+import { Utils } from 'slim-js';
+import Iconify from '@iconify/iconify'
 
-const TYPE_DIRECTORY = 'd';
-const TYPE_FILE = 'f';
+const TYPE_DIRECTORY = 'd'
+const TYPE_FILE = 'f'
+const FFMPEG_PROCESS_STAGE_PENDING = 0
+const FFMPEG_PROCESS_STAGE_RUNNING = 1
+const FFMPEG_PROCESS_STAGE_DONE = 2
 
 class FilePickerItem extends FilePickerBase {
 
@@ -12,6 +16,8 @@ class FilePickerItem extends FilePickerBase {
         this.isDirectory = this.dataset.type === TYPE_DIRECTORY
         this.isFile = this.dataset.type === TYPE_FILE
         this.canConcat = false
+        this.concatPending = false
+        this.concatRunning = false
     }
 
     onAdded() {
@@ -21,7 +27,12 @@ class FilePickerItem extends FilePickerBase {
 
     onWsEvent(e) {
         super.onWsEvent(e)
-        this.canConcat = this.videoFiles.length > 1
+        this.setCanConcat()
+    }
+
+    setCanConcat() {
+        this.canConcat = this.videoFiles.length > 1 &&
+            !this.videoFiles.find(i => i.name === `${this.dataset.channel}-concat.ts`)
     }
 
     handleClick() {
@@ -33,28 +44,57 @@ class FilePickerItem extends FilePickerBase {
             }
         } else {
             this.items = []
+            this.setCanConcat()
         }
     }
 
-    async requestConcat() {
+    requestConcat() {
+        console.info('Concat video files in %s', this.dataset.path)
+        let event = 'FFMpegProcess'
+        let channel = window.Echo.channel(`FFMpegProcess.${this.dataset.channel}`)
         try {
-            let eventName = 'FfmpegDone'
-            let channel = window.Echo.channel(`concat.${this.dataset.channel}`)
-            channel.listen(eventName, this.handleConcatDone.bind(this, channel, eventName))
-            await fetch(`/concat/${this.dataset.path}`)
+            channel.listen(event, this.handleProcessEvent.bind(this, channel, event))
+            channel.subscribed(async () => await fetch(`/concat/${this.dataset.path}`))
+            console.info('%s has subscribed to channel %s', this.dataset.path, channel.name)
         } catch (error) {
+            this.leaveProcessChannel(channel, event);
             console.error(error)
         }
-     }
+    }
 
-     handleConcatDone(channel, eventName) {
-        channel.stopListening(eventName)
-        window.Echo.leave(channel.name)
-        if (this.items.length) {
-            this.items = []
-            requestAnimationFrame(this.fetch.bind(this))
+    handleProcessEvent(channel, event, ws) {
+        switch(ws.name) {
+            case 'concat.pending':
+                this.concatPending = true
+                this.canConcat = false
+                break
+            case 'concat.running':
+                this.concatRunning = true
+                this.canConcat = false
+                break
+            case 'concat.done':
+                console.info('Concat video files in %s done', this.dataset.path)
+                this.leaveProcessChannel(channel, event)
+                if (this.items.length) {
+                    this.items = []
+                    requestAnimationFrame(this.fetch.bind(this))
+                }
+                break
+            case 'concat.progress':
+                console.info('Concat progress: ', ws.data)
+                break
+            case 'concat.failed':
+                console.error('Concat video files in %s failed', this.dataset.path)
+                this.leaveProcessChannel(channel, event)
+                this.setCanConcat()
         }
-     }
+    }
+
+    leaveProcessChannel(channel, event) {
+        channel.stopListening(event)
+        window.Echo.leave(channel.name)
+        console.info('%s has left channel %s', this.dataset.path, channel.name)
+    }
 
     get icon() {
         if (this.isDirectory) {

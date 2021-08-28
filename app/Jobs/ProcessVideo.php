@@ -8,8 +8,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Events\FfmpegDone as FfmpegDoneEvent;
+use App\Events\FFMpegProcess as FFMpegProcessEvent;
 use App\Models\FFMpeg\Concat;
+use Throwable;
 
 class ProcessVideo implements ShouldQueue, ShouldBeUnique
 {
@@ -21,6 +22,11 @@ class ProcessVideo implements ShouldQueue, ShouldBeUnique
 
     protected string $disk;
 
+    public int $tries = 1;
+
+    //TODO: should be config option
+    public int $timeout = 3600;
+
     /**
      * Create a new job instance.
      *
@@ -31,6 +37,8 @@ class ProcessVideo implements ShouldQueue, ShouldBeUnique
         $this->type = $type;
         $this->path = $path;
         $this->disk = $disk;
+        $this->onQueue('ffmpeg');
+        FFMpegProcessEvent::dispatch('concat.pending', $this->path);
     }
 
     /**
@@ -42,9 +50,21 @@ class ProcessVideo implements ShouldQueue, ShouldBeUnique
     {
         switch($this->type) {
             case 'concat':
+                FFMpegProcessEvent::dispatch('concat.running', $this->path);
                 (new Concat($this->disk, $this->path))->execute();
-                FfmpegDoneEvent::dispatch('concat', $this->path);
+                FFMpegProcessEvent::dispatch('concat.done', $this->path);
                 break;
         }
+    }
+
+    /**
+     * Handle a job failure.
+     *
+     * @param  \Throwable  $exception
+     * @return void
+     */
+    public function failed(Throwable $exception)
+    {
+        FFMpegProcessEvent::dispatch('concat.failed', $this->path, ['exception' => $exception->getMessage()]);
     }
 }

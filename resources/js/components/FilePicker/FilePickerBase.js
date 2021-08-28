@@ -23,15 +23,18 @@ class FilePickerBase extends Slim {
 
     onWsEvent(e) {
         this.items = e.items
+        console.info('Fetched %d items in %s', this.items.length, this.dataset.path)
     }
 
     async fetch() {
+        console.info('Fetch items in %s', this.dataset.path)
         try {
             this.classList.add(this.loadingClass)
-            await fetch(this.wsUrl.join(''));
-            this.classList.remove(this.loadingClass)
+            await fetch(this.wsUrl.join(''))
         } catch (error) {
-            console.error(error)
+            throw error
+        } finally {
+            this.classList.remove(this.loadingClass)
         }
     }
 }

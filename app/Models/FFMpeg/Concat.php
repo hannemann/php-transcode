@@ -4,6 +4,7 @@ namespace App\Models\FFMpeg;
 
 use App\Models\FilePicker;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
+use App\Events\FFMpegProcess as FFMpegProcessEvent;
 
 class Concat
 {
@@ -21,6 +22,13 @@ class Concat
         FFMpeg::fromDisk($this->disk)
             ->open($files)
             ->export()
+            ->onProgress(function ($percentage, $remaining, $rate) {
+                FFMpegProcessEvent::dispatch('concat.progress', $this->path, [
+                    'percentage' => $percentage,
+                    'remaining' => $remaining,
+                    'rate' => $rate,
+                ]);
+            })
             ->concatWithoutTranscoding()
             ->save($out);
     }
@@ -38,6 +46,6 @@ class Concat
     private function getOutputFilename(): string
     {
         $path = rtrim($this->path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-        return $path . 'concat.ts';
+        return sprintf('%s%s-concat.ts', $path, sha1($this->path));
     }
 }

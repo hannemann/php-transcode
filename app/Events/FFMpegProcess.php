@@ -9,24 +9,28 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Log;
 
-class FfmpegDone implements ShouldBroadcast
+class FFMpegProcess implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    private string $action;
-
     private string $path;
+
+    public string $name;
+
+    public ?array $data = null;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(string $action, string $path)
+    public function __construct(string $name, string $path, array $data = null)
     {
-        $this->action = $action;
+        $this->name = $name;
         $this->path = $path;
+        $this->data = $data;
     }
 
     /**
@@ -36,6 +40,6 @@ class FfmpegDone implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new Channel($this->action . '.' . sha1($this->path));
+        return new Channel('FFMpegProcess.' . sha1($this->path));
     }
 }
