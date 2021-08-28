@@ -37,3 +37,9 @@ Route::get('/concat/{path?}', function (string $path = null) {
     ProcessVideo::dispatch('concat', 'recordings', $path);
 
 })->where('path', '(.*)');
+
+Route::get('/transcode/{path?}', function (string $path = null) {
+    
+    ProcessVideo::dispatch('transcode', 'recordings', $path, '00:02:14.580', '00:50:41.620');
+
+})->where('path', '(.*)');

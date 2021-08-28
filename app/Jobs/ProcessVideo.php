@@ -10,6 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Events\FFMpegProcess as FFMpegProcessEvent;
 use App\Models\FFMpeg\Concat;
+use App\Models\FFMpeg\Transcode;
 use Throwable;
 
 class ProcessVideo implements ShouldQueue, ShouldBeUnique
@@ -22,6 +23,10 @@ class ProcessVideo implements ShouldQueue, ShouldBeUnique
 
     protected string $disk;
 
+    protected ?string $clipStart = null;
+
+    protected ?string $clipEnd = null;
+
     public int $tries = 1;
 
     //TODO: should be config option
@@ -32,13 +37,20 @@ class ProcessVideo implements ShouldQueue, ShouldBeUnique
      *
      * @return void
      */
-    public function __construct(string $type, string $disk, string $path)
-    {
+    public function __construct(
+        string $type,
+        string $disk,
+        string $path,
+        string $clipStart = null,
+        string $clipEnd = null
+    ) {
         $this->type = $type;
         $this->path = $path;
         $this->disk = $disk;
+        $this->clipStart = $clipStart;
+        $this->clipEnd = $clipEnd;
         $this->onQueue('ffmpeg');
-        FFMpegProcessEvent::dispatch('concat.pending', $this->path);
+        FFMpegProcessEvent::dispatch($this->type . '.pending', $this->path);
     }
 
     /**
@@ -48,13 +60,16 @@ class ProcessVideo implements ShouldQueue, ShouldBeUnique
      */
     public function handle()
     {
+        FFMpegProcessEvent::dispatch($this->type . '.running', $this->path);
         switch($this->type) {
             case 'concat':
-                FFMpegProcessEvent::dispatch('concat.running', $this->path);
                 (new Concat($this->disk, $this->path))->execute();
-                FFMpegProcessEvent::dispatch('concat.done', $this->path);
+                break;
+            case 'transcode':
+                (new Transcode($this->disk, $this->path, $this->clipStart, $this->clipEnd))->execute();
                 break;
         }
+        FFMpegProcessEvent::dispatch($this->type . '.done', $this->path);
     }
 
     /**
@@ -65,6 +80,6 @@ class ProcessVideo implements ShouldQueue, ShouldBeUnique
      */
     public function failed(Throwable $exception)
     {
-        FFMpegProcessEvent::dispatch('concat.failed', $this->path, ['exception' => $exception->getMessage()]);
+        FFMpegProcessEvent::dispatch($this->type . '.failed', $this->path, ['exception' => $exception->getMessage()]);
     }
 }

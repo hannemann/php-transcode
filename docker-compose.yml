@@ -27,6 +27,8 @@ services:
             - mysql
         extra_hosts:
             - "host.docker.internal:host-gateway"
+        devices:
+            - /dev/dri:/dev/dri
     mysql:
         image: 'mysql:8.0'
         ports:

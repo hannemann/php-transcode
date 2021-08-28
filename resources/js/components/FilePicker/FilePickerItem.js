@@ -62,29 +62,47 @@ class FilePickerItem extends FilePickerBase {
         }
     }
 
+    requestTranscode() {
+        console.info('Transcode video file %s', this.dataset.path)
+        let event = 'FFMpegProcess'
+        let channel = window.Echo.channel(`FFMpegProcess.${this.dataset.channel}`)
+        try {
+            channel.listen(event, this.handleProcessEvent.bind(this, channel, event))
+            channel.subscribed(async () => await fetch(`/transcode/${this.dataset.path}`))
+            console.info('%s has subscribed to channel %s', this.dataset.path, channel.name)
+        } catch (error) {
+            this.leaveProcessChannel(channel, event);
+            console.error(error)
+        }
+    }
+
     handleProcessEvent(channel, event, ws) {
+        let process = ws.name.split('.').shift()
+        let processU = process[0].toUpperCase() + process.slice(1)
         switch(ws.name) {
-            case 'concat.pending':
+            case `${process}.pending`:
+                console.info('%s video file %s queued at %s', processU, this.dataset.path, new Date().toLocaleTimeString())
                 this.concatPending = true
                 this.canConcat = false
                 break
-            case 'concat.running':
+            case `${process}.running`:
+                console.info('%s video file %s started at %s', processU, this.dataset.path, new Date().toLocaleTimeString())
                 this.concatRunning = true
                 this.canConcat = false
                 break
-            case 'concat.done':
-                console.info('Concat video files in %s done', this.dataset.path)
+            case `${process}.done`:
+                console.info('%s video files in %s done at %s', processU, this.dataset.path, new Date().toLocaleTimeString())
                 this.leaveProcessChannel(channel, event)
                 if (this.items.length) {
                     this.items = []
                     requestAnimationFrame(this.fetch.bind(this))
                 }
                 break
-            case 'concat.progress':
-                console.info('Concat progress: ', ws.data)
+            case `${process}.progress`:
+                console.info('%s progress: %d%%', processU, ws.data.percentage)
                 break
-            case 'concat.failed':
-                console.error('Concat video files in %s failed', this.dataset.path)
+            case `${process}.failed`:
+                console.error('%s video files in %s failed', processU, this.dataset.path)
                 this.leaveProcessChannel(channel, event)
                 this.setCanConcat()
         }
@@ -215,7 +233,7 @@ ${CSS}
             <slot></slot>
         </span>
         <span *if="{{ this.canConcat }}" @click="this.requestConcat()">Concat?</span>
-        <span *if="{{ this.dataset.mime.toLowerCase().indexOf('video') === 0 }}">Transcode?</span>
+        <span *if="{{ this.dataset.mime.toLowerCase().indexOf('video') === 0 }}" @click="this.requestTranscode()">Transcode?</span>
     </div>
     ${ITEM_TEMPLATE}
 </div>

@@ -2,6 +2,8 @@
 
 if [ ! -z "$WWWUSER" ]; then
     usermod -u $WWWUSER sail
+    groupadd -g 109 render
+    usermod -aG 109 sail
 fi
 
 if [ ! -d /.composer ]; then
