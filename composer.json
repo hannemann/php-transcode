@@ -27,8 +27,12 @@
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
-        }
+            "Database\\Seeders\\": "database/seeders/",
+            "FFMpeg\\Media\\": "app/Models/FFMpeg/Media/"
+        },
+        "exclude-from-classmap": [
+            "vendor/php-ffmpeg/php-ffmpeg/src/FFMpeg/Media/AbstractVideo.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
