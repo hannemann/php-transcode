@@ -1,6 +1,3 @@
-import { Utils, Slim } from 'slim-js';
-import '../../slim-directives';
-
 const TYPE_DIRECTORY = 'd'
 const TYPE_FILE = 'f'
 class FilePickerBase extends Slim {
@@ -12,7 +9,7 @@ class FilePickerBase extends Slim {
     }
 
     onAdded() {
-        this.wsChannel = `${this.wsEvent}.${this.dataset.channel}`
+        this.wsChannel = `${this.wsEvent}.${this.channelHash}`
         this.channel = window.Echo.channel(this.wsChannel)
         this.channel.listen(this.wsEvent, this.onWsEvent.bind(this));
     }
@@ -25,14 +22,14 @@ class FilePickerBase extends Slim {
 
     onWsEvent(e) {
         this.items = e.items
-        console.info('Fetched %d items in %s', this.items.length, this.dataset.path)
+        console.info('Fetched %d items in %s', this.items.length, this.path)
     }
 
     handleClick() {
         if (!this.items.length) {
-            if (TYPE_DIRECTORY === this.dataset.type) {
+            if (TYPE_DIRECTORY === this.type) {
                 this.fetch()
-            } else if (TYPE_FILE === this.dataset.type) {
+            } else if (TYPE_FILE === this.type) {
                 this.handleFileClick()
             }
         }
@@ -41,11 +38,11 @@ class FilePickerBase extends Slim {
     handleFileClick() {
         let evt = new CustomEvent('file-clicked', {
             detail: {
-                path: this.dataset.path,
-                channel: this.dataset.channel,
-                mime: this.dataset.mime,
-                size: this.dataset.size,
-                type: this.dataset.type
+                path: this.path,
+                channel: this.channelHash,
+                mime: this.mime,
+                size: this.size,
+                type: this.type
             }
         })
 
@@ -53,7 +50,7 @@ class FilePickerBase extends Slim {
     }
 
     async fetch() {
-        console.info('Fetch items in %s', this.dataset.path)
+        console.info('Fetch items in %s', this.path)
         try {
             this.classList.add(this.loadingClass)
             await fetch(this.wsUrl.join(''))
@@ -68,6 +65,5 @@ class FilePickerBase extends Slim {
 FilePickerBase.prototype.wsBaseUrl = '/file-picker/'
 FilePickerBase.prototype.wsEvent = 'FilePicker'
 FilePickerBase.prototype.loadingClass = 'loading'
-FilePickerBase.prototype.ds = ''
 
 export { FilePickerBase, TYPE_FILE, TYPE_DIRECTORY }

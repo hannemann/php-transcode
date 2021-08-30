@@ -1,5 +1,4 @@
 import { FilePickerBase, TYPE_DIRECTORY, TYPE_FILE } from './FilePickerBase'
-import { Utils } from 'slim-js';
 import Iconify from '@iconify/iconify'
 
 const FFMPEG_PROCESS_STAGE_PENDING = 0
@@ -10,9 +9,9 @@ class FilePickerItem extends FilePickerBase {
 
     constructor() {
         super()
-        this.wsUrl.push(encodeURIComponent(this.dataset.path))
-        this.isDirectory = this.dataset.type === TYPE_DIRECTORY
-        this.isFile = this.dataset.type === TYPE_FILE
+        this.wsUrl.push(encodeURIComponent(this.path))
+        this.isDirectory = this.type === TYPE_DIRECTORY
+        this.isFile = this.type === TYPE_FILE
         this.canConcat = false
         this.concatPending = false
         this.concatRunning = false
@@ -30,7 +29,7 @@ class FilePickerItem extends FilePickerBase {
 
     setCanConcat() {
         this.canConcat = this.videoFiles.length > 1 &&
-            !this.videoFiles.find(i => i.name === `${this.dataset.channel}-concat.ts`)
+            !this.videoFiles.find(i => i.name === `${this.channelHash}-concat.ts`)
     }
 
     handleClick() {
@@ -42,13 +41,13 @@ class FilePickerItem extends FilePickerBase {
     }
 
     requestConcat() {
-        console.info('Concat video files in %s', this.dataset.path)
+        console.info('Concat video files in %s', this.path)
         let event = 'FFMpegProcess'
-        let channel = window.Echo.channel(`FFMpegProcess.${this.dataset.channel}`)
+        let channel = window.Echo.channel(`FFMpegProcess.${this.channelHash}`)
         try {
             channel.listen(event, this.handleProcessEvent.bind(this, channel, event))
-            channel.subscribed(async () => await fetch(`/concat/${this.dataset.path}`))
-            console.info('%s has subscribed to channel %s', this.dataset.path, channel.name)
+            channel.subscribed(async () => await fetch(`/concat/${this.path}`))
+            console.info('%s has subscribed to channel %s', this.path, channel.name)
         } catch (error) {
             this.leaveProcessChannel(channel, event);
             console.error(error)
@@ -57,27 +56,27 @@ class FilePickerItem extends FilePickerBase {
 
     requestTranscode() {
 
-        if (TYPE_FILE === this.dataset.type) {
+        if (TYPE_FILE === this.type) {
             let evt = new CustomEvent('file-clicked', {
                 detail: {
-                    path: this.dataset.path,
-                    channel: this.dataset.channel,
-                    mime: this.dataset.mime,
-                    size: this.dataset.size,
-                    type: this.dataset.type
+                    path: this.path,
+                    channel: this.channelHash,
+                    mime: this.mime,
+                    size: this.size,
+                    type: this.type
                 }
             })
 
             document.dispatchEvent(evt)
         }
 /*
-        console.info('Transcode video file %s', this.dataset.path)
+        console.info('Transcode video file %s', this.path)
         let event = 'FFMpegProcess'
-        let channel = window.Echo.channel(`FFMpegProcess.${this.dataset.channel}`)
+        let channel = window.Echo.channel(`FFMpegProcess.${this.channelHash}`)
         try {
             channel.listen(event, this.handleProcessEvent.bind(this, channel, event))
-            channel.subscribed(async () => await fetch(`/transcode/${this.dataset.path}`))
-            console.info('%s has subscribed to channel %s', this.dataset.path, channel.name)
+            channel.subscribed(async () => await fetch(`/transcode/${this.path}`))
+            console.info('%s has subscribed to channel %s', this.path, channel.name)
         } catch (error) {
             this.leaveProcessChannel(channel, event);
             console.error(error)
@@ -90,17 +89,17 @@ class FilePickerItem extends FilePickerBase {
         let processU = process[0].toUpperCase() + process.slice(1)
         switch(ws.name) {
             case `${process}.pending`:
-                console.info('%s video file %s queued at %s', processU, this.dataset.path, new Date().toLocaleTimeString())
+                console.info('%s video file %s queued at %s', processU, this.path, new Date().toLocaleTimeString())
                 this.concatPending = true
                 this.canConcat = false
                 break
             case `${process}.running`:
-                console.info('%s video file %s started at %s', processU, this.dataset.path, new Date().toLocaleTimeString())
+                console.info('%s video file %s started at %s', processU, this.path, new Date().toLocaleTimeString())
                 this.concatRunning = true
                 this.canConcat = false
                 break
             case `${process}.done`:
-                console.info('%s video files in %s done at %s', processU, this.dataset.path, new Date().toLocaleTimeString())
+                console.info('%s video files in %s done at %s', processU, this.path, new Date().toLocaleTimeString())
                 this.leaveProcessChannel(channel, event)
                 if (this.items.length) {
                     this.items = []
@@ -111,7 +110,7 @@ class FilePickerItem extends FilePickerBase {
                 console.info('%s progress: %d%%', processU, ws.data.percentage)
                 break
             case `${process}.failed`:
-                console.error('%s video files in %s failed', processU, this.dataset.path)
+                console.error('%s video files in %s failed', processU, this.path)
                 this.leaveProcessChannel(channel, event)
                 this.setCanConcat()
         }
@@ -120,7 +119,7 @@ class FilePickerItem extends FilePickerBase {
     leaveProcessChannel(channel, event) {
         channel.stopListening(event)
         window.Echo.leave(channel.name)
-        console.info('%s has left channel %s', this.dataset.path, channel.name)
+        console.info('%s has left channel %s', this.path, channel.name)
     }
 
     get icon() {
@@ -140,15 +139,15 @@ class FilePickerItem extends FilePickerBase {
     }
 
     get title() {
-        let result = this.dataset.path.trim()
-        if (this.dataset.mime) {
-            result += ` - ${this.dataset.mime}`
+        let result = this.path.trim()
+        if (this.mime) {
+            result += ` - ${this.mime}`
         }
-        if (this.dataset.size) {
-            result += ` - ${this.dataset.size}`
+        if (this.size) {
+            result += ` - ${this.size}`
         }
-        if (this.dataset.lastModified) {
-            let d = new Date(this.dataset.lastModified * 1000)
+        if (this.lastModified) {
+            let d = new Date(this.lastModified * 1000)
             let date = d.toLocaleDateString(d.getTimezoneOffset(), {year: 'numeric', month: '2-digit', day: '2-digit'})
             let time = d.toLocaleTimeString(d.getTimezoneOffset())
             result += ` - ${date} ${time}`
@@ -157,7 +156,7 @@ class FilePickerItem extends FilePickerBase {
     }
 
     get fileType() {
-        let mime = this.dataset.mime.split('/').shift().toLowerCase() 
+        let mime = this.mime.split('/').shift().toLowerCase() 
         switch(mime) {
             case 'video':
             case 'text':
@@ -222,12 +221,12 @@ const ICON_TEMPLATE = /*html*/`
 const ITEM_TEMPLATE = /*html*/`
 <filepicker-item
     *foreach="{{ this.items }}"
-    data-type="{{ item.type }}"
-    data-path="{{ item.path }}"
-    data-channel="{{ item.channel }}"
-    data-mime="{{ item.mime }}"
-    data-size="{{ item.size }}"
-    data-last-modified="{{ item.lastModified }}"
+    .type="{{ item.type }}"
+    .path="{{ item.path }}"
+    .channel-hash="{{ item.channel }}"
+    .mime="{{ item.mime }}"
+    .size="{{ item.size }}"
+    .last-modified="{{ item.lastModified }}"
 >
         {{ item.name }}
 </filepicker-item>

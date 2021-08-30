@@ -9,12 +9,8 @@ const WS_CHANNEL = 'Transcode.Config'
 
 class TranscodeConfigurator extends Slim {
 
-    constructor() {
-        super()
-        document.addEventListener('file-clicked', this.show.bind(this))
-    }
-
     onAdded() {
+        document.addEventListener('file-clicked', this.show.bind(this))
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
     }
 
