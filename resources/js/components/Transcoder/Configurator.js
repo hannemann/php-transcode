@@ -2,7 +2,7 @@ import { Slim } from 'slim-js';
 import '../../slim-directives';
 import Iconify from '@iconify/iconify'
 import './Configurator/Streams'
-import './Configurator/Cut'
+import './Configurator/Clip'
 import './Configurator/Format'
 
 const WS_CHANNEL = 'Transcode.Config'
@@ -120,7 +120,7 @@ ${CSS}
     <div>
         <transcode-configurator-format *if="{{ this.format }}" .format="{{ this.format }}"></transcode-configurator-format>
         <transcode-configurator-streams *if="{{ this.streams }}" .items="{{ this.streams }}"></transcode-configurator-streams>
-        <transcode-configurator-cut *if="{{ this.streams }}"></transcode-configurator-cut>
+        <transcode-configurator-clip *if="{{ this.streams }}"></transcode-configurator-clip>
     </div>
 </main>
 `

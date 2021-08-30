@@ -2,9 +2,9 @@ import { Slim } from 'slim-js';
 import '../../../slim-directives';
 import CARD_CSS from './CardCss';
 
-class Cut extends Slim {}
+class Clip extends Slim {}
 
-Cut.template = /*html*/ `
+Clip.template = /*html*/ `
 ${CARD_CSS}
 <style>
 div {
@@ -22,4 +22,4 @@ div {
 </main>
 `
 
-customElements.define('transcode-configurator-cut', Cut);
+customElements.define('transcode-configurator-clip', Clip);

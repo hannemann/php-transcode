@@ -21,6 +21,19 @@ section {
 section:last-child {
     margin-bottom: 0;
 }
+section.toggle > div {
+    display: none;
+}
+section.toggle > div.visible {
+    display: flex;
+    align-items: center;
+}
+section.toggle > div[data-toggle="true"] {
+    cursor: pointer;
+}
+section.toggle > div:not([data-toggle="true"]) {
+    padding-left: 1rem;
+}
 </style>
 `
 
