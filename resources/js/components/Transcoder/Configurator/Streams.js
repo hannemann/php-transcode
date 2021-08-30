@@ -1,4 +1,4 @@
-import { Utils, Slim } from 'slim-js'
+import { Slim } from 'slim-js'
 import '../../../slim-directives'
 import './Streams/Video'
 import './Streams/Audio'
