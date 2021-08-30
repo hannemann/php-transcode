@@ -7,17 +7,28 @@ import './Loading'
 class Transcoder extends Slim {
 
     onAdded() {
+        let backgroundHandler = this.toggleBackground.bind(this);
         this.filePicker.channelHash = this.dataset.channel
-        document.addEventListener('loading', e => this.classList.toggle('loading', !!e.detail))
+        document.addEventListener('loading', backgroundHandler)
+        document.addEventListener('configurator-show', backgroundHandler)
+    }
+
+    toggleBackground(e) {
+        this.classList.toggle('background', !!e.detail)
     }
 }
 
 Transcoder.template = /*html*/`
 <style>
-    :host(.loading) main {
-        filter: blur(3px)
+    :host(.background) main {
+        filter: blur(3px);
+    }
+    :host(.background) main {
+        height: calc(100vh - .4rem);
+        overflow: hidden;
     }
     main {
+        padding: .2rem;
         filter: blur(0);
         transition: var(--loading-transition);
     }
@@ -25,8 +36,8 @@ Transcoder.template = /*html*/`
 <main>
     <h1>Transcoder</h1>
     <filepicker-root #ref="filePicker"></filepicker-root>
-    <transcode-configurator></transcode-configurator>
 </main>
+<transcode-configurator></transcode-configurator>
 <transcoder-loading></transcoder-loading>
 `
 

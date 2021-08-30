@@ -1,8 +1,8 @@
 :root {
     --gutter-base: 1rem;
-    --rel-gutter-100: clamp(calc(1rem / 2), 1rem, calc(1rem * 1.5));
-    --rel-gutter-200: clamp(calc(var(--gutter-base) / 2), 2vw, calc(var(--gutter-base) * 2));
-    --rel-gutter-400: clamp(calc(var(--gutter-base) / 2), 2vw, calc(var(--gutter-base) * 4));
+    --rel-gutter-100: clamp(.5rem, 1rem, 1.5rem);
+    --rel-gutter-200: clamp(.75rem, 2vw, 2rem);
+    --rel-gutter-400: clamp(1rem, 2vw, 4rem);
 }
 :root {
 
@@ -38,7 +38,9 @@
     --transition-slow: 300ms;
     --transition-ultraslow: 500ms;
 
-    --loading-transition: filter var(--transition-medium) linear, background-color var(--transition-medium) linear
+    --loading-transition:
+        filter var(--transition-medium) linear,
+        background-color var(--transition-medium) linear
 }
 main {
     display: grid;
@@ -62,6 +64,7 @@ body {
     font-family: sans-serif;
     height: 100vh;
     padding: 0;
+    margin: 0;
 }
 
 a {

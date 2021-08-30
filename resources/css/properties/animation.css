@@ -4,5 +4,7 @@
     --transition-slow: 300ms;
     --transition-ultraslow: 500ms;
 
-    --loading-transition: filter var(--transition-medium) linear, background-color var(--transition-medium) linear
+    --loading-transition:
+        filter var(--transition-medium) linear,
+        background-color var(--transition-medium) linear
 }

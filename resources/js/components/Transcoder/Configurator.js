@@ -23,6 +23,7 @@ class TranscodeConfigurator extends Slim {
 
     show() {
         this.classList.add('active')
+        document.dispatchEvent(new CustomEvent('configurator-show', {detail: true}))
     }
 
     hide() {
@@ -31,6 +32,7 @@ class TranscodeConfigurator extends Slim {
         this.format = undefined
         this.streams = undefined
         this.leaveWebsocket()
+        document.dispatchEvent(new CustomEvent('configurator-show', {detail: false}))
     }
 
     initWebsocket() {
@@ -58,8 +60,8 @@ class TranscodeConfigurator extends Slim {
         console.log(ws)
         this.format = ws.format
         this.streams = ws.streams
-        this.show()
         document.dispatchEvent(new CustomEvent('loading', {detail: false}))
+        this.show()
     }
 }
 
@@ -78,7 +80,7 @@ main {
     box-shadow: 0 0 10vw 3vw var(--clr-shadow-0);
     inset: var(--rel-gutter-400);
     background-color: var(--clr-bg-0);
-    border-radius: var(--rel-gutter-200);
+    border-radius: var(--rel-gutter-100);
     padding: var(--rel-gutter-200);
 }
 main > div {
@@ -95,6 +97,9 @@ main h1 {
 }
 main h1 div {
     cursor: pointer;
+}
+main div *:last-child {
+    margin-bottom: 0;
 }
 </style>
 `
