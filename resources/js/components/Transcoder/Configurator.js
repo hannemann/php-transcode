@@ -10,16 +10,19 @@ const WS_CHANNEL = 'Transcode.Config'
 class TranscodeConfigurator extends Slim {
 
     onAdded() {
-        document.addEventListener('file-clicked', this.show.bind(this))
+        document.addEventListener('file-clicked', this.init.bind(this))
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
     }
 
-    show(e) {
+    init(e) {
         if ('video' === e.detail.mime.split('/').shift()) {
-            this.classList.add('active')
             this.item = e.detail
             this.initWebsocket()
         }
+    }
+
+    show() {
+        this.classList.add('active')
     }
 
     hide() {
@@ -47,6 +50,7 @@ class TranscodeConfigurator extends Slim {
     }
 
     async requestStreams() {
+        document.dispatchEvent(new CustomEvent('loading', {detail: true}))
         await fetch(`/streams/${this.item.path}`)
     }
 
@@ -54,6 +58,8 @@ class TranscodeConfigurator extends Slim {
         console.log(ws)
         this.format = ws.format
         this.streams = ws.streams
+        this.show()
+        document.dispatchEvent(new CustomEvent('loading', {detail: false}))
     }
 }
 

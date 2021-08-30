@@ -23,6 +23,7 @@ class FilePickerBase extends Slim {
     onWsEvent(e) {
         this.items = e.items
         console.info('Fetched %d items in %s', this.items.length, this.path)
+        document.dispatchEvent(new CustomEvent('loading', {detail: false}))
     }
 
     handleClick() {
@@ -52,6 +53,7 @@ class FilePickerBase extends Slim {
     async fetch() {
         console.info('Fetch items in %s', this.path)
         try {
+            document.dispatchEvent(new CustomEvent('loading', {detail: true}))
             this.classList.add(this.loadingClass)
             await fetch(this.wsUrl.join(''))
         } catch (error) {
