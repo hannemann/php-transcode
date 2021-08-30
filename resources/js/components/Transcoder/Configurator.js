@@ -24,6 +24,7 @@ class TranscodeConfigurator extends Slim {
     show() {
         this.classList.add('active')
         document.dispatchEvent(new CustomEvent('configurator-show', {detail: true}))
+        console.info('Show streams of %s', this.item.path)
     }
 
     hide() {
@@ -37,12 +38,8 @@ class TranscodeConfigurator extends Slim {
 
     initWebsocket() {
         this.channel = window.Echo.channel(WS_CHANNEL)
-        try {
-            this.channel.listen(WS_CHANNEL, this.handleConfiguratorEvent.bind(this))
-            this.channel.subscribed(this.requestStreams.bind(this))
-        } catch (error) {
-            console.error(error)
-        }
+        this.channel.listen(WS_CHANNEL, this.handleConfiguratorEvent.bind(this))
+        this.channel.subscribed(this.requestStreams.bind(this))
     }
 
     leaveWebsocket() {
@@ -52,12 +49,30 @@ class TranscodeConfigurator extends Slim {
     }
 
     async requestStreams() {
+        console.info('Attempt to fetch streams of %s', this.item.path)
         document.dispatchEvent(new CustomEvent('loading', {detail: true}))
-        await fetch(`/streams/${this.item.path}`)
+        try {
+            let response = await fetch(`/streams/${encodeURIComponent(this.item.path)}`)
+            if (response.status !== 200) {
+                let error = await response.json()
+                throw new Error(error.message)
+            }
+        } catch (error) {
+            console.error(error)
+            document.dispatchEvent(new CustomEvent('loading', {detail: false}))
+            document.dispatchEvent(new CustomEvent('toast', {
+                detail: {
+                    message: error,
+                    type: 'error'
+                }
+            }))
+            this.leaveWebsocket()
+            this.hide()
+        }
     }
 
     handleConfiguratorEvent(ws) {
-        console.log(ws)
+        console.info(ws)
         this.format = ws.format
         this.streams = ws.streams
         document.dispatchEvent(new CustomEvent('loading', {detail: false}))

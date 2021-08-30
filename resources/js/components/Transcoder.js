@@ -3,6 +3,7 @@ import '../slim-directives';
 import './FilePicker/FilePicker'
 import './Transcoder/Configurator'
 import './Loading'
+import './Toast'
 
 class Transcoder extends Slim {
 
@@ -50,6 +51,7 @@ Transcoder.template = /*html*/`
 </main>
 <transcode-configurator></transcode-configurator>
 <transcoder-loading></transcoder-loading>
+<transcoder-toast></transcoder-toast>
 `
 
 customElements.define('ffmpeg-transcoder', Transcoder);

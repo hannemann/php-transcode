@@ -40,9 +40,16 @@ Route::get('/transcode/{path?}', function (string $path = null) {
 
 Route::get('/streams/{path?}', function (string $path = null) {
     
-    $media = VideoFile::getMedia('recordings', $path);
-    $streams = $media->getStreams();
-    $format = $media->getFormat()->all();
+    try {
+        $media = VideoFile::getMedia('recordings', $path);
+        $streams = $media->getStreams();
+        $format = $media->getFormat()->all();
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 500,
+            'message' => $e->getMessage(),
+        ], 500);
+    }
     BroadcastStreams::dispatch($format, $streams);
 
 })->where('path', '(.*)');
