@@ -3,12 +3,19 @@
 
 @import 'properties/layout';
 @import 'properties/colors';
+@import 'properties/fonts';
 @import 'grid';
+
+html {
+    font-size: var(--font-size-100);
+}
 
 body {
     background-color: var(--clr-bg-0);
     color: var(--clr-text-0);
     font-family: sans-serif;
+    height: 100vh;
+    padding: 0;
 }
 
 a {

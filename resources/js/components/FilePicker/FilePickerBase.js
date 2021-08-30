@@ -1,6 +1,8 @@
 import { Utils, Slim } from 'slim-js';
 import '../../slim-directives';
 
+const TYPE_DIRECTORY = 'd'
+const TYPE_FILE = 'f'
 class FilePickerBase extends Slim {
 
     constructor() {
@@ -26,6 +28,30 @@ class FilePickerBase extends Slim {
         console.info('Fetched %d items in %s', this.items.length, this.dataset.path)
     }
 
+    handleClick() {
+        if (!this.items.length) {
+            if (TYPE_DIRECTORY === this.dataset.type) {
+                this.fetch()
+            } else if (TYPE_FILE === this.dataset.type) {
+                this.handleFileClick()
+            }
+        }
+    }
+
+    handleFileClick() {
+        let evt = new CustomEvent('file-clicked', {
+            detail: {
+                path: this.dataset.path,
+                channel: this.dataset.channel,
+                mime: this.dataset.mime,
+                size: this.dataset.size,
+                type: this.dataset.type
+            }
+        })
+
+        document.dispatchEvent(evt)
+    }
+
     async fetch() {
         console.info('Fetch items in %s', this.dataset.path)
         try {
@@ -44,4 +70,4 @@ FilePickerBase.prototype.wsEvent = 'FilePicker'
 FilePickerBase.prototype.loadingClass = 'loading'
 FilePickerBase.prototype.ds = ''
 
-export default FilePickerBase
+export { FilePickerBase, TYPE_FILE, TYPE_DIRECTORY }

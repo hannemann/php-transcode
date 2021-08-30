@@ -1,3 +1,6 @@
 :root {
     --gutter-base: 1rem;
+    --rel-gutter-100: clamp(calc(1rem / 2), 1rem, calc(1rem * 1.5));
+    --rel-gutter-200: clamp(calc(var(--gutter-base) / 2), 2vw, calc(var(--gutter-base) * 2));
+    --rel-gutter-400: clamp(calc(var(--gutter-base) / 2), 2vw, calc(var(--gutter-base) * 4));
 }

@@ -1,5 +1,8 @@
 :root {
     --gutter-base: 1rem;
+    --rel-gutter-100: clamp(calc(1rem / 2), 1rem, calc(1rem * 1.5));
+    --rel-gutter-200: clamp(calc(var(--gutter-base) / 2), 2vw, calc(var(--gutter-base) * 2));
+    --rel-gutter-400: clamp(calc(var(--gutter-base) / 2), 2vw, calc(var(--gutter-base) * 4));
 }
 :root {
 
@@ -10,11 +13,23 @@
 
     --clr-bg-0: hsl(var(--clr-base-hue) var(--clr-base-sat) var(--clr-base-lit));
     --clr-bg-100: hsl(var(--clr-base-hue) var(--clr-base-sat) calc(var(--clr-base-lit) + 10%));
+    --clr-bg-150: hsl(var(--clr-base-hue) calc(var(--clr-base-sat) - 5%) calc(var(--clr-base-lit) + 16%));
     --clr-bg-200: hsl(var(--clr-base-hue) calc(var(--clr-base-sat) - 10%) calc(var(--clr-base-lit) + 20%));
 
     --clr-text-0: hsl(var(--clr-base-hue) calc(var(--clr-base-sat) - 30%) calc(var(--clr-base-lit) + 60%));
     --clr-text-100: hsl(var(--clr-base-hue) calc(var(--clr-base-sat) - 10%) calc(var(--clr-base-lit) + 60%));
 
+    --clr-shadow-0: hsla(
+        calc(var(--clr-base-hue) - 50),
+        calc(var(--clr-base-sat) + 25%),
+        calc(var(--clr-base-lit) + 20%),
+        calc(var(--clr-base-alpha) - .25)
+    );
+
+}
+:root {
+    --font-size-50: clamp(14px, 1.5vw, 18px);
+    --font-size-100: clamp(14px, 2vw, 20px);
 }
 main {
     display: grid;
@@ -28,10 +43,16 @@ aside {
 section.content {
     grid-area: 'content';
 }
+html {
+    font-size: var(--font-size-100);
+}
+
 body {
     background-color: var(--clr-bg-0);
     color: var(--clr-text-0);
     font-family: sans-serif;
+    height: 100vh;
+    padding: 0;
 }
 
 a {

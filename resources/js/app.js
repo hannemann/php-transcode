@@ -1,4 +1,5 @@
-import './bootstrap';
-//import Iconify from '@iconify/iconify';
+import './bootstrap'
 
-import './components/FilePicker/FilePicker';
+import './Helper/String'
+import './components/FilePicker/FilePicker'
+import './components/Transcode/Configurator'

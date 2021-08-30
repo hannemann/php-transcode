@@ -1,4 +1,4 @@
-import FilePickerBase from './FilePickerBase';
+import { FilePickerBase } from './FilePickerBase';
 import './FilePickerItem';
 
 import ITEM_TEMPLATE from './FilePickerItem';

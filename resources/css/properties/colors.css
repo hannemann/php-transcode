@@ -7,9 +7,17 @@
 
     --clr-bg-0: hsl(var(--clr-base-hue) var(--clr-base-sat) var(--clr-base-lit));
     --clr-bg-100: hsl(var(--clr-base-hue) var(--clr-base-sat) calc(var(--clr-base-lit) + 10%));
+    --clr-bg-150: hsl(var(--clr-base-hue) calc(var(--clr-base-sat) - 5%) calc(var(--clr-base-lit) + 16%));
     --clr-bg-200: hsl(var(--clr-base-hue) calc(var(--clr-base-sat) - 10%) calc(var(--clr-base-lit) + 20%));
 
     --clr-text-0: hsl(var(--clr-base-hue) calc(var(--clr-base-sat) - 30%) calc(var(--clr-base-lit) + 60%));
     --clr-text-100: hsl(var(--clr-base-hue) calc(var(--clr-base-sat) - 10%) calc(var(--clr-base-lit) + 60%));
+
+    --clr-shadow-0: hsla(
+        calc(var(--clr-base-hue) - 50),
+        calc(var(--clr-base-sat) + 25%),
+        calc(var(--clr-base-lit) + 20%),
+        calc(var(--clr-base-alpha) - .25)
+    );
 
 }

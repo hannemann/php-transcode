@@ -6,7 +6,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Helper\File as FileHelper;
-use App\Models\Recording\Vdr;
+use App\Models\Video\File as VideoFile;
 use Illuminate\Filesystem\FilesystemAdapter;
 
 class FilePicker
@@ -100,7 +100,7 @@ class FilePicker
     public static function getMimeType(string $file): string
     {
         $fullFileName = static::disk()->getAdapter()->getPathPrefix() . $file;
-        if (Vdr::isLegacy($fullFileName) && ($mime = Vdr::getMimeType($fullFileName))) {
+        if (($mime = VideoFile::getMimeType($fullFileName))) {
             return $mime;
         }
         return static::disk()->mimeType($file);

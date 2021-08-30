@@ -1,9 +1,10 @@
 <?php
 
 use App\Events\FilePicker as FilePickerEvent;
+use App\Events\Transcode\Config\Streams as BroadcastStreams;
 use App\Models\FilePicker;
+use App\Models\Video\File as VideoFile;
 use Illuminate\Support\Facades\Route;
-use App\Models\Recording\Vdr;
 use App\Jobs\ProcessVideo;
 
 /*
@@ -17,14 +18,7 @@ use App\Jobs\ProcessVideo;
 |
 */
 
-Route::get('/', fn() => view('home'));
-
-Route::get('/file/{path}', function ($path) {
-
-    $streams = Vdr::getMediaInfo($path)->getStreams();
-    return view('home', ['streams' => $streams]);
-
-})->name('directory');
+Route::get('/', fn() => view('home', ['ds' => DIRECTORY_SEPARATOR]));
 
 Route::get('/file-picker/{subdir?}', function (string $subdir = null) {
     
@@ -41,5 +35,14 @@ Route::get('/concat/{path?}', function (string $path = null) {
 Route::get('/transcode/{path?}', function (string $path = null) {
     
     ProcessVideo::dispatch('transcode', 'recordings', $path, '00:02:14.580', '00:50:41.620');
+
+})->where('path', '(.*)');
+
+Route::get('/streams/{path?}', function (string $path = null) {
+    
+    $media = VideoFile::getMedia('recordings', $path);
+    $streams = $media->getStreams();
+    $format = $media->getFormat()->all();
+    BroadcastStreams::dispatch($format, $streams);
 
 })->where('path', '(.*)');

@@ -4,13 +4,6 @@
     @include('layout.html-head')
     </head>
     <body>
-        <main>
-            <aside>
-                @yield('directories')
-            </aside>
-            <section class="content">
-                @yield('content')
-            </section>
-        </main>
+        @yield('content')
     </body>
 </html>

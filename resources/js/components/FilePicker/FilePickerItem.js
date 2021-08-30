@@ -1,9 +1,7 @@
-import FilePickerBase from './FilePickerBase'
+import { FilePickerBase, TYPE_DIRECTORY, TYPE_FILE } from './FilePickerBase'
 import { Utils } from 'slim-js';
 import Iconify from '@iconify/iconify'
 
-const TYPE_DIRECTORY = 'd'
-const TYPE_FILE = 'f'
 const FFMPEG_PROCESS_STAGE_PENDING = 0
 const FFMPEG_PROCESS_STAGE_RUNNING = 1
 const FFMPEG_PROCESS_STAGE_DONE = 2
@@ -36,13 +34,8 @@ class FilePickerItem extends FilePickerBase {
     }
 
     handleClick() {
-        if (!this.items.length) {
-            if (TYPE_DIRECTORY === this.dataset.type) {
-                this.fetch()
-            } else if (TYPE_FILE === this.dataset.type) {
-                console.log('Pick file %s', this.dataset.name);
-            }
-        } else {
+        super.handleClick()
+        if (this.items.length) {
             this.items = []
             this.setCanConcat()
         }
@@ -63,6 +56,21 @@ class FilePickerItem extends FilePickerBase {
     }
 
     requestTranscode() {
+
+        if (TYPE_FILE === this.dataset.type) {
+            let evt = new CustomEvent('file-clicked', {
+                detail: {
+                    path: this.dataset.path,
+                    channel: this.dataset.channel,
+                    mime: this.dataset.mime,
+                    size: this.dataset.size,
+                    type: this.dataset.type
+                }
+            })
+
+            document.dispatchEvent(evt)
+        }
+/*
         console.info('Transcode video file %s', this.dataset.path)
         let event = 'FFMpegProcess'
         let channel = window.Echo.channel(`FFMpegProcess.${this.dataset.channel}`)
@@ -74,6 +82,7 @@ class FilePickerItem extends FilePickerBase {
             this.leaveProcessChannel(channel, event);
             console.error(error)
         }
+        */
     }
 
     handleProcessEvent(channel, event, ws) {
@@ -233,7 +242,6 @@ ${CSS}
             <slot></slot>
         </span>
         <span *if="{{ this.canConcat }}" @click="this.requestConcat()">Concat?</span>
-        <span *if="{{ this.dataset.mime.toLowerCase().indexOf('video') === 0 }}" @click="this.requestTranscode()">Transcode?</span>
     </div>
     ${ITEM_TEMPLATE}
 </div>
