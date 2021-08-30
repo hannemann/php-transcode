@@ -23,8 +23,13 @@ class Toast extends Slim {
     }
 
     hide(item) {
-        this.items.splice(this.items.indexOf(item), 1)
-        Utils.forceUpdate(this)
+        let idx = this.items.indexOf(item)
+        let node = this.shadowRoot.querySelectorAll('main > div')[idx];
+        node.classList.add('fade-out')
+        node.addEventListener('transitionend', () => {
+            this.items.splice(idx, 1)
+            Utils.forceUpdate(this)
+        })
     }
 }
 
@@ -45,6 +50,11 @@ main > div {
     border-radius: .5rem;
     position: relative;
     margin-bottom: .5rem;
+    opacity: 1;
+    transition: opacity var(--transition-slow) linear;
+}
+div.fade-out {
+    opacity: 0;
 }
 div.success {
     background: green;

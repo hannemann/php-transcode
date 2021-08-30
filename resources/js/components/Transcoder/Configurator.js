@@ -28,7 +28,10 @@ class TranscodeConfigurator extends Slim {
     }
 
     hide() {
-        this.classList.remove('active')
+        this.addEventListener('transitionend', () => {
+            this.classList.remove('active', 'fade-out')
+        })
+        this.classList.add('fade-out')
         delete this.item
         this.format = undefined
         this.streams = undefined
@@ -86,14 +89,20 @@ const CSS = /*css*/`
     position: fixed;
     inset: 0;
     display: none;
+    opacity: 1;
+    transition: opacity var(--transition-slow) linear;
 }
 :host(.active) {
-    display: block;
+    display: flex;
+    align-items: center;
+}
+:host(.fade-out) {
+    opacity: 0;
 }
 main {
     position: absolute;
     box-shadow: 0 0 10vw 3vw var(--clr-shadow-0);
-    inset: var(--rel-gutter-400);
+    inset: var(--rel-gutter-500);
     background-color: var(--clr-bg-0);
     border-radius: var(--rel-gutter-100);
     padding: var(--rel-gutter-200);

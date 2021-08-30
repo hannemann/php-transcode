@@ -3,4 +3,5 @@
     --rel-gutter-100: clamp(.5rem, 1rem, 1.5rem);
     --rel-gutter-200: clamp(.75rem, 2vw, 2rem);
     --rel-gutter-400: clamp(1rem, 2vw, 4rem);
+    --rel-gutter-500: clamp(1rem, 5vw, 5rem);
 }
