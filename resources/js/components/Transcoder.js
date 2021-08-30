@@ -14,18 +14,29 @@ class Transcoder extends Slim {
     }
 
     toggleBackground(e) {
+        if (!!e.detail) {
+            this.scrollY = window.scrollY
+            this.scrollX = window.scrollX
+        }
         this.classList.toggle('background', !!e.detail)
+        if (!e.detail) {
+            window.scroll(this.scrollX, this.scrollY)
+        }
     }
 }
 
 Transcoder.template = /*html*/`
 <style>
-    :host(.background) main {
-        filter: blur(3px);
+    :host {
+        display: block;
+        height: calc(100vh - .4rem);
+        overflow: auto;
+    }
+    :host(.background) {
+        overflow: hidden;
     }
     :host(.background) main {
-        height: calc(100vh - .4rem);
-        overflow: hidden;
+        filter: blur(3px);
     }
     main {
         padding: .2rem;
