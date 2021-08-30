@@ -110,6 +110,9 @@ main {
 main > div {
     overflow-y: auto;
     height: calc(100% - 1.75rem - var(--rel-gutter-200) * 2);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 main h1 {
     display: flex;

@@ -30,12 +30,19 @@ class Streams extends Slim {
 }
 
 Streams.template = /*html*/`
+<style>
+div {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+</style>
 <div>
     <transcode-configurator-stream-video *if="{{ this.video.length }}" .streams="{{ this.video }}"></transcode-configurator-stream-video>
     <transcode-configurator-stream-audio *if="{{ this.audio.length }}" .streams="{{ this.audio }}"></transcode-configurator-stream-audio>
     <transcode-configurator-stream-sub *if="{{ this.subs.length }}" .streams="{{ this.subs }}"></transcode-configurator-stream-sub>
     <transcode-configurator-stream-data *if="{{ this.data.length }}" .streams="{{ this.data }}"></transcode-configurator-stream-data>
-<div>
+</div>
 `
 
 customElements.define('transcode-configurator-streams', Streams);

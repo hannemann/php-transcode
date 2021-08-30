@@ -4,7 +4,6 @@ main {
     background-color: var(--clr-bg-100);
     border-radius: .75rem;
     padding: .75rem;
-    margin: 0 0 1rem 0;
 }
 main h2 {
     margin: 0;
