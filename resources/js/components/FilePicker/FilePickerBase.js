@@ -55,9 +55,20 @@ class FilePickerBase extends Slim {
         try {
             document.dispatchEvent(new CustomEvent('loading', {detail: true}))
             this.classList.add(this.loadingClass)
-            await fetch(this.wsUrl.join(''))
+            let response = await fetch(this.wsUrl.join(''))
+            if (response.status !== 200) {
+                let error = await response.json()
+                throw new Error(error.message)
+            }
         } catch (error) {
-            throw error
+            console.error(error)
+            document.dispatchEvent(new CustomEvent('loading', {detail: false}))
+            document.dispatchEvent(new CustomEvent('toast', {
+                detail: {
+                    message: error,
+                    type: 'error'
+                }
+            }))
         } finally {
             this.classList.remove(this.loadingClass)
         }

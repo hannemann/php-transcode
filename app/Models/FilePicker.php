@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Helper\File as FileHelper;
 use App\Models\Video\File as VideoFile;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\FilesystemAdapter;
 
 class FilePicker
@@ -26,6 +27,9 @@ class FilePicker
      */
     public static function getItems(string $subdir = null, bool $hidden = false): Collection
     {
+        if ($subdir && static::disk()->missing($subdir)) {
+            throw new FileNotFoundException(sprintf('Path "%s" not found', $subdir));
+        }
         $d = static::getDirectories($subdir, $hidden)->map([static::class, 'getDirectoryData']);
         $f = static::getFiles($subdir, $hidden)->map([static::class, 'getFileData']);
         return $d->merge($f);

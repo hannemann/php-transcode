@@ -9,7 +9,8 @@ class FilePickerItem extends FilePickerBase {
 
     constructor() {
         super()
-        this.wsUrl.push(encodeURIComponent(this.path))
+        //this.wsUrl.push(encodeURIComponent(this.path))
+        this.wsUrl.push(this.path)
         this.isDirectory = this.type === TYPE_DIRECTORY
         this.isFile = this.type === TYPE_FILE
         this.canConcat = false

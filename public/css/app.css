@@ -28,6 +28,14 @@
         calc(var(--clr-base-alpha) - .25)
     );
 
+    --hue-success: 135;
+    --hue-info: 220;
+    --hue-warning: 35;
+    --hue-error: 0;
+    --sat-alert: calc(var(--clr-base-sat) + 50%);
+    --lit-alert: calc(var(--clr-base-lit) + 20%);
+    --hue-alert: 0;
+
 }
 :root {
     --font-size-50: clamp(14px, 1.5vw, 18px);

@@ -22,7 +22,15 @@ Route::get('/', fn() => view('home', ['ds' => DIRECTORY_SEPARATOR]));
 
 Route::get('/file-picker/{subdir?}', function (string $subdir = null) {
     
-    FilePickerEvent::dispatch(FilePicker::root('recordings')::getItems($subdir), $subdir ?? 'root');
+    try {
+        $items = FilePicker::root('recordings')::getItems($subdir);
+        FilePickerEvent::dispatch($items, $subdir ?? 'root');
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 500,
+            'message' => $e->getMessage(),
+        ], 500);
+    }
 
 })->where('subdir', '(.*)')->name('filepicker');
 
