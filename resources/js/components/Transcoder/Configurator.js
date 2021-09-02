@@ -6,6 +6,7 @@ import './Configurator/Clip'
 import './Configurator/Format'
 
 const WS_CHANNEL = 'Transcode.Config'
+const CSRF_TOKEN = document.head.querySelector("[name~=csrf-token][content]").content;
 
 class TranscodeConfigurator extends Slim {
 
@@ -62,7 +63,6 @@ class TranscodeConfigurator extends Slim {
             }
         } catch (error) {
             console.error(error)
-            document.dispatchEvent(new CustomEvent('loading', {detail: false}))
             document.dispatchEvent(new CustomEvent('toast', {
                 detail: {
                     message: error,
@@ -71,6 +71,52 @@ class TranscodeConfigurator extends Slim {
             }))
             this.leaveWebsocket()
             this.hide()
+        } finally {
+            document.dispatchEvent(new CustomEvent('loading', {detail: false}))
+        }
+    }
+
+    async transcode() {
+        let clip = this.shadowRoot.querySelector('transcode-configurator-clip')
+        if (clip.dataset.valid !== 'true') {
+            document.dispatchEvent(new CustomEvent('toast', {
+                detail: {
+                    message: 'Clip is invalid',
+                    type: 'warning'
+                }
+            }))
+            return
+        }
+        console.info('Transcode %s', this.item.path)
+        try {
+            let response = await fetch(`/transcode/${encodeURIComponent(this.item.path)}`, {
+                method: 'post',
+                body: JSON.stringify({
+                    streams: this.streams.filter(s => s.active).map(s => s.index),
+                    clip: {
+                        from: clip.from || null,
+                        to: clip.to || null
+                    }
+                }),
+                headers: {
+                  'Content-Type': 'application/json',
+                  "X-CSRF-Token": CSRF_TOKEN
+                },
+            })
+            if (response.status !== 200) {
+                let error = await response.json()
+                throw new Error(error.message)
+            }
+        } catch (error) {
+            console.error(error)
+            document.dispatchEvent(new CustomEvent('toast', {
+                detail: {
+                    message: error,
+                    type: 'error'
+                }
+            }))
+        } finally {
+            document.dispatchEvent(new CustomEvent('loading', {detail: false}))
         }
     }
 
@@ -128,6 +174,11 @@ main h1 div {
 main div *:last-child {
     margin-bottom: 0;
 }
+footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: .5rem;
+}
 </style>
 `
 
@@ -147,7 +198,10 @@ ${CSS}
     <div>
         <transcode-configurator-format *if="{{ this.format }}" .format="{{ this.format }}"></transcode-configurator-format>
         <transcode-configurator-streams *if="{{ this.streams }}" .items="{{ this.streams }}"></transcode-configurator-streams>
-        <transcode-configurator-clip *if="{{ this.streams }}"></transcode-configurator-clip>
+        <transcode-configurator-clip #ref="clip" *if="{{ this.streams }}"></transcode-configurator-clip>
+        <footer>
+            <button @click="this.transcode()">Start</button>
+        </footer>
     </div>
 </main>
 `

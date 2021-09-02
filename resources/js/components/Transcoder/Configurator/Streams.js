@@ -12,20 +12,25 @@ const TYPE_DATA = 'data'
 
 class Streams extends Slim {
 
+    onAdded() {
+        this.video?.forEach((v, k) => v.active = k === 0)
+        this.audio?.forEach((v, k) => v.active = k === 0)
+    }
+
     get video() {
-        return this.items?.filter(i => i.codec_type === TYPE_VIDEO)
+        return this.items?.filter(i => i.codec_type === TYPE_VIDEO).sort((a, b) => a.index > b.index)
     }
 
     get audio() {
-        return this.items?.filter(i => i.codec_type === TYPE_AUDIO)
+        return this.items?.filter(i => i.codec_type === TYPE_AUDIO).sort((a, b) => a.index > b.index)
     }
 
     get subs() {
-        return this.items?.filter(i => i.codec_type === TYPE_SUB)
+        return this.items?.filter(i => i.codec_type === TYPE_SUB).sort((a, b) => a.index > b.index)
     }
 
     get data() {
-        return this.items?.filter(i => i.codec_type === TYPE_DATA)
+        return this.items?.filter(i => i.codec_type === TYPE_DATA).sort((a, b) => a.index > b.index)
     }
 }
 

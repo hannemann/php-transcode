@@ -3,6 +3,7 @@
 namespace App\Models\FFMpeg\Format\Video;
 
 use FFMpeg\Format\Video\X264;
+use Illuminate\Support\Collection;
 
 class h264_vaapi extends X264
 {
@@ -67,5 +68,14 @@ class h264_vaapi extends X264
     public function getPasses()
     {
         return 1;
+    }
+
+    public function stripOptions(Collection $cmds): Collection
+    {
+        $cmds->splice($cmds->search('-threads'), 2);
+        if (is_numeric($cmds->search('-refs'))) {
+            $cmds = $cmds->slice(0, $cmds->search('-refs'));
+        }
+        return $cmds;
     }
 }

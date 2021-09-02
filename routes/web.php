@@ -2,10 +2,12 @@
 
 use App\Events\FilePicker as FilePickerEvent;
 use App\Events\Transcode\Config\Streams as BroadcastStreams;
+use App\Http\Controllers\TranscodeController;
 use App\Models\FilePicker;
 use App\Models\Video\File as VideoFile;
 use Illuminate\Support\Facades\Route;
 use App\Jobs\ProcessVideo;
+use App\Http\Requests\TranscodeRequest;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,11 +42,7 @@ Route::get('/concat/{path?}', function (string $path = null) {
 
 })->where('path', '(.*)');
 
-Route::get('/transcode/{path?}', function (string $path = null) {
-    
-    ProcessVideo::dispatch('transcode', 'recordings', $path, '00:02:14.580', '00:50:41.620');
-
-})->where('path', '(.*)');
+Route::post('/transcode/{path}', [TranscodeController::class, 'transcode'])->where('path', '(.*)');
 
 Route::get('/streams/{path?}', function (string $path = null) {
     

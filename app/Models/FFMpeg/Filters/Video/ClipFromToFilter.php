@@ -6,6 +6,7 @@ use FFMpeg\Filters\Video\ClipFilter;
 use FFMpeg\Media\Video;
 use FFMpeg\Coordinate\TimeCode;
 use FFMpeg\Format\VideoInterface;
+use FFMpeg\Exception\InvalidArgumentException;
 
 class ClipFromToFilter extends ClipFilter
 {
@@ -13,6 +14,9 @@ class ClipFromToFilter extends ClipFilter
 
     public function __construct(TimeCode $start, TimeCode $to = null, $priority = 0)
     {
+        if ($start->isAfter($to)) {
+            throw new InvalidArgumentException(sprintf('Start timecode cannot be greater than end timecode'));
+        }
         $this->start = $start;
         $this->to = $to;
         $this->priority = $priority;

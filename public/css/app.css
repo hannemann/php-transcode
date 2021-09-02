@@ -40,6 +40,7 @@
 :root {
     --font-size-50: clamp(14px, 1.5vw, 18px);
     --font-size-100: clamp(14px, 2vw, 20px);
+    --font-size-200: clamp(20px, 3vw, 32px);
 }
 :root {
     --transition-fast: 100ms;

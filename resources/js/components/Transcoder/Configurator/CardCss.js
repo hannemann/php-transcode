@@ -16,6 +16,7 @@ section {
     padding: .5rem;
     margin: .35rem 0;
     font-size: --var(--font-size-50);
+    flex-grow: 1;
 }
 section:last-child {
     margin-bottom: 0;
@@ -32,6 +33,12 @@ section.toggle > div[data-toggle="true"] {
 }
 section.toggle > div:not([data-toggle="true"]) {
     padding-left: 1rem;
+}
+div.stream {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
 }
 </style>
 `

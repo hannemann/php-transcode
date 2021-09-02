@@ -23,6 +23,8 @@ class ProcessVideo implements ShouldQueue, ShouldBeUnique
 
     protected string $disk;
 
+    protected array $streams;
+
     protected ?string $clipStart = null;
 
     protected ?string $clipEnd = null;
@@ -41,12 +43,14 @@ class ProcessVideo implements ShouldQueue, ShouldBeUnique
         string $type,
         string $disk,
         string $path,
+        array $streams,
         string $clipStart = null,
         string $clipEnd = null
     ) {
         $this->type = $type;
         $this->path = $path;
         $this->disk = $disk;
+        $this->streams = $streams;
         $this->clipStart = $clipStart;
         $this->clipEnd = $clipEnd;
         $this->onQueue('ffmpeg');
@@ -66,7 +70,7 @@ class ProcessVideo implements ShouldQueue, ShouldBeUnique
                 (new Concat($this->disk, $this->path))->execute();
                 break;
             case 'transcode':
-                (new Transcode($this->disk, $this->path, $this->clipStart, $this->clipEnd))->execute();
+                (new Transcode($this->disk, $this->path, $this->streams, $this->clipStart, $this->clipEnd))->execute();
                 break;
         }
         FFMpegProcessEvent::dispatch($this->type . '.done', $this->path);
