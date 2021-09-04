@@ -10,7 +10,7 @@ use FFMpeg\Exception\InvalidArgumentException;
 
 class ClipFromToFilter extends ClipFilter
 {
-    private ?string $to = null;
+    private ?TimeCode $to = null;
 
     public function __construct(TimeCode $start, TimeCode $to = null, $priority = 0)
     {
@@ -20,6 +20,14 @@ class ClipFromToFilter extends ClipFilter
         $this->start = $start;
         $this->to = $to;
         $this->priority = $priority;
+    }
+
+    public function getClippedDuration(float $duration): float
+    {
+        if ($this->to) {
+            $duration = $this->to->toSeconds();
+        }
+        return $duration - $this->start->toSeconds();
     }
 
     /**

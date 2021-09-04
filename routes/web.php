@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\FFMpegProgress;
 use App\Events\FilePicker as FilePickerEvent;
 use App\Events\Transcode\Config\Streams as BroadcastStreams;
 use App\Http\Controllers\TranscodeController;
@@ -7,7 +8,6 @@ use App\Models\FilePicker;
 use App\Models\Video\File as VideoFile;
 use Illuminate\Support\Facades\Route;
 use App\Jobs\ProcessVideo;
-use App\Http\Requests\TranscodeRequest;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,3 +59,8 @@ Route::get('/streams/{path?}', function (string $path = null) {
     BroadcastStreams::dispatch($format, $streams);
 
 })->where('path', '(.*)');
+
+Route::get('/progress', function () {
+
+    FFMpegProgress::dispatch('queue.progress');
+});

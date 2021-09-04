@@ -4,14 +4,16 @@ namespace App\Models\FFMpeg;
 
 use App\Models\FilePicker;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
-use App\Events\FFMpegProcess as FFMpegProcessEvent;
+use App\Events\FFMpegProgress as FFMpegProgressEvent;
+use App\Models\CurrentQueue;
 
 class Concat
 {
-    public function __construct(string $disk, string $path)
+    public function __construct(string $disk, string $path, int $current_queue_id)
     {
         $this->disk = $disk;
         $this->path = $path;
+        $this->current_queue_id = $current_queue_id;
     }
 
     public function execute(): void
@@ -23,11 +25,13 @@ class Concat
             ->open($files)
             ->export()
             ->onProgress(function ($percentage, $remaining, $rate) {
-                FFMpegProcessEvent::dispatch('concat.progress', $this->path, [
-                    'percentage' => $percentage,
-                    'remaining' => $remaining,
-                    'rate' => $rate,
-                ]);
+                CurrentQueue::where('id', $this->current_queue_id)->update(['percentage' => $percentage]);
+                // FFMpegProgressEvent::dispatch('concat.progress', $this->path, [
+                //     'percentage' => $percentage,
+                //     'remaining' => $remaining,
+                //     'rate' => $rate,
+                //     'queue' => CurrentQueue::all(),
+                // ]);
             })
             ->concatWithoutTranscoding()
             ->save($out);

@@ -2,22 +2,24 @@
 
 namespace App\Models\FFMpeg;
 
-use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
-use App\Events\FFMpegProcess as FFMpegProcessEvent;
+use App\Events\FFMpegProgress as FFMpegProgressEvent;
 use App\Models\FFMpeg\Filters\Video\ClipFromToFilter;
 use App\Models\FFMpeg\Format\Video\h264_vaapi;
+use App\Models\Video\File;
 use FFMpeg\Coordinate\TimeCode;
 use Illuminate\Support\Collection;
+use App\Models\CurrentQueue;
 
 class Transcode
 {
-    public function __construct(string $disk, string $path, array $streams, string $clipStart = null, string $clipEnd = null)
+    public function __construct(string $disk, string $path, array $streams, int $current_queue_id, string $clipStart = null, string $clipEnd = null)
     {
         $this->disk = $disk;
         $this->path = $path;
         $this->streams = $streams;
         $this->clipStart = $clipStart;
         $this->clipEnd = $clipEnd;
+        $this->current_queue_id = $current_queue_id;
     }
 
     public function execute()
@@ -28,7 +30,12 @@ class Transcode
         $format->unsetAudioKiloBitrate();
         $out = $this->getOutputFilename();
 
-        $media = FFMpeg::fromDisk($this->disk)->open($this->path);
+        $media = File::getMedia($this->disk, $this->path);
+
+        $videoFormat = $media->getFormat();
+        $duration = $videoFormat->get('duration');
+        $clipDuration = $duration;
+
         $out = $this->getOutputFilename();
         $streams = collect($media->getStreams());
         $video = $streams->filter(fn($stream) => $stream->get('codec_type') === 'video')
@@ -39,16 +46,26 @@ class Transcode
             ->map(fn($stream) => $stream->get('index'))->values();
 
         if ($this->clipStart) {
-            $media->addFilter(static::getFromToFilter($this->clipStart, $this->clipEnd));
+            $clipFilter = static::getFromToFilter($this->clipStart, $this->clipEnd);
+            $clipDuration = $clipFilter->getClippedDuration($clipDuration);
+            $media->addFilter($clipFilter);
         }
         
-        $export = $media->export();
-        $export->onProgress(function ($percentage, $remaining, $rate) {
-            FFMpegProcessEvent::dispatch('transcode.progress', $this->path, [
-                'percentage' => $percentage,
-                'remaining' => $remaining,
-                'rate' => $rate,
-            ]);
+        $media->export()
+        ->onProgress(function ($percentage, $remaining, $rate) use ($duration, $clipDuration) {
+
+            if ($duration !== $clipDuration && $percentage < 100) {
+                $processed = $duration * $percentage / 100;
+                $percentage = round(100 / $clipDuration * $processed);
+            }
+
+            CurrentQueue::where('id', $this->current_queue_id)->update(['percentage' => $percentage]);
+            // FFMpegProgressEvent::dispatch('transcode.progress', $this->path, [
+            //     'percentage' => $percentage,
+            //     'remaining' => $remaining,
+            //     'rate' => $rate,
+            //     'queue' => CurrentQueue::all(),
+            // ]);
         })
         ->inFormat($format)
         ->beforeSaving(function ($commands) use ($video, $audio, $subtitle, $format) {

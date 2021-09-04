@@ -12,8 +12,9 @@ use App\Events\FFMpegProcess as FFMpegProcessEvent;
 use App\Models\FFMpeg\Concat;
 use App\Models\FFMpeg\Transcode;
 use Throwable;
+use App\Models\CurrentQueue;
 
-class ProcessVideo implements ShouldQueue, ShouldBeUnique
+class ProcessVideo implements ShouldQueue //, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -28,6 +29,8 @@ class ProcessVideo implements ShouldQueue, ShouldBeUnique
     protected ?string $clipStart = null;
 
     protected ?string $clipEnd = null;
+
+    protected int $current_queue_id;
 
     public int $tries = 1;
 
@@ -54,7 +57,18 @@ class ProcessVideo implements ShouldQueue, ShouldBeUnique
         $this->clipStart = $clipStart;
         $this->clipEnd = $clipEnd;
         $this->onQueue('ffmpeg');
-        FFMpegProcessEvent::dispatch($this->type . '.pending', $this->path);
+        $currentQueue = new CurrentQueue([
+            'path' => $this->path,
+            'streams' => $this->streams,
+            'clip_start' => $this->clipStart,
+            'clip_end' => $this->clipEnd,
+            'type' => $this->type,
+            'state' => CurrentQueue::STATE_PENDING,
+            'percentage' => 0,
+        ]);
+        $currentQueue->save();
+        $this->current_queue_id = $currentQueue->getKey();
+        FFMpegProcessEvent::dispatch($this->type . '.' . CurrentQueue::STATE_PENDING, $this->path);
     }
 
     /**
@@ -64,16 +78,18 @@ class ProcessVideo implements ShouldQueue, ShouldBeUnique
      */
     public function handle()
     {
-        FFMpegProcessEvent::dispatch($this->type . '.running', $this->path);
+        FFMpegProcessEvent::dispatch($this->type . '.' . CurrentQueue::STATE_RUNNING, $this->path);
+        CurrentQueue::where('id', $this->current_queue_id)->update(['state' => CurrentQueue::STATE_RUNNING]);
         switch($this->type) {
             case 'concat':
-                (new Concat($this->disk, $this->path))->execute();
+                (new Concat($this->disk, $this->path, $this->current_queue_id))->execute();
                 break;
             case 'transcode':
-                (new Transcode($this->disk, $this->path, $this->streams, $this->clipStart, $this->clipEnd))->execute();
+                (new Transcode($this->disk, $this->path, $this->streams, $this->current_queue_id, $this->clipStart, $this->clipEnd))->execute();
                 break;
         }
-        FFMpegProcessEvent::dispatch($this->type . '.done', $this->path);
+        CurrentQueue::where('id', $this->current_queue_id)->update(['state' => CurrentQueue::STATE_DONE]);
+        FFMpegProcessEvent::dispatch($this->type . '.' . CurrentQueue::STATE_DONE, $this->path);
     }
 
     /**
@@ -84,6 +100,7 @@ class ProcessVideo implements ShouldQueue, ShouldBeUnique
      */
     public function failed(Throwable $exception)
     {
-        FFMpegProcessEvent::dispatch($this->type . '.failed', $this->path, ['exception' => $exception->getMessage()]);
+        CurrentQueue::where('id', $this->current_queue_id)->update(['state' => CurrentQueue::STATE_FAILED]);
+        FFMpegProcessEvent::dispatch($this->type . '.' . CurrentQueue::STATE_FAILED, $this->path, ['exception' => $exception->getMessage()]);
     }
 }
