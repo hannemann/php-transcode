@@ -47,6 +47,12 @@ header {
 div > div:last-child {
     text-align: right;
     margin-left: auto;
+    width: 4em;
+}
+div.path {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 </style>
 `

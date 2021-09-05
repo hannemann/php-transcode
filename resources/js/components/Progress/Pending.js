@@ -7,7 +7,7 @@ ProgressPending.template = /*html*/`
 ${PROGRESS_ITEM_CSS}
 <header>Pending</header>
 <div *foreach="{{ this.items }}">
-    <div>{{ item.path }}</div>
+    <div class="path">{{ item.path }}</div>
     <div>{{ item.percentage }}%</div>
 </div>
 `

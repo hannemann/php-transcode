@@ -92,7 +92,7 @@ class Progress extends Slim {
         if (this.detail) {
             requestAnimationFrame(() => {
                 this.sectionDetail.style.maxHeight = `${this.dummy.offsetHeight}px`
-                this.sectionDetail.style.maxWidth = `${this.dummy.offsetWidth}px`
+                this.sectionDetail.style.maxWidth = `min(90vw, ${this.dummy.offsetWidth}px)`
             })
         }
     }
@@ -120,6 +120,7 @@ Progress.template = /*html*/`
     display: flex;
     justify-content: space-between;
     overflow: hidden;
+    box-shadow: 0 0 7vw 0 var(--clr-shadow-0);
 }
 div {
     cursor: pointer;
@@ -152,6 +153,7 @@ section.detail, section.dummy {
 section.dummy {
     position: fixed;
     top: 100vh;
+    max-width: 90vw;
 }
 </style>
 <div #ref="iconShort" @click="this.toggleDetail()"><span class="iconify" data-icon="mdi-plus-box-outline"></span></div>
