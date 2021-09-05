@@ -5,7 +5,7 @@ class FileHelper {
         let base = 0;
         if (size > 0) {
             base = Math.log(size) / Math.log(1000);
-            size = Math.round(Math.pow(1000, base - Math.floor(base)), precision);
+            size = Math.pow(1000, base - Math.floor(base)).toFixed(precision);
         }
         return [size, FileHelper.fileSizeSuffix[Math.floor(base)]].join(' ');
     }
