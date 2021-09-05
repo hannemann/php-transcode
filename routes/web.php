@@ -8,6 +8,7 @@ use App\Models\FilePicker;
 use App\Models\Video\File as VideoFile;
 use Illuminate\Support\Facades\Route;
 use App\Jobs\ProcessVideo;
+use App\Models\CurrentQueue;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,3 +65,8 @@ Route::get('/progress', function () {
 
     FFMpegProgress::dispatch('queue.progress');
 });
+
+Route::delete('/progress/{id}', function (CurrentQueue $id) {
+    $id->delete();
+    FFMpegProgress::dispatch('queue.progress');
+})->where('id', '[0-9]+');

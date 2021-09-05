@@ -3,6 +3,7 @@
     --transition-medium: 200ms;
     --transition-slow: 300ms;
     --transition-ultraslow: 500ms;
+    --transition-debug: 5s;
 
     --loading-transition:
         filter var(--transition-medium) linear,

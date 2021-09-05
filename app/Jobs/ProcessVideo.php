@@ -100,7 +100,11 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
      */
     public function failed(Throwable $exception)
     {
-        CurrentQueue::where('id', $this->current_queue_id)->update(['state' => CurrentQueue::STATE_FAILED]);
+        CurrentQueue::where('id', $this->current_queue_id)
+            ->update([
+                'state' => CurrentQueue::STATE_FAILED,
+                'exception' => $exception->getMessage()
+            ]);
         FFMpegProcessEvent::dispatch($this->type . '.' . CurrentQueue::STATE_FAILED, $this->path, ['exception' => $exception->getMessage()]);
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Requests\TranscodeRequest;
 use Illuminate\Http\JsonResponse;
 use App\Jobs\ProcessVideo;
 use App\Models\FFMpeg\Transcode;
+use App\Events\FFMpegProgress;
 
 class TranscodeController extends Controller
 {
@@ -17,6 +18,7 @@ class TranscodeController extends Controller
 
             $data['clip']['from'] && Transcode::getFromToFilter($data['clip']['from'], $data['clip']['to']);
             ProcessVideo::dispatch('transcode', 'recordings', $path, $data['streams'], $data['clip']['from'], $data['clip']['to']);
+            FFMpegProgress::dispatch('queue.progress');
         } catch (\Exception $e) {
             return response()->json([
                 'message' => sprintf($e->getMessage())
