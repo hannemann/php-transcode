@@ -2,6 +2,7 @@
 
 use App\Events\FFMpegProgress;
 use App\Events\FilePicker as FilePickerEvent;
+use App\Events\TextViewer;
 use App\Events\Transcode\Config\Streams as BroadcastStreams;
 use App\Http\Controllers\TranscodeController;
 use App\Models\FilePicker;
@@ -59,6 +60,11 @@ Route::get('/streams/{path?}', function (string $path = null) {
     }
     BroadcastStreams::dispatch($format, $streams);
 
+})->where('path', '(.*)');
+
+Route::get('/textviewer/{path}', function (string $path) {
+    
+    TextViewer::dispatch('recordings', $path);
 })->where('path', '(.*)');
 
 Route::get('/progress', function () {

@@ -2,6 +2,7 @@ import { Slim } from 'slim-js';
 import '../slim-directives';
 import './FilePicker/FilePicker'
 import './Transcoder/Configurator'
+import './TextViewer'
 import './Loading'
 import './Toast'
 import './Progress'
@@ -13,6 +14,7 @@ class Transcoder extends Slim {
         this.filePicker.channelHash = this.dataset.channel
         document.addEventListener('loading', backgroundHandler)
         document.addEventListener('configurator-show', backgroundHandler)
+        document.addEventListener('textviewer-show', backgroundHandler)
     }
 
     toggleBackground(e) {
@@ -51,6 +53,7 @@ Transcoder.template = /*html*/`
     <filepicker-root #ref="filePicker"></filepicker-root>
 </main>
 <transcode-configurator></transcode-configurator>
+<text-viewer></text-viewer>
 <transcoder-loading></transcoder-loading>
 <transcoder-toast></transcoder-toast>
 <ffmpeg-progress></ffmpeg-progress>
