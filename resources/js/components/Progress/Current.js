@@ -5,7 +5,7 @@ class ProgressCurrent extends ProgressItem {}
 
 ProgressCurrent.template = /*html*/`
 ${PROGRESS_ITEM_CSS}
-Current
+<header>Current</header>
 <div>
     <div>{{ this.item.path }}</div>
     <div>{{ this.item.percentage }}%</div>

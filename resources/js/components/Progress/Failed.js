@@ -9,7 +9,7 @@ class ProgressFailed extends ProgressItem {
 
 ProgressFailed.template = /*html*/`
 ${PROGRESS_ITEM_CSS}
-Failed
+<header>Failed</header>
 <div *foreach="{{ this.items }}">
     <div @click="{{ this.delete(item) }}" style="cursor: pointer"><span class="iconify" data-icon="mdi-close"></span></div>
     <div @click="{{ this.showException(item) }}" style="cursor: pointer">{{ item.path }}</div>

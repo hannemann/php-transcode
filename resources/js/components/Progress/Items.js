@@ -41,6 +41,9 @@ const PROGRESS_ITEM_CSS = /*css*/`
     justify-content: space-between;
     gap: .5em;
 }
+header {
+    font-weight: bold;
+}
 div > div:last-child {
     text-align: right;
     margin-left: auto;

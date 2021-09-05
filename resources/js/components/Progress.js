@@ -32,6 +32,7 @@ class Progress extends Slim {
 
     toggleDetail() {
         this.detail = !this.detail
+        this.classList.toggle('detail', this.detail)
         this.iconShort.classList.toggle('hidden', this.detail)
         this.sectionShort.classList.toggle('hidden', this.detail)
         this.iconDetail.classList.toggle('hidden', !this.detail)
@@ -118,11 +119,11 @@ Progress.template = /*html*/`
     border-style: none solid solid;
     display: flex;
     justify-content: space-between;
-    gap: .25em;
     overflow: hidden;
 }
 div {
     cursor: pointer;
+    margin-right: .5em;
 }
 div.hidden {
     display: none;
@@ -132,15 +133,21 @@ section:first-of-type {
     flex-grow: 1;
 }
 section {
-    transform-origin: top;
-    transition: transform var(--transition-slow) ease-in-out,
-                max-width var(--transition-slow) ease-in-out,
-                max-height var(--transition-slow) ease-in-out;
+    --duration: var(--transition-medium);
+    transform-origin: top left;
+    transition: transform var(--duration) ease-in-out,
+                max-width var(--duration) ease-in-out,
+                max-height var(--duration) ease-in-out;
 }
 section.hidden {
     max-width: 0 !important;
     max-height: 0 !important;
     transform: scale(0);
+}
+section.detail, section.dummy {
+    display: flex;
+    flex-direction: column;
+    gap: .5em;
 }
 section.dummy {
     position: fixed;
@@ -150,7 +157,7 @@ section.dummy {
 <div #ref="iconShort" @click="this.toggleDetail()"><span class="iconify" data-icon="mdi-plus-box-outline"></span></div>
 <div #ref="iconDetail" class="hidden" @click="this.toggleDetail()"><span class="iconify" data-icon="mdi-minus-box-outline"></span></div>
 <section #ref="sectionShort">{{ this.percentage }}%</section>
-<section #ref="sectionDetail" class="hidden" style="max-width: 0; max-height: 0"></section>
+<section #ref="sectionDetail" class="detail hidden" style="max-width: 0; max-height: 0"></section>
 <section #ref="dummy" class="dummy"></section>
 `
 

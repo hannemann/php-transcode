@@ -5,7 +5,7 @@ class ProgressPending extends ProgressItem {}
 
 ProgressPending.template = /*html*/`
 ${PROGRESS_ITEM_CSS}
-Pending
+<header>Pending</header>
 <div *foreach="{{ this.items }}">
     <div>{{ item.path }}</div>
     <div>{{ item.percentage }}%</div>
