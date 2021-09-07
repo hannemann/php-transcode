@@ -1,1 +1,0 @@
-import '../../node_modules/slim-js/dist/directives/all'
