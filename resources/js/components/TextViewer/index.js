@@ -1,4 +1,5 @@
 import { Slim } from '@/components/lib';
+import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 
 const WS_CHANNEL = 'TextViewer'
 
@@ -119,13 +120,15 @@ pre {
     height: calc(100% - 1.75rem - var(--rel-gutter-200) * 2);
 }
 </style>
+${ICON_STACK_CSS}
 `
 
 const HEADING = /*html*/`
 <h1>
     Textviewer
-    <div @click="this.hide()">
+    <div @click="this.hide()" class="icon-stack">
         <span class="iconify" data-icon="mdi-close"></span>
+        <span class="iconify hover" data-icon="mdi-close"></span>
     </div>
 </h1>
 `
