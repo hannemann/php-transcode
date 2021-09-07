@@ -1,3 +1,5 @@
+import {Request} from '@/components/Request'
+
 const TYPE_DIRECTORY = 'd'
 const TYPE_FILE = 'f'
 class FilePickerBase extends Slim {
@@ -22,15 +24,15 @@ class FilePickerBase extends Slim {
 
     onWsEvent(e) {
         this.items = e.items
-        console.info('Fetched %d items in %s', this.items.length, this.path)
-        document.dispatchEvent(new CustomEvent('loading', {detail: false}))
+        console.info('Received %d items in %s', this.items.length, this.path)
+        Request.loading = false
     }
 
     handleClick() {
         if (!this.items.length) {
             if (TYPE_DIRECTORY === this.type) {
                 this.shadowRoot.querySelector('.icon-stack').classList.toggle('active', true)
-                this.fetch()
+                this.requestItems()
             } else if (TYPE_FILE === this.type) {
                 this.handleFileClick()
             }
@@ -51,25 +53,14 @@ class FilePickerBase extends Slim {
         document.dispatchEvent(evt)
     }
 
-    async fetch() {
-        console.info('Fetch items in %s', this.path)
+    requestItems() {
         try {
-            document.dispatchEvent(new CustomEvent('loading', {detail: true}))
             this.classList.add(this.loadingClass)
-            let response = await fetch(this.wsUrl.join(''))
-            if (response.status !== 200) {
-                let error = await response.json()
-                throw new Error(error.message)
-            }
+            console.info('Request items in %s', this.path)
+            Request.loading = true
+            Request.get(this.wsUrl.join(''))
         } catch (error) {
-            console.error(error)
-            document.dispatchEvent(new CustomEvent('loading', {detail: false}))
-            document.dispatchEvent(new CustomEvent('toast', {
-                detail: {
-                    message: error,
-                    type: 'error'
-                }
-            }))
+            Request.loading = false
         } finally {
             this.classList.remove(this.loadingClass)
         }

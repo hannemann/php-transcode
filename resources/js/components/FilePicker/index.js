@@ -8,7 +8,7 @@ class FilePicker extends FilePickerBase {
     onAdded() {
         super.onAdded()
         this.path = 'root'
-        this.channel.subscribed(this.fetch.bind(this))
+        this.channel.subscribed(this.requestItems.bind(this))
     }
 }
 

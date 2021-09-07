@@ -1,12 +1,12 @@
 import { Slim } from '@/components/lib';
 import Iconify from '@iconify/iconify'
+import {Request} from '@/components/Request'
 import './Streams'
 import './Clip'
 import './Format'
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 
 const WS_CHANNEL = 'Transcode.Config'
-const CSRF_TOKEN = document.head.querySelector("[name~=csrf-token][content]").content;
 
 class TranscodeConfigurator extends Slim {
 
@@ -52,31 +52,17 @@ class TranscodeConfigurator extends Slim {
         delete this.channel
     }
 
-    async requestStreams() {
+    requestStreams() {
         try {
-            console.info('Attempt to fetch streams of %s', this.item.path)
-            document.dispatchEvent(new CustomEvent('loading', {detail: true}))
-            let response = await fetch(`/streams/${encodeURIComponent(this.item.path)}`)
-            if (response.status !== 200) {
-                let error = await response.json()
-                throw new Error(error.message)
-            }
+            console.info('Request streams of %s', this.item.path)
+            Request.get(`/streams/${encodeURIComponent(this.item.path)}`)
         } catch (error) {
-            console.error(error)
-            document.dispatchEvent(new CustomEvent('toast', {
-                detail: {
-                    message: error,
-                    type: 'error'
-                }
-            }))
             this.leaveWebsocket()
             this.hide()
-        } finally {
-            document.dispatchEvent(new CustomEvent('loading', {detail: false}))
         }
     }
 
-    async transcode() {
+    transcode() {
         let clip = this.shadowRoot.querySelector('transcode-configurator-clip')
         if (clip.dataset.valid !== 'true') {
             document.dispatchEvent(new CustomEvent('toast', {
@@ -89,36 +75,14 @@ class TranscodeConfigurator extends Slim {
         }
         console.info('Transcode %s', this.item.path)
         try {
-            document.dispatchEvent(new CustomEvent('loading', {detail: true}))
-            let response = await fetch(`/transcode/${encodeURIComponent(this.item.path)}`, {
-                method: 'post',
-                body: JSON.stringify({
-                    streams: this.streams.filter(s => s.active).map(s => s.index),
-                    clip: {
-                        from: clip.from || null,
-                        to: clip.to || null
-                    }
-                }),
-                headers: {
-                  'Content-Type': 'application/json',
-                  "X-CSRF-Token": CSRF_TOKEN
-                },
-            })
-            if (response.status !== 200) {
-                let error = await response.json()
-                throw new Error(error.message)
-            }
-        } catch (error) {
-            console.error(error)
-            document.dispatchEvent(new CustomEvent('toast', {
-                detail: {
-                    message: error,
-                    type: 'error'
+            Request.post(`/transcode/${encodeURIComponent(this.item.path)}`, {
+                streams: this.streams.filter(s => s.active).map(s => s.index),
+                clip: {
+                    from: clip.from || null,
+                    to: clip.to || null
                 }
-            }))
-        } finally {
-            document.dispatchEvent(new CustomEvent('loading', {detail: false}))
-        }
+            })
+        } catch (error) {}
     }
 
     handleConfiguratorEvent(ws) {

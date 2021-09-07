@@ -1,5 +1,6 @@
 import { Slim } from '@/components/lib';
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
+import {Request} from '@/components/Request'
 
 const WS_CHANNEL = 'TextViewer'
 
@@ -45,34 +46,22 @@ class TextViewer extends Slim {
         delete this.channel
     }
 
-    async requestContent() {
+    requestContent() {
         console.info('Attempt to fetch content of %s', this.item.path)
-        document.dispatchEvent(new CustomEvent('loading', {detail: true}))
         try {
-            let response = await fetch(`/textviewer/${encodeURIComponent(this.item.path)}`)
-            if (response.status !== 200) {
-                let error = await response.json()
-                throw new Error(error.message)
-            }
+            Request.loading = true
+            Request.get(`/textviewer/${encodeURIComponent(this.item.path)}`)
         } catch (error) {
-            console.error(error)
-            document.dispatchEvent(new CustomEvent('toast', {
-                detail: {
-                    message: error,
-                    type: 'error'
-                }
-            }))
             this.leaveWebsocket()
             this.hide()
-            document.dispatchEvent(new CustomEvent('loading', {detail: false}))
         }
     }
 
     handleTextViewerEvent(ws) {
         console.info(ws)
         this.content = ws.content
-        document.dispatchEvent(new CustomEvent('loading', {detail: false}))
         this.show()
+        Request.loading = false
     }
 }
 

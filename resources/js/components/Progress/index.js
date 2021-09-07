@@ -1,5 +1,6 @@
 import { Slim } from '@/components/lib';
 import Iconify from '@iconify/iconify'
+import {Request} from '@/components/Request'
 import './Done'
 import './Failed'
 import './Current'
@@ -24,10 +25,10 @@ class Progress extends Slim {
     onAdded() {
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
         this.channel = window.Echo.channel('FFMpegProgress')
-        this.channel.subscribed(this.fetch.bind(this))
+        this.channel.subscribed(this.requestProgress.bind(this))
         this.channel.listen('FFMpegProgress', this.handleProgressEvent.bind(this))
-        setInterval(this.fetch, 5000)
-        this.fetch()
+        setInterval(this.requestProgress, 5000)
+        this.requestProgress()
     }
 
     toggleDetail() {
@@ -37,25 +38,13 @@ class Progress extends Slim {
         this.sectionShort.classList.toggle('hidden', this.detail)
         this.iconDetail.classList.toggle('hidden', !this.detail)
         this.sectionDetail.classList.toggle('hidden', !this.detail)
-        this.fetch()
+        this.requestProgress()
     }
 
-    async fetch() {
+    requestProgress() {
         try {
-            let response = await fetch('/progress')
-            if (response.status !== 200) {
-                let error = await response.json()
-                throw new Error(error.message)
-            }
-        } catch (error) {
-            console.error(error)
-            document.dispatchEvent(new CustomEvent('toast', {
-                detail: {
-                    message: error,
-                    type: 'error'
-                }
-            }))
-        }
+            Request.get('/progress', false)
+        } catch (error) {}
     }
 
     handleProgressEvent({queue}) {
