@@ -1,4 +1,5 @@
 const mix = require('laravel-mix');
+const path = require('path')
 
 mix.babelConfig({
     presets: [
@@ -10,6 +11,10 @@ mix.babelConfig({
         ["@babel/plugin-proposal-private-property-in-object", { "loose": true }],
         ["@babel/plugin-proposal-private-methods", { "loose": true }]
     ],
+});
+
+mix.alias({
+    '@': path.join(__dirname, 'resources/js')
 });
 
 /*

@@ -1,5 +1,4 @@
-import { Slim } from 'slim-js'
-import '../slim-directives'
+import { Slim } from '@/components/lib';
 import Iconify from '@iconify/iconify'
 
 class Loading extends Slim {

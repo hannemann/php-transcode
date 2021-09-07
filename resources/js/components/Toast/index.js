@@ -1,5 +1,4 @@
-import { Slim, Utils } from 'slim-js';
-import '../slim-directives';
+import { Slim, Utils } from '@/components/lib';
 import Iconify from '@iconify/iconify'
 
 const STATES = ['success', 'info', 'warning', 'error']

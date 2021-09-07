@@ -1,7 +1,6 @@
-import { Slim } from 'slim-js';
-import '../../../slim-directives';
+import { Slim } from '@/components/lib';
 import CARD_CSS from './CardCss';
-import FileHelper from '../../../Helper/File';
+import FileHelper from '@/Helper/File';
 
 class Format extends Slim {
 

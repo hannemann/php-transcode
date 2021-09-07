@@ -1,9 +1,8 @@
-import { Slim } from 'slim-js';
-import '../slim-directives';
-import './FilePicker/FilePicker'
-import './Transcoder/Configurator'
+import { Slim } from '@/components/lib';
+import './FilePicker'
+import './Configurator'
 import './TextViewer'
-import './Loading'
+import './Request'
 import './Toast'
 import './Progress'
 
@@ -23,7 +22,6 @@ class Transcoder extends Slim {
     }
 
     toggleBackground(e) {
-        console.log(e)
         if (e.detail) {
             this.scrollY = window.scrollY
             this.scrollX = window.scrollX

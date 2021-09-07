@@ -1,9 +1,8 @@
-import { Slim } from 'slim-js'
-import '../../../slim-directives'
-import './Streams/Video'
-import './Streams/Audio'
-import './Streams/Sub'
-import './Streams/Data'
+import { Slim } from '@/components/lib';
+import './Video'
+import './Audio'
+import './Sub'
+import './Data'
 
 const TYPE_VIDEO = 'video'
 const TYPE_AUDIO = 'audio'

@@ -1,7 +1,6 @@
-import { Slim, Utils } from 'slim-js'
-import '../../../../slim-directives'
+import { Slim, Utils } from '@/components/lib';
 import Iconify from '@iconify/iconify'
-import { ICON_STACK_CSS } from '../../../IconStack.css'
+import { ICON_STACK_CSS } from '@/components/Icons/Stack.css'
 
 class Buttons extends Slim {
 

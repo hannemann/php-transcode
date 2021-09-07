@@ -1,11 +1,10 @@
-import { Slim, Utils } from 'slim-js';
-import '../slim-directives';
+import { Slim } from '@/components/lib';
 import Iconify from '@iconify/iconify'
-import './Progress/Done'
-import './Progress/Failed'
-import './Progress/Current'
-import './Progress/Pending'
-import { ICON_STACK_CSS } from './IconStack.css';
+import './Done'
+import './Failed'
+import './Current'
+import './Pending'
+import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 
 const STATE_RUNNING = 'running'
 const STATE_PENDING = 'pending'

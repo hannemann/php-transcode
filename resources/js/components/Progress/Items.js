@@ -1,7 +1,6 @@
-import { Slim, Utils } from 'slim-js';
-import '../../slim-directives';
+import { Slim } from '@/components/lib';
 import Iconify from '@iconify/iconify'
-import { ICON_STACK_CSS } from '../IconStack.css';
+import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 
 const CSRF_TOKEN = document.head.querySelector("[name~=csrf-token][content]").content;
 

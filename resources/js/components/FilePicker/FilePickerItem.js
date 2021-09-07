@@ -1,6 +1,6 @@
 import { FilePickerBase, TYPE_DIRECTORY, TYPE_FILE } from './FilePickerBase'
 import Iconify from '@iconify/iconify'
-import { ICON_STACK_CSS } from '../IconStack.css'
+import { ICON_STACK_CSS } from '@/components/Icons/Stack.css'
 
 const FFMPEG_PROCESS_STAGE_PENDING = 0
 const FFMPEG_PROCESS_STAGE_RUNNING = 1

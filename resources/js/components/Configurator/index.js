@@ -1,10 +1,9 @@
-import { Slim } from 'slim-js';
-import '../../slim-directives';
+import { Slim } from '@/components/lib';
 import Iconify from '@iconify/iconify'
-import './Configurator/Streams'
-import './Configurator/Clip'
-import './Configurator/Format'
-import { ICON_STACK_CSS } from '../IconStack.css';
+import './Streams'
+import './Clip'
+import './Format'
+import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 
 const WS_CHANNEL = 'Transcode.Config'
 const CSRF_TOKEN = document.head.querySelector("[name~=csrf-token][content]").content;

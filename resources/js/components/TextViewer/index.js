@@ -1,5 +1,4 @@
-import { Slim } from 'slim-js';
-import '../slim-directives';
+import { Slim } from '@/components/lib';
 
 const WS_CHANNEL = 'TextViewer'
 
