@@ -4,7 +4,6 @@ namespace App\Models\FFMpeg;
 
 use App\Models\FilePicker;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
-use App\Events\FFMpegProgress as FFMpegProgressEvent;
 use App\Models\CurrentQueue;
 
 class Concat
@@ -26,12 +25,6 @@ class Concat
             ->export()
             ->onProgress(function ($percentage, $remaining, $rate) {
                 CurrentQueue::where('id', $this->current_queue_id)->update(['percentage' => $percentage]);
-                // FFMpegProgressEvent::dispatch('concat.progress', $this->path, [
-                //     'percentage' => $percentage,
-                //     'remaining' => $remaining,
-                //     'rate' => $rate,
-                //     'queue' => CurrentQueue::all(),
-                // ]);
             })
             ->concatWithoutTranscoding()
             ->save($out);

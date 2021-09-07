@@ -35,13 +35,35 @@ Loading.template = /*html*/`
             transform: rotate(360deg);
         }
     }
+    @keyframes pulse {
+        from {
+            opacity: .25;
+        }
+        to {
+            opacity: 1;
+        }
+    }
     main {
-        animation: spin 1s infinite;
+        animation: spin 1s infinite cubic-bezier(.45,.05,.55,.95);
         font-size: 5rem;
+        position: relative;
+        width: 1em;
+        height: 1em;
+    }
+    svg {
+        animation: pulse 500ms infinite alternate linear;
+        color: var(--clr-disabled);
+        position: absolute;
+        inset: 0;
+    }
+    svg.glow {
+        color: var(--active-icon-clr);
+        filter: var(--active-icon-glow);
     }
 </style>
 <main>
-    <span class="iconify" data-icon="mdi-loading"></span>
+    <span class="iconify" data-icon="mdi-circle-outline"></span>
+    <span class="iconify glow" data-icon="mdi-loading"></span>
 </main>
 `
 

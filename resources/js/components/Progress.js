@@ -5,6 +5,7 @@ import './Progress/Done'
 import './Progress/Failed'
 import './Progress/Current'
 import './Progress/Pending'
+import { ICON_STACK_CSS } from './IconStack.css';
 
 const STATE_RUNNING = 'running'
 const STATE_PENDING = 'pending'
@@ -156,8 +157,19 @@ section.dummy {
     max-width: 90vw;
 }
 </style>
-<div #ref="iconShort" @click="this.toggleDetail()"><span class="iconify" data-icon="mdi-plus-box-outline"></span></div>
-<div #ref="iconDetail" class="hidden" @click="this.toggleDetail()"><span class="iconify" data-icon="mdi-minus-box-outline"></span></div>
+${ICON_STACK_CSS}
+<div #ref="iconShort" @click="this.toggleDetail()">
+    <div class="icon-stack">
+        <span class="iconify" data-icon="mdi-plus-box-outline"></span>
+        <span class="iconify hover" data-icon="mdi-plus-box-outline"></span>
+    </div>
+</div>
+<div #ref="iconDetail" class="hidden" @click="this.toggleDetail()">
+    <div class="icon-stack">
+        <span class="iconify" data-icon="mdi-minus-box-outline"></span>
+        <span class="iconify hover" data-icon="mdi-minus-box-outline"></span>
+    </div>
+</div>
 <section #ref="sectionShort">{{ this.percentage }}%</section>
 <section #ref="sectionDetail" class="detail hidden" style="max-width: 0; max-height: 0"></section>
 <section #ref="dummy" class="dummy"></section>

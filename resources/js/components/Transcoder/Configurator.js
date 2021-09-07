@@ -4,6 +4,7 @@ import Iconify from '@iconify/iconify'
 import './Configurator/Streams'
 import './Configurator/Clip'
 import './Configurator/Format'
+import { ICON_STACK_CSS } from '../IconStack.css';
 
 const WS_CHANNEL = 'Transcode.Config'
 const CSRF_TOKEN = document.head.querySelector("[name~=csrf-token][content]").content;
@@ -170,6 +171,8 @@ main h1 {
 }
 main h1 div {
     cursor: pointer;
+    height: 1em;
+    width: 1em;
 }
 main div *:last-child {
     margin-bottom: 0;
@@ -180,13 +183,15 @@ footer {
     gap: .5rem;
 }
 </style>
+${ICON_STACK_CSS}
 `
 
 const HEADING = /*html*/`
 <h1>
     Transcode
-    <div @click="this.hide()">
+    <div @click="this.hide()" class="icon-stack">
         <span class="iconify" data-icon="mdi-close"></span>
+        <span class="iconify hover" data-icon="mdi-close"></span>
     </div>
 </h1>
 `

@@ -2,7 +2,6 @@
 
 namespace App\Models\FFMpeg;
 
-use App\Events\FFMpegProgress as FFMpegProgressEvent;
 use App\Models\FFMpeg\Filters\Video\ClipFromToFilter;
 use App\Models\FFMpeg\Format\Video\h264_vaapi;
 use App\Models\Video\File;
@@ -60,12 +59,6 @@ class Transcode
             }
 
             CurrentQueue::where('id', $this->current_queue_id)->update(['percentage' => $percentage]);
-            // FFMpegProgressEvent::dispatch('transcode.progress', $this->path, [
-            //     'percentage' => $percentage,
-            //     'remaining' => $remaining,
-            //     'rate' => $rate,
-            //     'queue' => CurrentQueue::all(),
-            // ]);
         })
         ->inFormat($format)
         ->beforeSaving(function ($commands) use ($video, $audio, $subtitle, $format) {

@@ -1,5 +1,6 @@
 import { FilePickerBase, TYPE_DIRECTORY, TYPE_FILE } from './FilePickerBase'
 import Iconify from '@iconify/iconify'
+import { ICON_STACK_CSS } from '../IconStack.css'
 
 const FFMPEG_PROCESS_STAGE_PENDING = 0
 const FFMPEG_PROCESS_STAGE_RUNNING = 1
@@ -34,6 +35,7 @@ class FilePickerItem extends FilePickerBase {
 
     handleClick() {
         super.handleClick()
+        this.shadowRoot.querySelector('.icon-stack').classList.toggle('active', !this.items.length)
         if (this.items.length) {
             this.items = []
             this.setCanConcat()
@@ -69,19 +71,6 @@ class FilePickerItem extends FilePickerBase {
 
             document.dispatchEvent(evt)
         }
-/*
-        console.info('Transcode video file %s', this.path)
-        let event = 'FFMpegProcess'
-        let channel = window.Echo.channel(`FFMpegProcess.${this.channelHash}`)
-        try {
-            channel.listen(event, this.handleProcessEvent.bind(this, channel, event))
-            channel.subscribed(async () => await fetch(`/transcode/${this.path}`))
-            console.info('%s has subscribed to channel %s', this.path, channel.name)
-        } catch (error) {
-            this.leaveProcessChannel(channel, event);
-            console.error(error)
-        }
-        */
     }
 
     handleProcessEvent(channel, event, ws) {
@@ -210,11 +199,25 @@ const CSS = /*css*/`
             opacity: 1;
         }
     }
+    .item {
+        display: flex;
+        align-items: center;
+    }
+    .icon-stack {
+        width: 1em;
+        height: 1em;
+        display: inline-block;
+    }
 </style>
+${ICON_STACK_CSS}
 `
 
 const ICON_TEMPLATE = /*html*/`
-<span class="iconify" data-icon="{{ this.icon }}"></span>
+<div class="icon-stack">
+    <span class="iconify inactive" data-icon="{{ this.icon }}"></span>
+    <span class="iconify active" data-icon="{{ this.icon }}"></span>
+    <span class="iconify hover" data-icon="{{ this.icon }}"></span>
+</div>
 `
 
 /** preserve whitespaces! */
@@ -235,7 +238,7 @@ const ITEM_TEMPLATE = /*html*/`
 FilePickerItem.template = /*html*/`
 ${CSS}
 <div>
-    <div>
+    <div class="item">
         ${ICON_TEMPLATE}
         <span @click="this.handleClick()" title="{{ this.title }}">
             <slot></slot>

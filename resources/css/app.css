@@ -5,6 +5,7 @@
 @import 'properties/colors';
 @import 'properties/fonts';
 @import 'properties/animation';
+@import 'properties/icons';
 @import 'grid';
 
 html {

@@ -1,6 +1,7 @@
 import { Slim, Utils } from 'slim-js'
 import '../../../../slim-directives'
 import Iconify from '@iconify/iconify'
+import { ICON_STACK_CSS } from '../../../IconStack.css'
 
 class Buttons extends Slim {
 
@@ -41,17 +42,16 @@ Buttons.template = /*html*/`
         height: 1em;
     }
 </style>
+${ICON_STACK_CSS}
 <main>
-    <div @click="{{ this.toggle() }}">
-        <div *if="{{ this.item.active }}">
-            <span class="iconify" data-icon="mdi-checkbox-marked-outline"></span>
-        </div>
-        <div *if="{{ !this.item.active }}">
-            <span class="iconify" data-icon="mdi-checkbox-blank-outline"></span>
-        </div>
+    <div @click="{{ this.toggle() }}" class="{{ this.item.active ? 'icon-stack active' : 'icon-stack' }}">
+        <span class="iconify active" data-icon="mdi-checkbox-marked-outline"></span>
+        <span class="iconify inactive" data-icon="mdi-checkbox-blank-outline"></span>
+        <span class="iconify hover" data-icon="mdi-checkbox-blank-outline"></span>
     </div>
-    <div @click="{{ this.configure() }}">
+    <div @click="{{ this.configure() }}" class="icon-stack">
         <span class="iconify" data-icon="mdi-cog-outline"></span>
+        <span class="iconify hover" data-icon="mdi-cog-outline"></span>
     </div>
 </main>
 `

@@ -1,6 +1,7 @@
 import { Slim, Utils } from 'slim-js';
 import '../../slim-directives';
 import Iconify from '@iconify/iconify'
+import { ICON_STACK_CSS } from '../IconStack.css';
 
 const CSRF_TOKEN = document.head.querySelector("[name~=csrf-token][content]").content;
 
@@ -54,7 +55,11 @@ div.path {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+div.icon-stack {
+    width: 1em;
+}
 </style>
+${ICON_STACK_CSS}
 `
 
 export { PROGRESS_ITEM_CSS, ProgressItem }

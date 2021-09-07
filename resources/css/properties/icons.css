@@ -1,0 +1,4 @@
+:root {
+    --active-icon-clr: var(--clr-enlightened);
+    --active-icon-glow: drop-shadow(0px 0px 5px var(--clr-enlightened-glow)) drop-shadow(0px 0px 8px var(--clr-enlightened-glow));
+}
