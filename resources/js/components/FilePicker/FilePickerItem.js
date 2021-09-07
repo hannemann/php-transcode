@@ -35,8 +35,8 @@ class FilePickerItem extends FilePickerBase {
 
     handleClick() {
         super.handleClick()
-        this.shadowRoot.querySelector('.icon-stack').classList.toggle('active', !this.items.length)
         if (this.items.length) {
+            this.shadowRoot.querySelector('.icon-stack').classList.toggle('active', false)
             this.items = []
             this.setCanConcat()
         }

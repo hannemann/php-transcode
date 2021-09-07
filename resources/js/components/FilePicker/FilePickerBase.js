@@ -29,6 +29,7 @@ class FilePickerBase extends Slim {
     handleClick() {
         if (!this.items.length) {
             if (TYPE_DIRECTORY === this.type) {
+                this.shadowRoot.querySelector('.icon-stack').classList.toggle('active', true)
                 this.fetch()
             } else if (TYPE_FILE === this.type) {
                 this.handleFileClick()

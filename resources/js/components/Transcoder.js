@@ -9,6 +9,11 @@ import './Progress'
 
 class Transcoder extends Slim {
 
+    constructor() {
+        super()
+        this.backgroundRequests = 0
+    }
+
     onAdded() {
         let backgroundHandler = this.toggleBackground.bind(this);
         this.filePicker.channelHash = this.dataset.channel
@@ -18,12 +23,16 @@ class Transcoder extends Slim {
     }
 
     toggleBackground(e) {
-        if (!!e.detail) {
+        console.log(e)
+        if (e.detail) {
             this.scrollY = window.scrollY
             this.scrollX = window.scrollX
+            this.backgroundRequests++
+        } else {
+            this.backgroundRequests--
         }
-        this.classList.toggle('background', !!e.detail)
-        if (!e.detail) {
+        this.classList.toggle('background', this.backgroundRequests)
+        if (!this.backgroundRequests) {
             window.scroll(this.scrollX, this.scrollY)
         }
     }

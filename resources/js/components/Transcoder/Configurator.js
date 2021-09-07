@@ -54,9 +54,9 @@ class TranscodeConfigurator extends Slim {
     }
 
     async requestStreams() {
-        console.info('Attempt to fetch streams of %s', this.item.path)
-        document.dispatchEvent(new CustomEvent('loading', {detail: true}))
         try {
+            console.info('Attempt to fetch streams of %s', this.item.path)
+            document.dispatchEvent(new CustomEvent('loading', {detail: true}))
             let response = await fetch(`/streams/${encodeURIComponent(this.item.path)}`)
             if (response.status !== 200) {
                 let error = await response.json()
@@ -90,6 +90,7 @@ class TranscodeConfigurator extends Slim {
         }
         console.info('Transcode %s', this.item.path)
         try {
+            document.dispatchEvent(new CustomEvent('loading', {detail: true}))
             let response = await fetch(`/transcode/${encodeURIComponent(this.item.path)}`, {
                 method: 'post',
                 body: JSON.stringify({
@@ -125,7 +126,6 @@ class TranscodeConfigurator extends Slim {
         console.info(ws)
         this.format = ws.format
         this.streams = ws.streams
-        document.dispatchEvent(new CustomEvent('loading', {detail: false}))
         this.show()
     }
 }
