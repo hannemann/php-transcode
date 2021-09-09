@@ -9,7 +9,6 @@ let requests = 0
 class Request {
 
     static async get(url, indicate = true) {
-        console.log(indicate, requests)
         try {
             if (indicate) this.loading = true
             let response = await fetch(url)

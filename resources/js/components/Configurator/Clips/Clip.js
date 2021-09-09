@@ -1,16 +1,12 @@
-import { Slim } from '@/components/lib';
-import CARD_CSS from './CardCss';
+import { Slim, Utils } from '@/components/lib';
+import CARD_CSS from '../CardCss';
 
 class Clip extends Slim {
 
     constructor() {
         super()
         this.setTimecode = this.setTimecode.bind(this)
-        this.dataset.valid = 'true'
-        this.valid = {
-            from: true,
-            to: true
-        }
+        this.valid = true
     }
 
     onAdded() {
@@ -24,34 +20,35 @@ class Clip extends Slim {
 
     setTimecode(e) {
         let input = e.currentTarget
+        this[input.name] = input.value
         input.reportValidity()
         if (input.validity.patternMismatch) {
             input.setCustomValidity("Timecode invalid: HH:MM:SS.mss")
-            this[input.name] = null
-            this.valid[input.name] = false
         } else {
             input.setCustomValidity("")
-            this[input.name] = input.value
-            this.valid[input.name] = true
         }
-        this.dataset.valid = (this.valid.from && this.valid.to).toString()
+        this.valid = this.shadowRoot.querySelectorAll('input:valid').length === 2
+        this.dispatchEvent(new CustomEvent('clipupdate'))
+    }
+
+    static get initData() {
+        return {from: null, to: null}
     }
 }
 
 Clip.prototype.pattern = '([0-9]+:)?[0-9]+:[0-9]+:[0-9]+\.[0-9]+'
 
 Clip.template = /*html*/ `
-${CARD_CSS}
 <style>
+main {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
 div {
     display: flex;
     align-items: center;
     justify-content: space-between;
-}
-section {
-    display: flex;
-    flex-direction: column;
-    gap: .5rem;
 }
 input {
     border: 3px solid transparent;
@@ -61,12 +58,15 @@ input:invalid {
 }
 </style>
 <main>
-    <h2>Clip</h2>
-    <section>
-        <div><span>From:</span><input @input="{{ this.setTimecode }}" name="from" pattern="{{ this.pattern }}"></div>
-        <div><span>To:</span><input @input="{{ this.setTimecode }}" name="to" pattern="{{ this.pattern }}"></div>
-    </section>
+    <div><span>From:</span><input placeholder="0:0:0.0" @input="{{ this.setTimecode }}" name="from" pattern="{{ this.pattern }}" .value="{{ this.from }}"></div>
+    <div><span>To:</span><input placeholder="0:0:0.0" @input="{{ this.setTimecode }}" name="to" pattern="{{ this.pattern }}" .value="{{ this.to }}"></div>
 </main>
 `
 
 customElements.define('transcode-configurator-clip', Clip);
+
+const getClipInitData = function() {
+    return Clip.initData
+}
+
+export {getClipInitData}

@@ -2,7 +2,7 @@ import { Slim } from '@/components/lib';
 import Iconify from '@iconify/iconify'
 import {Request} from '@/components/Request'
 import './Streams'
-import './Clip'
+import './Clips'
 import './Format'
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 
@@ -63,8 +63,8 @@ class TranscodeConfigurator extends Slim {
     }
 
     transcode() {
-        let clip = this.shadowRoot.querySelector('transcode-configurator-clip')
-        if (clip.dataset.valid !== 'true') {
+        const clips = this.shadowRoot.querySelector('transcode-configurator-clips')
+        if (!clips.valid) {
             document.dispatchEvent(new CustomEvent('toast', {
                 detail: {
                     message: 'Clip is invalid',
@@ -74,6 +74,7 @@ class TranscodeConfigurator extends Slim {
             return
         }
         console.info('Transcode %s', this.item.path)
+        return
         try {
             Request.post(`/transcode/${encodeURIComponent(this.item.path)}`, {
                 streams: this.streams.filter(s => s.active).map(s => s.index),
@@ -166,7 +167,7 @@ ${CSS}
     <div>
         <transcode-configurator-format *if="{{ this.format }}" .format="{{ this.format }}"></transcode-configurator-format>
         <transcode-configurator-streams *if="{{ this.streams }}" .items="{{ this.streams }}"></transcode-configurator-streams>
-        <transcode-configurator-clip #ref="clip" *if="{{ this.streams }}"></transcode-configurator-clip>
+        <transcode-configurator-clips #ref="clip" *if="{{ this.streams }}"></transcode-configurator-clips>
         <footer>
             <button @click="this.transcode()">Start</button>
         </footer>
