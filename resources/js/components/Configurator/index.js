@@ -73,15 +73,11 @@ class TranscodeConfigurator extends Slim {
             }))
             return
         }
-        console.info('Transcode %s', this.item.path)
-        return
+        console.info('Transcode %s', this.item.path, clips.clips)
         try {
             Request.post(`/transcode/${encodeURIComponent(this.item.path)}`, {
                 streams: this.streams.filter(s => s.active).map(s => s.index),
-                clip: {
-                    from: clip.from || null,
-                    to: clip.to || null
-                }
+                clips: clips.clips
             })
         } catch (error) {}
     }
@@ -167,7 +163,7 @@ ${CSS}
     <div>
         <transcode-configurator-format *if="{{ this.format }}" .format="{{ this.format }}"></transcode-configurator-format>
         <transcode-configurator-streams *if="{{ this.streams }}" .items="{{ this.streams }}"></transcode-configurator-streams>
-        <transcode-configurator-clips #ref="clip" *if="{{ this.streams }}"></transcode-configurator-clips>
+        <transcode-configurator-clips *if="{{ this.streams }}"></transcode-configurator-clips>
         <footer>
             <button @click="this.transcode()">Start</button>
         </footer>

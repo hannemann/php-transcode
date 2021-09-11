@@ -31,7 +31,8 @@ class Request {
                 body: JSON.stringify(body),
                 headers: {
                   'Content-Type': 'application/json',
-                  "X-CSRF-Token": CSRF_TOKEN
+                  'X-CSRF-Token': CSRF_TOKEN,
+                  'Accept': 'application/json'
                 },
             })
             if (response.status !== 200) {

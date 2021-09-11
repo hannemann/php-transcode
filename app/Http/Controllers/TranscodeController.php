@@ -14,10 +14,12 @@ class TranscodeController extends Controller
     {
         $data = $request->input();
         try {
-            //(new Transcode('recordings', $path, $data['streams'], $data['clip']['from'], $data['clip']['to']))->execute();
+            // (new Transcode('recordings', $path, $data['streams'], 0, $data['clips']))->execute();
 
-            $data['clip']['from'] && Transcode::getFromToFilter($data['clip']['from'], $data['clip']['to']);
-            ProcessVideo::dispatch('transcode', 'recordings', $path, $data['streams'], $data['clip']['from'], $data['clip']['to']);
+            if (count($data['clips']) === 1) {
+                Transcode::getFromToFilter($data['clips'][0]['from'], $data['clips'][0]['to']);
+            }
+            ProcessVideo::dispatch('transcode', 'recordings', $path, $data['streams'], $data['clips']);
             FFMpegProgress::dispatch('queue.progress');
         } catch (\Exception $e) {
             return response()->json([

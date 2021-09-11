@@ -26,9 +26,7 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
 
     protected array $streams;
 
-    protected ?string $clipStart = null;
-
-    protected ?string $clipEnd = null;
+    protected ?array $clips = null;
 
     protected int $current_queue_id;
 
@@ -47,21 +45,18 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
         string $disk,
         string $path,
         array $streams,
-        string $clipStart = null,
-        string $clipEnd = null
+        array $clips = null
     ) {
         $this->type = $type;
         $this->path = $path;
         $this->disk = $disk;
         $this->streams = $streams;
-        $this->clipStart = $clipStart;
-        $this->clipEnd = $clipEnd;
+        $this->clips = $clips;
         $this->onQueue('ffmpeg');
         $currentQueue = new CurrentQueue([
             'path' => $this->path,
             'streams' => $this->streams,
-            'clip_start' => $this->clipStart,
-            'clip_end' => $this->clipEnd,
+            'clips' => json_encode($this->clips),
             'type' => $this->type,
             'state' => CurrentQueue::STATE_PENDING,
             'percentage' => 0,
@@ -85,7 +80,7 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
                 (new Concat($this->disk, $this->path, $this->current_queue_id))->execute();
                 break;
             case 'transcode':
-                (new Transcode($this->disk, $this->path, $this->streams, $this->current_queue_id, $this->clipStart, $this->clipEnd))->execute();
+                (new Transcode($this->disk, $this->path, $this->streams, $this->current_queue_id, $this->clips))->execute();
                 break;
         }
         CurrentQueue::where('id', $this->current_queue_id)->update(['state' => CurrentQueue::STATE_DONE]);

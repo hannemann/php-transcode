@@ -18,8 +18,7 @@ class CurrentQueue extends Model
     protected $fillable = [
         'path',
         'streams',
-        'clip_start',
-        'clip_end',
+        'clips',
         'type',
         'state',
         'percentage',

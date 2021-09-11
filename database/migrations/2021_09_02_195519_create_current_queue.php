@@ -17,8 +17,7 @@ class CreateCurrentQueue extends Migration
             $table->id();
             $table->longText('path');
             $table->string('streams');
-            $table->string('clip_start')->nullable()->default(null);
-            $table->string('clip_end')->nullable()->default(null);
+            $table->longText('clips')->nullable()->default(null);
             $table->string('type');
             $table->string('state');
             $table->integer('percentage');

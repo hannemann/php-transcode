@@ -11,13 +11,12 @@ use App\Models\CurrentQueue;
 
 class Transcode
 {
-    public function __construct(string $disk, string $path, array $streams, int $current_queue_id, string $clipStart = null, string $clipEnd = null)
+    public function __construct(string $disk, string $path, array $streams, int $current_queue_id, array $clips = null)
     {
         $this->disk = $disk;
         $this->path = $path;
         $this->streams = $streams;
-        $this->clipStart = $clipStart;
-        $this->clipEnd = $clipEnd;
+        $this->clips = $clips;
         $this->current_queue_id = $current_queue_id;
     }
 
@@ -44,8 +43,8 @@ class Transcode
         $subtitle = $streams->filter(fn($stream) => $stream->get('codec_type') === 'subtitle')
             ->map(fn($stream) => $stream->get('index'))->values();
 
-        if ($this->clipStart) {
-            $clipFilter = static::getFromToFilter($this->clipStart, $this->clipEnd);
+        if (count($this->clips) === 1) {
+            $clipFilter = static::getFromToFilter($this->clips[0]['from'], $this->clips[0]['to']);
             $clipDuration = $clipFilter->getClippedDuration($clipDuration);
             $media->addFilter($clipFilter);
         }

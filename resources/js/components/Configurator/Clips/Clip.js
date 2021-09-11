@@ -58,7 +58,7 @@ class Clip extends Slim {
     }
 }
 
-Clip.prototype.pattern = '([0-9]+:)?[0-9]+:[0-9]+:[0-9]+\.[0-9]+'
+Clip.prototype.pattern = '^([0-9]+:)?[0-9]+:[0-9]+:[0-9]+\.[0-9]+$'
 
 Clip.template = /*html*/ `
 ${ICON_STACK_CSS}

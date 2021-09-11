@@ -24,9 +24,13 @@ class TranscodeRequest extends FormRequest
     public function rules()
     {
         return [
-            'streams' => 'required|array',
-            'streams.*' => 'integer',
-            'clip' => 'required|array',
+            'streams'       => 'required|array',
+            'streams.*'     => 'integer',
+            'clips'         => 'required|array',
+            'clips.*'       => 'array',
+            'clips.*.to'    => ['nullable', 'regex:/^([0-9]+:)?[0-9]+:[0-9]+:[0-9]+\.[0-9]+$/'],
+            'clips.*.from'  => ['nullable', 'regex:/^([0-9]+:)?[0-9]+:[0-9]+:[0-9]+\.[0-9]+$/'],
+            'clips.*.id'    => 'required|integer',
         ];
     }
 }
