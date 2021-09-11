@@ -1,83 +1,119 @@
 import { Slim, Utils } from '@/components/lib';
 import CARD_CSS from '../CardCss';
-import { ICON_STACK_CSS } from '@/components/Icons/Stack.css'
-import Iconify from '@iconify/iconify'
 import './Clip'
-import {getClipInitData} from './Clip'
+import sortable from 'html5sortable/dist/html5sortable.es'
+
+const dataFactory = function*() {
+    let id = 0
+    while(true) {
+        // yield {from: `0:0:${id}.0`, to: null, id: id++}
+        yield {from: null, to: null, id: id++}
+    }
+}
+
+const getClipInitData = (factory) => factory.next().value
 
 class Clips extends Slim {
     constructor() {
         super()
-        this.clips = [getClipInitData()]
-        this.cliUpdatepHandler = this.handleClipUpdate.bind(this)
+        this.clips = [this.newClip()]
+        //this.clips = [this.newClip(), this.newClip(), this.newClip(), this.newClip()]
         this.valid = true
+        this.bindListener()
+    }
+
+    bindListener() {
+        this.handleUpdate = this.handleUpdate.bind(this)
+        this.handleAdd = this.handleAdd.bind(this)
+        this.handleRemove = this.handleRemove.bind(this)
+        this.handleSortupdate = this.handleSortupdate.bind(this)
+        this.handleFocus = this.handleFocus.bind(this)
+        this.handleBlur = this.handleBlur.bind(this)
     }
 
     onAdded() {
-        requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
+        requestAnimationFrame(() => {
+            sortable(this.sortable)
+        })
     }
 
-    handleClick(item) {
-        const idx = this.clips.indexOf(item)
-        if (this.clips.length === 1 || idx === this.clips.length - 1) {
-            this.clips = [...this.clips, getClipInitData()]
-        } else {
-            this.clips = [...this.clips.filter((c, i) => i !== idx)]
+    newClip() {
+        if (!this.dataFactory) {
+            this.dataFactory = dataFactory()
         }
-        Utils.forceUpdate(this)
-        requestAnimationFrame(() => {Iconify.scan(this.shadowRoot)})
+        return getClipInitData(this.dataFactory)
     }
 
-    handleClipUpdate(e) {
-        const idx = Array.from(this.shadowRoot.querySelectorAll('section')).indexOf(e.target.parentNode)
-        this.clips[idx].from = e.target.from
-        this.clips[idx].to = e.target.to
-        this.valid = Array.from(this.shadowRoot.querySelectorAll('section')).every(c => c.valid)
+    handleSortupdate(e) {
+        this.clips.splice(
+            e.detail.destination.index,
+            0,
+            this.clips.splice(e.detail.origin.index, 1)[0]
+        )
+        this.update()
+    }
+
+    handleAdd(e) {
+        const idx = this.clips.findIndex(c => c.id === e.detail.id)
+        this.clips.splice(idx+1, 0, this.newClip())
+        this.update()
+    }
+
+    handleRemove(e) {
+        if (this.clips.length > 1) {
+            const idx = this.clips.findIndex(c => c.id === e.detail.id)
+            this.clips.splice(idx, 1)
+            this.update()
+        }
+    }
+
+    handleUpdate(e) {
+        this.valid = Array.from(this.shadowRoot.querySelectorAll('transcode-configurator-clip')).every(c => c.valid)
+    }
+
+    update() {
+        Utils.forceUpdate(this, 'clips')
+        requestAnimationFrame(() => {
+            sortable(this.sortable, 'reload')
+            this.shadowRoot.querySelectorAll('transcode-configurator-clip').forEach((c, i) => c.clipData = this.clips[i])
+        })
+    }
+
+    handleFocus() {
+        sortable(this.sortable, 'disable')
+    }
+
+    handleBlur() {
+        sortable(this.sortable, 'enable')
     }
 }
 
 Clips.template = /*html*/`
 ${CARD_CSS}
-${ICON_STACK_CSS}
 <style>
-    section {
+    :host {
+        user-select: none;
+    }
+    div {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
+        flex-direction: column;
         gap: .5rem;
-    }
-    transcode-configurator-clip {
-        flex-grow: 1;
-    }
-    .icon-stack {
-        font-size: var(--font-size-200);
-        height: 1em;
-    }
-    section .plus {
-        display: none;
-    }
-    section:last-of-type .plus {
-        display: block;
-    }
-    section:last-of-type .minus {
-        display: none;
     }
 </style>
 <main>
     <h2>Clips</h2>
-    <section *foreach="{{ this.clips }}">
-        <transcode-configurator-clip @clipupdate="{{ this.cliUpdatepHandler }}" .from="{{ item.from }}" .to="{{ item.to }}"></transcode-configurator-clip>
-        <div @click="{{ this.handleClick(item) }}">
-            <div class="icon-stack plus">
-                <span class="iconify" data-icon="mdi-plus-outline"></span>
-                <span class="iconify hover" data-icon="mdi-plus-outline"></span>
-            </div>
-            <div class="icon-stack minus">
-                <span class="iconify" data-icon="mdi-minus"></span>
-                <span class="iconify hover" data-icon="mdi-minus"></span>
-            </div>
-        </div>
-    </section>
+    <div #ref="sortable" @sortupdate="{{ this.handleSortupdate }}">
+        <transcode-configurator-clip
+            *foreach="{{ this.clips }}"
+            .can-remove="{{ this.clips.length > 1 }}"
+            @updateclip="{{ this.handleUpdate }}"
+            @clipinsert="{{ this.handleAdd }}"
+            @clipremove="{{ this.handleRemove }}"
+            @clipfocus="{{ this.handleFocus }}"
+            @clipblur="{{ this.handleBlur }}"
+            .clip-data="{{ item }}">
+        </transcode-configurator-clip>
+    </div>
 </main>
 `
 customElements.define('transcode-configurator-clips', Clips);

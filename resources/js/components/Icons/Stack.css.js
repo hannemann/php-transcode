@@ -1,36 +1,44 @@
 const ICON_STACK_CSS = /*css*/`
 <style>
-div.icon-stack {
+.icon-stack {
     position: relative;
     width: 1em;
 }
-div.icon-stack svg {
+.icon-stack svg {
     position: absolute;
     inset: 0;
     opacity: 1;
 }
-div.icon-stack svg {
+.icon-stack svg {
     transition: opacity var(--transition-medium) ease-out;
 }
-div.icon-stack svg.inactive {
+.icon-stack svg {
+    color: var(--clr-text-0);
+}
+.icon-stack:disabled svg,
+.icon-stack svg.inactive {
     color: var(--clr-disabled);
 }
-div.icon-stack svg.hover,
-div.icon-stack svg.active,
-div.icon-stack.active svg.inactive {
+.icon-stack:not(:disabled) svg.hover,
+.icon-stack:not(:disabled) svg.active,
+.icon-stack:not(:disabled).active svg.inactive {
     opacity: 0;
 }
-div.icon-stack svg.hover,
-div.icon-stack svg.active {
+.icon-stack:not(:disabled) svg.hover,
+.icon-stack:not(:disabled) svg.active {
     color: var(--active-icon-clr);
     filter: var(--active-icon-glow);
 }
-div.icon-stack:hover svg.hover,
-div.icon-stack.active svg.active {
+.icon-stack:not(:disabled):hover svg.hover,
+.icon-stack:not(:disabled).active svg.active {
     opacity: 1;
 }
-div.icon-stack.active:hover svg.hover {
+.icon-stack:not(:disabled).active:hover svg.hover {
     opacity: 0;
+}
+button.icon-stack {
+    border: unset;
+    background: unset;
 }
 </style>
 `
