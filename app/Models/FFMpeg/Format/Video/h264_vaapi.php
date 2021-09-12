@@ -80,7 +80,11 @@ class h264_vaapi extends X264
         $cmds->splice($cmds->search('-threads'), 2);
         if (is_numeric($cmds->search('-refs'))) {
             $startIndex = $cmds->search('-refs');
-            $endIndex = $cmds->search('-qp') ?? $cmds->count() - 1;
+            if ($endIndex = $cmds->search('-trellis')) {
+                $endIndex += 2;
+            } else {
+                $endIndex = $cmds->count() - 1;
+            }
             $cmds->splice($startIndex, $endIndex - $startIndex);
         }
         return $cmds;
