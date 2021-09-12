@@ -4,12 +4,15 @@ use App\Events\FFMpegProgress;
 use App\Events\FilePicker as FilePickerEvent;
 use App\Events\TextViewer;
 use App\Events\Transcode\Config\Streams as BroadcastStreams;
+use App\Events\Transcode\Config\Clips as BroadcastClips;
 use App\Http\Controllers\TranscodeController;
 use App\Models\FilePicker;
 use App\Models\Video\File as VideoFile;
 use Illuminate\Support\Facades\Route;
 use App\Jobs\ProcessVideo;
 use App\Models\CurrentQueue;
+use App\Models\FFMpeg\ConcatDemuxer;
+use App\Models\FFMpeg\RemuxTS;
 
 /*
 |--------------------------------------------------------------------------
@@ -58,6 +61,22 @@ Route::get('/streams/{path?}', function (string $path = null) {
         ], 500);
     }
     BroadcastStreams::dispatch($format, $streams);
+
+})->where('path', '(.*)');
+
+Route::get('/clips/{path?}', function (string $path = null) {
+    
+    try {
+        $remux = new RemuxTS('recordings', $path, 0);
+        $pathCopy = $remux->getOutputFilename();
+        $demuxer = new ConcatDemuxer('recordings', $pathCopy);
+        BroadcastClips::dispatch($demuxer->getClips());
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 500,
+            'message' => $e->getMessage(),
+        ], 500);
+    }
 
 })->where('path', '(.*)');
 

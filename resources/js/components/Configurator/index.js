@@ -163,7 +163,7 @@ ${CSS}
     <div>
         <transcode-configurator-format *if="{{ this.format }}" .format="{{ this.format }}"></transcode-configurator-format>
         <transcode-configurator-streams *if="{{ this.streams }}" .items="{{ this.streams }}"></transcode-configurator-streams>
-        <transcode-configurator-clips *if="{{ this.streams }}"></transcode-configurator-clips>
+        <transcode-configurator-clips *if="{{ this.streams }}" .path="{{ this.item.path }}"></transcode-configurator-clips>
         <footer>
             <button @click="this.transcode()">Start</button>
         </footer>

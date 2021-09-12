@@ -5,6 +5,7 @@ namespace App\Models\FFMpeg;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use FFMpeg\Coordinate\TimeCode;
+use Illuminate\Support\Str;
 
 /**
  * @property string $disk
@@ -13,7 +14,7 @@ use FFMpeg\Coordinate\TimeCode;
  */
 class ConcatDemuxer
 {
-    public function __construct(string $disk, string $path, array $clips)
+    public function __construct(string $disk, string $path, array $clips = [])
     {
         $this->disk = $disk;
         $this->path = $path;
@@ -79,5 +80,28 @@ class ConcatDemuxer
             $duration += $to->toSeconds() - $from->toSeconds();
         }
         return $duration;
+    }
+
+    public function getClips(): array
+    {
+        $disk = Storage::disk($this->disk);
+        if ($disk->exists($this->getInputFilename())) {
+            $id = 1;
+            $clips = [];
+            $lines = collect(explode("\n", $disk->get($this->getInputFilename())))->filter(function ($line) {
+                return Str::contains($line, 'inpoint') || Str::contains($line, 'outpoint');
+            })->all();
+            foreach($lines as $key => $line) {
+                if (Str::contains($line, 'inpoint')) {
+                    $clips[] = [
+                        'from' => Str::replace('inpoint ', '', $line),
+                        'to' => Str::replace('outpoint ', '', $lines[$key+1]),
+                        'id' => $id++,
+                    ];
+                }
+            }
+            return $clips;
+        }
+        return [];
     }
 }

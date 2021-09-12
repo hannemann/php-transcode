@@ -2,6 +2,7 @@ import { Slim, Utils } from '@/components/lib';
 import CARD_CSS from '../CardCss';
 import './Clip'
 import sortable from 'html5sortable/dist/html5sortable.es'
+import {Request} from '@/components/Request'
 
 const dataFactory = function*() {
     let id = 0
@@ -13,6 +14,8 @@ const dataFactory = function*() {
 
 const getClipInitData = (factory) => factory.next().value
 
+const WS_CHANNEL = 'Transcode.Clips'
+
 class Clips extends Slim {
     constructor() {
         super()
@@ -20,6 +23,39 @@ class Clips extends Slim {
         //this.clips = [this.newClip(), this.newClip(), this.newClip(), this.newClip()]
         this.valid = true
         this.bindListener()
+    }
+
+    onAdded() {
+        this.initWebsocket()
+        requestAnimationFrame(() => {
+            sortable(this.sortable)
+        })
+    }
+
+    onRemoved() {
+        this.leaveWebsocket()
+    }
+
+    initWebsocket() {
+        this.channel = window.Echo.channel(WS_CHANNEL)
+        this.channel.listen(WS_CHANNEL, this.handleClipsEvent.bind(this))
+        this.channel.subscribed(this.requestClips.bind(this))
+    }
+
+    leaveWebsocket() {
+        this.channel.stopListening(WS_CHANNEL)
+        window.Echo.leave(WS_CHANNEL)
+        delete this.channel
+    }
+
+    requestClips() {
+        try {
+            console.info('Request clips of %s', this.path)
+            Request.get(`/clips/${encodeURIComponent(this.path)}`)
+        } catch (error) {
+            console.error(error)
+            this.leaveWebsocket()
+        }
     }
 
     bindListener() {
@@ -31,17 +67,17 @@ class Clips extends Slim {
         this.handleBlur = this.handleBlur.bind(this)
     }
 
-    onAdded() {
-        requestAnimationFrame(() => {
-            sortable(this.sortable)
-        })
-    }
-
     newClip() {
         if (!this.dataFactory) {
             this.dataFactory = dataFactory()
         }
         return getClipInitData(this.dataFactory)
+    }
+
+    handleClipsEvent(ws) {
+        if (ws.clips.length) {
+            this.clips = ws.clips;
+        }
     }
 
     handleSortupdate(e) {
