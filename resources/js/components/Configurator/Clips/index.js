@@ -104,6 +104,7 @@ class Clips extends Slim {
     }
 
     handleUpdate(e) {
+        this.update()
         this.valid = Array.from(this.shadowRoot.querySelectorAll('transcode-configurator-clip')).every(c => c.valid)
     }
 
@@ -121,6 +122,29 @@ class Clips extends Slim {
 
     handleBlur() {
         sortable(this.sortable, 'enable')
+    }
+
+    getCutpoint(clip) {
+        if (this.clips.length > 1) {
+            const cutpoint = this.clips.filter(c => c.id <= clip.id).reverse()
+                .reduce((acc, cur) => acc + this.toSeconds(cur.to) - this.toSeconds(cur.from), 0)
+            if (isNaN(cutpoint)) {
+                return ''
+            }
+            return `(Cutpoint: ${this.fromSeconds(cutpoint)})`
+        }
+        return '';
+    }
+
+    toSeconds(coord) {
+        const [hours, minutes, seconds] = coord.split(':')
+        return (parseFloat(hours) * 60 * 60) + (parseFloat(minutes) * 60) + parseFloat(seconds)
+    }
+
+    fromSeconds(coord) {
+        const d = new Date(null)
+        d.setMilliseconds(coord*1000)
+        return `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')}:${d.getUTCSeconds().toString().padStart(2, '0')}.${d.getUTCMilliseconds()}`
     }
 }
 
@@ -147,7 +171,8 @@ ${CARD_CSS}
             @clipremove="{{ this.handleRemove }}"
             @clipfocus="{{ this.handleFocus }}"
             @clipblur="{{ this.handleBlur }}"
-            .clip-data="{{ item }}">
+            .clip-data="{{ item }}"
+            .cutpoint="{{ this.getCutpoint(item) }}">
         </transcode-configurator-clip>
     </div>
 </main>

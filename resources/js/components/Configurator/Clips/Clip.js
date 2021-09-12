@@ -56,6 +56,13 @@ class Clip extends Slim {
     handleBlur() {
         this.dispatchEvent(new CustomEvent('clipblur', {detail: this.clipData}))
     }
+
+    getCutpoint() {
+        if (this.cutpoint !== '') {
+            return `(Cutpoint: ${this.cutpoint})`
+        }
+        return ''
+    }
 }
 
 Clip.prototype.pattern = '^([0-9]+:)?[0-9]+:[0-9]+:[0-9]+\.[0-9]+$'
@@ -84,8 +91,14 @@ section {
 .input span {
     flex-grow: 1;
 }
+.cutpoint {
+    font-size: max(10px, .75rem);
+    padding-left: .5rem;
+}
 input {
     border: 3px solid transparent;
+    text-align: right;
+    width: 12ch;
 }
 input:invalid {
     border: 3px dashed hsla(var(--hue-alert), var(--sat-alert), var(--lit-alert), var(--clr-base-alpha));
@@ -102,7 +115,7 @@ input:invalid {
 <section>
     <div class="input">
         <div><span>From:</span><input @focus="{{ this.handleFocus }}" @blur="{{ this.handleBlur }}" placeholder="0:0:0.0" @input="{{ this.setTimecode }}" name="from" pattern="{{ this.pattern }}" .value="{{ this.clipData.from }}"></div>
-        <div><span>To:</span><input @focus="{{ this.handleFocus }}" @blur="{{ this.handleBlur }}" placeholder="0:0:0.0" @input="{{ this.setTimecode }}" name="to" pattern="{{ this.pattern }}" .value="{{ this.clipData.to }}"></div>
+        <div><span>To:<span class="cutpoint">{{ this.cutpoint }}</span></span><input @focus="{{ this.handleFocus }}" @blur="{{ this.handleBlur }}" placeholder="0:0:0.0" @input="{{ this.setTimecode }}" name="to" pattern="{{ this.pattern }}" .value="{{ this.clipData.to }}"></div>
     </div>
     <div class="icon-stack plus" @click="{{ this.handleAdd }}">
         <span class="iconify" data-icon="mdi-plus-outline"></span>
