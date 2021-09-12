@@ -65,8 +65,10 @@ class ConcatDemuxer
 
     private function getStoragePath(): string
     {
+        /** @var Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk($this->disk);
         return rtrim(
-            Storage::disk($this->disk)->getDriver()->getAdapter()->getPathPrefix(),
+            $disk->getDriver()->getAdapter()->getPathPrefix(),
             DIRECTORY_SEPARATOR
         ) . DIRECTORY_SEPARATOR;
     }
