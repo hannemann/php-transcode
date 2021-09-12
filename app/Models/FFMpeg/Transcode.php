@@ -3,6 +3,7 @@
 namespace App\Models\FFMpeg;
 
 use App\Models\FFMpeg\Filters\Video\ClipFromToFilter;
+use App\Models\FFMpeg\Filters\Video\ComplexConcat;
 use App\Models\FFMpeg\Format\Video\h264_vaapi;
 use App\Models\Video\File;
 use FFMpeg\Coordinate\TimeCode;
@@ -49,9 +50,18 @@ class Transcode
         }
         
         $concatDemuxer = null;
-        if (count($this->clips) > 1) {
+        $useDemuxer = false;
+        if ($useDemuxer && count($this->clips) > 1) {
             $concatDemuxer = new ConcatDemuxer($this->disk, $this->path, $this->clips);
             $clipDuration = $concatDemuxer->getDuration();
+            $format->setAudioCodec('ac3');
+            $format->setAudioKiloBitrate(384);
+        }
+
+        $complexConcat = null;
+        if (!$useDemuxer && count($this->clips) > 1) {
+            $clipDuration = (new ConcatDemuxer($this->disk, $this->path, $this->clips))->getDuration();
+            $complexConcat = new ComplexConcat($this->clips, $this->streams, $video, $audio, $subtitle);
             $format->setAudioCodec('ac3');
             $format->setAudioKiloBitrate(384);
         }
@@ -67,20 +77,26 @@ class Transcode
             CurrentQueue::where('id', $this->current_queue_id)->update(['percentage' => $percentage]);
         })
         ->inFormat($format)
-        ->beforeSaving(function ($commands) use ($video, $audio, $subtitle, $format, $concatDemuxer) {
+        ->beforeSaving(function ($commands) use ($video, $audio, $subtitle, $format, $concatDemuxer, $complexConcat) {
 
             $file = array_pop($commands[0]);
             $cmds = collect($commands[0]);
             $format instanceof h264_vaapi && $cmds = $format->stripOptions($cmds);
             $cmds = $cmds->replace([$cmds->search('-vcodec') => '-c:v', $cmds->search('-acodec') => '-c:a']);
             $subtitle->count() && $cmds = $this->addSubtitleCodec($cmds);
-            $cmds = (new OutputMapper($this->streams, $video, $audio, $subtitle, $format))->execute($cmds);
 
             if ($concatDemuxer) {
                 $cmds = $concatDemuxer->addCommands($cmds);
                 $concatDemuxInput = $concatDemuxer->getInputFilename(true);
                 $cmds = $cmds->replace([$cmds->search('-i') + 1 => $concatDemuxInput]);
             }
+
+            if ($complexConcat) {
+                $cmds = $complexConcat->getFilter($cmds);
+            } else {
+                $cmds = (new OutputMapper($this->streams, $video, $audio, $subtitle, $format))->execute($cmds);
+            }
+
             $cmds->push($file);
             return [$cmds->all()];
         })

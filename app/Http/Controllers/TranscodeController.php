@@ -20,15 +20,16 @@ class TranscodeController extends Controller
             // if (count($data['clips']) > 1) {
             //     $demuxer = new ConcatDemuxer('recordings', $path, $data['clips']);
             //     $demuxer->generateFile();
-            //     $remux = new RemuxTS('recordings', $path, 0);
-            //     $path = $remux->getOutputFilename();
-            //     $remux->execute();
+                // $remux = new RemuxTS('recordings', $path, 0);
+                // $path = $remux->getOutputFilename();
+                // $remux->execute();
             // }
             // (new Transcode('recordings', $path, $data['streams'], 0, $data['clips']))->execute();
 
             if (count($data['clips']) === 1) {
                 Transcode::getFromToFilter($data['clips'][0]['from'], $data['clips'][0]['to']);
             } else {
+                // remux first for better quality
                 $remux = new RemuxTS('recordings', $path, 0);
                 $pathCopy = $remux->getOutputFilename();
                 if (!Storage::disk('recordings')->exists($pathCopy)) {

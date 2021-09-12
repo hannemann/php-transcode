@@ -67,10 +67,12 @@ Route::get('/streams/{path?}', function (string $path = null) {
 Route::get('/clips/{path?}', function (string $path = null) {
     
     try {
-        $remux = new RemuxTS('recordings', $path, 0);
-        $pathCopy = $remux->getOutputFilename();
-        $demuxer = new ConcatDemuxer('recordings', $pathCopy);
-        BroadcastClips::dispatch($demuxer->getClips());
+        $clips = (new ConcatDemuxer('recordings', $path))->getClips();
+        if (empty($clips)) {
+            $remux = new RemuxTS('recordings', $path, 0);
+            $clips = (new ConcatDemuxer('recordings', $remux->getOutputFilename()))->getClips();
+        }
+        BroadcastClips::dispatch($clips);
     } catch (\Exception $e) {
         return response()->json([
             'status' => 500,
