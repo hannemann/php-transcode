@@ -22,11 +22,14 @@ class ConcatDemuxer
 
     public function generateFile(): ConcatDemuxer
     {
-        $content = collect($this->clips)->map(function ($clip) {
+        $timestamp = 0;
+        $content = collect($this->clips)->map(function ($clip) use (&$timestamp) {
+            $timestamp += TimeCode::fromString($clip['to']) ->toSeconds() - TimeCode::fromString($clip['from'])->toSeconds();
             return implode("\n", [
                 sprintf("file '%s'", $this->getStoragePath() . ltrim($this->path, DIRECTORY_SEPARATOR)),
                 sprintf('inpoint %s', $clip['from']),
-                sprintf('outpoint %s', $clip['to'])
+                sprintf('outpoint %s', $clip['to']),
+                sprintf('# Cut: %s', TimeCode::fromSeconds($timestamp)),
             ]);
         })->join("\n");
         Storage::disk($this->disk)->put($this->getInputFilename(), $content);

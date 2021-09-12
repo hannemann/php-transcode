@@ -62,7 +62,7 @@ class h264_vaapi extends X264
         $params = [];
         if ($this->constantQuantizationParameter && !$this->kiloBitrate) {
             $params[] = '-qp';
-            $params[] = $this->constantQuantizationParameter;
+            $params[] = (string)$this->constantQuantizationParameter;
         }
         return array_merge(parent::getAdditionalParameters() ?? [], $params);
     }
@@ -79,7 +79,9 @@ class h264_vaapi extends X264
     {
         $cmds->splice($cmds->search('-threads'), 2);
         if (is_numeric($cmds->search('-refs'))) {
-            $cmds = $cmds->slice(0, $cmds->search('-refs'));
+            $startIndex = $cmds->search('-refs');
+            $endIndex = $cmds->search('-qp') ?? $cmds->count() - 1;
+            $cmds->splice($startIndex, $endIndex - $startIndex);
         }
         return $cmds;
     }
