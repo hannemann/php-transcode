@@ -7,7 +7,7 @@ ProgressCurrent.template = /*html*/`
 ${PROGRESS_ITEM_CSS}
 <header>Current</header>
 <div>
-    <div class="path">{{ this.item.path }}</div>
+    <div class="path">{{ this.item.type.ucfirst() }}: {{ this.item.path }}</div>
     <div>{{ this.item.percentage }}%</div>
 </div>
 `

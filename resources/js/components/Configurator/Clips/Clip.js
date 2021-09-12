@@ -108,7 +108,7 @@ input:invalid {
         <span class="iconify" data-icon="mdi-plus-outline"></span>
         <span class="iconify hover" data-icon="mdi-plus-outline"></span>
     </div>
-    <button disabled="{{ !this.canRemove }}" class="icon-stack minus" @click="{{ this.handleRemove }}">
+    <button disabled="{{ !this.canRemove }}" class="icon-stack minus" @click="{{ this.handleRemove }}" tabindex="-1">
         <span class="iconify" data-icon="mdi-minus"></span>
         <span class="iconify hover" data-icon="mdi-minus"></span>
     </button>

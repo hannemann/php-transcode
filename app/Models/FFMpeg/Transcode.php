@@ -34,7 +34,6 @@ class Transcode
         $duration = $videoFormat->get('duration');
         $clipDuration = $duration;
 
-        $out = $this->getOutputFilename();
         $streams = collect($media->getStreams());
         $video = $streams->filter(fn($stream) => $stream->get('codec_type') === 'video')
             ->map(fn($stream) => $stream->get('index'))->values();
@@ -49,6 +48,14 @@ class Transcode
             $media->addFilter($clipFilter);
         }
         
+        $concatDemuxer = null;
+        if (count($this->clips) > 1) {
+            $concatDemuxer = new ConcatDemuxer($this->disk, $this->path, $this->clips);
+            $clipDuration = $concatDemuxer->getDuration();
+            $format->setAudioCodec('ac3');
+            $format->setAudioKiloBitrate(384);
+        }
+        
         $media->export()
         ->onProgress(function ($percentage, $remaining, $rate) use ($duration, $clipDuration) {
 
@@ -60,7 +67,7 @@ class Transcode
             CurrentQueue::where('id', $this->current_queue_id)->update(['percentage' => $percentage]);
         })
         ->inFormat($format)
-        ->beforeSaving(function ($commands) use ($video, $audio, $subtitle, $format) {
+        ->beforeSaving(function ($commands) use ($video, $audio, $subtitle, $format, $concatDemuxer) {
 
             $file = array_pop($commands[0]);
             $cmds = collect($commands[0]);
@@ -68,6 +75,12 @@ class Transcode
             $cmds = $cmds->replace([$cmds->search('-vcodec') => '-c:v', $cmds->search('-acodec') => '-c:a']);
             $subtitle->count() && $cmds = $this->addSubtitleCodec($cmds);
             $cmds = (new OutputMapper($this->streams, $video, $audio, $subtitle, $format))->execute($cmds);
+
+            if ($concatDemuxer) {
+                $cmds = $concatDemuxer->addCommands($cmds);
+                $concatDemuxInput = $concatDemuxer->getInputFilename(true);
+                $cmds = $cmds->replace([$cmds->search('-i') + 1 => $concatDemuxInput]);
+            }
             $cmds->push($file);
             return [$cmds->all()];
         })

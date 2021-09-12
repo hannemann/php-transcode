@@ -11,6 +11,7 @@ use Illuminate\Queue\SerializesModels;
 use App\Events\FFMpegProcess as FFMpegProcessEvent;
 use App\Models\FFMpeg\Concat;
 use App\Models\FFMpeg\Transcode;
+use App\Models\FFMpeg\RemuxTS;
 use Throwable;
 use App\Models\CurrentQueue;
 
@@ -81,6 +82,9 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
                 break;
             case 'transcode':
                 (new Transcode($this->disk, $this->path, $this->streams, $this->current_queue_id, $this->clips))->execute();
+                break;
+            case 'remux':
+                (new RemuxTS($this->disk, $this->path, $this->current_queue_id))->execute();
                 break;
         }
         CurrentQueue::where('id', $this->current_queue_id)->update(['state' => CurrentQueue::STATE_DONE]);
