@@ -15,11 +15,9 @@ ${PROGRESS_ITEM_CSS}
         height: 1rem;
         width: 100%;
     }
-    .path span {
+    .path span:last-of-type {
         position: absolute;
         inset: 0;
-    }
-    .path span:last-of-type {
         background: var(--clr-enlightened);
         color: var(--clr-text-200-inverse);
         overflow: hidden;
