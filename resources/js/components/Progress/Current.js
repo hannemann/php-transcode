@@ -16,6 +16,7 @@ ${PROGRESS_ITEM_CSS}
         width: 100%;
     }
     .path span:last-of-type {
+        padding-inline: .25rem;
         position: absolute;
         inset: 0;
         background: var(--clr-enlightened);
