@@ -14,6 +14,7 @@ use App\Models\FFMpeg\Transcode;
 use App\Models\FFMpeg\RemuxTS;
 use Throwable;
 use App\Models\CurrentQueue;
+use App\Models\FFMpeg\ConcatPrepare;
 
 class ProcessVideo implements ShouldQueue //, ShouldBeUnique
 {
@@ -85,6 +86,9 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
                 break;
             case 'remux':
                 (new RemuxTS($this->disk, $this->path, $this->current_queue_id))->execute();
+                break;
+            case 'pre-concat':
+                (new ConcatPrepare($this->disk, $this->path, $this->current_queue_id))->execute();
                 break;
         }
         CurrentQueue::where('id', $this->current_queue_id)->update(['state' => CurrentQueue::STATE_DONE]);

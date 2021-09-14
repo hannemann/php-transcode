@@ -2,7 +2,7 @@
 
 namespace App\Models\FFMpeg;
 
-use App\Models\FFMpeg\Format\Video\RemuxTS as RemuxFormat;
+use App\Models\FFMpeg\Format\Video\RemuxTS as Format;
 use App\Models\Video\File;
 use App\Models\CurrentQueue;
 
@@ -13,11 +13,11 @@ class RemuxTS
         $this->disk = $disk;
         $this->path = $path;
         $this->current_queue_id = $current_queue_id;
+        $this->format = new Format();
     }
 
     public function execute()
     {
-        $format = new RemuxFormat();
         $out = $this->getOutputFilename();
 
         $media = File::getMedia($this->disk, $this->path);
@@ -36,12 +36,12 @@ class RemuxTS
 
             CurrentQueue::where('id', $this->current_queue_id)->update(['percentage' => $percentage]);
         })
-        ->inFormat($format)
-        ->beforeSaving(function ($commands) use ($format) {
+        ->inFormat($this->format)
+        ->beforeSaving(function ($commands) {
 
             $file = array_pop($commands[0]);
             $cmds = collect($commands[0]);
-            $cmds = $format->stripOptions($cmds);
+            $cmds = $this->format->stripOptions($cmds);
             $cmds = $cmds->replace([$cmds->search('-vcodec') => '-c:v', $cmds->search('-acodec') => '-c:a']);
             $cmds->push('-c:s');
             $cmds->push('copy');

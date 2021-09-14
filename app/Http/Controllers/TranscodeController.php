@@ -7,9 +7,11 @@ use Illuminate\Http\JsonResponse;
 use App\Jobs\ProcessVideo;
 use App\Models\FFMpeg\Transcode;
 use App\Models\FFMpeg\RemuxTS;
+use App\Models\FFMpeg\ConcatPrepare;
 use App\Events\FFMpegProgress;
 use App\Models\FFMpeg\ConcatDemuxer;
 use Illuminate\Support\Facades\Storage;
+use App\Models\CurrentQueue;
 
 class TranscodeController extends Controller
 {
@@ -17,35 +19,45 @@ class TranscodeController extends Controller
     {
         $data = $request->input();
         try {
-            // if (count($data['clips']) > 1) {
-            //     $demuxer = new ConcatDemuxer('recordings', $path, $data['clips']);
-            //     $demuxer->generateFile();
-                // $remux = new RemuxTS('recordings', $path, 0);
-                // $path = $remux->getOutputFilename();
-                // $remux->execute();
-            // }
-            // (new Transcode('recordings', $path, $data['streams'], 0, $data['clips']))->execute();
-
-            if (count($data['clips']) === 1) {
-                Transcode::getFromToFilter($data['clips'][0]['from'], $data['clips'][0]['to']);
+            if (false) {
+                $this->test($data, $path);
             } else {
-                // remux first for better quality
-                $remux = new RemuxTS('recordings', $path, 0);
-                $pathCopy = $remux->getOutputFilename();
-                if (!Storage::disk('recordings')->exists($pathCopy)) {
-                    ProcessVideo::dispatch('remux', 'recordings', $path, []);
+                if (count($data['clips']) === 1) {
+                    Transcode::getFromToFilter($data['clips'][0]['from'], $data['clips'][0]['to']);
+                } else {
+                    // prepare
+                    $pre = new ConcatPrepare('recordings', $path, 0);
+                    $pathCopy = $pre->getOutputFilename();
+                    if (!Storage::disk('recordings')->exists($pathCopy)) {
+                        ProcessVideo::dispatch('pre-concat', 'recordings', $path, []);
+                    }
+                    $path = $pathCopy;
+                    $demuxer = new ConcatDemuxer('recordings', $path, $data['clips']);
+                    $demuxer->generateFile();
                 }
-                $path = $pathCopy;
-                $demuxer = new ConcatDemuxer('recordings', $path, $data['clips']);
-                $demuxer->generateFile();
+                ProcessVideo::dispatch('transcode', 'recordings', $path, $data['streams'], $data['clips']);
+                FFMpegProgress::dispatch('queue.progress');
             }
-            ProcessVideo::dispatch('transcode', 'recordings', $path, $data['streams'], $data['clips']);
-            FFMpegProgress::dispatch('queue.progress');
         } catch (\Exception $e) {
             return response()->json([
                 'message' => sprintf($e->getMessage())
             ], 500);
         }
         return null;
+    }
+
+    private function test(array $data, string $path): void
+    {
+        if (count($data['clips']) > 1) {
+            $demuxer = new ConcatDemuxer('recordings', $path, $data['clips']);
+            $demuxer->generateFile();
+            $pre = new ConcatPrepare('recordings', $path, 0);
+            $path = $pre->getOutputFilename();
+            if (!Storage::disk('recordings')->exists($path)) {
+                $pre->execute();
+            }
+        }
+
+        (new Transcode('recordings', $path, $data['streams'], 0, $data['clips']))->execute();
     }
 }
