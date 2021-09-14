@@ -20,6 +20,7 @@ ${PROGRESS_ITEM_CSS}
         position: absolute;
         inset: 0;
         background: var(--clr-enlightened);
+        box-shadow: 0 0 5px 5px inset var(--clr-enlightened-glow);
         color: var(--clr-text-200-inverse);
         overflow: hidden;
         border-radius: .2rem;
