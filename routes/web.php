@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 use App\Jobs\ProcessVideo;
 use App\Models\CurrentQueue;
 use App\Models\FFMpeg\ConcatDemuxer;
-use App\Models\FFMpeg\RemuxTS;
+use App\Models\FFMpeg\ConcatPrepare;
 
 /*
 |--------------------------------------------------------------------------
@@ -69,7 +69,7 @@ Route::get('/clips/{path?}', function (string $path = null) {
     try {
         $clips = (new ConcatDemuxer('recordings', $path))->getClips();
         if (empty($clips)) {
-            $remux = new RemuxTS('recordings', $path, 0);
+            $remux = new ConcatPrepare('recordings', $path, 0);
             $clips = (new ConcatDemuxer('recordings', $remux->getOutputFilename()))->getClips();
         }
         BroadcastClips::dispatch($clips);
