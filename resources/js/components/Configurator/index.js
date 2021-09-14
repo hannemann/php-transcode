@@ -1,4 +1,4 @@
-import { Slim } from '@/components/lib';
+import { Slim, Utils } from '@/components/lib';
 import Iconify from '@iconify/iconify'
 import {Request} from '@/components/Request'
 import './Streams'
@@ -11,6 +11,7 @@ const WS_CHANNEL = 'Transcode.Config'
 class TranscodeConfigurator extends Slim {
 
     onAdded() {
+        this.canConcat = false
         document.addEventListener('file-clicked', this.init.bind(this))
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
     }
@@ -18,12 +19,14 @@ class TranscodeConfigurator extends Slim {
     init(e) {
         if ('video' === e.detail.mime.split('/').shift()) {
             this.item = e.detail
+            this.setCanConcat()
             this.initWebsocket()
         }
     }
 
     show() {
         this.classList.add('active')
+        this.item.node.iconActive = true
         document.dispatchEvent(new CustomEvent('configurator-show', {detail: true}))
         console.info('Show streams of %s', this.item.path)
     }
@@ -33,9 +36,10 @@ class TranscodeConfigurator extends Slim {
             this.classList.remove('active', 'fade-out')
         })
         this.classList.add('fade-out')
-        delete this.item
         this.format = undefined
         this.streams = undefined
+        this.item.node.iconActive = false
+        delete this.item
         this.leaveWebsocket()
         document.dispatchEvent(new CustomEvent('configurator-show', {detail: false}))
     }
@@ -87,6 +91,20 @@ class TranscodeConfigurator extends Slim {
         this.format = ws.format
         this.streams = ws.streams
         this.show()
+    }
+
+    setCanConcat() {
+        this.canConcat = this.item?.parent?.videoFiles?.length > 1 &&
+            !this.item.parent.videoFiles.find(i => i.name === `${this.item.parent.channelHash}-concat.ts`)
+    }
+
+    async requestConcat() {
+        console.info('Concat video files in %s', this.item.parent.path)
+        try {
+            await Request.get(`/concat/${this.item.parent.path}`)
+        } catch (error) {
+            console.error(error)
+        }
     }
 }
 
@@ -165,6 +183,7 @@ ${CSS}
         <transcode-configurator-streams *if="{{ this.streams }}" .items="{{ this.streams }}"></transcode-configurator-streams>
         <transcode-configurator-clips *if="{{ this.streams }}" .path="{{ this.item.path }}"></transcode-configurator-clips>
         <footer>
+            <button *if="{{ this.canConcat }}" @click="this.requestConcat()">Concat</button>
             <button @click="this.transcode()">Start</button>
         </footer>
     </div>

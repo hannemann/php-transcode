@@ -1,11 +1,6 @@
 import { FilePickerBase, TYPE_DIRECTORY, TYPE_FILE } from './FilePickerBase'
 import Iconify from '@iconify/iconify'
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css'
-import { Request } from '../Request'
-
-const FFMPEG_PROCESS_STAGE_PENDING = 0
-const FFMPEG_PROCESS_STAGE_RUNNING = 1
-const FFMPEG_PROCESS_STAGE_DONE = 2
 
 class FilePickerItem extends FilePickerBase {
 
@@ -14,9 +9,6 @@ class FilePickerItem extends FilePickerBase {
         this.wsUrl.push(encodeURIComponent(this.path))
         this.isDirectory = this.type === TYPE_DIRECTORY
         this.isFile = this.type === TYPE_FILE
-        this.canConcat = false
-        this.concatPending = false
-        this.concatRunning = false
     }
 
     onAdded() {
@@ -26,29 +18,33 @@ class FilePickerItem extends FilePickerBase {
 
     onWsEvent(e) {
         super.onWsEvent(e)
-        this.setCanConcat()
     }
 
     handleClick() {
         super.handleClick()
         if (this.items.length) {
-            this.shadowRoot.querySelector('.icon-stack').classList.toggle('active', false)
+            this.iconAcitve = false
             this.items = []
-            this.setCanConcat()
-        }
-    }
-
-    setCanConcat() {
-        this.canConcat = this.videoFiles.length > 1 &&
-            !this.videoFiles.find(i => i.name === `${this.channelHash}-concat.ts`)
-    }
-
-    async requestConcat() {
-        console.info('Concat video files in %s', this.path)
-        try {
-            await Request.get(`/concat/${this.path}`)
-        } catch (error) {
-            console.error(error)
+        } else if (TYPE_FILE === this.type) {
+            const detail = {
+                node: this,
+                path: this.path,
+                channel: this.channelHash,
+                mime: this.mime,
+                size: this.size,
+                type: this.type
+            }
+            const parent = this.getRootNode().host
+            if (parent) {
+                detail.parent = {
+                    node: parent,
+                    path: parent.path,
+                    videoFiles: parent.videoFiles,
+                    channelHash: parent.channelHash
+                }
+            }
+            this.iconActive = true
+            document.dispatchEvent(new CustomEvent('file-clicked', {detail}))
         }
     }
 
@@ -123,8 +119,11 @@ const CSS = /*css*/`
         cursor: pointer;
         padding: calc(var(--gutter-base) / 4) calc(var(--gutter-base) / 2);
     }
-    span:hover {
+    :host(:hover) span {
         background-color: var(--clr-bg-100);
+    }
+    :host(:hover) .icon-stack:not(:disabled):not(.active) svg.hover {
+        opacity: 1;
     }
     filepicker-item {
         margin-left: var(--gutter-base);
@@ -184,7 +183,6 @@ ${CSS}
         <span @click="this.handleClick()" title="{{ this.title }}">
             <slot></slot>
         </span>
-        <span *if="{{ this.canConcat }}" @click="this.requestConcat()">Concat?</span>
     </div>
     ${ITEM_TEMPLATE}
 </div>

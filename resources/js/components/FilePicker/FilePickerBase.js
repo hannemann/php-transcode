@@ -29,28 +29,10 @@ class FilePickerBase extends Slim {
     }
 
     handleClick() {
-        if (!this.items.length) {
-            if (TYPE_DIRECTORY === this.type) {
-                this.shadowRoot.querySelector('.icon-stack').classList.toggle('active', true)
-                this.requestItems()
-            } else if (TYPE_FILE === this.type) {
-                this.handleFileClick()
-            }
+        if (!this.items.length && TYPE_DIRECTORY === this.type) {
+            this.iconActive = true
+            this.requestItems()
         }
-    }
-
-    handleFileClick() {
-        let evt = new CustomEvent('file-clicked', {
-            detail: {
-                path: this.path,
-                channel: this.channelHash,
-                mime: this.mime,
-                size: this.size,
-                type: this.type
-            }
-        })
-
-        document.dispatchEvent(evt)
     }
 
     requestItems() {
@@ -64,6 +46,10 @@ class FilePickerBase extends Slim {
         } finally {
             this.classList.remove(this.loadingClass)
         }
+    }
+
+    set iconActive(value) {
+        this.shadowRoot.querySelector('.icon-stack').classList.toggle('active', value)
     }
 }
 

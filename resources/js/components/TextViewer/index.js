@@ -29,6 +29,7 @@ class TextViewer extends Slim {
             this.classList.remove('active', 'fade-out')
         })
         this.classList.add('fade-out')
+        this.item.node.iconActive = false
         delete this.item
         this.leaveWebsocket()
         document.dispatchEvent(new CustomEvent('textviewer-show', {detail: false}))
