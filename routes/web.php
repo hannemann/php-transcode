@@ -42,7 +42,7 @@ Route::get('/file-picker/{subdir?}', function (string $subdir = null) {
 
 Route::get('/concat/{path?}', function (string $path = null) {
     
-    ProcessVideo::dispatch('concat', 'recordings', $path);
+    ProcessVideo::dispatch('concat', 'recordings', $path, []);
 
 })->where('path', '(.*)');
 

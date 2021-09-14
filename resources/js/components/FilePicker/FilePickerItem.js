@@ -1,6 +1,7 @@
 import { FilePickerBase, TYPE_DIRECTORY, TYPE_FILE } from './FilePickerBase'
 import Iconify from '@iconify/iconify'
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css'
+import { Request } from '../Request'
 
 const FFMPEG_PROCESS_STAGE_PENDING = 0
 const FFMPEG_PROCESS_STAGE_RUNNING = 1
@@ -28,11 +29,6 @@ class FilePickerItem extends FilePickerBase {
         this.setCanConcat()
     }
 
-    setCanConcat() {
-        this.canConcat = this.videoFiles.length > 1 &&
-            !this.videoFiles.find(i => i.name === `${this.channelHash}-concat.ts`)
-    }
-
     handleClick() {
         super.handleClick()
         if (this.items.length) {
@@ -42,73 +38,18 @@ class FilePickerItem extends FilePickerBase {
         }
     }
 
-    requestConcat() {
+    setCanConcat() {
+        this.canConcat = this.videoFiles.length > 1 &&
+            !this.videoFiles.find(i => i.name === `${this.channelHash}-concat.ts`)
+    }
+
+    async requestConcat() {
         console.info('Concat video files in %s', this.path)
-        let event = 'FFMpegProcess'
-        let channel = window.Echo.channel(`FFMpegProcess.${this.channelHash}`)
         try {
-            channel.listen(event, this.handleProcessEvent.bind(this, channel, event))
-            channel.subscribed(async () => await fetch(`/concat/${this.path}`))
-            console.info('%s has subscribed to channel %s', this.path, channel.name)
+            await Request.get(`/concat/${this.path}`)
         } catch (error) {
-            this.leaveProcessChannel(channel, event);
             console.error(error)
         }
-    }
-
-    requestTranscode() {
-
-        if (TYPE_FILE === this.type) {
-            let evt = new CustomEvent('file-clicked', {
-                detail: {
-                    path: this.path,
-                    channel: this.channelHash,
-                    mime: this.mime,
-                    size: this.size,
-                    type: this.type
-                }
-            })
-
-            document.dispatchEvent(evt)
-        }
-    }
-
-    handleProcessEvent(channel, event, ws) {
-        let process = ws.name.split('.').shift()
-        let processU = process[0].toUpperCase() + process.slice(1)
-        switch(ws.name) {
-            case `${process}.pending`:
-                console.info('%s video file %s queued at %s', processU, this.path, new Date().toLocaleTimeString())
-                this.concatPending = true
-                this.canConcat = false
-                break
-            case `${process}.running`:
-                console.info('%s video file %s started at %s', processU, this.path, new Date().toLocaleTimeString())
-                this.concatRunning = true
-                this.canConcat = false
-                break
-            case `${process}.done`:
-                console.info('%s video files in %s done at %s', processU, this.path, new Date().toLocaleTimeString())
-                this.leaveProcessChannel(channel, event)
-                if (this.items.length) {
-                    this.items = []
-                    requestAnimationFrame(this.fetch.bind(this))
-                }
-                break
-            case `${process}.progress`:
-                console.info('%s progress: %d%%', processU, ws.data.percentage)
-                break
-            case `${process}.failed`:
-                console.error('%s video files in %s failed', processU, this.path)
-                this.leaveProcessChannel(channel, event)
-                this.setCanConcat()
-        }
-    }
-
-    leaveProcessChannel(channel, event) {
-        channel.stopListening(event)
-        window.Echo.leave(channel.name)
-        console.info('%s has left channel %s', this.path, channel.name)
     }
 
     get icon() {
