@@ -6,6 +6,7 @@ use App\Events\TextViewer;
 use App\Events\Transcode\Config\Streams as BroadcastStreams;
 use App\Events\Transcode\Config\Clips as BroadcastClips;
 use App\Http\Controllers\TranscodeController;
+use App\Models\FFMpeg\Concat;
 use App\Models\FilePicker;
 use App\Models\Video\File as VideoFile;
 use Illuminate\Support\Facades\Route;
@@ -41,6 +42,8 @@ Route::get('/file-picker/{subdir?}', function (string $subdir = null) {
 })->where('subdir', '(.*)')->name('filepicker');
 
 Route::get('/concat/{path?}', function (string $path = null) {
+
+    // (new Concat('recordings', $path, 0))->execute();
     
     ProcessVideo::dispatch('concat', 'recordings', $path, []);
 
