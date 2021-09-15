@@ -74,7 +74,11 @@ class Transcode
                 $percentage = round(100 / $clipDuration * $processed);
             }
 
-            CurrentQueue::where('id', $this->current_queue_id)->update(['percentage' => $percentage]);
+            CurrentQueue::where('id', $this->current_queue_id)->update([
+                'percentage' => $percentage,
+                'remaining' => $remaining,
+                'rate' => $rate,
+            ]);
         })
         ->inFormat($format)
         ->beforeSaving(function ($commands) use ($video, $audio, $subtitle, $format, $concatDemuxer, $complexConcat) {

@@ -62,6 +62,8 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
             'type' => $this->type,
             'state' => CurrentQueue::STATE_PENDING,
             'percentage' => 0,
+            'rate' => 0,
+            'remaining' => 0,
         ]);
         $currentQueue->save();
         $this->current_queue_id = $currentQueue->getKey();
