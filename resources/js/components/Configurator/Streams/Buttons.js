@@ -18,6 +18,7 @@ class Buttons extends Slim {
 
     configure() {
         document.dispatchEvent(new CustomEvent('stream-configure', {detail: {
+            origin: this,
             item: this.item
         }}))
     }

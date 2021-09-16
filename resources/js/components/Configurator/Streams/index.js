@@ -3,6 +3,7 @@ import './Video'
 import './Audio'
 import './Sub'
 import './Data'
+import './Config'
 
 const TYPE_VIDEO = 'video'
 const TYPE_AUDIO = 'audio'

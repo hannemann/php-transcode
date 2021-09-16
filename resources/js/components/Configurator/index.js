@@ -14,6 +14,7 @@ class TranscodeConfigurator extends Slim {
         this.canConcat = false
         document.addEventListener('file-clicked', this.init.bind(this))
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
+        this.handleConfigureStream = this.handleConfigureStream.bind(this)
     }
 
     init(e) {
@@ -28,19 +29,21 @@ class TranscodeConfigurator extends Slim {
         this.classList.add('active')
         this.item.node.iconActive = true
         document.dispatchEvent(new CustomEvent('configurator-show', {detail: true}))
+        document.addEventListener('stream-configure', this.handleConfigureStream)
         console.info('Show streams of %s', this.item.path)
     }
 
     hide() {
         this.addEventListener('transitionend', () => {
             this.classList.remove('active', 'fade-out')
-        })
+        }, {once: true})
         this.classList.add('fade-out')
         this.format = undefined
         this.streams = undefined
         this.item.node.iconActive = false
         delete this.item
         this.leaveWebsocket()
+        document.removeEventListener('stream-configure', this.handleConfigureStream)
         document.dispatchEvent(new CustomEvent('configurator-show', {detail: false}))
     }
 
@@ -105,6 +108,21 @@ class TranscodeConfigurator extends Slim {
         } catch (error) {
             console.error(error)
         }
+    }
+
+    handleConfigureStream(e) {
+        const offsetOrigin = e.detail.origin.getBoundingClientRect()
+        const offsetMain = this.main.getBoundingClientRect()
+        const offset = {
+            top: offsetOrigin.top - offsetMain.top,
+            right: offsetMain.right - offsetOrigin.left
+        }
+        if (this.streamConfig.classList.contains('active')) {
+            this.streamConfig.addEventListener('transitionend', () => {
+                requestAnimationFrame(() => this.streamConfig.toggle(e.detail.item, offset))
+            }, {once: true})
+        }
+        this.streamConfig.toggle(e.detail.item, offset)
     }
 }
 
@@ -176,7 +194,7 @@ const HEADING = /*html*/`
 
 TranscodeConfigurator.template = /*html*/`
 ${CSS}
-<main>
+<main #ref="main">
     ${HEADING}
     <div>
         <transcode-configurator-format *if="{{ this.format }}" .format="{{ this.format }}"></transcode-configurator-format>
@@ -187,6 +205,7 @@ ${CSS}
             <button @click="this.transcode()">Start</button>
         </footer>
     </div>
+    <transcode-configurator-stream-config #ref="streamConfig"></transcode-configurator-stream-config>
 </main>
 `
 
