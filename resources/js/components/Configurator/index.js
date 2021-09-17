@@ -15,6 +15,7 @@ class TranscodeConfigurator extends Slim {
         document.addEventListener('file-clicked', this.init.bind(this))
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
         this.handleConfigureStream = this.handleConfigureStream.bind(this)
+        // this.handleStreamConfig = this.handleStreamConfig.bind(this)
     }
 
     init(e) {
@@ -83,7 +84,7 @@ class TranscodeConfigurator extends Slim {
         console.info('Transcode %s', this.item.path, clips.clips)
         try {
             Request.post(`/transcode/${encodeURIComponent(this.item.path)}`, {
-                streams: this.streams.filter(s => s.active).map(s => s.index),
+                streams: this.streams.filter(s => s.active).map(s => ({id: s.index, config: s.transcodeConfig ?? {}})),
                 clips: clips.clips
             })
         } catch (error) {}
@@ -117,12 +118,17 @@ class TranscodeConfigurator extends Slim {
             top: offsetOrigin.top - offsetMain.top,
             right: offsetMain.right - offsetOrigin.left
         }
+        document.addEventListener('stream-config', this.handleStreamConfig.bind(this, e.detail.item), {once: true})
         if (this.streamConfig.classList.contains('active')) {
             this.streamConfig.addEventListener('transitionend', () => {
                 requestAnimationFrame(() => this.streamConfig.toggle(e.detail.item, offset))
             }, {once: true})
         }
         this.streamConfig.toggle(e.detail.item, offset)
+    }
+
+    handleStreamConfig(item) {
+        console.info('Stream configured: ', item.transcodeConfig)
     }
 }
 

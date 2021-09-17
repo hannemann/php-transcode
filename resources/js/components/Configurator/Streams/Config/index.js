@@ -1,4 +1,4 @@
-import { Slim } from '@/components/lib';
+import { Slim, Utils } from '@/components/lib';
 
 class StreamConfig extends Slim {
 
@@ -7,6 +7,8 @@ class StreamConfig extends Slim {
         this.videoCodecs = Object.values(VIDEO_CODECS).sort((a,b) => a.v > b.v)
         this.audioCodecs = Object.values(AUDIO_CODECS).sort((a,b) => a.v > b.v)
         this.handleDocumentClick = this.handleDocumentClick.bind(this)
+        this.handleQpRange = this.handleQpRange.bind(this)
+        this.handleCodecChange = this.handleCodecChange.bind(this)
     }
 
     toggle(item, offset) {
@@ -14,7 +16,11 @@ class StreamConfig extends Slim {
             this.hide()
         } else {
             this.item = item
+            this.classList.add(item.codec_type)
             this.codecs = this[`${item.codec_type}Codecs`]
+            this.codec = this.codecs.find(c => c.default).v
+            this.qp = this.codecs.find(c => c.default).qp
+            this.qpSlider.value = this.qp
             this.style.top = `calc(${offset.top}px - .4rem)`
             this.style.right = `calc(${offset.right}px + 1rem)`
             this.show()
@@ -36,6 +42,11 @@ class StreamConfig extends Slim {
             this.isAudio = false
         }, {once: true})
         document.removeEventListener('click', this.handleDocumentClick)
+        this.item.transcodeConfig = {codec: this.codec}
+        if (this.item.codec_type === 'video') {
+            this.item.transcodeConfig.qp = this.qp
+        }
+        document.dispatchEvent(new CustomEvent('stream-config', {detail: {item: this.item}}))
         this.classList.add('fade-out')
     }
 
@@ -43,6 +54,14 @@ class StreamConfig extends Slim {
         if(e.composedPath().indexOf(this) < 0) {
             this.hide()
         }
+    }
+
+    handleQpRange(e) {
+        this.qp = this.qpSlider.value
+    }
+
+    handleCodecChange(e) {
+        this.codec = e.currentTarget.value
     }
 }
 
@@ -103,11 +122,35 @@ StreamConfig.template = /*html*/`
     input:checked {
         box-shadow: 0 0 10px 3px var(--clr-enlightened-glow);
     }
+    :host(:not(.video)) #qpslider {
+        display: none;
+    }
 </style>
 <main>
     <label *foreach="{{ this.codecs }}">
         <span>{{ item.l }}</span>
-        <input type="radio" value="{{ item.v }}" name="codec" checked="{{ item.default }}">
+        <input type="radio" value="{{ item.v }}" name="codec" checked="{{ item.default }}" @change="{{ this.handleCodecChange }}">
+    </label>
+    <label id="qpslider">
+        <span>QP (<span #ref="qpDisplay">{{ this.qp }}</span>)</span>
+        <input #ref="qpSlider" list="tickmarks" type="range" min="18" max="30" step="1" value="{{ this.qp }}" @input="{{ this.handleQpRange }}">
+
+        <datalist id="tickmarks">
+            <option value="18" label="18"></option>
+            <option value="19"></option>
+            <option value="20"></option>
+            <option value="21"></option>
+            <option value="22"></option>
+            <option value="23"></option>
+            <option value="24" label="24"></option>
+            <option value="25"></option>
+            <option value="26"></option>
+            <option value="27"></option>
+            <option value="28"></option>
+            <option value="29"></option>
+            <option value="30" label="30"></option>
+        </datalist>
+
     </label>
 </main>
 `
