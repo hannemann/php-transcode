@@ -19,7 +19,7 @@ class TranscodeController extends Controller
     {
         $data = $request->input();
         try {
-            if (false) {
+            if (true) {
                 $this->test($data, $path);
             } else {
                 if (count($data['clips']) === 1) {

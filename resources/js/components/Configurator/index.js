@@ -81,11 +81,23 @@ class TranscodeConfigurator extends Slim {
             }))
             return
         }
-        console.info('Transcode %s', this.item.path, clips.clips)
         try {
-            Request.post(`/transcode/${encodeURIComponent(this.item.path)}`, {
-                streams: this.streams.filter(s => s.active).map(s => ({id: s.index, config: s.transcodeConfig ?? {}})),
-                clips: clips.clips
+            requestAnimationFrame(() => {
+                const clipsData = [...clips.clips]
+                if (clipsData.length === 1 && clipsData[0].from === null) {
+                    clipsData[0].from = '0:0:0.0'
+                }
+                if (clipsData.length === 1 && clipsData[0].to === null) {
+                    clipsData[0].to = this.formatNode.duration
+                }
+                const streams = this.streams.filter(s => s.active).map(s => ({id: s.index, config: s.transcodeConfig ?? {}}))
+                console.info('Transcode %s', this.item.path, clipsData, streams)
+                // requestAnimationFrame(() => {
+                    Request.post(`/transcode/${encodeURIComponent(this.item.path)}`, {
+                        streams,
+                        clips: clipsData
+                    })
+                // })
             })
         } catch (error) {}
     }
@@ -203,7 +215,7 @@ ${CSS}
 <main #ref="main">
     ${HEADING}
     <div>
-        <transcode-configurator-format *if="{{ this.format }}" .format="{{ this.format }}"></transcode-configurator-format>
+        <transcode-configurator-format *if="{{ this.format }}" .format="{{ this.format }}" #ref="formatNode"></transcode-configurator-format>
         <transcode-configurator-streams *if="{{ this.streams }}" .items="{{ this.streams }}"></transcode-configurator-streams>
         <transcode-configurator-clips *if="{{ this.streams }}" .path="{{ this.item.path }}"></transcode-configurator-clips>
         <footer>

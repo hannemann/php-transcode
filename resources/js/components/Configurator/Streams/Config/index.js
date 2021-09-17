@@ -9,6 +9,7 @@ class StreamConfig extends Slim {
         this.handleDocumentClick = this.handleDocumentClick.bind(this)
         this.handleQpRange = this.handleQpRange.bind(this)
         this.handleCodecChange = this.handleCodecChange.bind(this)
+        this.handleChannelsChange = this.handleChannelsChange.bind(this)
     }
 
     toggle(item, offset) {
@@ -17,9 +18,10 @@ class StreamConfig extends Slim {
         } else {
             this.item = item
             this.classList.add(item.codec_type)
-            this.codecs = this[`${item.codec_type}Codecs`]
+            this.codecs = this[`${item.codec_type}Codecs`].sort((a,b) => a.id > b.id)
             this.codec = this.codecs.find(c => c.default).v
             this.qp = this.codecs.find(c => c.default).qp
+            this.channels = this.codecs.find(c => c.default).channels
             this.qpSlider.value = this.qp
             this.style.top = `calc(${offset.top}px - .4rem)`
             this.style.right = `calc(${offset.right}px + 1rem)`
@@ -45,6 +47,8 @@ class StreamConfig extends Slim {
         this.item.transcodeConfig = {codec: this.codec}
         if (this.item.codec_type === 'video') {
             this.item.transcodeConfig.qp = this.qp
+        } else {
+            this.item.transcodeConfig.channels = this.channels
         }
         document.dispatchEvent(new CustomEvent('stream-config', {detail: {item: this.item}}))
         this.classList.add('fade-out')
@@ -57,11 +61,15 @@ class StreamConfig extends Slim {
     }
 
     handleQpRange(e) {
-        this.qp = this.qpSlider.value
+        this.qp = parseInt(this.qpSlider.value)
     }
 
     handleCodecChange(e) {
-        this.codec = e.currentTarget.value
+        this.codec = parseInt(e.currentTarget.value)
+    }
+
+    handleChannelsChange(e) {
+        this.channels = parseInt(e.currentTarget.value)
     }
 }
 
@@ -125,12 +133,26 @@ StreamConfig.template = /*html*/`
     :host(:not(.video)) #qpslider {
         display: none;
     }
+    :host(:not(.audio)) #audiochannels {
+        display: none;
+    }
 </style>
 <main>
     <label *foreach="{{ this.codecs }}">
         <span>{{ item.l }}</span>
-        <input type="radio" value="{{ item.v }}" name="codec" checked="{{ item.default }}" @change="{{ this.handleCodecChange }}">
+        <input type="radio" value="{{ item.v }}" name="codec" .checked="{{ item.default }}" @change="{{ this.handleCodecChange }}">
     </label>
+    <div id="audiochannels">
+        <span>Channels</span>
+        <label>
+            <span>2</span>
+            <input type="radio" value="2" name="channels" .checked="{{ this.codecs.find(c => c.default).channels === 2 }}" @change="{{ this.handleChannelsChange }}">
+        </label>
+        <label>
+            <span>6</span>
+            <input type="radio" value="6" name="channels" .checked="{{ this.codecs.find(c => c.default).channels === 6 }}" @change="{{ this.handleChannelsChange }}">
+        </label>
+    </div>
     <label id="qpslider">
         <span>QP (<span #ref="qpDisplay">{{ this.qp }}</span>)</span>
         <input #ref="qpSlider" list="tickmarks" type="range" min="18" max="30" step="1" value="{{ this.qp }}" @input="{{ this.handleQpRange }}">

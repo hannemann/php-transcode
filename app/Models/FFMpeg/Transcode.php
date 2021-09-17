@@ -81,13 +81,12 @@ class Transcode
             ]);
         })
         ->inFormat($format)
-        ->beforeSaving(function ($commands) use ($video, $audio, $subtitle, $format, $concatDemuxer, $complexConcat) {
+        ->beforeSaving(function ($commands) use ($streams, $video, $audio, $subtitle, $format, $concatDemuxer, $complexConcat) {
 
             $file = array_pop($commands[0]);
             $cmds = collect($commands[0]);
             $format instanceof h264_vaapi && $cmds = $format->stripOptions($cmds);
-            $cmds = $cmds->replace([$cmds->search('-vcodec') => '-c:v', $cmds->search('-acodec') => '-c:a']);
-            $subtitle->count() && $cmds = $this->addSubtitleCodec($cmds);
+            $cmds = (new CodecMapper($cmds, $streams, $this->streams, $video, $audio, $subtitle))->execute();
 
             if ($concatDemuxer) {
                 $cmds = $concatDemuxer->addCommands($cmds);
@@ -119,12 +118,5 @@ class Transcode
     {
         $path = rtrim(dirname($this->path), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         return sprintf('%s%s-transcode.mkv', $path, sha1($this->path));
-    }
-
-    private function addSubtitleCodec(Collection $cmds): Collection
-    {
-        $cmds->push('-c:s');
-        $cmds->push('dvd_subtitle');
-        return $cmds;
     }
 }

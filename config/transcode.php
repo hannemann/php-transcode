@@ -1,16 +1,16 @@
 <?php
 
 $videoCodecs = [
-    "hevc_vaapi" => [
-        "v" => 0,
-        "l" => "H265 (VAAPI)",
-        "qp" => 28,
-    ],
     "h264_vaapi" => [
-        "v" => 1,
+        "v" => 0,
         "l" => "H264 (VAAPI)",
         "qp" => 25,
         "default" => true,
+    ],
+    "hevc_vaapi" => [
+        "v" => 1,
+        "l" => "H265 (VAAPI)",
+        "qp" => 28,
     ],
     "copy" => [
         "v" => 2,
@@ -18,16 +18,18 @@ $videoCodecs = [
     ],
 ];
 $audioCodecs = [
-    "aac" => [
-        "v" => 0,
-        "l" => "AAC",
-        "channels" => 2,
-    ],
     "ac3" => [
-        "v" => 1,
+        "v" => 0,
         "l" => "AC3",
         "channels" => 6,
-        "default" => true
+        "default" => true,
+        "bitrate" => 160,
+    ],
+    "aac" => [
+        "v" => 1,
+        "l" => "AAC",
+        "channels" => 2,
+        "bitrate" => 128,
     ],
     "copy" => [
         "v" => 2,

@@ -14,7 +14,7 @@ class OutputMapper
 
     public function __construct(array $streams, Collection $video, Collection $audio, Collection $subtitle)
     {
-        $this->streams = $streams;
+        $this->streams = collect($streams)->pluck('id')->all();
         $this->video = $video;
         $this->audio = $audio;
         $this->subtitle = $subtitle;    
