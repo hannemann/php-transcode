@@ -4,7 +4,7 @@
 <title>Transcoder</title>
 <link href="{{ mix('/css/app.css') }}" rel="stylesheet">
 <script>
-    const VIDEO_CODECS = {!! env('VIDEO_CODECS') !!}
-    const AUDIO_CODECS = {!! env('AUDIO_CODECS') !!}
+    const VIDEO_CODECS = @json(config('transcode.videoCodecs'));
+    const AUDIO_CODECS = @json(config('transcode.audioCodecs'));
 </script>
 <script src="{{ mix('/js/app.js') }}"></script>

@@ -8,12 +8,13 @@ use Illuminate\Support\Collection;
 class h264_vaapi extends X264
 {
 
-    private $renderDevice = '/dev/dri/renderD128';
+    private $vaapiDevice;
 
     private ?int $constantQuantizationParameter = null;
 
     public function __construct($audioCodec = 'aac', $videoCodec = 'h264_vaapi')
     {
+        $this->vaapiDevice = config('transcode.vaapiDevice');
         parent::__construct($audioCodec, $videoCodec);
     }
 
@@ -52,7 +53,7 @@ class h264_vaapi extends X264
         $hardware = [
             '-hwaccel', 'vaapi',
             '-hwaccel_output_format', 'vaapi',
-            '-vaapi_device', $this->renderDevice
+            '-vaapi_device', $this->vaapiDevice
         ];
         return array_merge($hardware, parent::getInitialParameters() ?? []);
     }
