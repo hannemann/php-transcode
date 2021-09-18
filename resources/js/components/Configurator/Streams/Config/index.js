@@ -77,6 +77,10 @@ class StreamConfig extends Slim {
         if (this.item.codec_type === 'audio') {
             this.channels = this.codecs.find(c => c.v === this.codec).channels
         }
+        if (this.item.codec_type === 'video') {
+            this.qp = this.codecs.find(c => c.v === this.codec).qp
+            this.qpSlider.value = this.qp
+        }
         Utils.forceUpdate(this)
     }
 
