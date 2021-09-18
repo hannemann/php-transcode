@@ -4,20 +4,26 @@ const ICON_STACK_CSS = /*css*/`
     position: relative;
     width: 1em;
 }
+button.icon-stack {
+    border: unset;
+    background: unset;
+}
 .icon-stack svg {
     position: absolute;
     inset: 0;
     opacity: 1;
 }
 .icon-stack svg {
-    transition: opacity var(--transition-medium) ease-out;
+    transition: opacity var(--transition-medium) ease-out, color var(--transition-medium) ease-out;
 }
 .icon-stack svg {
     color: var(--clr-text-0);
 }
-.icon-stack:disabled svg,
-.icon-stack svg.inactive {
+.icon-stack:disabled svg {
     color: var(--clr-disabled);
+}
+.icon-stack:disabled svg.hover {
+    opacity: 0;
 }
 .icon-stack:not(:disabled) svg.hover,
 .icon-stack:not(:disabled) svg.active,
@@ -35,10 +41,6 @@ const ICON_STACK_CSS = /*css*/`
 }
 .icon-stack:not(:disabled).active:hover svg.hover {
     opacity: 0;
-}
-button.icon-stack {
-    border: unset;
-    background: unset;
 }
 </style>
 `

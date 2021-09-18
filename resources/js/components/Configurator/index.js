@@ -84,7 +84,7 @@ class TranscodeConfigurator extends Slim {
         try {
             requestAnimationFrame(() => {
                 const clipsData = [...clips.clips]
-                if (clipsData.length === 1 && clipsData[0].from === null) {
+                if (clipsData[0].from === null) {
                     clipsData[0].from = '0:0:0.0'
                 }
                 if (clipsData.length === 1 && clipsData[0].to === null) {
@@ -92,12 +92,10 @@ class TranscodeConfigurator extends Slim {
                 }
                 const streams = this.streams.filter(s => s.active).map(s => ({id: s.index, config: s.transcodeConfig ?? {}}))
                 console.info('Transcode %s', this.item.path, clipsData, streams)
-                // requestAnimationFrame(() => {
-                    Request.post(`/transcode/${encodeURIComponent(this.item.path)}`, {
-                        streams,
-                        clips: clipsData
-                    })
-                // })
+                Request.post(`/transcode/${encodeURIComponent(this.item.path)}`, {
+                    streams,
+                    clips: clipsData
+                })
             })
         } catch (error) {}
     }
@@ -131,7 +129,7 @@ class TranscodeConfigurator extends Slim {
             right: offsetMain.right - offsetOrigin.left
         }
         document.addEventListener('stream-config', this.handleStreamConfig.bind(this, e.detail.item), {once: true})
-        if (this.streamConfig.classList.contains('active')) {
+        if (this.streamConfig.classList.contains('active') && e.detail.item.index !== this.streamConfig.item.index) {
             this.streamConfig.addEventListener('transitionend', () => {
                 requestAnimationFrame(() => this.streamConfig.toggle(e.detail.item, offset))
             }, {once: true})

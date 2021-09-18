@@ -33,26 +33,27 @@ Buttons.template = /*html*/`
         display: flex;
         align-items: center;
         gap: .5rem;
-        font-size: var(--font-size-200)
     }
-    main > div {
-        cursor: pointer;
-    }
-    div {
+    button {
+        font-size: var(--font-size-200);
         height: 1em;
+        aspect-ratio: 1;
+    }
+    button:not(:disabled) {
+        cursor: pointer;
     }
 </style>
 ${ICON_STACK_CSS}
 <main>
-    <div @click="{{ this.toggle() }}" class="{{ this.item.active ? 'icon-stack active' : 'icon-stack' }}">
+    <button @click="{{ this.toggle() }}" class="{{ this.item.active ? 'icon-stack active' : 'icon-stack' }}">
         <span class="iconify active" data-icon="mdi-checkbox-marked-outline"></span>
         <span class="iconify inactive" data-icon="mdi-checkbox-blank-outline"></span>
         <span class="iconify hover" data-icon="mdi-checkbox-blank-outline"></span>
-    </div>
-    <div @click="{{ this.configure() }}" class="icon-stack">
+    </button>
+    <button @click="{{ this.configure() }}" class="icon-stack" .disabled="{{ !this.item.active }}">
         <span class="iconify" data-icon="mdi-cog-outline"></span>
         <span class="iconify hover" data-icon="mdi-cog-outline"></span>
-    </div>
+    </button>
 </main>
 `
 
