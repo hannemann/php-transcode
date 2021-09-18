@@ -55,6 +55,7 @@ class CodecMapper
     {
         $this->cmds->splice($this->cmds->search('-vcodec'), 2);
         $this->cmds->splice($this->cmds->search('-acodec'), 2);
+        $this->cmds->splice($this->cmds->search('-qp'), 2);
         return $this;
     }
 
@@ -68,8 +69,10 @@ class CodecMapper
             $codec = $this->getDefaultCodecName($this->videoCodecs);
         }
         $cmds->push($codec);
-        $cmds->push('-qp:' . $streamId);
-        $cmds->push($stream['config']['qp'] ?? $this->getDefaultCodec($this->videoCodecs)->qp);
+        if ($codec !== 'copy') {
+            $cmds->push('-qp:' . $streamId);
+            $cmds->push($stream['config']['qp'] ?? $this->getDefaultCodec($this->videoCodecs)->qp);
+        }
         return $cmds;
     }
 
@@ -84,10 +87,12 @@ class CodecMapper
         }
         $channels = $stream['config']['channels'] ?? $this->getDefaultCodec($this->audioCodecs)->channels;
         $cmds->push($codec);
-        $cmds->push('-b:a:' . $streamId);
-        $cmds->push(($channels / 2) * $this->audioCodecs[$codec]->bitrate . 'k');
-        $cmds->push('-ac:' . $streamId);
-        $cmds->push($channels);
+        if ($codec !== 'copy') {
+            $cmds->push('-b:a:' . $streamId);
+            $cmds->push(($channels / 2) * $this->audioCodecs[$codec]->bitrate . 'k');
+            $cmds->push('-ac:a:' . $streamId);
+            $cmds->push($channels);
+        }
         return $cmds;
     }
 
