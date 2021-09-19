@@ -24,6 +24,7 @@ class CurrentQueue extends Model
         'percentage',
         'rate',
         'remaining',
+        'exception'
     ];
 
     protected $casts = [

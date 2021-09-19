@@ -8,6 +8,7 @@ class TextViewer extends Slim {
 
     onAdded() {
         document.addEventListener('file-clicked', this.init.bind(this))
+        document.addEventListener('show-textcontent', this.showTextContent.bind(this))
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
     }
 
@@ -24,14 +25,24 @@ class TextViewer extends Slim {
         console.info('Show contents of %s', this.item.path)
     }
 
+    showTextContent(e) {
+        this.origin = 'textcontent'
+        this.content = e.detail.content
+        this.classList.add('active')
+        document.dispatchEvent(new CustomEvent('textviewer-show', {detail: true}))
+    }
+
     hide() {
         this.addEventListener('transitionend', () => {
             this.classList.remove('active', 'fade-out')
         })
         this.classList.add('fade-out')
-        this.item.node.iconActive = false
-        delete this.item
-        this.leaveWebsocket()
+            if (this.origin === 'file') {
+            this.item.node.iconActive = false
+            delete this.item
+            this.leaveWebsocket()
+        }
+        this.origin = undefined
         document.dispatchEvent(new CustomEvent('textviewer-show', {detail: false}))
     }
 
@@ -50,6 +61,7 @@ class TextViewer extends Slim {
     requestContent() {
         console.info('Attempt to fetch content of %s', this.item.path)
         try {
+            this.origin = 'file'
             Request.loading = true
             Request.get(`/textviewer/${encodeURIComponent(this.item.path)}`)
         } catch (error) {

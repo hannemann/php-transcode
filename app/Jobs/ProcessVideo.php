@@ -15,6 +15,7 @@ use App\Models\FFMpeg\RemuxTS;
 use Throwable;
 use App\Models\CurrentQueue;
 use App\Models\FFMpeg\ConcatPrepare;
+use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 
 class ProcessVideo implements ShouldQueue //, ShouldBeUnique
 {
@@ -105,11 +106,17 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
      */
     public function failed(Throwable $exception)
     {
+        $message = $exception->getMessage();
+        if ($exception instanceOf EncodingException) {
+            $command = $exception->getCommand();
+            $errorLog = $exception->getErrorOutput();
+            $message = sprintf("%s\n\n%s", $command, $errorLog);
+        }
         CurrentQueue::where('id', $this->current_queue_id)
             ->update([
                 'state' => CurrentQueue::STATE_FAILED,
-                'exception' => $exception->getMessage()
+                'exception' => $message
             ]);
-        FFMpegProcessEvent::dispatch($this->type . '.' . CurrentQueue::STATE_FAILED, $this->path, ['exception' => $exception->getMessage()]);
+        FFMpegProcessEvent::dispatch($this->type . '.' . CurrentQueue::STATE_FAILED, $this->path, ['exception' => $message]);
     }
 }

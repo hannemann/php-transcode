@@ -10,6 +10,9 @@ use App\Models\FFMpeg\ConcatPrepare;
 use App\Events\FFMpegProgress;
 use App\Models\FFMpeg\ConcatDemuxer;
 use Illuminate\Support\Facades\Storage;
+use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
+use App\Models\CurrentQueue;
+use App\Events\FFMpegProcess as FFMpegProcessEvent;
 
 class TranscodeController extends Controller
 {
@@ -46,16 +49,57 @@ class TranscodeController extends Controller
 
     private function test(array $data, string $path): void
     {
-        if (count($data['clips']) > 1) {
-            $demuxer = new ConcatDemuxer('recordings', $path, $data['clips']);
-            $demuxer->generateFile();
-            $pre = new ConcatPrepare('recordings', $path, 0, $data['streams']);
-            $path = $pre->getOutputFilename();
-            if (!Storage::disk('recordings')->exists($path)) {
-                $pre->execute();
-            }
-        }
+        $type = '';
+        try {
+            if (count($data['clips']) > 1) {
+                $demuxer = new ConcatDemuxer('recordings', $path, $data['clips']);
+                $demuxer->generateFile();
 
-        (new Transcode('recordings', $path, 0, $data['streams'], $data['clips']))->execute();
+                $type = 'prepare';
+                $currentQueue = new CurrentQueue([
+                    'path' => $path,
+                    'streams' => $data['streams'],
+                    'clips' => json_encode($data['clips']),
+                    'type' => $type,
+                    'state' => CurrentQueue::STATE_PENDING,
+                    'percentage' => 0,
+                    'rate' => 0,
+                    'remaining' => 0,
+                ]);
+                $currentQueue->save();
+                $current_queue_id = $currentQueue->getKey();
+
+                $pre = new ConcatPrepare('recordings', $path, $current_queue_id, $data['streams']);
+                $path = $pre->getOutputFilename();
+                if (!Storage::disk('recordings')->exists($path)) {
+                    $pre->execute();
+                }
+            }
+
+            $type = 'transcode';
+            $currentQueue = new CurrentQueue([
+                'path' => $path,
+                'streams' => $data['streams'],
+                'clips' => json_encode($data['clips']),
+                'type' => $type,
+                'state' => CurrentQueue::STATE_PENDING,
+                'percentage' => 0,
+                'rate' => 0,
+                'remaining' => 0,
+            ]);
+            $currentQueue->save();
+            $current_queue_id = $currentQueue->getKey();
+
+            (new Transcode('recordings', $path, $current_queue_id, $data['streams'], $data['clips']))->execute();
+        } catch (EncodingException $e) {
+            $command = $e->getCommand();
+            $errorLog = $e->getErrorOutput();
+            $errorMessage = sprintf("%s\n\n%s", $command, $errorLog);
+            CurrentQueue::where('id', $current_queue_id)->update([
+                'state' => CurrentQueue::STATE_FAILED,
+                'exception' => $errorMessage,
+            ]);
+            FFMpegProcessEvent::dispatch($type . '.' . CurrentQueue::STATE_FAILED, $path, ['exception' => $errorMessage]);
+        }
     }
 }

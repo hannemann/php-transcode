@@ -3,7 +3,10 @@ import {PROGRESS_ITEM_CSS, ProgressItem} from './Items'
 
 class ProgressFailed extends ProgressItem {
     showException(item) {
-        console.log(item)
+        console.error(item)
+        document.dispatchEvent(new CustomEvent('show-textcontent', {
+            detail: {content: item.exception}
+        }))
     }
 }
 
