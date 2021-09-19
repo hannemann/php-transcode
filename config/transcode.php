@@ -31,8 +31,13 @@ $audioCodecs = [
         "channels" => 2,
         "bitrate" => 128,
     ],
-    "copy" => [
+    "flac" => [
         "v" => 2,
+        "l" => "FLAC",
+        "channels" => 6,
+    ],
+    "copy" => [
+        "v" => 3,
         "l" => "Copy",
     ],
 ];
