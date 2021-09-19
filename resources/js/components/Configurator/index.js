@@ -193,6 +193,24 @@ footer {
     display: flex;
     justify-content: flex-end;
     gap: .5rem;
+    padding: 0 1rem 1rem;
+}
+footer button {
+    background: var(--clr-bg-100);
+    color: var(--clr-text-100);
+    font-size: 1rem;
+    padding: .5rem;
+    border: 2px solid var(--clr-bg-200);
+    transition-property: text-shadow, box-shadow, border-color, background-color;
+    transition-timing-function: ease-out;
+    transition-duration: var(--transition-medium);
+}
+footer button:hover {
+    background:var(--clr-bg-200);
+    color: var(--clr-enlightened);
+    text-shadow: 0 0 5px var(--clr-enlightened-glow), 0 0 10px var(--clr-enlightened-glow);
+    border-color: var(--clr-enlightened);
+    box-shadow: 0 0 20px 0 var(--clr-enlightened-glow), 0 0 10px 0 inset var(--clr-enlightened-glow);
 }
 </style>
 ${ICON_STACK_CSS}
