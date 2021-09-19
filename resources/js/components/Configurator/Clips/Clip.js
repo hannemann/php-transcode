@@ -7,6 +7,7 @@ class Clip extends Slim {
     constructor() {
         super()
         this.setTimecode = this.setTimecode.bind(this)
+        this.handleKey = this.handleKey.bind(this)
         this.bindListener()
         this.valid = true
     }
@@ -55,6 +56,28 @@ class Clip extends Slim {
 
     handleBlur() {
         this.dispatchEvent(new CustomEvent('clipblur', {detail: this.clipData}))
+    }
+
+    handleKey(e) {
+        console.log(e)
+        let prevent = false
+        switch (e.key) {
+            case 'Tab':
+                if (!e.shiftKey && this.isLast && e.currentTarget === this.inputTo) {
+                    this.handleAdd()
+                    prevent = true
+                }
+                break;
+            case '-':
+                this.handleRemove()
+                prevent = true
+                break;
+            case '+':
+                this.handleAdd()
+                prevent = true
+                break;
+        }
+        prevent && e.preventDefault()
     }
 
     getCutpoint() {
@@ -114,8 +137,14 @@ input:invalid {
 </style>
 <section>
     <div class="input">
-        <div><span>From:</span><input @focus="{{ this.handleFocus }}" @blur="{{ this.handleBlur }}" placeholder="0:0:0.0" @input="{{ this.setTimecode }}" name="from" pattern="{{ this.pattern }}" .value="{{ this.clipData.from }}"></div>
-        <div><span>To:<span class="cutpoint">{{ this.cutpoint }}</span></span><input @focus="{{ this.handleFocus }}" @blur="{{ this.handleBlur }}" placeholder="0:0:0.0" @input="{{ this.setTimecode }}" name="to" pattern="{{ this.pattern }}" .value="{{ this.clipData.to }}"></div>
+        <div>
+            <span>From:</span>
+            <input #ref="inputFrom" @focus="{{ this.handleFocus }}" @blur="{{ this.handleBlur }}" placeholder="0:0:0.0" @input="{{ this.setTimecode }}" @keydown="{{ this.handleKey }}" name="from" pattern="{{ this.pattern }}" .value="{{ this.clipData.from }}">
+        </div>
+        <div>
+            <span>To:<span class="cutpoint">{{ this.cutpoint }}</span></span>
+            <input #ref="inputTo" @focus="{{ this.handleFocus }}" @blur="{{ this.handleBlur }}" placeholder="0:0:0.0" @input="{{ this.setTimecode }}" @keydown="{{ this.handleKey }}" name="to" pattern="{{ this.pattern }}" .value="{{ this.clipData.to }}">
+        </div>
     </div>
     <div class="icon-stack plus" @click="{{ this.handleAdd }}">
         <span class="iconify" data-icon="mdi-plus-outline"></span>

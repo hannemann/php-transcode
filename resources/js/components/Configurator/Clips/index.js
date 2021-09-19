@@ -76,7 +76,14 @@ class Clips extends Slim {
 
     handleClipsEvent(ws) {
         if (ws.clips.length) {
-            this.clips = ws.clips;
+            this.clips = []
+            ws.clips.forEach(c => {
+                let clip = this.newClip()
+                clip.from = c.from
+                clip.to = c.to
+                this.clips.push(clip)
+            })
+            this.update()
         }
     }
 
@@ -89,17 +96,21 @@ class Clips extends Slim {
         this.update()
     }
 
-    handleAdd(e) {
+    async handleAdd(e) {
         const idx = this.clips.findIndex(c => c.id === e.detail.id)
-        this.clips.splice(idx+1, 0, this.newClip())
-        this.update()
+        let clip = this.newClip()
+        this.clips.splice(idx+1, 0, clip)
+        await this.update()
+        this.sortable.querySelector(`[data-clip="${clip.id}"]`).inputFrom.focus()
     }
 
-    handleRemove(e) {
+    async handleRemove(e) {
         if (this.clips.length > 1) {
             const idx = this.clips.findIndex(c => c.id === e.detail.id)
             this.clips.splice(idx, 1)
-            this.update()
+            await this.update()
+            const focus = Math.max(0, idx - 1)
+            this.sortable.querySelector(`[data-clip="${this.clips[focus].id}"]`).inputFrom.focus()
         }
     }
 
@@ -108,11 +119,14 @@ class Clips extends Slim {
         this.valid = Array.from(this.shadowRoot.querySelectorAll('transcode-configurator-clip')).every(c => c.valid)
     }
 
-    update() {
-        Utils.forceUpdate(this, 'clips')
-        requestAnimationFrame(() => {
-            sortable(this.sortable, 'reload')
-            this.shadowRoot.querySelectorAll('transcode-configurator-clip').forEach((c, i) => c.clipData = this.clips[i])
+    async update() {
+        return new Promise((resolve) => {
+            Utils.forceUpdate(this, 'clips')
+            requestAnimationFrame(() => {
+                sortable(this.sortable, 'reload')
+                this.shadowRoot.querySelectorAll('transcode-configurator-clip').forEach((c, i) => c.clipData = this.clips[i])
+                resolve()
+            })
         })
     }
 
@@ -164,8 +178,10 @@ ${CARD_CSS}
     <h2>Clips</h2>
     <div #ref="sortable" @sortupdate="{{ this.handleSortupdate }}">
         <transcode-configurator-clip
+            data-clip="{{ item.id }}"
             *foreach="{{ this.clips }}"
             .can-remove="{{ this.clips.length > 1 }}"
+            .is-last="{{ this.clips.indexOf(item) === this.clips.length - 1 }}"
             @updateclip="{{ this.handleUpdate }}"
             @clipinsert="{{ this.handleAdd }}"
             @clipremove="{{ this.handleRemove }}"
