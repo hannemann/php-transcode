@@ -12,6 +12,7 @@ use App\Events\FFMpegProcess as FFMpegProcessEvent;
 use App\Models\FFMpeg\Concat;
 use App\Models\FFMpeg\Transcode;
 use App\Models\FFMpeg\RemuxTS;
+use App\Models\FFMpeg\RemuxMP4;
 use Throwable;
 use App\Models\CurrentQueue;
 use App\Models\FFMpeg\ConcatPrepare;
@@ -88,7 +89,7 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
                 (new Transcode($this->disk, $this->path, $this->current_queue_id, $this->streams, $this->clips))->execute();
                 break;
             case 'remux':
-                (new RemuxTS($this->disk, $this->path, $this->current_queue_id))->execute();
+                (new RemuxMP4($this->disk, $this->path, $this->current_queue_id))->execute();
                 break;
             case 'prepare':
                 (new ConcatPrepare($this->disk, $this->path, $this->current_queue_id, $this->streams))->execute();

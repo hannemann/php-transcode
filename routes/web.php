@@ -14,6 +14,7 @@ use App\Jobs\ProcessVideo;
 use App\Models\CurrentQueue;
 use App\Models\FFMpeg\ConcatDemuxer;
 use App\Models\FFMpeg\ConcatPrepare;
+use App\Models\FFMpeg\RemuxTS;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +47,14 @@ Route::get('/concat/{path?}', function (string $path = null) {
     // (new Concat('recordings', $path, 0))->execute();
     
     ProcessVideo::dispatch('concat', 'recordings', $path, []);
+
+})->where('path', '(.*)');
+
+Route::get('/remux/{path?}', function (string $path = null) {
+
+    // (new RemuxTS('recordings', $path, 0))->execute();
+    
+    ProcessVideo::dispatch('remux', 'recordings', $path, []);
 
 })->where('path', '(.*)');
 

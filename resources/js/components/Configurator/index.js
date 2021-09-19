@@ -121,6 +121,15 @@ class TranscodeConfigurator extends Slim {
         }
     }
 
+    async requestRemux() {
+        console.info('Remux video file %s', this.item.path)
+        try {
+            await Request.get(`/remux/${this.item.path}`)
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
     handleConfigureStream(e) {
         const offsetOrigin = e.detail.origin.getBoundingClientRect()
         const offsetMain = this.main.getBoundingClientRect()
@@ -235,6 +244,7 @@ ${CSS}
         <transcode-configurator-streams *if="{{ this.streams }}" .items="{{ this.streams }}"></transcode-configurator-streams>
         <transcode-configurator-clips *if="{{ this.streams }}" .path="{{ this.item.path }}"></transcode-configurator-clips>
         <footer>
+            <button @click="this.requestRemux()">Remux</button>
             <button *if="{{ this.canConcat }}" @click="this.requestConcat()">Concat</button>
             <button @click="this.transcode()">Start</button>
         </footer>

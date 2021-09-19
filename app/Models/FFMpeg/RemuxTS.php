@@ -8,7 +8,7 @@ use App\Models\CurrentQueue;
 
 class RemuxTS extends Transcode
 {
-    protected string $filenameAffix = 'copy';
+    protected string $filenameAffix = 'remux';
     protected string $filenameSuffix = 'ts';
 
     protected string $formatClass = Format::class;
@@ -19,6 +19,7 @@ class RemuxTS extends Transcode
     public function execute()
     {
         $this->media = File::getMedia($this->disk, $this->path);
+        $this->initStreams();
         $this->outputMapper = new OutputMapper($this->codecConfig, $this->video, $this->audio, $this->subtitle);
         $this->export();
     }
