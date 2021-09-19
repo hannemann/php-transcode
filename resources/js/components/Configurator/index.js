@@ -71,8 +71,7 @@ class TranscodeConfigurator extends Slim {
     }
 
     transcode() {
-        const clips = this.shadowRoot.querySelector('transcode-configurator-clips')
-        if (!clips.valid) {
+        if (!this.clips.valid) {
             document.dispatchEvent(new CustomEvent('toast', {
                 detail: {
                     message: 'Clip is invalid',
@@ -83,7 +82,7 @@ class TranscodeConfigurator extends Slim {
         }
         try {
             requestAnimationFrame(() => {
-                const clipsData = [...clips.clips]
+                const clipsData = [...this.clips.clips]
                 if (clipsData[0].from === null) {
                     clipsData[0].from = '0:0:0.0'
                 }
@@ -148,6 +147,10 @@ class TranscodeConfigurator extends Slim {
 
     handleStreamConfig(item) {
         console.info('Stream configured: ', item.transcodeConfig)
+    }
+
+    get clips() {
+        return this.shadowRoot.querySelector('transcode-configurator-clips')
     }
 }
 

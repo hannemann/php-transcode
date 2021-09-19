@@ -66,7 +66,7 @@ class ConcatDemuxer
         if ($full) {
             $path = $this->getStoragePath() . $path;
         }
-        return sprintf('%s%s-concat-demux.txt', $path, sha1($this->path));
+        return sprintf('%s%s.concat-demux.txt', $path, sha1($this->path));
     }
 
     private function getStoragePath(): string

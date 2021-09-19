@@ -59,7 +59,7 @@ Transcoder.template = /*html*/`
     <h1>Transcoder</h1>
     <filepicker-root #ref="filePicker"></filepicker-root>
 </main>
-<transcode-configurator></transcode-configurator>
+<transcode-configurator #ref="configurator"></transcode-configurator>
 <text-viewer></text-viewer>
 <transcoder-loading></transcoder-loading>
 <transcoder-toast></transcoder-toast>
