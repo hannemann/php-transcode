@@ -6,66 +6,48 @@ use App\Models\FFMpeg\Format\Video\RemuxTS as Format;
 use App\Models\Video\File;
 use App\Models\CurrentQueue;
 
-class RemuxTS
+class RemuxTS extends Transcode
 {
-    public function __construct(string $disk, string $path, int $current_queue_id)
-    {
-        $this->disk = $disk;
-        $this->path = $path;
-        $this->current_queue_id = $current_queue_id;
-        $this->format = new Format();
-    }
+    protected string $filenameAffix = 'copy';
+    protected string $filenameSuffix = 'ts';
 
+    protected string $formatClass = Format::class;
+
+    /**
+     * handle
+     */
     public function execute()
     {
-        $out = $this->getOutputFilename();
-
-        $media = File::getMedia($this->disk, $this->path);
-
-        $videoFormat = $media->getFormat();
-        $duration = $videoFormat->get('duration');
-        $clipDuration = $duration;
-        
-        $media->export()
-        ->onProgress(function ($percentage, $remaining, $rate) use ($duration, $clipDuration) {
-
-            if ($duration !== $clipDuration && $percentage < 100) {
-                $processed = $duration * $percentage / 100;
-                $percentage = round(100 / $clipDuration * $processed);
-            }
-
-            CurrentQueue::where('id', $this->current_queue_id)->update([
-                'percentage' => $percentage,
-                'remaining' => $remaining,
-                'rate' => $rate,
-            ]);
-        })
-        ->inFormat($this->format)
-        ->beforeSaving(function ($commands) {
-
-            $file = array_pop($commands[0]);
-            $cmds = collect($commands[0]);
-            $cmds = $this->format->stripOptions($cmds);
-            $cmds = $cmds->replace([$cmds->search('-vcodec') => '-c:v', $cmds->search('-acodec') => '-c:a']);
-            $cmds->push('-c:s');
-            $cmds->push('copy');
-            $cmds->push('-map');
-            $cmds->push('0:v?');
-            $cmds->push('-map');
-            $cmds->push('0:a?');
-            $cmds->push('-map');
-            $cmds->push('0:s?');
-            $cmds->push($file);
-
-
-            return [$cmds->all()];
-        })
-        ->save($out);
+        $this->media = File::getMedia($this->disk, $this->path);
+        $this->outputMapper = new OutputMapper($this->codecConfig, $this->video, $this->audio, $this->subtitle);
+        $this->export();
     }
 
-    public function getOutputFilename(): string
+    /**
+     * update commands array
+     */
+    protected function updateCommands(array $commands): array
     {
-        $path = rtrim(dirname($this->path), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-        return sprintf('%s%s.copy.ts', $path, sha1($this->path));
+        $file = array_pop($commands[0]);
+        $cmds = collect($commands[0]);
+        $cmds = $this->format->stripOptions($cmds);
+        $cmds = $cmds->replace([$cmds->search('-vcodec') => '-c:v', $cmds->search('-acodec') => '-c:a']);
+        $cmds->push('-c:s');
+        $cmds->push('copy');
+        $cmds = $this->outputMapper->mapAll($cmds);
+        $cmds->push($file);
+        return [$cmds->all()];
+    }
+
+    /**
+     * update queue
+     */
+    protected function saveProgress($percentage, $remaining, $rate): void
+    {
+        CurrentQueue::where('id', $this->current_queue_id)->update([
+            'percentage' => $percentage,
+            'remaining' => $remaining,
+            'rate' => $rate,
+        ]);
     }
 }

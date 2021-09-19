@@ -12,9 +12,7 @@ class ConcatPrepare extends DefaultVideo
     {
         $this
             ->setAudioCodec('flac')
-            ->setVideoCodec('copy')
-            ->setAudioKiloBitrate(384)
-            ->setAudioChannels(6);
+            ->setVideoCodec('copy');
     }
 
     public function getAvailableVideoCodecs()

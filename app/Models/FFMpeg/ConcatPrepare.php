@@ -3,18 +3,41 @@
 namespace App\Models\FFMpeg;
 
 use App\Models\FFMpeg\Format\Video\ConcatPrepare as Format;
+use App\Models\Video\File;
 
 class ConcatPrepare extends RemuxTS
 {
-    public function __construct(string $disk, string $path, int $current_queue_id)
+    protected string $filenameAffix = 'prepare';
+    protected string $filenameSuffix = 'mkv';
+
+    protected string $formatClass = Format::class;
+
+    /**
+     * handle
+     */
+    public function execute()
     {
-        parent::__construct($disk, $path, $current_queue_id);
-        $this->format = new Format();
+        $this->media = File::getMedia($this->disk, $this->path);
+        $this->initStreams();
+        $this->codecMapper = new CodecMapper($this->codecConfig, $this->streams, $this->video, $this->audio, $this->subtitle);
+        $this->codecMapper->forceCodec('copy', 'flac');
+        $this->outputMapper = new OutputMapper($this->codecConfig, $this->video, $this->audio, $this->subtitle);
+        $this->export();
     }
 
-    public function getOutputFilename(): string
+    /**
+     * update commands array
+     */
+    protected function updateCommands(array $commands): array
     {
-        $path = rtrim(dirname($this->path), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-        return sprintf('%s%s.pre-concat.mkv', $path, sha1($this->path));
+        $file = array_pop($commands[0]);
+        $cmds = collect($commands[0]);
+
+        $cmds = $this->format->stripOptions($cmds);
+        $cmds = $this->codecMapper->execute($cmds);
+        $cmds = $this->outputMapper->execute($cmds);
+
+        $cmds->push($file);
+        return [$cmds->all()];
     }
 }

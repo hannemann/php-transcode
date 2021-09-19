@@ -21,6 +21,11 @@ class ConcatDemuxer
         $this->clips = $clips;
     }
 
+    public function isActive(): bool
+    {
+        return false;
+    }
+
     public function generateFile(): ConcatDemuxer
     {
         $timestamp = 0;
@@ -50,6 +55,7 @@ class ConcatDemuxer
         ];
 
         $cmds->splice($cmds->search('-i'), 0, $initial);
+        $cmds->replace([$cmds->search('-i') + 1 => $this->getInputFilename(true)]);
 
         return $cmds->concat($additional);
     }

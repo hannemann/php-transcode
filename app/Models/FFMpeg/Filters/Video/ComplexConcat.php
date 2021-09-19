@@ -7,13 +7,18 @@ use Illuminate\Support\Collection;
 
 class ComplexConcat
 {
-    public function __construct(array $clips, array $streams, Collection $video, Collection $audio, Collection $subtitle)
+    public function __construct(array $codecConfig, Collection $video, Collection $audio, Collection $subtitle, array $clips = [])
     {
-        $this->clips = $clips;
-        $this->streams = collect($streams)->pluck('id')->all();
+        $this->streamIds = collect($codecConfig)->pluck('id')->all();
         $this->video = $video;
         $this->audio = $audio;
         $this->subtitle = $subtitle;
+        $this->clips = $clips;
+    }
+
+    public function isActive(): bool
+    {
+        return count($this->clips) > 1;
     }
 
     public function getFilter(Collection $cmds): Collection
@@ -80,13 +85,13 @@ class ComplexConcat
             'subtitle' => [],
         ];
 
-        $this->video->intersect($this->streams)->keys()->each(function($id) use (&$streams) {
+        $this->video->intersect($this->streamIds)->keys()->each(function($id) use (&$streams) {
             $streams['video'][] = $id;
         });
-        $this->audio->intersect($this->streams)->keys()->each(function($id) use (&$streams) {
+        $this->audio->intersect($this->streamIds)->keys()->each(function($id) use (&$streams) {
             $streams['audio'][] = $id;
         });
-        $this->subtitle->intersect($this->streams)->keys()->each(function($id) use (&$streams) {
+        $this->subtitle->intersect($this->streamIds)->keys()->each(function($id) use (&$streams) {
             $streams['subtitle'][] = $id;
         });
         return $streams;

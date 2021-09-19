@@ -6,12 +6,10 @@ use App\Http\Requests\TranscodeRequest;
 use Illuminate\Http\JsonResponse;
 use App\Jobs\ProcessVideo;
 use App\Models\FFMpeg\Transcode;
-use App\Models\FFMpeg\RemuxTS;
 use App\Models\FFMpeg\ConcatPrepare;
 use App\Events\FFMpegProgress;
 use App\Models\FFMpeg\ConcatDemuxer;
 use Illuminate\Support\Facades\Storage;
-use App\Models\CurrentQueue;
 
 class TranscodeController extends Controller
 {
@@ -19,7 +17,7 @@ class TranscodeController extends Controller
     {
         $data = $request->input();
         try {
-            if (true) {
+            if (false) {
                 $this->test($data, $path);
             } else {
                 if (count($data['clips']) === 1) {
@@ -29,7 +27,7 @@ class TranscodeController extends Controller
                     $pre = new ConcatPrepare('recordings', $path, 0);
                     $pathCopy = $pre->getOutputFilename();
                     if (!Storage::disk('recordings')->exists($pathCopy)) {
-                        ProcessVideo::dispatch('pre-concat', 'recordings', $path, []);
+                        ProcessVideo::dispatch('prepare', 'recordings', $path, $data['streams']);
                     }
                     $path = $pathCopy;
                     $demuxer = new ConcatDemuxer('recordings', $path, $data['clips']);
@@ -51,13 +49,13 @@ class TranscodeController extends Controller
         if (count($data['clips']) > 1) {
             $demuxer = new ConcatDemuxer('recordings', $path, $data['clips']);
             $demuxer->generateFile();
-            $pre = new ConcatPrepare('recordings', $path, 0);
+            $pre = new ConcatPrepare('recordings', $path, 0, $data['streams']);
             $path = $pre->getOutputFilename();
             if (!Storage::disk('recordings')->exists($path)) {
                 $pre->execute();
             }
         }
 
-        (new Transcode('recordings', $path, $data['streams'], 0, $data['clips']))->execute();
+        (new Transcode('recordings', $path, 0, $data['streams'], $data['clips']))->execute();
     }
 }

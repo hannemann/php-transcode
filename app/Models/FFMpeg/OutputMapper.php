@@ -12,9 +12,9 @@ class OutputMapper
     const TYPE_AUDIO = 'a';
     const TYPE_SUBTITLE = 's';
 
-    public function __construct(array $streams, Collection $video, Collection $audio, Collection $subtitle)
+    public function __construct(array $codecConfig, Collection $video, Collection $audio, Collection $subtitle)
     {
-        $this->streams = collect($streams)->pluck('id')->all();
+        $this->streamIds = collect($codecConfig)->pluck('id')->all();
         $this->video = $video;
         $this->audio = $audio;
         $this->subtitle = $subtitle;    
@@ -22,18 +22,29 @@ class OutputMapper
 
     public function execute(Collection $cmds): Collection
     {
-        $this->video->intersect($this->streams)->keys()->each(function($id) use (&$cmds) {
+        $this->video->intersect($this->streamIds)->keys()->each(function($id) use (&$cmds) {
             $cmds->push(static::MAP_CMD);
             $cmds->push(sprintf(static::MAP_TEMPLATE, 0, static::TYPE_VIDEO, $id));
         });
-        $this->audio->intersect($this->streams)->keys()->each(function($id) use (&$cmds) {
+        $this->audio->intersect($this->streamIds)->keys()->each(function($id) use (&$cmds) {
             $cmds->push(static::MAP_CMD);
             $cmds->push(sprintf(static::MAP_TEMPLATE, 0, static::TYPE_AUDIO, $id));
         });
-        $this->subtitle->intersect($this->streams)->keys()->each(function($id) use (&$cmds) {
+        $this->subtitle->intersect($this->streamIds)->keys()->each(function($id) use (&$cmds) {
             $cmds->push(static::MAP_CMD);
             $cmds->push(sprintf(static::MAP_TEMPLATE, 0, static::TYPE_SUBTITLE, $id));
         });
+        return $cmds;
+    }
+
+    public function mapAll(Collection $cmds): Collection
+    {
+        $cmds->push('-map');
+        $cmds->push('0:v?');
+        $cmds->push('-map');
+        $cmds->push('0:a?');
+        $cmds->push('-map');
+        $cmds->push('0:s?');
         return $cmds;
     }
 }

@@ -6,7 +6,7 @@ use Illuminate\Support\Collection;
 
 /**
  * @property Collection $cmds
- * @property Collection $streamConfig
+ * @property Collection $codecConfig
  * @property int[] $wantedStreams
  * @property Collection $video
  * @property Collection $audio
@@ -16,11 +16,14 @@ use Illuminate\Support\Collection;
  */
 class CodecMapper
 {
-    public function __construct(Collection $cmds, Collection $streams, array $streamConfig, Collection $video, Collection $audio, Collection $subtitle) {
-        $this->cmds = $cmds;
+    private ?string $forcedVideoCodec = null;
+    private ?string $forcedAudioCodec = null;
+    private ?string $forcedSubtitleCodec = null;
+
+    public function __construct(array $codecConfig, Collection $streams, Collection $video, Collection $audio, Collection $subtitle) {
+        $this->codecConfig = $codecConfig;
+        $this->wantedStreams = collect($this->codecConfig)->pluck('id')->all();
         $this->streams = $streams;
-        $this->streamConfig = $streamConfig;
-        $this->wantedStreams = collect($this->streamConfig)->pluck('id')->all();
         $this->video = $video;
         $this->audio = $audio;
         $this->subtitle = $subtitle;
@@ -28,10 +31,11 @@ class CodecMapper
         $this->audioCodecs = collect(config('transcode.audioCodecs'));
     }
 
-    public function execute(): Collection
+    public function execute(Collection $cmds): Collection
     {
+        $this->cmds = $cmds;
         $this->cleanCommands();
-        foreach($this->streamConfig as $stream) {
+        foreach($this->codecConfig as $stream) {
             $type = $this->streams->filter(function ($item) use ($stream) {
                 return $item->get('index') == $stream['id'];
             })->first()->get('codec_type');
@@ -44,18 +48,28 @@ class CodecMapper
             if ($type === 'subtitle') {
                 $streamId = $this->subtitle->intersect([$stream['id']])->keys()->first();
                 $this->cmds->push('-c:s:' . $streamId);
-                $this->cmds->push('dvd_subtitle');
+                $this->cmds->push($this->forcedSubtitleCodec ?? 'dvd_subtitle');
             }
         }
 
         return $this->cmds;
     }
 
+    public function forceCodec($video = null, $audio = null, $subtitle = null): void
+    {
+        $this->forcedVideoCodec = $video;
+        $this->forcedAudioCodec = $audio;
+        $this->forcedSubtitleCodec = $subtitle;
+    }
+
     private function cleanCommands(): static
     {
-        $this->cmds->splice($this->cmds->search('-vcodec'), 2);
-        $this->cmds->splice($this->cmds->search('-acodec'), 2);
-        $this->cmds->splice($this->cmds->search('-qp'), 2);
+        $commands = ['-vcodec', '-acodec', '-qp'];
+        foreach($commands as $command) {
+            if ($index = $this->cmds->search($command)) {
+                $this->cmds->splice($index, 2);
+            }
+        }
         return $this;
     }
 
@@ -63,14 +77,16 @@ class CodecMapper
     {
         $streamId = $this->video->intersect([$stream['id']])->keys()->first();
         $cmds->push('-c:v:' . $streamId);
-        if (isset($stream['config']['codec'])) {
+        if ($this->forcedVideoCodec) {
+            $codec = $this->forcedVideoCodec;
+        } elseif (isset($stream['config']['codec'])) {
             $codec = $this->videoCodecs->filter(fn($c) => (int)$c->v === (int)$stream['config']['codec'])->keys()->first();
         } else {
             $codec = $this->getDefaultCodecName($this->videoCodecs);
         }
         $cmds->push($codec);
         if ($codec !== 'copy') {
-            $cmds->push('-qp:' . $streamId);
+            $cmds->push('-qp:v:' . $streamId);
             $cmds->push($stream['config']['qp'] ?? $this->getDefaultCodec($this->videoCodecs)->qp);
         }
         return $cmds;
@@ -80,7 +96,9 @@ class CodecMapper
     {
         $streamId = $this->audio->intersect([$stream['id']])->keys()->first();
         $cmds->push('-c:a:' . $streamId);
-        if (isset($stream['config']['codec'])) {
+        if ($this->forcedAudioCodec) {
+            $codec = $this->forcedAudioCodec;
+        } elseif (isset($stream['config']['codec'])) {
             $codec = $this->audioCodecs->filter(fn($c) => (int)$c->v === (int)$stream['config']['codec'])->keys()->first();
         } else {
             $codec = $this->getDefaultCodecName($this->audioCodecs);
@@ -88,8 +106,10 @@ class CodecMapper
         $channels = $stream['config']['channels'] ?? $this->getDefaultCodec($this->audioCodecs)->channels;
         $cmds->push($codec);
         if ($codec !== 'copy') {
-            $cmds->push('-b:a:' . $streamId);
-            $cmds->push(($channels / 2) * $this->audioCodecs[$codec]->bitrate . 'k');
+            if ($codec !== 'flac') {
+                $cmds->push('-b:a:' . $streamId);
+                $cmds->push(($channels / 2) * $this->audioCodecs[$codec]->bitrate . 'k');
+            }
             $cmds->push('-ac:a:' . $streamId);
             $cmds->push($channels);
         }

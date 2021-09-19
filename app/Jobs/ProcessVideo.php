@@ -84,13 +84,13 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
                 (new Concat($this->disk, $this->path, $this->current_queue_id))->execute();
                 break;
             case 'transcode':
-                (new Transcode($this->disk, $this->path, $this->streams, $this->current_queue_id, $this->clips))->execute();
+                (new Transcode($this->disk, $this->path, $this->current_queue_id, $this->streams, $this->clips))->execute();
                 break;
             case 'remux':
                 (new RemuxTS($this->disk, $this->path, $this->current_queue_id))->execute();
                 break;
-            case 'pre-concat':
-                (new ConcatPrepare($this->disk, $this->path, $this->current_queue_id))->execute();
+            case 'prepare':
+                (new ConcatPrepare($this->disk, $this->path, $this->current_queue_id, $this->streams))->execute();
                 break;
         }
         CurrentQueue::where('id', $this->current_queue_id)->update(['state' => CurrentQueue::STATE_DONE]);
