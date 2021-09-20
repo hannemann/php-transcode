@@ -22,6 +22,7 @@ class ConcatPrepare extends RemuxTS
         $this->codecMapper = new CodecMapper($this->codecConfig, $this->streams, $this->video, $this->audio, $this->subtitle);
         $this->codecMapper->forceCodec('copy', 'flac');
         $this->outputMapper = new OutputMapper($this->codecConfig, $this->video, $this->audio, $this->subtitle);
+        $this->mediaExporter = $this->media->export();
         $this->export();
     }
 

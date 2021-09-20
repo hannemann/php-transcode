@@ -2,10 +2,8 @@
 
 namespace App\Models\FFMpeg;
 
-use App\Events\FFMpegProgress;
 use App\Models\FFMpeg\Format\Video\RemuxTS as Format;
 use App\Models\Video\File;
-use App\Models\CurrentQueue;
 
 class RemuxTS extends Transcode
 {
@@ -21,7 +19,7 @@ class RemuxTS extends Transcode
     {
         $this->media = File::getMedia($this->disk, $this->path);
         $this->initStreams();
-        $this->outputMapper = new OutputMapper($this->codecConfig, $this->video, $this->audio, $this->subtitle);
+        $this->mediaExporter = $this->media->export();
         $this->export();
     }
 
@@ -36,21 +34,13 @@ class RemuxTS extends Transcode
         $cmds = $cmds->replace([$cmds->search('-vcodec') => '-c:v', $cmds->search('-acodec') => '-c:a']);
         $cmds->push('-c:s');
         $cmds->push('copy');
-        $cmds = $this->outputMapper->mapAll($cmds);
+        $cmds = OutputMapper::mapAll($cmds);
         $cmds->push($file);
         return [$cmds->all()];
     }
 
-    /**
-     * update queue
-     */
-    protected function saveProgress($percentage, $remaining, $rate): void
+    protected function calculateProgress(int $percentage): int
     {
-        CurrentQueue::where('id', $this->current_queue_id)->update([
-            'percentage' => $percentage,
-            'remaining' => $remaining,
-            'rate' => $rate,
-        ]);
-        FFMpegProgress::dispatch('queue.progress');
+        return $percentage;
     }
 }

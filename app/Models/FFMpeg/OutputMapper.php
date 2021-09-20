@@ -37,7 +37,7 @@ class OutputMapper
         return $cmds;
     }
 
-    public function mapAll(Collection $cmds): Collection
+    public static function mapAll(Collection $cmds): Collection
     {
         $cmds->push('-map');
         $cmds->push('0:v?');

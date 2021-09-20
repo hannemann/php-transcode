@@ -112,9 +112,9 @@ class TranscodeConfigurator extends Slim {
     }
 
     async requestConcat() {
-        console.info('Concat video files in %s', this.item.parent.path)
+        console.info('Concat video files in %s', this.item.path)
         try {
-            await Request.get(`/concat/${this.item.parent.path}`)
+            await Request.get(`/concat/${this.item.path}`)
         } catch (error) {
             console.error(error)
         }

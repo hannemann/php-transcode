@@ -2,69 +2,34 @@
 
 namespace App\Models\FFMpeg;
 
-use App\Events\FFMpegProgress;
 use App\Models\FilePicker;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
-use App\Models\CurrentQueue;
 use Illuminate\Support\Facades\Storage;
 use App\Models\FFMpeg\Format\Video\RemuxTS;
 use FFMpeg\Coordinate\TimeCode;
 use App\Models\FFMpeg\Filters\Video\ConcatDurationDummy;
 
-class Concat
+class Concat extends Transcode
 {
-    public function __construct(string $disk, string $path, int $current_queue_id)
-    {
-        $this->disk = $disk;
-        $this->path = $path;
-        $this->current_queue_id = $current_queue_id;
-    }
+    protected string $filenameAffix = 'concat';
+    protected string $filenameSuffix = 'ts';
+
+    protected string $formatClass = RemuxTS::class;
 
     public function execute(): void
     {
         $files = $this->getVideoFiles();
-        $out = $this->getOutputFilename();
-        $format = new RemuxTS();
-
-        $input = $this->getConcatInput($files);
-
-        $export = FFMpeg::fromDisk($this->disk)
+        $this->input = $this->getConcatInput($files);
+        $this->mediaExporter = FFMpeg::fromDisk($this->disk)
             ->open($files[0])
             ->export()
-            ->addFilter(new ConcatDurationDummy(new TimeCode(0,0,0,0), $this->getConcatDuration($files)))
-            ->onProgress(function ($percentage, $remaining, $rate) {
-                CurrentQueue::where('id', $this->current_queue_id)->update([
-                    'percentage' => $percentage,
-                    'remaining' => $remaining,
-                    'rate' => $rate,
-                ]);
-                FFMpegProgress::dispatch('queue.progress');
-            })
-            ->inFormat($format)
-            ->beforeSaving(function ($commands) use ($input, $format) {
-
-                $file = array_pop($commands[0]);
-                $cmds = collect([]);
-                $cmds->push('-y');
-                $cmds->push('-i');
-                $cmds->push($input);
-                $cmds->push('-map');
-                $cmds->push('0:v?');
-                $cmds->push('-map');
-                $cmds->push('0:a?');
-                $cmds->push('-map');
-                $cmds->push('0:s?');
-                $cmds->push('-c');
-                $cmds->push('copy');
-                $cmds->push($file);
-                return [$cmds->all()];
-            });
-        $export->save($out);
+            ->addFilter(new ConcatDurationDummy(new TimeCode(0,0,0,0), $this->getConcatDuration($files)));
+        $this->export();
     }
 
     private function getVideoFiles(): array
     {
-        $collection = collect(FilePicker::root($this->disk)::getFiles($this->path))
+        $collection = collect(FilePicker::root($this->disk)::getFiles(dirname($this->path)))
             ->map([FilePicker::class, 'getFileData']);
 
         return $collection->filter(function($item) {
@@ -91,9 +56,25 @@ class Concat
         return TimeCode::fromSeconds($durationInSeconds);
     }
 
-    private function getOutputFilename(): string
+    /**
+     * update commands array
+     */
+    protected function updateCommands(array $commands): array
     {
-        $path = rtrim($this->path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-        return sprintf('%s%s-concat.ts', $path, sha1($this->path));
+        $file = array_pop($commands[0]);
+        $cmds = collect([]);
+        $cmds->push('-y');
+        $cmds->push('-i');
+        $cmds->push($this->input);
+        $cmds->push('-c');
+        $cmds->push('copy');
+        $cmds = OutputMapper::mapAll($cmds);
+        $cmds->push($file);
+        return [$cmds->all()];
+    }
+
+    protected function calculateProgress(int $percentage): int
+    {
+        return $percentage;
     }
 }

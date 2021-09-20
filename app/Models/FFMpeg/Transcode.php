@@ -40,7 +40,6 @@ class Transcode
         $this->duration = $this->media->getFormat()->get('duration');
         $this->initStreams();
 
-
         if (count($this->clips) === 1) {
             $this->media->addFilter(
                 static::getFromToFilter($this->clips[0]['from'], $this->clips[0]['to'])
@@ -52,6 +51,7 @@ class Transcode
         $this->codecMapper = new CodecMapper($this->codecConfig, $this->streams, $this->video, $this->audio, $this->subtitle);
         $this->outputMapper = new OutputMapper($this->codecConfig, $this->video, $this->audio, $this->subtitle);
         $this->clipDuration = $this->concatDemuxer->getDuration();
+        $this->mediaExporter = $this->media->export();
         $this->export();
     }
 
@@ -60,7 +60,7 @@ class Transcode
      */
     protected function export(): void
     {
-        $this->media->export()
+        $this->mediaExporter
             ->onProgress(\Closure::fromCallable([$this, 'saveProgress']))
             ->inFormat($this->format)
             ->beforeSaving(\Closure::fromCallable([$this, 'updateCommands']))
@@ -131,16 +131,21 @@ class Transcode
         return [$cmds->all()];
     }
 
-    /**
-     * calculate progress and update queue
-     */
-    protected function saveProgress($percentage, $remaining, $rate): void {
-
+    protected function calculateProgress(int $percentage): int
+    {
         if ($this->duration !== $this->clipDuration && $percentage < 100) {
             $processed = $this->duration * $percentage / 100;
             $percentage = round(100 / $this->clipDuration * $processed);
         }
+        return $percentage;
+    }
 
+    /**
+     * calculate progress and update queue
+     */
+    protected function saveProgress(int $percentage, int $remaining, int $rate): void
+    {
+        $percentage = $this->calculateProgress($percentage);
         CurrentQueue::where('id', $this->current_queue_id)->update([
             'percentage' => $percentage,
             'remaining' => $remaining,

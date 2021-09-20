@@ -12,7 +12,6 @@ use App\Models\FFMpeg\ConcatDemuxer;
 use Illuminate\Support\Facades\Storage;
 use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 use App\Models\CurrentQueue;
-use App\Events\FFMpegProcess as FFMpegProcessEvent;
 
 class TranscodeController extends Controller
 {
@@ -99,7 +98,7 @@ class TranscodeController extends Controller
                 'state' => CurrentQueue::STATE_FAILED,
                 'exception' => $errorMessage,
             ]);
-            FFMpegProcessEvent::dispatch($type . '.' . CurrentQueue::STATE_FAILED, $path, ['exception' => $errorMessage]);
+            FFMpegProgress::dispatch('queue.progress');
         }
     }
 }

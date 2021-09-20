@@ -8,7 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Events\FFMpegProcess as FFMpegProcessEvent;
+use App\Events\FFMpegProgress;
 use App\Models\FFMpeg\Concat;
 use App\Models\FFMpeg\Transcode;
 use App\Models\FFMpeg\RemuxTS;
@@ -68,8 +68,8 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
             'remaining' => 0,
         ]);
         $currentQueue->save();
+        FFMpegProgress::dispatch('queue.progress');
         $this->current_queue_id = $currentQueue->getKey();
-        FFMpegProcessEvent::dispatch($this->type . '.' . CurrentQueue::STATE_PENDING, $this->path);
     }
 
     /**
@@ -79,8 +79,8 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
      */
     public function handle()
     {
-        FFMpegProcessEvent::dispatch($this->type . '.' . CurrentQueue::STATE_RUNNING, $this->path);
         CurrentQueue::where('id', $this->current_queue_id)->update(['state' => CurrentQueue::STATE_RUNNING]);
+        FFMpegProgress::dispatch('queue.progress');
         switch($this->type) {
             case 'concat':
                 (new Concat($this->disk, $this->path, $this->current_queue_id))->execute();
@@ -96,7 +96,7 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
                 break;
         }
         CurrentQueue::where('id', $this->current_queue_id)->update(['state' => CurrentQueue::STATE_DONE]);
-        FFMpegProcessEvent::dispatch($this->type . '.' . CurrentQueue::STATE_DONE, $this->path);
+        FFMpegProgress::dispatch('queue.progress');
     }
 
     /**
@@ -118,6 +118,6 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
                 'state' => CurrentQueue::STATE_FAILED,
                 'exception' => $message
             ]);
-        FFMpegProcessEvent::dispatch($this->type . '.' . CurrentQueue::STATE_FAILED, $this->path, ['exception' => $message]);
+        FFMpegProgress::dispatch('queue.progress');
     }
 }
