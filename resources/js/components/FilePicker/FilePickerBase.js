@@ -1,3 +1,4 @@
+import { Slim, Utils } from '@/components/lib';
 import {Request} from '@/components/Request'
 
 const TYPE_DIRECTORY = 'd'
@@ -24,8 +25,13 @@ class FilePickerBase extends Slim {
 
     onWsEvent(e) {
         this.items = e.items
-        console.info('Received %d items in %s', this.items.length, this.path)
-        Request.loading = false
+        if (!e.externalUpdate) {
+            Request.loading = false
+            console.info('Received %d items in %s', this.items.length, this.path)
+        }
+        requestAnimationFrame(() => {
+            this.shadowRoot.querySelectorAll('filepicker-item').forEach(i => i.title = i.buildTitle())
+        })
     }
 
     handleClick() {

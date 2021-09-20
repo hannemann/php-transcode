@@ -18,6 +18,8 @@ class FilePicker implements ShouldBroadcastNow
 
     public Collection $items;
 
+    public $externalUpdate;
+
     private string $path;
 
     /**
@@ -25,10 +27,11 @@ class FilePicker implements ShouldBroadcastNow
      *
      * @return void
      */
-    public function __construct(Collection $items, string $path)
+    public function __construct(Collection $items, string $path, bool $externalUpdate = false)
     {
         $this->items = $items;
         $this->path = $path;
+        $this->externalUpdate = $externalUpdate;
     }
 
     /**

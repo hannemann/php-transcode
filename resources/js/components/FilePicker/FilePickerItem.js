@@ -18,6 +18,7 @@ class FilePickerItem extends FilePickerBase {
 
     onWsEvent(e) {
         super.onWsEvent(e)
+
     }
 
     handleClick() {
@@ -64,7 +65,7 @@ class FilePickerItem extends FilePickerBase {
         }
     }
 
-    get title() {
+    buildTitle() {
         let result = this.path.trim()
         if (this.mime) {
             result += ` - ${this.mime}`
@@ -79,6 +80,10 @@ class FilePickerItem extends FilePickerBase {
             result += ` - ${date} ${time}`
         }
         return result
+    }
+
+    get title() {
+        return this.buildTitle()
     }
 
     get fileType() {

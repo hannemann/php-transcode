@@ -3,10 +3,18 @@
 namespace App\Models\FFMpeg\Actions;
 
 use App\Events\FFMpegProgress;
+use App\Events\FilePicker as EventsFilePicker;
 use App\Models\CurrentQueue;
+use App\Models\FilePicker;
 
 class AbstractAction
 {
+    protected string $disk;
+    protected string $path;
+    protected int $current_queue_id;
+    protected ?array $codecConfig = [];
+    protected ?array $clips = [];
+
     public function __construct(string $disk, string $path, int $current_queue_id, array $codecConfig = [], array $clips = [])
     {
         $this->disk = $disk;
@@ -76,5 +84,8 @@ class AbstractAction
         ]);
 
         FFMpegProgress::dispatch('queue.progress');
+
+        $items = FilePicker::root('recordings')::getItems(dirname($this->path));
+        EventsFilePicker::dispatch($items, dirname($this->path), true);
     }
 }
