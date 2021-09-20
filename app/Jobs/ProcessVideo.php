@@ -9,13 +9,13 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Events\FFMpegProgress;
-use App\Models\FFMpeg\Concat;
-use App\Models\FFMpeg\Transcode;
-use App\Models\FFMpeg\RemuxTS;
-use App\Models\FFMpeg\RemuxMP4;
+use App\Models\FFMpeg\Actions\Concat;
+use App\Models\FFMpeg\Actions\Transcode;
+use App\Models\FFMpeg\Actions\RemuxTS;
+use App\Models\FFMpeg\Actions\RemuxMP4;
 use Throwable;
 use App\Models\CurrentQueue;
-use App\Models\FFMpeg\ConcatPrepare;
+use App\Models\FFMpeg\Actions\ConcatPrepare;
 use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 
 class ProcessVideo implements ShouldQueue //, ShouldBeUnique

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Models\FFMpeg;
+namespace App\Models\FFMpeg\Actions;
 
 use App\Models\FFMpeg\Format\Video\RemuxTS as Format;
 use App\Models\Video\File;
 
-class RemuxTS extends Transcode
+class RemuxTS extends AbstractAction
 {
     protected string $filenameAffix = 'remux';
     protected string $filenameSuffix = 'ts';
@@ -34,13 +34,8 @@ class RemuxTS extends Transcode
         $cmds = $cmds->replace([$cmds->search('-vcodec') => '-c:v', $cmds->search('-acodec') => '-c:a']);
         $cmds->push('-c:s');
         $cmds->push('copy');
-        $cmds = OutputMapper::mapAll($cmds);
+        $cmds = Helper\OutputMapper::mapAll($cmds);
         $cmds->push($file);
         return [$cmds->all()];
-    }
-
-    protected function calculateProgress(int $percentage): int
-    {
-        return $percentage;
     }
 }

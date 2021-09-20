@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\FFMpeg;
+namespace App\Models\FFMpeg\Actions;
 
 use App\Models\FilePicker;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
@@ -9,7 +9,7 @@ use App\Models\FFMpeg\Format\Video\RemuxTS;
 use FFMpeg\Coordinate\TimeCode;
 use App\Models\FFMpeg\Filters\Video\ConcatDurationDummy;
 
-class Concat extends Transcode
+class Concat extends AbstractAction
 {
     protected string $filenameAffix = 'concat';
     protected string $filenameSuffix = 'ts';
@@ -68,13 +68,8 @@ class Concat extends Transcode
         $cmds->push($this->input);
         $cmds->push('-c');
         $cmds->push('copy');
-        $cmds = OutputMapper::mapAll($cmds);
+        $cmds = Helper\OutputMapper::mapAll($cmds);
         $cmds->push($file);
         return [$cmds->all()];
-    }
-
-    protected function calculateProgress(int $percentage): int
-    {
-        return $percentage;
     }
 }

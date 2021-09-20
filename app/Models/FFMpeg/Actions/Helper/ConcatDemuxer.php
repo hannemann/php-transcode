@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\FFMpeg;
+namespace App\Models\FFMpeg\Actions\Helper;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Models\FFMpeg;
+namespace App\Models\FFMpeg\Actions;
 
 use App\Models\FFMpeg\Format\Video\ConcatPrepare as Format;
 use App\Models\Video\File;
 
-class ConcatPrepare extends RemuxTS
+class ConcatPrepare extends AbstractAction
 {
     protected string $filenameAffix = 'prepare';
     protected string $filenameSuffix = 'mkv';
@@ -19,9 +19,9 @@ class ConcatPrepare extends RemuxTS
     {
         $this->media = File::getMedia($this->disk, $this->path);
         $this->initStreams();
-        $this->codecMapper = new CodecMapper($this->codecConfig, $this->streams, $this->video, $this->audio, $this->subtitle);
+        $this->codecMapper = new Helper\CodecMapper($this->codecConfig, $this->streams, $this->video, $this->audio, $this->subtitle);
         $this->codecMapper->forceCodec('copy', 'flac');
-        $this->outputMapper = new OutputMapper($this->codecConfig, $this->video, $this->audio, $this->subtitle);
+        $this->outputMapper = new Helper\OutputMapper($this->codecConfig, $this->video, $this->audio, $this->subtitle);
         $this->mediaExporter = $this->media->export();
         $this->export();
     }
