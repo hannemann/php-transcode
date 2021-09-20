@@ -62,8 +62,8 @@ Transcoder.template = /*html*/`
 <transcode-configurator #ref="configurator"></transcode-configurator>
 <text-viewer></text-viewer>
 <transcoder-loading></transcoder-loading>
-<transcoder-toast></transcoder-toast>
 <ffmpeg-progress></ffmpeg-progress>
+<transcoder-toast></transcoder-toast>
 `
 
 customElements.define('ffmpeg-transcoder', Transcoder);
