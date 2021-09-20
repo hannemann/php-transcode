@@ -107,9 +107,9 @@ class Clips extends Slim {
     async handleRemove(e) {
         if (this.clips.length > 1) {
             const idx = this.clips.findIndex(c => c.id === e.detail.id)
+            const focus = Math.max(0, idx - 1)
             this.clips.splice(idx, 1)
             await this.update()
-            const focus = Math.max(0, idx - 1)
             this.sortable.querySelector(`[data-clip="${this.clips[focus].id}"]`).inputFrom.focus()
         }
     }
@@ -119,7 +119,7 @@ class Clips extends Slim {
         this.valid = Array.from(this.shadowRoot.querySelectorAll('transcode-configurator-clip')).every(c => c.valid)
     }
 
-    async update() {
+    update() {
         return new Promise((resolve) => {
             Utils.forceUpdate(this, 'clips')
             requestAnimationFrame(() => {
