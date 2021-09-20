@@ -59,7 +59,6 @@ class Clip extends Slim {
     }
 
     handleKey(e) {
-        console.log(e)
         let prevent = false
         switch (e.key) {
             case 'Tab':
