@@ -2,6 +2,7 @@
 
 namespace App\Models\FFMpeg;
 
+use App\Events\FFMpegProgress;
 use App\Models\FFMpeg\Format\Video\RemuxTS as Format;
 use App\Models\Video\File;
 use App\Models\CurrentQueue;
@@ -50,5 +51,6 @@ class RemuxTS extends Transcode
             'remaining' => $remaining,
             'rate' => $rate,
         ]);
+        FFMpegProgress::dispatch('queue.progress');
     }
 }

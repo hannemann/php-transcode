@@ -2,6 +2,7 @@
 
 namespace App\Models\FFMpeg;
 
+use App\Events\FFMpegProgress;
 use App\Models\FilePicker;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 use App\Models\CurrentQueue;
@@ -37,6 +38,7 @@ class Concat
                     'remaining' => $remaining,
                     'rate' => $rate,
                 ]);
+                FFMpegProgress::dispatch('queue.progress');
             })
             ->inFormat($format)
             ->beforeSaving(function ($commands) use ($input, $format) {

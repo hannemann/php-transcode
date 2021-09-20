@@ -27,8 +27,8 @@ class Progress extends Slim {
         this.channel = window.Echo.channel('FFMpegProgress')
         this.channel.subscribed(this.requestProgress.bind(this))
         this.channel.listen('FFMpegProgress', this.handleProgressEvent.bind(this))
-        setInterval(this.requestProgress, 5000)
-        this.requestProgress()
+        // setInterval(this.requestProgress, 5000)
+        // this.requestProgress()
     }
 
     toggleDetail() {

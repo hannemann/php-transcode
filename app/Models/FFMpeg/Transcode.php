@@ -2,6 +2,7 @@
 
 namespace App\Models\FFMpeg;
 
+use App\Events\FFMpegProgress;
 use App\Models\FFMpeg\Filters\Video\ClipFromToFilter;
 use App\Models\FFMpeg\Filters\Video\ComplexConcat;
 use App\Models\FFMpeg\Format\Video\h264_vaapi;
@@ -145,5 +146,7 @@ class Transcode
             'remaining' => $remaining,
             'rate' => $rate,
         ]);
+
+        FFMpegProgress::dispatch('queue.progress');
     }
 }
