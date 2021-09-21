@@ -38,13 +38,13 @@ class TranscodeConfigurator extends Slim {
     hide() {
         this.addEventListener('transitionend', () => {
             this.classList.remove('active', 'fade-out')
+            this.format = undefined
+            this.streams = undefined
+            this.item.node.iconActive = false
+            delete this.item
         }, {once: true})
         this.classList.add('fade-out')
-        this.format = undefined
-        this.streams = undefined
-        this.item.node.iconActive = false
         this.leaveWebsocket()
-        delete this.item
         document.removeEventListener('stream-configure', this.handleConfigureStream)
         document.dispatchEvent(new CustomEvent('configurator-show', {detail: false}))
     }
