@@ -6,7 +6,14 @@ use App\Events\FFMpegProgress;
 use App\Events\FilePicker as EventsFilePicker;
 use App\Models\CurrentQueue;
 use App\Models\FilePicker;
+use ProtoneMedia\LaravelFFMpeg\Exporters\MediaExporter;
 
+use Alchemy\BinaryDriver\Listeners\DebugListener;
+use App\Events\FFMpegOut;
+
+/**
+ * @property MediaExporter $mediaExporter
+ */
 class AbstractAction
 {
     protected string $disk;
@@ -14,6 +21,7 @@ class AbstractAction
     protected int $current_queue_id;
     protected ?array $codecConfig = [];
     protected ?array $clips = [];
+    protected string $pathHash;
 
     public function __construct(string $disk, string $path, int $current_queue_id, array $codecConfig = [], array $clips = [])
     {
@@ -23,6 +31,7 @@ class AbstractAction
         $this->format = new $this->formatClass();
         $this->codecConfig = $codecConfig;
         $this->clips = $clips;
+        $this->pathHash = sha1($this->path);
     }
 
     /**
@@ -30,6 +39,9 @@ class AbstractAction
      */
     protected function export(): void
     {
+        $this->driver = $this->mediaExporter->getFFMpegDriver();
+        $this->mediaExporter->addListener(new DebugListener());
+        $this->driver->on('debug', \Closure::fromCallable([$this, 'broadcastProcessOutput']));
         $this->mediaExporter
             ->onProgress(\Closure::fromCallable([$this, 'saveProgress']))
             ->inFormat($this->format)
@@ -87,5 +99,13 @@ class AbstractAction
 
         $items = FilePicker::root('recordings')::getItems(dirname($this->path));
         EventsFilePicker::dispatch($items, dirname($this->path), true);
+    }
+
+    protected function broadcastProcessOutput(string $line): void
+    {
+        if (strpos($line, '[ERROR] frame=') === 0) {
+
+            FFMpegOut::dispatch($this->pathHash, str_replace('[ERROR] ', '', $line));
+        }
     }
 }

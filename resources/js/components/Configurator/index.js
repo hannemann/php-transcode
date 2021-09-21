@@ -7,7 +7,7 @@ import './Format'
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 
 const WS_CHANNEL = 'Transcode.Config'
-
+const WS_CHANNEL_FFMPEG_OUT = 'FFMpegOut'
 class TranscodeConfigurator extends Slim {
 
     onAdded() {
@@ -21,6 +21,7 @@ class TranscodeConfigurator extends Slim {
     init(e) {
         if ('video' === e.detail.mime.split('/').shift()) {
             this.item = e.detail
+            this.out = ''
             this.setCanConcat()
             this.initWebsocket()
         }
@@ -42,8 +43,8 @@ class TranscodeConfigurator extends Slim {
         this.format = undefined
         this.streams = undefined
         this.item.node.iconActive = false
-        delete this.item
         this.leaveWebsocket()
+        delete this.item
         document.removeEventListener('stream-configure', this.handleConfigureStream)
         document.dispatchEvent(new CustomEvent('configurator-show', {detail: false}))
     }
@@ -51,12 +52,17 @@ class TranscodeConfigurator extends Slim {
     initWebsocket() {
         this.channel = window.Echo.channel(WS_CHANNEL)
         this.channel.listen(WS_CHANNEL, this.handleConfiguratorEvent.bind(this))
-        this.channel.subscribed(this.requestStreams.bind(this))
+        this.channel.subscribed(this.requestStreams.bind(this)) + this.item.channel
+        this.channelOut = window.Echo.channel(`${WS_CHANNEL_FFMPEG_OUT}.${this.item.channel}`)
+        this.channelOut.listen(WS_CHANNEL_FFMPEG_OUT, this.handleOutEvent.bind(this))
+        // this.channelOut.listen(WS_CHANNEL_FFMPEG_OUT, line => console.log(line))
     }
 
     leaveWebsocket() {
         this.channel.stopListening(WS_CHANNEL)
         window.Echo.leave(WS_CHANNEL)
+        this.channelOut.stopListening(WS_CHANNEL_FFMPEG_OUT)
+        window.Echo.leave(`${WS_CHANNEL_FFMPEG_OUT}.${this.item.channel}`)
         delete this.channel
     }
 
@@ -104,6 +110,10 @@ class TranscodeConfigurator extends Slim {
         this.format = ws.format
         this.streams = ws.streams
         this.show()
+    }
+
+    handleOutEvent(ws) {
+        this.out = ws.out;
     }
 
     setCanConcat() {
@@ -192,6 +202,7 @@ main h1 {
     padding: 0;
     margin: 0 0 var(--rel-gutter-100) 0;
     font-size: 1.75rem;
+    user-select: none;
 }
 main h1 div {
     cursor: pointer;
@@ -224,6 +235,12 @@ footer button:hover {
     border-color: var(--clr-enlightened);
     box-shadow: 0 0 20px 0 var(--clr-enlightened-glow), 0 0 10px 0 inset var(--clr-enlightened-glow);
 }
+.status {
+    position: absolute;
+    inset: auto var(--rel-gutter-100) .5rem;
+    height: auto;
+    font-size: .75rem;
+}
 </style>
 ${ICON_STACK_CSS}
 `
@@ -253,6 +270,7 @@ ${CSS}
         </footer>
     </div>
     <transcode-configurator-stream-config #ref="streamConfig"></transcode-configurator-stream-config>
+    <div class="status">{{ this.out }}</div>
 </main>
 `
 
