@@ -24,7 +24,7 @@ class FilePickerItem extends FilePickerBase {
     handleClick() {
         super.handleClick()
         if (this.items.length) {
-            this.iconAcitve = false
+            this.iconActive = false
             this.items = []
         } else if (TYPE_FILE === this.type) {
             const detail = {
