@@ -35,8 +35,11 @@ class ConcatPrepare extends AbstractAction
         $cmds = collect($commands[0]);
 
         $cmds = $this->format->stripOptions($cmds);
+        $cmds->push('-c:a');
+        $cmds->push('copy');
         $cmds = $this->codecMapper->execute($cmds);
-        $cmds = $this->outputMapper->execute($cmds);
+        $cmds = $cmds->replace([$cmds->search('-c:v:0') => '-c:v']);
+        $cmds = Helper\OutputMapper::mapAll($cmds);
 
         $cmds->push($file);
         return [$cmds->all()];

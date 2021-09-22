@@ -105,7 +105,7 @@ class AbstractAction
     {
         if (strpos($line, '[ERROR] frame=') === 0) {
 
-            $lines = explode("\n", $line);
+            $lines = explode('\n', $line);
             $line = array_pop($lines);
 
             FFMpegOut::dispatch($this->pathHash, str_replace('[ERROR] ', '', $line));
