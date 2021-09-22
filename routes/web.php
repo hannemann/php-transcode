@@ -42,7 +42,7 @@ Route::get('/file-picker/{subdir?}', function (string $subdir = null) {
 
 })->where('subdir', '(.*)')->name('filepicker');
 
-Route::get('/concat/{path?}', function (string $path = null) {
+Route::post('/concat/{path?}', function (string $path = null) {
 
     // (new Concat('recordings', $path, 0))->execute();
     
@@ -50,7 +50,7 @@ Route::get('/concat/{path?}', function (string $path = null) {
 
 })->where('path', '(.*)');
 
-Route::get('/remux/{path?}', function (string $path = null) {
+Route::post('/remux/{path?}', function (string $path = null) {
 
     // (new RemuxTS('recordings', $path, 0))->execute();
     

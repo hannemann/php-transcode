@@ -124,7 +124,7 @@ class TranscodeConfigurator extends Slim {
     async requestConcat() {
         console.info('Concat video files in %s', this.item.path)
         try {
-            await Request.get(`/concat/${this.item.path}`)
+            await Request.post(`/concat/${encodeURIComponent(this.item.path)}`)
         } catch (error) {
             console.error(error)
         }
@@ -133,7 +133,7 @@ class TranscodeConfigurator extends Slim {
     async requestRemux() {
         console.info('Remux video file %s', this.item.path)
         try {
-            await Request.get(`/remux/${this.item.path}`)
+            await Request.post(`/remux/${encodeURIComponent(this.item.path)}`)
         } catch (error) {
             console.error(error)
         }
