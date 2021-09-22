@@ -56,6 +56,16 @@ return [
         'recordings' => [
             'driver' => 'local',
             'root' => env('RECORDINGS_PATH', false),
+            'permissions' => [
+                'file' => [
+                    'private' => 0664,
+                    'public' => 0666,
+                ],
+                'dir' => [
+                    'private' => 0775,
+                    'public' => 0777,
+                ],
+            ],
         ],
 
     ],

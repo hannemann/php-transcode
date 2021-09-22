@@ -38,7 +38,7 @@ class ConcatDemuxer
                 sprintf('# Cut: %s', TimeCode::fromSeconds($timestamp)),
             ]);
         })->join("\n");
-        Storage::disk($this->disk)->put($this->getInputFilename(), $content);
+        Storage::disk($this->disk)->put($this->getInputFilename(), $content, 'public');
         return $this;
     }
 
