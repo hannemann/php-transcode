@@ -20,6 +20,10 @@ class CodecMapper
     private ?string $forcedAudioCodec = null;
     private ?string $forcedSubtitleCodec = null;
 
+    private $videoIndex = 0;
+    private $audioIndex = 0;
+    private $subtitleIndex = 0;
+
     public function __construct(array $codecConfig, Collection $streams, Collection $video, Collection $audio, Collection $subtitle) {
         $this->codecConfig = $codecConfig;
         $this->wantedStreams = collect($this->codecConfig)->pluck('id')->all();
@@ -46,9 +50,7 @@ class CodecMapper
                 $this->cmds = $this->getAudioCodecConfic($this->cmds, $stream);
             }
             if ($type === 'subtitle') {
-                $streamId = $this->subtitle->intersect([$stream['id']])->keys()->first();
-                $this->cmds->push('-c:s:' . $streamId);
-                $this->cmds->push($this->forcedSubtitleCodec ?? 'dvd_subtitle');
+                $this->cmds = $this->getSubtileCodecConfic($this->cmds, $stream);
             }
         }
 
@@ -75,7 +77,8 @@ class CodecMapper
 
     private function getVideoCodecConfig(Collection $cmds, array $stream): Collection
     {
-        $streamId = $this->video->intersect([$stream['id']])->keys()->first();
+        $streamId = $this->videoIndex;
+        $this->videoIndex++;
         $cmds->push('-c:v:' . $streamId);
         if ($this->forcedVideoCodec) {
             $codec = $this->forcedVideoCodec;
@@ -94,7 +97,8 @@ class CodecMapper
 
     private function getAudioCodecConfic(Collection $cmds, array $stream): Collection
     {
-        $streamId = $this->audio->intersect([$stream['id']])->keys()->first();
+        $streamId = $this->audioIndex;
+        $this->audioIndex++;
         $cmds->push('-c:a:' . $streamId);
         if ($this->forcedAudioCodec) {
             $codec = $this->forcedAudioCodec;
@@ -113,6 +117,15 @@ class CodecMapper
             $cmds->push('-ac:a:' . $streamId);
             $cmds->push($channels);
         }
+        return $cmds;
+    }
+
+    private function getSubtileCodecConfic(Collection $cmds, array $stream): Collection
+    {
+        $streamId = $this->subtitleIndex;
+        $this->subtitleIndex++;
+        $this->cmds->push('-c:s:' . $streamId);
+        $this->cmds->push($this->forcedSubtitleCodec ?? 'dvd_subtitle');
         return $cmds;
     }
 
