@@ -15,7 +15,7 @@ class TranscodeConfigurator extends Slim {
         document.addEventListener('file-clicked', this.init.bind(this))
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
         this.handleConfigureStream = this.handleConfigureStream.bind(this)
-        // this.handleStreamConfig = this.handleStreamConfig.bind(this)
+        this.saveSettings = this.saveSettings.bind(this)
     }
 
     init(e) {
@@ -55,7 +55,6 @@ class TranscodeConfigurator extends Slim {
         this.channel.subscribed(this.requestStreams.bind(this)) + this.item.channel
         this.channelOut = window.Echo.channel(`${WS_CHANNEL_FFMPEG_OUT}.${this.item.channel}`)
         this.channelOut.listen(WS_CHANNEL_FFMPEG_OUT, this.handleOutEvent.bind(this))
-        // this.channelOut.listen(WS_CHANNEL_FFMPEG_OUT, line => console.log(line))
     }
 
     leaveWebsocket() {
@@ -88,19 +87,8 @@ class TranscodeConfigurator extends Slim {
         }
         try {
             requestAnimationFrame(() => {
-                const clipsData = [...this.clips.clips]
-                if (clipsData[0].from === null) {
-                    clipsData[0].from = '0:0:0.0'
-                }
-                if (clipsData.length === 1 && clipsData[0].to === null) {
-                    clipsData[0].to = this.formatNode.duration
-                }
-                const streams = this.streams.filter(s => s.active).map(s => ({id: s.index, config: s.transcodeConfig ?? {}}))
-                console.info('Transcode %s', this.item.path, clipsData, streams)
-                Request.post(`/transcode/${encodeURIComponent(this.item.path)}`, {
-                    streams,
-                    clips: clipsData
-                })
+                console.info('Transcode %s', this.item.path, this.config)
+                Request.post(`/transcode/${encodeURIComponent(this.item.path)}`, this.config)
             })
         } catch (error) {}
     }
@@ -159,6 +147,26 @@ class TranscodeConfigurator extends Slim {
         console.info('Stream configured: ', item.transcodeConfig)
     }
 
+    saveSettings() {
+        Request.post(`/settings/${encodeURIComponent(this.item.path)}`, this.config)
+    }
+
+    get config() {
+        const clipsData = [...this.clips.clips]
+        if (clipsData[0].from === null) {
+            clipsData[0].from = '0:0:0.0'
+        }
+        if (clipsData.length === 1 && clipsData[0].to === null) {
+            clipsData[0].to = this.formatNode.duration
+        }
+        const streams = this.streams.filter(s => s.active).map(s => ({id: s.index, config: s.transcodeConfig ?? {}}))
+
+        return {
+            streams,
+            clips: clipsData
+        }
+    }
+
     get clips() {
         return this.shadowRoot.querySelector('transcode-configurator-clips')
     }
@@ -215,8 +223,13 @@ main div *:last-child {
 footer {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
     gap: .5rem;
     padding: 0 1rem 1rem;
+}
+footer .icon-stack {
+    font-size: var(--font-size-200);
+    aspect-ratio: 1;
 }
 footer button {
     background: var(--clr-bg-100);
@@ -264,6 +277,10 @@ ${CSS}
         <transcode-configurator-streams *if="{{ this.streams }}" .items="{{ this.streams }}"></transcode-configurator-streams>
         <transcode-configurator-clips *if="{{ this.streams }}" .path="{{ this.item.path }}"></transcode-configurator-clips>
         <footer>
+            <button @click="this.saveSettings()" class="icon-stack" title="Save Settings">
+                <span class="iconify" data-icon="mdi-content-save-outline"></span>
+                <span class="iconify hover" data-icon="mdi-content-save-outline"></span>
+            </button>
             <button @click="this.requestRemux()">Remux</button>
             <button *if="{{ this.canConcat }}" @click="this.requestConcat()">Concat</button>
             <button @click="this.transcode()">Start</button>

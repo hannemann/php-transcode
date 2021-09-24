@@ -24,7 +24,7 @@ class TextViewer implements ShouldBroadcastNow
      */
     public function __construct(string $disk, string $path)
     {
-        $this->content = Storage::disk($disk)->get($path);
+        $this->content = str_replace('\n', "\n", Storage::disk($disk)->get($path));
     }
 
     /**

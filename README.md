@@ -33,3 +33,18 @@ Group=www-data
 [Install]
 WantedBy=default.target
 ```
+
+# Transcoding
+## Troubleshooting
+* If its the case that the Resolution changes in the Input than you should trim the Video first.
+* In case of green artifacts transcode with lossless audio and best video quality possibel first, then transcode again
+
+
+## TODO:
+* Save and restore settings for file
+* Aspect Ratio
+* Scale
+* Crop
+
+## Fix
+* Sometimes the blur overlay is not removed

@@ -25,12 +25,17 @@ class Format extends Slim {
 
 Format.template = /*html*/`
 ${CARD_CSS}
+<style>
+    .select-all {
+        user-select: all;
+    }
+</style>
 <main>
     <h2>Format</h2>
     <section>
-        <div>{{ this.format.filename }}</div>
+        <div class="select-all">{{ this.format.filename }}</div>
         <div>Container: {{ this.format.format_long_name }} / {{ this.format.format_name }}
-        <div>Duration: {{ this.duration }}, Size: {{ this.size }}, Bitrate: {{ this.bitRate }}</div>
+        <div>Duration:&nbsp;<span class="select-all">{{ this.duration }}</span>, Size: {{ this.size }}, Bitrate: {{ this.bitRate }}</div>
     </section>
 </main>
 `

@@ -13,8 +13,8 @@ const TYPE_DATA = 'data'
 class Streams extends Slim {
 
     onAdded() {
-        this.video?.forEach((v, k) => v.active = k === 0)
-        this.audio?.forEach((v, k) => v.active = k === 0)
+        this.video?.find(v => v.active) || this.video?.forEach((v, k) => v.active = k === 0)
+        this.audio?.find(a => a.active) || this.audio?.forEach((v, k) => v.active = k === 0)
     }
 
     get video() {

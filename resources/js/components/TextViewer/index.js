@@ -13,10 +13,15 @@ class TextViewer extends Slim {
     }
 
     init(e) {
-        if ('text' === e.detail.mime.split('/').shift()) {
+        if (this.isValid(e.detail)) {
             this.item = e.detail
             this.initWebsocket()
         }
+    }
+
+    isValid(item) {
+        return 'text' === item.mime.split('/').shift() ||
+            'json' === item.mime.split('/').pop()
     }
 
     show() {
@@ -109,6 +114,7 @@ main h1 {
     padding: 0;
     margin: 0 0 var(--rel-gutter-100) 0;
     font-size: 1.75rem;
+    user-select: none;
 }
 main h1 div {
     cursor: pointer;

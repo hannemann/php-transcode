@@ -16,6 +16,7 @@ class Request {
                 let error = await response.json()
                 throw new Error(error.message)
             }
+            return response
         } catch (error) {
             Request.error = error
         } finally {
@@ -39,6 +40,7 @@ class Request {
                 let error = await response.json()
                 throw new Error(error.message)
             }
+            return response
         } catch (error) {
             Request.error = error
         } finally {

@@ -8,6 +8,7 @@ use App\Jobs\ProcessVideo;
 use App\Models\FFMpeg\Actions\Transcode;
 use App\Models\FFMpeg\Actions\ConcatPrepare;
 use App\Events\FFMpegProgress;
+use App\Helper\Settings;
 use App\Models\FFMpeg\Actions\Helper\ConcatDemuxer;
 use Illuminate\Support\Facades\Storage;
 use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
@@ -17,8 +18,9 @@ class TranscodeController extends Controller
 {
     public function transcode(TranscodeRequest $request, string $path):? JsonResponse
     {
-        $data = $request->input();
         try {
+            $data = $request->input();
+            static::doSaveSettings($request, $path);
             if (false) {
                 $this->test($data, $path);
             } else {
@@ -32,8 +34,6 @@ class TranscodeController extends Controller
                         ProcessVideo::dispatch('prepare', 'recordings', $path, $data['streams']);
                     }
                     $path = $pathCopy;
-                    $demuxer = new ConcatDemuxer('recordings', $path, $data['clips']);
-                    $demuxer->generateFile();
                 }
                 ProcessVideo::dispatch('transcode', 'recordings', $path, $data['streams'], $data['clips']);
                 FFMpegProgress::dispatch('queue.progress');
@@ -51,9 +51,6 @@ class TranscodeController extends Controller
         $type = '';
         try {
             if (count($data['clips']) > 1) {
-                $demuxer = new ConcatDemuxer('recordings', $path, $data['clips']);
-                $demuxer->generateFile();
-
                 $type = 'prepare';
                 $currentQueue = new CurrentQueue([
                     'path' => $path,
@@ -100,5 +97,30 @@ class TranscodeController extends Controller
             ]);
             FFMpegProgress::dispatch('queue.progress');
         }
+    }
+
+    public function saveSettings(TranscodeRequest $request, string $path):? JsonResponse
+    {
+        try {
+            static::doSaveSettings($request, $path);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => sprintf($e->getMessage())
+            ], 500);
+        }
+        return null;
+    }
+
+    public static function doSaveSettings(TranscodeRequest $request, string $path): void
+    {
+        $data = $request->input();
+        $data['file'] = $path;
+        $data['copy'] = [
+            'clips' => "\n" . collect($data['clips'])->map(function ($clip) {
+                return $clip['from'] . "\n" . $clip['to'];
+            })->join("\n") . "\n",
+        ];
+        $out = json_encode($data,  JSON_PRETTY_PRINT |  JSON_UNESCAPED_SLASHES);
+        Storage::disk('recordings')->put(Settings::getSettingsFilename($path), $out, 'public');
     }
 }

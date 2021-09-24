@@ -5,6 +5,7 @@ use App\Events\FilePicker as FilePickerEvent;
 use App\Events\TextViewer;
 use App\Events\Transcode\Config\Streams as BroadcastStreams;
 use App\Events\Transcode\Config\Clips as BroadcastClips;
+use App\Helper\Settings;
 use App\Http\Controllers\TranscodeController;
 use App\Models\FilePicker;
 use App\Models\Video\File as VideoFile;
@@ -57,30 +58,34 @@ Route::post('/remux/{path?}', function (string $path = null) {
 })->where('path', '(.*)');
 
 Route::post('/transcode/{path}', [TranscodeController::class, 'transcode'])->where('path', '(.*)');
+Route::post('/settings/{path}', [TranscodeController::class, 'saveSettings'])->where('path', '(.*)');
 
 Route::get('/streams/{path?}', function (string $path = null) {
     
     try {
         $media = VideoFile::getMedia('recordings', $path);
-        $streams = $media->getStreams();
-        $format = $media->getFormat()->all();
+        BroadcastStreams::dispatch(
+            $media->getFormat()->all(),
+            Settings::decorateStreams($path, $media->getStreams())
+        );
     } catch (\Exception $e) {
         return response()->json([
             'status' => 500,
             'message' => $e->getMessage(),
         ], 500);
     }
-    BroadcastStreams::dispatch($format, $streams);
 
 })->where('path', '(.*)');
 
 Route::get('/clips/{path?}', function (string $path = null) {
     
     try {
-        $clips = (new ConcatDemuxer('recordings', $path))->getClips();
-        if (empty($clips)) {
+        $settings = Settings::getSettings($path)['clips'];
+        // $clips = (new ConcatDemuxer('recordings', $path))->getClips();
+        if (empty($settings['clips'])) {
             $remux = new ConcatPrepare('recordings', $path, 0);
-            $clips = (new ConcatDemuxer('recordings', $remux->getOutputFilename()))->getClips();
+            $clips = Settings::getSettings($remux->getOutputFilename())['clips'];
+            // $clips = (new ConcatDemuxer('recordings', $remux->getOutputFilename()))->getClips();
         }
         BroadcastClips::dispatch($clips);
     } catch (\Exception $e) {
