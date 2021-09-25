@@ -13,6 +13,7 @@ use App\Models\FFMpeg\Actions\Concat;
 use App\Models\FFMpeg\Actions\Transcode;
 use App\Models\FFMpeg\Actions\RemuxTS;
 use App\Models\FFMpeg\Actions\RemuxMP4;
+use App\Models\FFMpeg\Actions\RemuxMKV;
 use Throwable;
 use App\Models\CurrentQueue;
 use App\Models\FFMpeg\Actions\ConcatPrepare;
@@ -32,6 +33,8 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
 
     protected ?array $clips = null;
 
+    protected ?string $container = null;
+
     protected int $current_queue_id;
 
     public int $tries = 1;
@@ -49,13 +52,15 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
         string $disk,
         string $path,
         array $streams,
-        array $clips = null
+        array $clips = null,
+        string $container = null
     ) {
         $this->type = $type;
         $this->path = $path;
         $this->disk = $disk;
         $this->streams = $streams;
         $this->clips = $clips;
+        $this->container = $container;
         $this->onQueue('ffmpeg');
         $currentQueue = new CurrentQueue([
             'path' => $this->path,
@@ -89,7 +94,17 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
                 (new Transcode($this->disk, $this->path, $this->current_queue_id, $this->streams, $this->clips))->execute();
                 break;
             case 'remux':
-                (new RemuxMP4($this->disk, $this->path, $this->current_queue_id))->execute();
+                switch ($this->container) {
+                    case 'mp4':
+                        (new RemuxMP4($this->disk, $this->path, $this->current_queue_id))->execute();
+                        break;
+                    case 'mkv':
+                        (new RemuxMKV($this->disk, $this->path, $this->current_queue_id))->execute();
+                        break;
+                    case 'ts':
+                        (new RemuxTS($this->disk, $this->path, $this->current_queue_id))->execute();
+                        break;
+                }
                 break;
             case 'prepare':
                 (new ConcatPrepare($this->disk, $this->path, $this->current_queue_id, $this->streams))->execute();

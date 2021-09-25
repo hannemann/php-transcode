@@ -41,7 +41,7 @@ WantedBy=default.target
 
 
 ## TODO:
-* Aspect Ratio
+* Aspect Ratio (currently Transcode only)
 * Scale
 * Crop
 

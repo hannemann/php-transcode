@@ -49,13 +49,13 @@ Route::post('/concat/{path?}', function (string $path = null) {
 
 })->where('path', '(.*)');
 
-Route::post('/remux/{path?}', function (string $path = null) {
+Route::post('/remux/{container}/{path}', function (string $container, string $path = null) {
 
     // (new RemuxTS('recordings', $path, 0))->execute();
     
-    ProcessVideo::dispatch('remux', 'recordings', $path, []);
+    ProcessVideo::dispatch('remux', 'recordings', $path, [], null, $container);
 
-})->where('path', '(.*)');
+})->where('path', '(.*)')->where('container', '(mp4|mkv|ts)');
 
 Route::post('/transcode/{path}', [TranscodeController::class, 'transcode'])->where('path', '(.*)');
 Route::post('/settings/{path}', [TranscodeController::class, 'saveSettings'])->where('path', '(.*)');

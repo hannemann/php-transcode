@@ -14,7 +14,10 @@ class TranscodeConfigurator extends Slim {
         this.canConcat = false
         document.addEventListener('file-clicked', this.init.bind(this))
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
+        this.remuxContainer = 'MP4'
         this.handleConfigureStream = this.handleConfigureStream.bind(this)
+        this.toggleRemuxOptions = this.toggleRemuxOptions.bind(this)
+        this.setRemuxContainer = this.setRemuxContainer.bind(this)
         this.saveSettings = this.saveSettings.bind(this)
         this.hide = this.hide.bind(this)
     }
@@ -127,7 +130,7 @@ class TranscodeConfigurator extends Slim {
     async requestRemux() {
         console.info('Remux video file %s', this.item.path)
         try {
-            await Request.post(`/remux/${encodeURIComponent(this.item.path)}`)
+            await Request.post(`/remux/${this.remuxContainer.toLowerCase()}/${encodeURIComponent(this.item.path)}`)
         } catch (error) {
             console.error(error)
         }
@@ -155,6 +158,15 @@ class TranscodeConfigurator extends Slim {
 
     saveSettings() {
         Request.post(`/settings/${encodeURIComponent(this.item.path)}`, this.config)
+    }
+
+    toggleRemuxOptions(e) {
+        e.stopPropagation()
+        this.remuxOptions.classList.toggle('active')
+    }
+
+    setRemuxContainer(e) {
+        this.remuxContainer = e.explicitOriginalTarget.textContent.trim()
     }
 
     get config() {
@@ -246,6 +258,10 @@ footer button {
     transition-property: text-shadow, box-shadow, border-color, background-color;
     transition-timing-function: ease-out;
     transition-duration: var(--transition-medium);
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    position: relative;
 }
 footer button:hover {
     background:var(--clr-bg-200);
@@ -253,6 +269,32 @@ footer button:hover {
     text-shadow: 0 0 5px var(--clr-enlightened-glow), 0 0 10px var(--clr-enlightened-glow);
     border-color: var(--clr-enlightened);
     box-shadow: 0 0 20px 0 var(--clr-enlightened-glow), 0 0 10px 0 inset var(--clr-enlightened-glow);
+}
+footer button .select {
+    font-size: 1.2em;
+    height: 1em;
+    width: 1.5ch;
+    cursor: pointer;
+}
+footer button .select .options {
+    display: none;
+    position: absolute;
+    padding: .5rem;
+    top: calc( -1 * (100% + 1rem));
+    right: 0;
+    text-shadow: none;
+    color: var(--clr-text-100);
+    background:var(--clr-bg-100);
+    border: 2px solid var(--clr-enlightened);
+    box-shadow: 0 0 20px 0 var(--clr-enlightened-glow), 0 0 10px 0 inset var(--clr-enlightened-glow);
+}
+footer button .select .options div:hover {
+    color: var(--clr-enlightened);
+    background:var(--clr-bg-200);
+    text-shadow: 0 0 5px var(--clr-enlightened-glow), 0 0 10px var(--clr-enlightened-glow);
+}
+footer button .select .options.active {
+    display: block;
 }
 .status {
     position: absolute;
@@ -287,7 +329,19 @@ ${CSS}
                 <span class="iconify" data-icon="mdi-content-save-outline"></span>
                 <span class="iconify hover" data-icon="mdi-content-save-outline"></span>
             </button>
-            <button @click="this.requestRemux()">Remux</button>
+            <button @click="this.requestRemux()">
+                <span>Remux {{ this.remuxContainer }}</span>
+                <div class="select">
+                    <div @click="{{ this.toggleRemuxOptions }}">
+                        <span class="iconify" data-icon="mdi-menu-down-outline"></span>
+                        <div #ref="remuxOptions" class="options" @click="{{ this.setRemuxContainer }}">
+                            <div>MKV</div>
+                            <div>MP4</div>
+                            <div>TS</div>
+                        </div>
+                    </div>
+                </div>
+            </button>
             <button *if="{{ this.canConcat }}" @click="this.requestConcat()">Concat</button>
             <button @click="this.transcode()">Start</button>
         </footer>
