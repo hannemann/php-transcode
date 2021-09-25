@@ -16,6 +16,7 @@ class TranscodeConfigurator extends Slim {
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
         this.handleConfigureStream = this.handleConfigureStream.bind(this)
         this.saveSettings = this.saveSettings.bind(this)
+        this.hide = this.hide.bind(this)
     }
 
     init(e) {
@@ -37,17 +38,20 @@ class TranscodeConfigurator extends Slim {
         console.info('Show streams of %s', this.item.path)
     }
 
-    hide() {
+    hide(e) {
+        e.stopPropagation() // prevent document clicks
         this.addEventListener('transitionend', () => {
             this.classList.remove('active', 'fade-out')
             this.format = undefined
             this.streams = undefined
             this.item.node.iconActive = false
             delete this.item
+            document.dispatchEvent(new CustomEvent('configurator-hidden'))
         }, {once: true})
         this.classList.add('fade-out')
         this.leaveWebsocket()
         document.removeEventListener('stream-configure', this.handleConfigureStream)
+        document.removeEventListener('stream-config', this.handleStreamConfig, {once: true})
         document.dispatchEvent(new CustomEvent('configurator-show', {detail: false}))
     }
 
@@ -136,7 +140,7 @@ class TranscodeConfigurator extends Slim {
             top: offsetOrigin.top - offsetMain.top,
             right: offsetMain.right - offsetOrigin.left
         }
-        document.addEventListener('stream-config', this.handleStreamConfig.bind(this, e.detail.item), {once: true})
+        document.addEventListener('stream-config', this.handleStreamConfig, {once: true})
         if (this.streamConfig.classList.contains('active') && e.detail.item.index !== this.streamConfig.item.index) {
             this.streamConfig.addEventListener('transitionend', () => {
                 requestAnimationFrame(() => this.streamConfig.toggle(e.detail.item, offset))
@@ -145,8 +149,8 @@ class TranscodeConfigurator extends Slim {
         this.streamConfig.toggle(e.detail.item, offset)
     }
 
-    handleStreamConfig(item) {
-        console.info('Stream configured: ', item.transcodeConfig)
+    handleStreamConfig(e) {
+        console.info('Stream configured: ', e.detail.item.transcodeConfig)
     }
 
     saveSettings() {
@@ -263,7 +267,7 @@ ${ICON_STACK_CSS}
 const HEADING = /*html*/`
 <h1>
     Transcode
-    <div @click="this.hide()" class="icon-stack">
+    <div @click="{{ this.hide }}" class="icon-stack">
         <span class="iconify" data-icon="mdi-close"></span>
         <span class="iconify hover" data-icon="mdi-close"></span>
     </div>

@@ -7,10 +7,13 @@ class StreamConfig extends Slim {
         this.videoCodecs = Object.values(VIDEO_CODECS).sort((a,b) => a.v > b.v)
         this.audioCodecs = Object.values(AUDIO_CODECS).sort((a,b) => a.v > b.v)
         this.channelOptions = [2,6]
-        this.handleDocumentClick = this.handleDocumentClick.bind(this)
+        this.aspectRatioOptions = ['16:9','4:3']
+        this.cleanup = this.cleanup.bind(this)
         this.handleQpRange = this.handleQpRange.bind(this)
         this.handleCodecChange = this.handleCodecChange.bind(this)
+        this.handleDocumentClick = this.handleDocumentClick.bind(this)
         this.handleChannelsChange = this.handleChannelsChange.bind(this)
+        this.handleAspectRatioChange = this.handleAspectRatioChange.bind(this)
     }
 
     toggle(item, offset) {
@@ -27,32 +30,40 @@ class StreamConfig extends Slim {
     }
     show() {
         requestAnimationFrame(() => {
-            document.addEventListener('click', this.handleDocumentClick)
             this.classList.add('active')
+            this.addEventListener('transitionend', () => {
+                document.addEventListener('click', this.handleDocumentClick)
+                document.addEventListener('configurator-hidden', this.cleanup, {once: true})
+            }, {once: true})
             requestAnimationFrame(() => this.classList.add('fade-in'))
         })
     }
 
     hide() {
-        this.addEventListener('transitionend', () => {
-            this.className = ''
-            delete this.item
-        }, {once: true})
-        document.removeEventListener('click', this.handleDocumentClick)
         this.item.transcodeConfig = {codec: this.codec}
         if (this.item.codec_type === 'video') {
             this.item.transcodeConfig.qp = this.qp
+            this.item.transcodeConfig.aspectRatio = this.aspectRatio
         } else {
             this.item.transcodeConfig.channels = this.channels
         }
         document.dispatchEvent(new CustomEvent('stream-config', {detail: {item: this.item}}))
+        this.addEventListener('transitionend', this.cleanup, {once: true})
         this.classList.add('fade-out')
+    }
+
+    cleanup() {
+        document.removeEventListener('click', this.handleDocumentClick)
+        document.removeEventListener('configurator-hidden', this.cleanup)
+        this.className = ''
+        delete this.item
     }
 
     initSettings() {
         const codec = this.item.transcodeConfig?.codec
         const channels = this.item.transcodeConfig?.channels
         const qp = this.item.transcodeConfig?.qp
+        this.aspectRatio = this.item.transcodeConfig?.aspectRatio ?? '16:9'
         this.codecs = this[`${this.item.codec_type}Codecs`].sort((a,b) => a.id > b.id)
         this.codec = typeof codec !== 'undefined' ? codec : this.codecs.find(c => c.default).v
         this.qp = typeof qp !== 'undefined' ? qp : this.codecs.find(c => c.default).qp
@@ -88,12 +99,20 @@ class StreamConfig extends Slim {
         this.channels = parseInt(e.currentTarget.value)
     }
 
+    handleAspectRatioChange(e) {
+        this.aspectRatio = e.currentTarget.value
+    }
+
     isCodecChecked(codec) {
         return codec.v === this.codec
     }
 
     isCHannelsChecked(channels) {
         return channels === this.channels && this.codec !== this.copyCodec
+    }
+
+    isAspectRatio(ratio) {
+        return this.aspectRatio === ratio
     }
 }
 
@@ -154,7 +173,8 @@ StreamConfig.template = /*html*/`
     input:checked {
         box-shadow: 0 0 10px 3px var(--clr-enlightened-glow);
     }
-    :host(:not(.video)) #qpslider {
+    :host(:not(.video)) #qpslider,
+    :host(:not(.video)) #aspect-ratio {
         display: none;
     }
     :host(:not(.audio)) #audiochannels {
@@ -177,6 +197,13 @@ StreamConfig.template = /*html*/`
         <span>QP (<span #ref="qpDisplay">{{ this.qp }}</span>)</span>
         <input #ref="qpSlider" list="tickmarks" .disabled="{{ this.codec === this.copyCodec }}" type="range" min="18" max="30" step="1" value="{{ this.qp }}" @input="{{ this.handleQpRange }}">
     </label>
+    <div id="aspect-ratio">
+        <span>Aspect Ratio</span>
+        <label *foreach="{{ this.aspectRatioOptions }}">
+            <span>{{ item }}</span>
+            <input type="radio" value="{{ item }}" name="aspect-ratio" .checked="{{ this.isAspectRatio(item) }}" @change="{{ this.handleAspectRatioChange }}">
+        </label>
+    </div>
 </main>
 `
 

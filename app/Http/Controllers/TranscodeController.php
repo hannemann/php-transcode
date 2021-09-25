@@ -9,7 +9,6 @@ use App\Models\FFMpeg\Actions\Transcode;
 use App\Models\FFMpeg\Actions\ConcatPrepare;
 use App\Events\FFMpegProgress;
 use App\Helper\Settings;
-use App\Models\FFMpeg\Actions\Helper\ConcatDemuxer;
 use Illuminate\Support\Facades\Storage;
 use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 use App\Models\CurrentQueue;
@@ -20,9 +19,9 @@ class TranscodeController extends Controller
     {
         try {
             $data = $request->input();
-            static::doSaveSettings($request, $path);
+            Settings::save($path, $data);
             if (false) {
-                $this->test($data, $path);
+                $this->test($path, $data);
             } else {
                 if (count($data['clips']) === 1) {
                     Transcode::getFromToFilter($data['clips'][0]['from'], $data['clips'][0]['to']);
@@ -46,7 +45,7 @@ class TranscodeController extends Controller
         return null;
     }
 
-    private function test(array $data, string $path): void
+    private function test(string $path, array $data): void
     {
         $type = '';
         try {
@@ -102,25 +101,12 @@ class TranscodeController extends Controller
     public function saveSettings(TranscodeRequest $request, string $path):? JsonResponse
     {
         try {
-            static::doSaveSettings($request, $path);
+            Settings::save($path, $request->input());
         } catch (\Exception $e) {
             return response()->json([
                 'message' => sprintf($e->getMessage())
             ], 500);
         }
         return null;
-    }
-
-    public static function doSaveSettings(TranscodeRequest $request, string $path): void
-    {
-        $data = $request->input();
-        $data['file'] = $path;
-        $data['copy'] = [
-            'clips' => "\n" . collect($data['clips'])->map(function ($clip) {
-                return $clip['from'] . "\n" . $clip['to'];
-            })->join("\n") . "\n",
-        ];
-        $out = json_encode($data,  JSON_PRETTY_PRINT |  JSON_UNESCAPED_SLASHES);
-        Storage::disk('recordings')->put(Settings::getSettingsFilename($path), $out, 'public');
     }
 }
