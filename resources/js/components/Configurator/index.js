@@ -19,11 +19,13 @@ class TranscodeConfigurator extends Slim {
     }
 
     init(e) {
-        if ('video' === e.detail.mime.split('/').shift()) {
-            this.item = e.detail
-            this.out = ''
-            this.setCanConcat()
-            this.initWebsocket()
+        if (!this.item) {
+            if ('video' === e.detail.mime.split('/').shift()) {
+                this.item = e.detail
+                this.out = ''
+                this.setCanConcat()
+                this.initWebsocket()
+            }
         }
     }
 

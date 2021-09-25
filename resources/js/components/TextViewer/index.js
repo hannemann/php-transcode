@@ -13,9 +13,11 @@ class TextViewer extends Slim {
     }
 
     init(e) {
-        if (this.isValid(e.detail)) {
-            this.item = e.detail
-            this.initWebsocket()
+        if (!this.item) {
+            if (this.isValid(e.detail)) {
+                this.item = e.detail
+                this.initWebsocket()
+            }
         }
     }
 
@@ -42,7 +44,7 @@ class TextViewer extends Slim {
             this.classList.remove('active', 'fade-out')
         })
         this.classList.add('fade-out')
-            if (this.origin === 'file') {
+        if (this.origin === 'file') {
             this.item.node.iconActive = false
             delete this.item
             this.leaveWebsocket()

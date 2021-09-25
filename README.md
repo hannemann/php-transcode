@@ -41,10 +41,8 @@ WantedBy=default.target
 
 
 ## TODO:
-* Save and restore settings for file
 * Aspect Ratio
 * Scale
 * Crop
 
 ## Fix
-* Sometimes the blur overlay is not removed
