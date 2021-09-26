@@ -100,7 +100,6 @@ body {
     background-color: var(--clr-bg-0);
     color: var(--clr-text-0);
     font-family: sans-serif;
-    height: 100vh;
     padding: 0;
     margin: 0;
 }

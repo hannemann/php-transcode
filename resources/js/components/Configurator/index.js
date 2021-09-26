@@ -1,6 +1,6 @@
-import { Slim, Utils } from '@/components/lib';
-import Iconify from '@iconify/iconify'
+import { Slim, Iconify } from '@/components/lib';
 import {Request} from '@/components/Request'
+import { COMBO_BUTTON_CSS } from '@/components//partials';
 import './Streams'
 import './Clips'
 import './Format'
@@ -16,8 +16,7 @@ class TranscodeConfigurator extends Slim {
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
         this.remuxContainer = 'MP4'
         this.handleConfigureStream = this.handleConfigureStream.bind(this)
-        this.toggleRemuxOptions = this.toggleRemuxOptions.bind(this)
-        this.setRemuxContainer = this.setRemuxContainer.bind(this)
+        this.requestRemux = this.requestRemux.bind(this)
         this.saveSettings = this.saveSettings.bind(this)
         this.hide = this.hide.bind(this)
     }
@@ -127,10 +126,10 @@ class TranscodeConfigurator extends Slim {
         }
     }
 
-    async requestRemux() {
+    async requestRemux(e) {
         console.info('Remux video file %s', this.item.path)
         try {
-            await Request.post(`/remux/${this.remuxContainer.toLowerCase()}/${encodeURIComponent(this.item.path)}`)
+            await Request.post(`/remux/${e.target.value}/${encodeURIComponent(this.item.path)}`)
         } catch (error) {
             console.error(error)
         }
@@ -158,15 +157,6 @@ class TranscodeConfigurator extends Slim {
 
     saveSettings() {
         Request.post(`/settings/${encodeURIComponent(this.item.path)}`, this.config)
-    }
-
-    toggleRemuxOptions(e) {
-        e.stopPropagation()
-        this.remuxOptions.classList.toggle('active')
-    }
-
-    setRemuxContainer(e) {
-        this.remuxContainer = e.explicitOriginalTarget.textContent.trim()
     }
 
     get config() {
@@ -209,10 +199,10 @@ const CSS = /*css*/`
 main {
     position: absolute;
     box-shadow: 0 0 10vw 3vw var(--clr-shadow-0);
-    inset: var(--rel-gutter-500);
+    inset: min(60px, var(--rel-gutter-500));
     background-color: var(--clr-bg-0);
     border-radius: var(--rel-gutter-100);
-    padding: var(--rel-gutter-200);
+    padding: min(30px, var(--rel-gutter-200));
 }
 main > div {
     overflow-y: auto;
@@ -302,8 +292,12 @@ footer button .select .options.active {
     height: auto;
     font-size: .75rem;
 }
+combo-button {
+    min-width: 190px;
+}
 </style>
 ${ICON_STACK_CSS}
+${COMBO_BUTTON_CSS}
 `
 
 const HEADING = /*html*/`
@@ -329,19 +323,11 @@ ${CSS}
                 <span class="iconify" data-icon="mdi-content-save-outline"></span>
                 <span class="iconify hover" data-icon="mdi-content-save-outline"></span>
             </button>
-            <button @click="this.requestRemux()">
-                <span>Remux {{ this.remuxContainer }}</span>
-                <div class="select">
-                    <div @click="{{ this.toggleRemuxOptions }}">
-                        <span class="iconify" data-icon="mdi-menu-down-outline"></span>
-                        <div #ref="remuxOptions" class="options" @click="{{ this.setRemuxContainer }}">
-                            <div>MKV</div>
-                            <div>MP4</div>
-                            <div>TS</div>
-                        </div>
-                    </div>
-                </div>
-            </button>
+            <combo-button @click="{{ this.requestRemux }}">
+                <option value="mkv">Remux MKV</option>
+                <option value="mp4">Remux MP4</option>
+                <option value="ts">Remux TS</option>
+            </combo-button>
             <button *if="{{ this.canConcat }}" @click="this.requestConcat()">Concat</button>
             <button @click="this.transcode()">Start</button>
         </footer>

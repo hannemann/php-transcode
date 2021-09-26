@@ -34,17 +34,26 @@ class Transcoder extends Slim {
             window.scroll(this.scrollX, this.scrollY)
         }
     }
+
+    selectChange(e) {
+        console.log('Change: ', e.target.value)
+    }
+    selectClick(e) {
+        console.log('Action: ', e.target.value)
+    }
+    getNode() {
+        return this
+    }
 }
 
 Transcoder.template = /*html*/`
 <style>
     :host {
         display: block;
-        height: calc(100vh - .4rem);
-        overflow: auto;
     }
     :host(.background) {
         overflow: hidden;
+        height: calc(100vh - .4rem);
     }
     :host(.background) main {
         filter: blur(3px);
@@ -53,6 +62,9 @@ Transcoder.template = /*html*/`
         padding: .2rem;
         filter: blur(0);
         transition: var(--loading-transition);
+    }
+    h1 {
+        user-select: none;
     }
 </style>
 <main>
