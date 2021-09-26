@@ -329,7 +329,7 @@ ${CSS}
                 <option value="ts">Remux TS</option>
             </combo-button>
             <button *if="{{ this.canConcat }}" @click="this.requestConcat()">Concat</button>
-            <button @click="this.transcode()">Start</button>
+            <button @click="this.transcode()">Transcode</button>
         </footer>
     </div>
     <transcode-configurator-stream-config #ref="streamConfig"></transcode-configurator-stream-config>
