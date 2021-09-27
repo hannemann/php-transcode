@@ -71,9 +71,14 @@ class ComboButton extends Slim {
                 this.setValue(e);
             }
             this.wrapper.remove();
+            this.noScroll.remove();
             delete this.wrapper;
+            delete this.noScroll;
             document.removeEventListener("click", this.toggle, { once: true });
         } else {
+            this.noScroll = document.body.appendChild(document.createElement('div'))
+            this.noScroll.style.position = 'fixed'
+            this.noScroll.style.inset = 0
             this.wrapper = document.createElement("div");
             this.options.forEach((o) => {
                 this.wrapper.appendChild(o.cloneNode(true));
