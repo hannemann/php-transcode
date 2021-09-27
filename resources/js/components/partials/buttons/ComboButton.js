@@ -62,11 +62,14 @@ class ComboButton extends Slim {
      * @param {ClickEvent} e
      */
     toggle(e) {
-        e.stopPropagation();
+        const path = e.composedPath()
+        if (path.indexOf(this.wrapper) > -1 || path.indexOf(this) > -1) {
+            e.stopPropagation();
+        }
         if (this.wrapper) {
             if (
                 e.target.tagName === "OPTION" &&
-                e.composedPath().indexOf(this.wrapper) > -1
+                path.indexOf(this.wrapper) > -1
             ) {
                 this.setValue(e);
             }
@@ -103,6 +106,12 @@ class ComboButton extends Slim {
             "border-left-width"
         )} - ${styles.getPropertyValue("border-right-width")})`;
         this.wrapper.style.display = "revert";
+        const wrapperDim = this.wrapper.getBoundingClientRect();
+        if (wrapperDim.bottom > window.innerHeight) {
+            this.wrapper.style.top = `${
+                dim.top - wrapperDim.height + document.scrollingElement.scrollTop
+            }px`;
+        }
         this.wrapper.style.transform = "translate(-100%)";
     }
 
