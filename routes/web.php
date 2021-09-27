@@ -34,12 +34,19 @@ Route::get('/file-picker/{subdir?}', function (string $subdir = null) {
         $items = FilePicker::root('recordings')::getItems($subdir);
         FilePickerEvent::dispatch($items, $subdir ?? 'root');
     } catch (\Exception $e) {
-        return response()->json([            'status' => 500,
+        return response()->json([
+            'status' => 500,
             'message' => $e->getMessage(),
         ], 500);
     }
 
-})->where('subdir', '(.*)')->name('filepicker');
+})->where('subdir', '(.*)');
+
+Route::delete('/file-picker/{path}', function (string $path) {
+
+    $x = 1;
+
+})->where('path', '(.*)');
 
 Route::post('/concat/{path?}', function (string $path = null) {
 
