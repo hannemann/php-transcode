@@ -1,59 +1,54 @@
-import { Slim } from '@/components/lib';
-import './FilePicker'
-import './Configurator'
-import './TextViewer'
-import './Request'
-import './Toast'
-import './Progress'
+import { Slim } from "@/components/lib";
+import "./FilePicker";
+import "./Configurator";
+import "./TextViewer";
+import "./Request";
+import "./Toast";
+import "./Progress";
 
 class Transcoder extends Slim {
-
     constructor() {
-        super()
-        this.backgroundRequests = 0
+        super();
+        this.backgroundRequests = 0;
     }
 
     onAdded() {
         let backgroundHandler = this.toggleBackground.bind(this);
-        this.filePicker.channelHash = this.dataset.channel
-        document.addEventListener('loading', backgroundHandler)
-        document.addEventListener('configurator-show', backgroundHandler)
-        document.addEventListener('textviewer-show', backgroundHandler)
+        this.filePicker.channelHash = this.dataset.channel;
+        document.addEventListener("loading", backgroundHandler);
+        document.addEventListener("configurator-show", backgroundHandler);
+        document.addEventListener("textviewer-show", backgroundHandler);
     }
 
     toggleBackground(e) {
         if (e.detail) {
-            this.scrollY = window.scrollY
-            this.scrollX = window.scrollX
-            this.backgroundRequests++
+            this.classList.add("background", this.backgroundRequests);
+            document.body.style.overflow = "hidden";
+            this.backgroundRequests++;
         } else {
-            this.backgroundRequests--
+            this.backgroundRequests--;
         }
-        this.classList.toggle('background', this.backgroundRequests)
         if (!this.backgroundRequests) {
-            window.scroll(this.scrollX, this.scrollY)
+            document.body.style.overflow = "";
+            this.classList.remove("background", this.backgroundRequests);
         }
     }
 
     selectChange(e) {
-        console.log('Change: ', e.target.value)
+        console.log("Change: ", e.target.value);
     }
     selectClick(e) {
-        console.log('Action: ', e.target.value)
+        console.log("Action: ", e.target.value);
     }
     getNode() {
-        return this
+        return this;
     }
 }
 
-Transcoder.template = /*html*/`
+Transcoder.template = /*html*/ `
 <style>
     :host {
         display: block;
-    }
-    :host(.background) {
-        overflow: hidden;
-        height: calc(100vh - .4rem);
     }
     :host(.background) main {
         filter: blur(3px);
@@ -76,6 +71,6 @@ Transcoder.template = /*html*/`
 <transcoder-loading></transcoder-loading>
 <ffmpeg-progress></ffmpeg-progress>
 <transcoder-toast></transcoder-toast>
-`
+`;
 
-customElements.define('ffmpeg-transcoder', Transcoder);
+customElements.define("ffmpeg-transcoder", Transcoder);
