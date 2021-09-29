@@ -3,29 +3,28 @@ import Iconify from '@iconify/iconify'
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css'
 
 class FilePickerItem extends FilePickerBase {
-
     constructor() {
-        super()
-        this.wsUrl.push(encodeURIComponent(this.path))
-        this.isDirectory = this.type === TYPE_DIRECTORY
-        this.isFile = this.type === TYPE_FILE
+        super();
+        this.wsUrl.push(encodeURIComponent(this.path));
+        this.isDirectory = this.type === TYPE_DIRECTORY;
+        this.isFile = this.type === TYPE_FILE;
+        this.delete = this.delete.bind(this);
     }
 
     onAdded() {
-        super.onAdded()
-        requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
+        super.onAdded();
+        requestAnimationFrame(() => Iconify.scan(this.shadowRoot));
     }
 
     onWsEvent(e) {
-        super.onWsEvent(e)
-
+        super.onWsEvent(e);
     }
 
     handleClick() {
-        super.handleClick()
+        super.handleClick();
         if (this.items.length) {
-            this.iconActive = false
-            this.items = []
+            this.iconActive = false;
+            this.items = [];
         } else if (TYPE_FILE === this.type) {
             const detail = {
                 node: this,
@@ -33,85 +32,109 @@ class FilePickerItem extends FilePickerBase {
                 channel: this.channelHash,
                 mime: this.mime,
                 size: this.size,
-                type: this.type
-            }
-            const parent = this.getRootNode().host
+                type: this.type,
+            };
+            const parent = this.getRootNode().host;
             if (parent) {
                 detail.parent = {
                     node: parent,
                     path: parent.path,
                     videoFiles: parent.videoFiles,
-                    channelHash: parent.channelHash
-                }
+                    channelHash: parent.channelHash,
+                };
             }
-            this.iconActive = true
-            document.dispatchEvent(new CustomEvent('file-clicked', {detail}))
+            this.iconActive = true;
+            document.dispatchEvent(new CustomEvent("file-clicked", { detail }));
         }
     }
 
     get icon() {
         if (this.isDirectory) {
-            return 'mdi-folder'
+            return "mdi-folder";
         }
-        switch(this.fileType) {
-            case 'video':
-                return 'mdi-filmstrip'
-            case 'text':
-                return 'mdi-note-text-outline'
-            case 'image':
-                return 'mdi-file-image-outline'
+        switch (this.fileType) {
+            case "video":
+                return "mdi-filmstrip";
+            case "text":
+                return "mdi-note-text-outline";
+            case "image":
+                return "mdi-file-image-outline";
             default:
-                return 'mdi-file'
+                return "mdi-file";
         }
     }
 
     buildTitle() {
-        let result = this.path.trim()
+        let result = this.path.trim();
         if (this.mime) {
-            result += ` - ${this.mime}`
+            result += ` - ${this.mime}`;
         }
         if (this.size) {
-            result += ` - ${this.size}`
+            result += ` - ${this.size}`;
         }
         if (this.lastModified) {
-            let d = new Date(this.lastModified * 1000)
-            let date = d.toLocaleDateString(d.getTimezoneOffset(), {year: 'numeric', month: '2-digit', day: '2-digit'})
-            let time = d.toLocaleTimeString(d.getTimezoneOffset())
-            result += ` - ${date} ${time}`
+            let d = new Date(this.lastModified * 1000);
+            let date = d.toLocaleDateString(d.getTimezoneOffset(), {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
+            let time = d.toLocaleTimeString(d.getTimezoneOffset());
+            result += ` - ${date} ${time}`;
         }
-        return result
+        return result;
+    }
+
+    async delete() {
+        const m = document.createElement("modal-confirm");
+        m.header = "Cillum exercitation";
+        m.content =
+            "Esse sit exercitation laborum sit nostrud labore qui cupidatat.";
+        document.body.appendChild(m);
+        try {
+            await m.confirm();
+            console.log("confirmed");
+        } catch (error) {
+            console.log("canceled");
+        }
     }
 
     get title() {
-        return this.buildTitle()
+        return this.buildTitle();
     }
 
     get fileType() {
-        let mime = this.mime.split('/').shift().toLowerCase() 
-        switch(mime) {
-            case 'video':
-            case 'text':
-            case 'image':
-                return mime
+        let mime = this.mime.split("/").shift().toLowerCase();
+        switch (mime) {
+            case "video":
+            case "text":
+            case "image":
+                return mime;
             default:
-                return 'unknown'
+                return "unknown";
         }
     }
 
     get hasFiles() {
-        return this.isDirectory &&
-                this.items.filter(i => i.type === TYPE_FILE).length > 0
+        return (
+            this.isDirectory &&
+            this.items.filter((i) => i.type === TYPE_FILE).length > 0
+        );
     }
 
     get videoFiles() {
         if (this.hasFiles) {
-            return this.items.filter(i => i.type === TYPE_FILE && 'video' === i.mime.split('/').shift().toLowerCase())
+            return this.items.filter(
+                (i) =>
+                    i.type === TYPE_FILE &&
+                    "video" === i.mime.split("/").shift().toLowerCase()
+            );
         }
-        return []
+        return [];
     }
 }
 
-const CSS = /*css*/`
+const CSS = /*css*/ `
 <style>
     :host {
         display: block;
@@ -127,7 +150,7 @@ const CSS = /*css*/`
     :host(:hover) span {
         background-color: var(--clr-bg-100);
     }
-    :host(:hover) .icon-stack:not(:disabled):not(.active) svg.hover {
+    :host(:hover) .icon-stack:not(:disabled):not(.active):not(button) svg.hover {
         opacity: 1;
     }
     filepicker-item {
@@ -147,26 +170,37 @@ const CSS = /*css*/`
     .item {
         display: flex;
         align-items: center;
+        justify-content: space-between;
+    }
+    .label {
+        margin-right: auto;
     }
     .icon-stack {
         width: 1em;
         height: 1em;
         display: inline-block;
     }
+    button.delete {
+        font-size: 1rem;
+        display: none;
+    }
+    .file button.delete {
+        display: revert;
+    }
 </style>
 ${ICON_STACK_CSS}
-`
+`;
 
-const ICON_TEMPLATE = /*html*/`
+const ICON_TEMPLATE = /*html*/ `
 <div class="icon-stack">
     <span class="iconify inactive" data-icon="{{ this.icon }}"></span>
     <span class="iconify active" data-icon="{{ this.icon }}"></span>
     <span class="iconify hover" data-icon="{{ this.icon }}"></span>
 </div>
-`
+`;
 
 /** preserve whitespaces! */
-const ITEM_TEMPLATE = /*html*/`
+const ITEM_TEMPLATE = /*html*/ `
 <filepicker-item
     *foreach="{{ this.items }}"
     .type="{{ item.type }}"
@@ -178,16 +212,20 @@ const ITEM_TEMPLATE = /*html*/`
 >
         {{ item.name }}
 </filepicker-item>
-`
+`;
 
-FilePickerItem.template = /*html*/`
+FilePickerItem.template = /*html*/ `
 ${CSS}
-<div>
+<div class="{{ this.isFile ? 'file' : 'dir' }}">
     <div class="item">
         ${ICON_TEMPLATE}
-        <span @click="this.handleClick()" title="{{ this.title }}">
+        <span @click="this.handleClick()" title="{{ this.title }}" class="label">
             <slot></slot>
         </span>
+        <button class="icon-stack delete" @click="{{ this.delete }}">
+            <span class="iconify" data-icon="mdi-trash-can-outline"></span>
+            <span class="iconify hover" data-icon="mdi-trash-can-outline"></span>
+        </button>
     </div>
     ${ITEM_TEMPLATE}
 </div>
