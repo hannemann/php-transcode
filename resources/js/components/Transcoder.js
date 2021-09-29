@@ -18,6 +18,7 @@ class Transcoder extends Slim {
         document.addEventListener("loading", backgroundHandler);
         document.addEventListener("configurator-show", backgroundHandler);
         document.addEventListener("textviewer-show", backgroundHandler);
+        document.addEventListener("modal-show", backgroundHandler);
     }
 
     toggleBackground(e) {

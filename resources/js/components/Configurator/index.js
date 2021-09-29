@@ -180,7 +180,7 @@ class TranscodeConfigurator extends Slim {
     }
 }
 
-const CSS = /*css*/`
+const CSS = /*css*/ `
 <style>
 :host {
     position: fixed;
@@ -239,53 +239,6 @@ footer .icon-stack {
     font-size: var(--font-size-200);
     aspect-ratio: 1;
 }
-footer button {
-    background: var(--clr-bg-100);
-    color: var(--clr-text-100);
-    font-size: 1rem;
-    padding: .5rem;
-    border: 2px solid var(--clr-bg-200);
-    transition-property: text-shadow, box-shadow, border-color, background-color;
-    transition-timing-function: ease-out;
-    transition-duration: var(--transition-medium);
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-    position: relative;
-}
-footer button:hover {
-    background:var(--clr-bg-200);
-    color: var(--clr-enlightened);
-    text-shadow: 0 0 5px var(--clr-enlightened-glow), 0 0 10px var(--clr-enlightened-glow);
-    border-color: var(--clr-enlightened);
-    box-shadow: 0 0 20px 0 var(--clr-enlightened-glow), 0 0 10px 0 inset var(--clr-enlightened-glow);
-}
-footer button .select {
-    font-size: 1.2em;
-    height: 1em;
-    width: 1.5ch;
-    cursor: pointer;
-}
-footer button .select .options {
-    display: none;
-    position: absolute;
-    padding: .5rem;
-    top: calc( -1 * (100% + 1rem));
-    right: 0;
-    text-shadow: none;
-    color: var(--clr-text-100);
-    background:var(--clr-bg-100);
-    border: 2px solid var(--clr-enlightened);
-    box-shadow: 0 0 20px 0 var(--clr-enlightened-glow), 0 0 10px 0 inset var(--clr-enlightened-glow);
-}
-footer button .select .options div:hover {
-    color: var(--clr-enlightened);
-    background:var(--clr-bg-200);
-    text-shadow: 0 0 5px var(--clr-enlightened-glow), 0 0 10px var(--clr-enlightened-glow);
-}
-footer button .select .options.active {
-    display: block;
-}
 .status {
     position: absolute;
     inset: auto var(--rel-gutter-100) .5rem;
@@ -298,9 +251,9 @@ combo-button {
 </style>
 ${ICON_STACK_CSS}
 ${COMBO_BUTTON_CSS}
-`
+`;
 
-const HEADING = /*html*/`
+const HEADING = /*html*/ `
 <h1>
     Transcode
     <div @click="{{ this.hide }}" class="icon-stack">
@@ -308,9 +261,9 @@ const HEADING = /*html*/`
         <span class="iconify hover" data-icon="mdi-close"></span>
     </div>
 </h1>
-`
+`;
 
-TranscodeConfigurator.template = /*html*/`
+TranscodeConfigurator.template = /*html*/ `
 ${CSS}
 <main #ref="main">
     ${HEADING}
@@ -328,13 +281,13 @@ ${CSS}
                 <option value="mp4">Remux MP4</option>
                 <option value="ts">Remux TS</option>
             </combo-button>
-            <button *if="{{ this.canConcat }}" @click="this.requestConcat()">Concat</button>
-            <button @click="this.transcode()">Transcode</button>
+            <theme-button *if="{{ this.canConcat }}" @click="this.requestConcat()">Concat</theme-button>
+            <theme-button @click="this.transcode()">Transcode</theme-button>
         </footer>
     </div>
     <transcode-configurator-stream-config #ref="streamConfig"></transcode-configurator-stream-config>
     <div class="status">{{ this.out }}</div>
 </main>
-`
+`;
 
 customElements.define('transcode-configurator', TranscodeConfigurator);
