@@ -55,6 +55,7 @@ class FilePicker
                 'mime' => static::getMimeType($item),
                 'size' => FileHelper::fileSizeH((int)static::disk()->size($item)),
                 'lastModified' => static::disk()->lastModified($item),
+                'internal' => preg_match('/^[a-f0-9]{40}\.[^.]+.[a-z0-9]+$/', basename($item))
             ]
         );
     }

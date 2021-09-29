@@ -6,93 +6,93 @@ const CSRF_TOKEN = document.head.querySelector("[name~=csrf-token][content]").co
 
 let requests = 0
 
-class Request {
+const BASE_HEADERS = {
+    "Content-Type": "application/json",
+    "X-CSRF-Token": CSRF_TOKEN,
+    Accept: "application/json",
+};
 
+class Request {
     static async get(url, indicate = true) {
         try {
-            if (indicate) this.loading = true
-            let response = await fetch(url)
+            if (indicate) this.loading = true;
+            let response = await fetch(url);
             if (response.status !== 200) {
-                let error = await response.json()
-                throw new Error(error.message)
+                let error = await response.json();
+                throw new Error(error.message);
             }
-            return response
+            return response;
         } catch (error) {
-            Request.error = error
+            Request.error = error;
         } finally {
-            if (indicate) this.loading = false
+            if (indicate) this.loading = false;
         }
     }
 
     static async post(url, body) {
         try {
-            this.loading = true
+            this.loading = true;
             let response = await fetch(url, {
-                method: 'post',
+                method: "post",
                 body: JSON.stringify(body),
-                headers: {
-                  'Content-Type': 'application/json',
-                  'X-CSRF-Token': CSRF_TOKEN,
-                  'Accept': 'application/json'
-                },
-            })
+                headers: BASE_HEADERS,
+            });
             if (response.status !== 200) {
-                let error = await response.json()
-                throw new Error(error.message)
+                let error = await response.json();
+                throw new Error(error.message);
             }
-            return response
+            return response;
         } catch (error) {
-            Request.error = error
+            Request.error = error;
         } finally {
-            this.loading = false
+            this.loading = false;
         }
     }
 
     static async delete(url) {
         try {
-            this.loading = true
+            this.loading = true;
             let response = await fetch(url, {
-                method: 'delete',
-                headers: {
-                  'Content-Type': 'application/json',
-                  "X-CSRF-Token": CSRF_TOKEN
-                },
-            })
+                method: "delete",
+                headers: BASE_HEADERS,
+            });
             if (response.status !== 200) {
-                let error = await response.json()
-                throw new Error(error.message)
+                let error = await response.json();
+                throw new Error(error.message);
             }
         } catch (error) {
-            Request.error = error
+            Request.error = error;
         } finally {
-            this.loading = false
+            this.loading = false;
         }
     }
 
     static set loading(value) {
         if (value) {
-            requests++
+            requests++;
             if (requests === 1) {
-                document.dispatchEvent(LoadEvent)
+                document.dispatchEvent(LoadEvent);
             }
         } else {
-            requests--
+            requests--;
             if (requests <= 0) {
-                requests = 0
-                document.dispatchEvent(LoadReadyEvent)
+                requests = 0;
+                document.dispatchEvent(LoadReadyEvent);
             }
         }
     }
 
     static set error(error) {
-        console.error(error)
-        document.dispatchEvent(new CustomEvent('toast', {
-            detail: {
-                message: error,
-                type: 'error'
-            }
-        }))
-        throw error
+        console.error(error);
+        document.dispatchEvent(
+            new CustomEvent("toast", {
+                detail: {
+                    message: error,
+                    type: "error",
+                },
+            })
+        );
+        throw error;
     }
 }
 

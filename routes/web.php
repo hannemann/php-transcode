@@ -5,6 +5,7 @@ use App\Events\FilePicker as FilePickerEvent;
 use App\Events\TextViewer;
 use App\Events\Transcode\Config\Streams as BroadcastStreams;
 use App\Events\Transcode\Config\Clips as BroadcastClips;
+use App\Exceptions\FilePicker\DeleteNoneInternalException;
 use App\Helper\Settings;
 use App\Http\Controllers\TranscodeController;
 use App\Models\FilePicker;
@@ -12,8 +13,8 @@ use App\Models\Video\File as VideoFile;
 use Illuminate\Support\Facades\Route;
 use App\Jobs\ProcessVideo;
 use App\Models\CurrentQueue;
-use App\Models\FFMpeg\Actions\Helper\ConcatDemuxer;
 use App\Models\FFMpeg\Actions\ConcatPrepare;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,7 +45,11 @@ Route::get('/file-picker/{subdir?}', function (string $subdir = null) {
 
 Route::delete('/file-picker/{path}', function (string $path) {
 
-    $x = 1;
+    if (FilePicker::root('recordings')::getFileData($path)['internal']) {
+        Storage::disk('recordings')->delete($path);
+    } else {
+        throw new DeleteNoneInternalException();
+    }
 
 })->where('path', '(.*)');
 

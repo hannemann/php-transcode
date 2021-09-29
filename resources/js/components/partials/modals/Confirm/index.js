@@ -141,6 +141,7 @@ Confirm.template = /*html*/ `
     }
     section {
         padding-block: 1rem;
+        overflow-wrap: break-word;
     }
     footer {
         padding: .5rem;

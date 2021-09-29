@@ -1,6 +1,7 @@
 import { FilePickerBase, TYPE_DIRECTORY, TYPE_FILE } from './FilePickerBase'
 import Iconify from '@iconify/iconify'
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css'
+import { Request } from "@/components/Request";
 
 class FilePickerItem extends FilePickerBase {
     constructor() {
@@ -87,16 +88,16 @@ class FilePickerItem extends FilePickerBase {
 
     async delete() {
         const m = document.createElement("modal-confirm");
-        m.header = "Cillum exercitation";
-        m.content =
-            "Esse sit exercitation laborum sit nostrud labore qui cupidatat.";
+        m.header = "Delete";
+        m.content = `Delete file ${this.path}?`;
         document.body.appendChild(m);
         try {
             await m.confirm();
-            console.log("confirmed");
-        } catch (error) {
-            console.log("canceled");
-        }
+            await Request.delete(
+                `/file-picker/${encodeURIComponent(this.path)}`
+            );
+            this.remove();
+        } catch (error) {}
     }
 
     get title() {
@@ -180,11 +181,8 @@ const CSS = /*css*/ `
         height: 1em;
         display: inline-block;
     }
-    button.delete {
+    .file.internal button.delete {
         font-size: 1rem;
-        display: none;
-    }
-    .file button.delete {
         display: revert;
     }
 </style>
@@ -209,6 +207,8 @@ const ITEM_TEMPLATE = /*html*/ `
     .mime="{{ item.mime }}"
     .size="{{ item.size }}"
     .last-modified="{{ item.lastModified }}"
+    .internal="{{ item.internal }}"
+    .name="{{ item.name }}"
 >
         {{ item.name }}
 </filepicker-item>
@@ -216,13 +216,13 @@ const ITEM_TEMPLATE = /*html*/ `
 
 FilePickerItem.template = /*html*/ `
 ${CSS}
-<div class="{{ this.isFile ? 'file' : 'dir' }}">
+<div class="{{ (this.isFile ? 'file' : 'dir') + (this.internal ? ' internal' : '') }}">
     <div class="item">
         ${ICON_TEMPLATE}
         <span @click="this.handleClick()" title="{{ this.title }}" class="label">
             <slot></slot>
         </span>
-        <button class="icon-stack delete" @click="{{ this.delete }}">
+        <button *if="{{ this.internal }}" class="icon-stack delete" @click="{{ this.delete }}">
             <span class="iconify" data-icon="mdi-trash-can-outline"></span>
             <span class="iconify hover" data-icon="mdi-trash-can-outline"></span>
         </button>
