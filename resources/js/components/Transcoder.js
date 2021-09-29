@@ -23,7 +23,7 @@ class Transcoder extends Slim {
 
     toggleBackground(e) {
         if (e.detail) {
-            this.classList.add("background", this.backgroundRequests);
+            this.classList.add("background");
             document.body.style.overflow = "hidden";
             this.backgroundRequests++;
         } else {
@@ -31,7 +31,7 @@ class Transcoder extends Slim {
         }
         if (!this.backgroundRequests) {
             document.body.style.overflow = "";
-            this.classList.remove("background", this.backgroundRequests);
+            this.classList.remove("background");
         }
     }
 

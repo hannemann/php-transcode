@@ -63,12 +63,12 @@ class Confirm extends Slim {
 
     hide() {
         document.removeEventListener("keyup", this.handleKey);
-        document.body.style.overflow = "";
         this.addEventListener(
             "transitionend",
             () => {
                 this.className = "";
                 document.body.removeChild(this);
+                document.body.style.overflow = "";
                 document.dispatchEvent(
                     new CustomEvent("modal-show", { detail: false })
                 );
