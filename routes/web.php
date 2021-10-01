@@ -15,6 +15,7 @@ use App\Jobs\ProcessVideo;
 use App\Models\CurrentQueue;
 use App\Models\FFMpeg\Actions\ConcatPrepare;
 use Illuminate\Support\Facades\Storage;
+use App\Models\FFMpeg\Actions\Scale;
 
 /*
 |--------------------------------------------------------------------------
@@ -71,6 +72,13 @@ Route::post('/remux/{container}/{path}', function (string $container, string $pa
 
 Route::post('/transcode/{path}', [TranscodeController::class, 'transcode'])->where('path', '(.*)');
 Route::post('/settings/{path}', [TranscodeController::class, 'saveSettings'])->where('path', '(.*)');
+
+Route::post('/scale/{width}/{height}/{aspect}/{path}', function (int $width, int $height, string $aspect, string $path) {
+
+    // (new Scale('recordings', $path, 0))->execute($width, $height);
+    ProcessVideo::dispatch('scale', 'recordings', $path, [], null, null, $width, $height, $aspect);
+
+})->where('path', '(.*)')->where('width', '[0-9]+')->where('height', '[0-9]+')->where('aspect', '(4:3|16:9)');
 
 Route::get('/streams/{path?}', function (string $path = null) {
     

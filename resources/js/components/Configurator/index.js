@@ -5,107 +5,137 @@ import './Streams'
 import './Clips'
 import './Format'
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
+import "./Dialogues/Scale";
 
-const WS_CHANNEL = 'Transcode.Config'
-const WS_CHANNEL_FFMPEG_OUT = 'FFMpegOut'
+const WS_CHANNEL = "Transcode.Config";
+const WS_CHANNEL_FFMPEG_OUT = "FFMpegOut";
 class TranscodeConfigurator extends Slim {
-
     onAdded() {
-        this.canConcat = false
-        document.addEventListener('file-clicked', this.init.bind(this))
-        requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
-        this.remuxContainer = 'MP4'
-        this.handleConfigureStream = this.handleConfigureStream.bind(this)
-        this.requestRemux = this.requestRemux.bind(this)
-        this.saveSettings = this.saveSettings.bind(this)
-        this.hide = this.hide.bind(this)
+        this.canConcat = false;
+        document.addEventListener("file-clicked", this.init.bind(this));
+        requestAnimationFrame(() => Iconify.scan(this.shadowRoot));
+        this.remuxContainer = "MP4";
+        this.handleConfigureStream = this.handleConfigureStream.bind(this);
+        this.requestRemux = this.requestRemux.bind(this);
+        this.saveSettings = this.saveSettings.bind(this);
+        this.hide = this.hide.bind(this);
     }
 
     init(e) {
         if (!this.item) {
-            if ('video' === e.detail.mime.split('/').shift()) {
-                this.item = e.detail
-                this.out = ''
-                this.setCanConcat()
-                this.initWebsocket()
+            if ("video" === e.detail.mime.split("/").shift()) {
+                this.item = e.detail;
+                this.out = "";
+                this.setCanConcat();
+                this.initWebsocket();
             }
         }
     }
 
     show() {
-        this.classList.add('active')
-        this.item.node.iconActive = true
-        document.dispatchEvent(new CustomEvent('configurator-show', {detail: true}))
-        document.addEventListener('stream-configure', this.handleConfigureStream)
-        console.info('Show streams of %s', this.item.path)
+        this.classList.add("active");
+        this.item.node.iconActive = true;
+        document.dispatchEvent(
+            new CustomEvent("configurator-show", { detail: true })
+        );
+        document.addEventListener(
+            "stream-configure",
+            this.handleConfigureStream
+        );
+        console.info("Show streams of %s", this.item.path);
     }
 
     hide(e) {
-        e.stopPropagation() // prevent document clicks
-        this.addEventListener('transitionend', () => {
-            this.classList.remove('active', 'fade-out')
-            this.format = undefined
-            this.streams = undefined
-            this.item.node.iconActive = false
-            delete this.item
-            document.dispatchEvent(new CustomEvent('configurator-hidden'))
-        }, {once: true})
-        this.classList.add('fade-out')
-        this.leaveWebsocket()
-        document.removeEventListener('stream-configure', this.handleConfigureStream)
-        document.removeEventListener('stream-config', this.handleStreamConfig, {once: true})
-        document.dispatchEvent(new CustomEvent('configurator-show', {detail: false}))
+        e.stopPropagation(); // prevent document clicks
+        this.addEventListener(
+            "transitionend",
+            () => {
+                this.classList.remove("active", "fade-out");
+                this.format = undefined;
+                this.streams = undefined;
+                this.item.node.iconActive = false;
+                delete this.item;
+                document.dispatchEvent(new CustomEvent("configurator-hidden"));
+            },
+            { once: true }
+        );
+        this.classList.add("fade-out");
+        this.leaveWebsocket();
+        document.removeEventListener(
+            "stream-configure",
+            this.handleConfigureStream
+        );
+        document.removeEventListener("stream-config", this.handleStreamConfig, {
+            once: true,
+        });
+        document.dispatchEvent(
+            new CustomEvent("configurator-show", { detail: false })
+        );
     }
 
     initWebsocket() {
-        this.channel = window.Echo.channel(WS_CHANNEL)
-        this.channel.listen(WS_CHANNEL, this.handleConfiguratorEvent.bind(this))
-        this.channel.subscribed(this.requestStreams.bind(this)) + this.item.channel
-        this.channelOut = window.Echo.channel(`${WS_CHANNEL_FFMPEG_OUT}.${this.item.channel}`)
-        this.channelOut.listen(WS_CHANNEL_FFMPEG_OUT, this.handleOutEvent.bind(this))
+        this.channel = window.Echo.channel(WS_CHANNEL);
+        this.channel.listen(
+            WS_CHANNEL,
+            this.handleConfiguratorEvent.bind(this)
+        );
+        this.channel.subscribed(this.requestStreams.bind(this)) +
+            this.item.channel;
+        this.channelOut = window.Echo.channel(
+            `${WS_CHANNEL_FFMPEG_OUT}.${this.item.channel}`
+        );
+        this.channelOut.listen(
+            WS_CHANNEL_FFMPEG_OUT,
+            this.handleOutEvent.bind(this)
+        );
     }
 
     leaveWebsocket() {
-        this.channel.stopListening(WS_CHANNEL)
-        window.Echo.leave(WS_CHANNEL)
-        this.channelOut.stopListening(WS_CHANNEL_FFMPEG_OUT)
-        window.Echo.leave(`${WS_CHANNEL_FFMPEG_OUT}.${this.item.channel}`)
-        delete this.channel
+        this.channel.stopListening(WS_CHANNEL);
+        window.Echo.leave(WS_CHANNEL);
+        this.channelOut.stopListening(WS_CHANNEL_FFMPEG_OUT);
+        window.Echo.leave(`${WS_CHANNEL_FFMPEG_OUT}.${this.item.channel}`);
+        delete this.channel;
     }
 
     requestStreams() {
         try {
-            console.info('Request streams of %s', this.item.path)
-            Request.get(`/streams/${encodeURIComponent(this.item.path)}`)
+            console.info("Request streams of %s", this.item.path);
+            Request.get(`/streams/${encodeURIComponent(this.item.path)}`);
         } catch (error) {
-            this.leaveWebsocket()
-            this.hide()
+            this.leaveWebsocket();
+            this.hide();
         }
     }
 
     transcode() {
         if (!this.clips.valid) {
-            document.dispatchEvent(new CustomEvent('toast', {
-                detail: {
-                    message: 'Clip is invalid',
-                    type: 'warning'
-                }
-            }))
-            return
+            document.dispatchEvent(
+                new CustomEvent("toast", {
+                    detail: {
+                        message: "Clip is invalid",
+                        type: "warning",
+                    },
+                })
+            );
+            return;
         }
         try {
             requestAnimationFrame(() => {
-                console.info('Transcode %s', this.item.path, this.config)
-                Request.post(`/transcode/${encodeURIComponent(this.item.path)}`, this.config)
-            })
+                console.info("Transcode %s", this.item.path, this.config);
+                Request.post(
+                    `/transcode/${encodeURIComponent(this.item.path)}`,
+                    this.config
+                );
+            });
         } catch (error) {}
     }
 
     handleConfiguratorEvent(ws) {
-        console.info(ws)
-        this.format = ws.format
-        this.streams = ws.streams
-        this.show()
+        console.info(ws);
+        this.format = ws.format;
+        this.streams = ws.streams;
+        this.show();
     }
 
     handleOutEvent(ws) {
@@ -113,70 +143,113 @@ class TranscodeConfigurator extends Slim {
     }
 
     setCanConcat() {
-        this.canConcat = this.item?.parent?.videoFiles?.length > 1 &&
-            !this.item.parent.videoFiles.find(i => i.name === `${this.item.parent.channelHash}-concat.ts`)
+        this.canConcat =
+            this.item?.parent?.videoFiles?.length > 1 &&
+            !this.item.parent.videoFiles.find(
+                (i) => i.name === `${this.item.parent.channelHash}-concat.ts`
+            );
     }
 
     async requestConcat() {
-        console.info('Concat video files in %s', this.item.path)
+        console.info("Concat video files in %s", this.item.path);
         try {
-            await Request.post(`/concat/${encodeURIComponent(this.item.path)}`)
+            await Request.post(`/concat/${encodeURIComponent(this.item.path)}`);
         } catch (error) {
-            console.error(error)
+            console.error(error);
         }
     }
 
     async requestRemux(e) {
-        console.info('Remux video file %s', this.item.path)
+        console.info("Remux video file %s", this.item.path);
         try {
-            await Request.post(`/remux/${e.target.value}/${encodeURIComponent(this.item.path)}`)
+            await Request.post(
+                `/remux/${e.target.value}/${encodeURIComponent(this.item.path)}`
+            );
         } catch (error) {
-            console.error(error)
+            console.error(error);
         }
+    }
+
+    async requestScale(e) {
+        const m = document.createElement("modal-dialogue");
+        m.header = "Scale";
+        const d = m.appendChild(document.createElement("dialogue-scale"));
+        document.body.appendChild(m);
+        try {
+            await m.open();
+            console.info(
+                "Scale video file %s to %dx%d with an aspect-ratio of %s",
+                this.item.path,
+                d.scale.width,
+                d.scale.height,
+                d.scale.aspectRatio
+            );
+            await Request.post(
+                `/scale/${d.scale.width}/${d.scale.height}/${encodeURIComponent(
+                    d.scale.aspectRatio
+                )}/${encodeURIComponent(this.item.path)}`
+            );
+        } catch (error) {}
     }
 
     handleConfigureStream(e) {
-        const offsetOrigin = e.detail.origin.getBoundingClientRect()
-        const offsetMain = this.main.getBoundingClientRect()
+        const offsetOrigin = e.detail.origin.getBoundingClientRect();
+        const offsetMain = this.main.getBoundingClientRect();
         const offset = {
             top: offsetOrigin.top - offsetMain.top,
-            right: offsetMain.right - offsetOrigin.left
+            right: offsetMain.right - offsetOrigin.left,
+        };
+        document.addEventListener("stream-config", this.handleStreamConfig, {
+            once: true,
+        });
+        if (
+            this.streamConfig.classList.contains("active") &&
+            e.detail.item.index !== this.streamConfig.item.index
+        ) {
+            this.streamConfig.addEventListener(
+                "transitionend",
+                () => {
+                    requestAnimationFrame(() =>
+                        this.streamConfig.toggle(e.detail.item, offset)
+                    );
+                },
+                { once: true }
+            );
         }
-        document.addEventListener('stream-config', this.handleStreamConfig, {once: true})
-        if (this.streamConfig.classList.contains('active') && e.detail.item.index !== this.streamConfig.item.index) {
-            this.streamConfig.addEventListener('transitionend', () => {
-                requestAnimationFrame(() => this.streamConfig.toggle(e.detail.item, offset))
-            }, {once: true})
-        }
-        this.streamConfig.toggle(e.detail.item, offset)
+        this.streamConfig.toggle(e.detail.item, offset);
     }
 
     handleStreamConfig(e) {
-        console.info('Stream configured: ', e.detail.item.transcodeConfig)
+        console.info("Stream configured: ", e.detail.item.transcodeConfig);
     }
 
     saveSettings() {
-        Request.post(`/settings/${encodeURIComponent(this.item.path)}`, this.config)
+        Request.post(
+            `/settings/${encodeURIComponent(this.item.path)}`,
+            this.config
+        );
     }
 
     get config() {
-        const clipsData = [...this.clips.clips]
+        const clipsData = [...this.clips.clips];
         if (clipsData[0].from === null) {
-            clipsData[0].from = '0:0:0.0'
+            clipsData[0].from = "0:0:0.0";
         }
         if (clipsData.length === 1 && clipsData[0].to === null) {
-            clipsData[0].to = this.formatNode.duration
+            clipsData[0].to = this.formatNode.duration;
         }
-        const streams = this.streams.filter(s => s.active).map(s => ({id: s.index, config: s.transcodeConfig ?? {}}))
+        const streams = this.streams
+            .filter((s) => s.active)
+            .map((s) => ({ id: s.index, config: s.transcodeConfig ?? {} }));
 
         return {
             streams,
-            clips: clipsData
-        }
+            clips: clipsData,
+        };
     }
 
     get clips() {
-        return this.shadowRoot.querySelector('transcode-configurator-clips')
+        return this.shadowRoot.querySelector("transcode-configurator-clips");
     }
 }
 
@@ -281,6 +354,7 @@ ${CSS}
                 <option value="mp4">Remux MP4</option>
                 <option value="ts">Remux TS</option>
             </combo-button>
+            <theme-button @click="this.requestScale()">Scale</theme-button>
             <theme-button *if="{{ this.canConcat }}" @click="this.requestConcat()">Concat</theme-button>
             <theme-button @click="this.transcode()">Transcode</theme-button>
         </footer>

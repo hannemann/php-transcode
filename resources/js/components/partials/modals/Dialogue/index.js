@@ -10,6 +10,7 @@ import {
     async testModal() {
         const m = document.createElement("modal-confirm");
         m.header = "Cillum exercitation";
+        const d = m.appendChild(document.createElement("dialogue-scale"));
         m.content =
             "Esse sit exercitation laborum sit nostrud labore qui cupidatat.";
         document.body.appendChild(m);
@@ -21,17 +22,17 @@ import {
         }
     }
  */
-class Confirm extends AbstractModal {
-    confirm() {
+class Dialogue extends AbstractModal {
+    open() {
         return this.promise;
     }
 }
 
-Confirm.template = /*html*/ `
+Dialogue.template = /*html*/ `
 ${MODAL_BASE_CSS}
 ${MODAL_TEMPLATE_BEGIN}
-    {{ this.content }}
+    <slot></slot>
 ${MODAL_TEMPLATE_END}
 `;
 
-export { Confirm };
+export { Dialogue };

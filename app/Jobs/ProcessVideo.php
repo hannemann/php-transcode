@@ -14,6 +14,7 @@ use App\Models\FFMpeg\Actions\Transcode;
 use App\Models\FFMpeg\Actions\RemuxTS;
 use App\Models\FFMpeg\Actions\RemuxMP4;
 use App\Models\FFMpeg\Actions\RemuxMKV;
+use App\Models\FFMpeg\Actions\Scale;
 use Throwable;
 use App\Models\CurrentQueue;
 use App\Models\FFMpeg\Actions\ConcatPrepare;
@@ -37,6 +38,12 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
 
     protected int $current_queue_id;
 
+    protected ?int $width = null;
+
+    protected ?int $height = null;
+
+    protected ?string $aspect = null;
+
     public int $tries = 1;
 
     //TODO: should be config option
@@ -53,7 +60,10 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
         string $path,
         array $streams,
         array $clips = null,
-        string $container = null
+        string $container = null,
+        int $width = null,
+        int $height = null,
+        string $aspect = null
     ) {
         $this->type = $type;
         $this->path = $path;
@@ -61,6 +71,9 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
         $this->streams = $streams;
         $this->clips = $clips;
         $this->container = $container;
+        $this->width = $width;
+        $this->height = $height;
+        $this->aspect = $aspect;
         $this->onQueue('ffmpeg');
         $currentQueue = new CurrentQueue([
             'path' => $this->path,
@@ -105,6 +118,9 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
                         (new RemuxTS($this->disk, $this->path, $this->current_queue_id))->execute();
                         break;
                 }
+                break;
+            case 'scale':
+                (new Scale($this->disk, $this->path, $this->current_queue_id))->execute($this->width, $this->height, $this->aspect);
                 break;
             case 'prepare':
                 (new ConcatPrepare($this->disk, $this->path, $this->current_queue_id, $this->streams))->execute();
