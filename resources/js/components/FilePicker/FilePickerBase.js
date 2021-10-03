@@ -9,18 +9,31 @@ class FilePickerBase extends Slim {
         super()
         this.items = []
         this.wsUrl = [this.wsBaseUrl]
+        this.wsChannel = `${this.wsEvent}.${this.channelHash}`
+        this.requestItems = this.requestItems.bind(this)
+        this.onWsEvent = this.onWsEvent.bind(this)
     }
 
     onAdded() {
-        this.wsChannel = `${this.wsEvent}.${this.channelHash}`
-        this.channel = window.Echo.channel(this.wsChannel)
-        this.channel.listen(this.wsEvent, this.onWsEvent.bind(this));
+        this.addEventListener('child-deleted', this.requestItems)
     }
 
     onRemoved() {
-        this.items = []
-        this.channel.stopListening(this.wsEvent)
-        window.Echo.leave(this.wsChannel)
+        this.leaveWebsocket()
+        this.removeEventListener('child-deleted', this.requestItems)
+    }
+
+    initWebsocket() {
+        this.channel = window.Echo.channel(this.wsChannel)
+        this.channel.listen(this.wsEvent, this.onWsEvent);
+        this.channel.subscribed(this.requestItems.bind(this))
+    }
+
+    leaveWebsocket() {
+        if (this.channel) {
+            this.channel.stopListening(this.wsEvent)
+            window.Echo.leave(this.wsChannel)
+        }
     }
 
     onWsEvent(e) {
@@ -30,15 +43,11 @@ class FilePickerBase extends Slim {
             console.info('Received %d items in %s', this.items.length, this.path)
         }
         requestAnimationFrame(() => {
-            this.shadowRoot.querySelectorAll('filepicker-item').forEach(i => i.title = i.buildTitle())
+            this.shadowRoot.querySelectorAll('filepicker-item').forEach(i => i.update())
         })
     }
 
     handleClick() {
-        if (!this.items.length && TYPE_DIRECTORY === this.type) {
-            this.iconActive = true
-            this.requestItems()
-        }
     }
 
     requestItems() {

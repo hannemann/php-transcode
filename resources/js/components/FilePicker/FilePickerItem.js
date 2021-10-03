@@ -14,55 +14,54 @@ class FilePickerItem extends FilePickerBase {
 
     onAdded() {
         super.onAdded();
-        requestAnimationFrame(() => Iconify.scan(this.shadowRoot));
+        requestAnimationFrame(() => this.update());
     }
 
-    onWsEvent(e) {
-        super.onWsEvent(e);
+    update() {
+        this.title = this.buildTitle();
+        Iconify.scan(this.shadowRoot);
     }
 
     handleClick() {
-        super.handleClick();
-        if (this.items.length) {
-            this.iconActive = false;
-            this.items = [];
-        } else if (TYPE_FILE === this.type) {
-            const detail = {
-                node: this,
-                path: this.path,
-                channel: this.channelHash,
-                mime: this.mime,
-                size: this.size,
-                type: this.type,
-            };
-            const parent = this.getRootNode().host;
-            if (parent) {
-                detail.parent = {
-                    node: parent,
-                    path: parent.path,
-                    videoFiles: parent.videoFiles,
-                    channelHash: parent.channelHash,
-                };
-            }
-            this.iconActive = true;
-            document.dispatchEvent(new CustomEvent("file-clicked", { detail }));
+        if (TYPE_DIRECTORY === this.type) {
+            this.dirClicked();
+        }
+        if (TYPE_FILE === this.type) {
+            this.fileClicked();
         }
     }
 
-    get icon() {
-        if (this.isDirectory) {
-            return "mdi-folder";
+    dirClicked() {
+        if (!this.items.length) {
+            this.iconActive = true;
+            this.initWebsocket();
+        } else {
+            this.items = [];
+            this.iconActive = false;
+            this.leaveWebsocket();
         }
-        switch (this.fileType) {
-            case "video":
-                return "mdi-filmstrip";
-            case "text":
-                return "mdi-note-text-outline";
-            case "image":
-                return "mdi-file-image-outline";
-            default:
-                return "mdi-file";
+    }
+
+    fileClicked() {
+        const detail = {
+            node: this,
+            path: this.path,
+            channel: this.channelHash,
+            mime: this.mime,
+            size: this.size,
+            type: this.type,
+        };
+        const parent = this.getRootNode().host;
+        if (parent) {
+            detail.parent = {
+                node: parent,
+                path: parent.path,
+                videoFiles: parent.videoFiles,
+                channelHash: parent.channelHash,
+            };
         }
+        this.iconActive = true;
+        document.dispatchEvent(new CustomEvent("file-clicked", { detail }));
     }
 
     buildTitle() {
@@ -96,8 +95,26 @@ class FilePickerItem extends FilePickerBase {
             await Request.delete(
                 `/file-picker/${encodeURIComponent(this.path)}`
             );
-            this.remove();
+            this.getRootNode().host.dispatchEvent(
+                new CustomEvent("child-deleted")
+            );
         } catch (error) {}
+    }
+
+    get icon() {
+        if (this.isDirectory) {
+            return "mdi-folder";
+        }
+        switch (this.fileType) {
+            case "video":
+                return "mdi-filmstrip";
+            case "text":
+                return "mdi-note-text-outline";
+            case "image":
+                return "mdi-file-image-outline";
+            default:
+                return "mdi-file";
+        }
     }
 
     get title() {

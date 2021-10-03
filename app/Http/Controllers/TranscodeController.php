@@ -12,6 +12,8 @@ use App\Helper\Settings;
 use Illuminate\Support\Facades\Storage;
 use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 use App\Models\CurrentQueue;
+use App\Events\FilePicker as EventsFilePicker;
+use App\Models\FilePicker;
 
 class TranscodeController extends Controller
 {
@@ -102,6 +104,8 @@ class TranscodeController extends Controller
     {
         try {
             Settings::save($path, $request->input());
+            $items = FilePicker::root('recordings')::getItems(dirname($path));
+            EventsFilePicker::dispatch($items, dirname($path), true);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => sprintf($e->getMessage())
