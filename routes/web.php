@@ -12,6 +12,7 @@ use App\Models\FilePicker;
 use App\Models\Video\File as VideoFile;
 use Illuminate\Support\Facades\Route;
 use App\Jobs\ProcessVideo;
+use App\Models\FFMpeg\Actions\KillFFMpeg;
 use App\Models\CurrentQueue;
 use App\Models\FFMpeg\Actions\ConcatPrepare;
 use Illuminate\Support\Facades\Storage;
@@ -79,6 +80,8 @@ Route::post('/scale/{width}/{height}/{aspect}/{path}', function (int $width, int
     ProcessVideo::dispatch('scale', 'recordings', $path, [], null, null, $width, $height, $aspect);
 
 })->where('path', '(.*)')->where('width', '[0-9]+')->where('height', '[0-9]+')->where('aspect', '(4:3|16:9)');
+
+Route::post('/kill', fn () => KillFFMpeg::execute());
 
 Route::get('/streams/{path?}', function (string $path = null) {
     
