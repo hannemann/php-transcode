@@ -109,13 +109,13 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
             case 'remux':
                 switch ($this->container) {
                     case 'mp4':
-                        (new RemuxMP4($this->disk, $this->path, $this->current_queue_id))->execute();
+                        (new RemuxMP4($this->disk, $this->path, $this->current_queue_id, $this->streams))->execute();
                         break;
                     case 'mkv':
-                        (new RemuxMKV($this->disk, $this->path, $this->current_queue_id))->execute();
+                        (new RemuxMKV($this->disk, $this->path, $this->current_queue_id, $this->streams))->execute();
                         break;
                     case 'ts':
-                        (new RemuxTS($this->disk, $this->path, $this->current_queue_id))->execute();
+                        (new RemuxTS($this->disk, $this->path, $this->current_queue_id, $this->streams))->execute();
                         break;
                 }
                 break;

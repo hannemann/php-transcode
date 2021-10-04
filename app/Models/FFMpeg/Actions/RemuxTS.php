@@ -19,6 +19,7 @@ class RemuxTS extends AbstractAction
     {
         $this->media = File::getMedia($this->disk, $this->path);
         $this->initStreams();
+        $this->remuxMapper = new Helper\RemuxMapper($this->codecConfig, $this->streams);
         $this->mediaExporter = $this->media->export();
         $this->export();
     }
@@ -35,6 +36,7 @@ class RemuxTS extends AbstractAction
         $cmds->push('-c:s');
         $cmds->push('copy');
         $cmds = Helper\OutputMapper::mapAll($cmds);
+        $cmds = $this->remuxMapper->execute($cmds);
         $cmds->push($file);
         return [$cmds->all()];
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class TranscodeRequest extends FormRequest
 {
@@ -31,6 +32,7 @@ class TranscodeRequest extends FormRequest
             'streams.*.config.codec'    => 'nullable:integer',
             'streams.*.config.qp'       => 'nullable:integer',
             'streams.*.config.channels' => 'nullable:integer',
+            'streams.*.config.aspect'   => ['nullable', Rule::in(['4:3', '16:9'])],
             'clips'                     => 'required|array',
             'clips.*'                   => 'array',
             'clips.*.to'                => ['nullable', 'regex:/^([0-9]+:)?[0-9]+:[0-9]+:[0-9]+\.[0-9]+$/'],

@@ -7,6 +7,7 @@ use App\Events\Transcode\Config\Streams as BroadcastStreams;
 use App\Events\Transcode\Config\Clips as BroadcastClips;
 use App\Exceptions\FilePicker\DeleteNoneInternalException;
 use App\Helper\Settings;
+use App\Http\Controllers\RemuxController;
 use App\Http\Controllers\TranscodeController;
 use App\Models\FilePicker;
 use App\Models\Video\File as VideoFile;
@@ -63,14 +64,7 @@ Route::post('/concat/{path?}', function (string $path = null) {
 
 })->where('path', '(.*)');
 
-Route::post('/remux/{container}/{path}', function (string $container, string $path = null) {
-
-    // (new RemuxTS('recordings', $path, 0))->execute();
-    
-    ProcessVideo::dispatch('remux', 'recordings', $path, [], null, $container);
-
-})->where('path', '(.*)')->where('container', '(mp4|mkv|ts)');
-
+Route::post('/remux/{path}', [RemuxController::class, 'remux'])->where('path', '(.*)')->where('container', '(mp4|mkv|ts)');
 Route::post('/transcode/{path}', [TranscodeController::class, 'transcode'])->where('path', '(.*)');
 Route::post('/settings/{path}', [TranscodeController::class, 'saveSettings'])->where('path', '(.*)');
 

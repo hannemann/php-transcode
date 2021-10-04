@@ -162,9 +162,10 @@ class TranscodeConfigurator extends Slim {
     async requestRemux(e) {
         console.info("Remux video file %s", this.item.path);
         try {
-            await Request.post(
-                `/remux/${e.target.value}/${encodeURIComponent(this.item.path)}`
-            );
+            await Request.post(`/remux/${encodeURIComponent(this.item.path)}`, {
+                ...this.config,
+                container: e.target.value,
+            });
         } catch (error) {
             console.error(error);
         }
