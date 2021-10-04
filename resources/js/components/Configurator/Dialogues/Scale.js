@@ -1,4 +1,4 @@
-import { Slim, Iconify } from "@/components/lib";
+import { Slim, Utils } from "@/components/lib";
 
 const DEFAULT_WIDTH = 720;
 const DEFAULT_HEIGHT = 576;
@@ -17,6 +17,10 @@ class Scale extends Slim {
         this.setAspectRatio = this.setAspectRatio.bind(this);
     }
 
+    onAdded() {
+        this.calculateWidth();
+    }
+
     setWidth(e) {
         this.scale.width = e.currentTarget.value;
     }
@@ -25,6 +29,13 @@ class Scale extends Slim {
     }
     setAspectRatio(e) {
         this.scale.aspectRatio = e.currentTarget.value;
+        this.calculateWidth();
+    }
+
+    calculateWidth() {
+        const ratio = this.scale.aspectRatio.split(":");
+        this.scale.width = (this.scale.height / ratio[1]) * ratio[0];
+        requestAnimationFrame(() => Utils.forceUpdate(this, "scale"));
     }
 }
 
