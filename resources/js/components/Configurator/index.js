@@ -13,6 +13,7 @@ const WS_CHANNEL_FFMPEG_OUT = "FFMpegOut";
 class TranscodeConfigurator extends Slim {
     onAdded() {
         this.canConcat = false;
+        this.debounceOut = false
         document.addEventListener("file-clicked", this.init.bind(this));
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot));
         this.remuxContainer = "MP4";
@@ -140,7 +141,11 @@ class TranscodeConfigurator extends Slim {
     }
 
     handleOutEvent(ws) {
-        this.out = ws.out;
+        if (!this.debounceOut) {
+            this.debounceOut = true;
+            setTimeout(() => this.debounceOut = false, 500);
+            this.out = ws.out;
+        }
     }
 
     setCanConcat() {

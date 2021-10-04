@@ -22,6 +22,8 @@ class AbstractAction
     protected ?array $codecConfig = [];
     protected ?array $clips = [];
     protected string $pathHash;
+    private $processOutSecond = 0;
+    private $progressOutSecond = 0;
 
     public function __construct(string $disk, string $path, int $current_queue_id, array $codecConfig = [], array $clips = [])
     {
@@ -88,30 +90,34 @@ class AbstractAction
      */
     protected function saveProgress(int $percentage, int $remaining, int $rate): void
     {
-        $percentage = $this->calculateProgress($percentage);
-        CurrentQueue::where('id', $this->current_queue_id)->update([
-            'percentage' => $percentage,
-            'remaining' => $remaining,
-            'rate' => $rate,
-        ]);
+        $progressOutSecond = time();
+        if ($progressOutSecond > $this->progressOutSecond) {
+            $this->progressOutSecond = $progressOutSecond;
+            $percentage = $this->calculateProgress($percentage);
+            CurrentQueue::where('id', $this->current_queue_id)->update([
+                'percentage' => $percentage,
+                'remaining' => $remaining,
+                'rate' => $rate,
+            ]);
+            
+            FFMpegProgress::dispatch('queue.progress');
 
-        FFMpegProgress::dispatch('queue.progress');
-
-        $items = FilePicker::root('recordings')::getItems(dirname($this->path));
-        $items = $items->map(function($item) {
-            $item['in_progress'] = $item['name'] === basename($this->getOutputFilename());
-            return $item;
-        });
-        EventsFilePicker::dispatch($items, dirname($this->path), true);
+            $items = FilePicker::root('recordings')::getItems(dirname($this->path));
+            $items = $items->map(function($item) {
+                $item['in_progress'] = $item['name'] === basename($this->getOutputFilename());
+                return $item;
+            });
+            EventsFilePicker::dispatch($items, dirname($this->path), true);
+        }
     }
 
     protected function broadcastProcessOutput(string $line): void
     {
-        if (strpos($line, '[ERROR] frame=') === 0) {
-
+        $processOutSecond = time();
+        if ($processOutSecond > $this->processOutSecond && strpos($line, '[ERROR] frame=') === 0) {
+            $this->processOutSecond = $processOutSecond;
             $lines = explode('\n', $line);
             $line = array_pop($lines);
-
             FFMpegOut::dispatch($this->pathHash, str_replace('[ERROR] ', '', $line));
         }
     }
