@@ -29,7 +29,7 @@ Description=Runs and keeps alive the PHP Transcode artisan websocket
 Restart=always
 WorkingDirectory=/var/www/php-transcode
 ExecStart=/usr/bin/php artisan websockets:serve
-User=hannemann
+User=www-data
 Group=www-data
 
 [Install]
@@ -44,7 +44,7 @@ Description=Runs and keeps alive the PHP Transcoder artisan queue:work process
 Restart=always
 WorkingDirectory=/var/www/php-transcode
 ExecStart=/usr/bin/php artisan queue:work --queue=default,ffmpeg
-User=hannemann
+User=www-data
 Group=www-data
 
 [Install]
