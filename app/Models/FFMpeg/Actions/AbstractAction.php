@@ -98,6 +98,10 @@ class AbstractAction
         FFMpegProgress::dispatch('queue.progress');
 
         $items = FilePicker::root('recordings')::getItems(dirname($this->path));
+        $items = $items->map(function($item) {
+            $item['in_progress'] = $item['name'] === basename($this->getOutputFilename());
+            return $item;
+        });
         EventsFilePicker::dispatch($items, dirname($this->path), true);
     }
 
