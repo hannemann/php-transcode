@@ -6,6 +6,7 @@ import './Clips'
 import './Format'
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 import "./Dialogues/Scale";
+import { TYPE_VIDEO } from "./Streams";
 
 const WS_CHANNEL = "Transcode.Config";
 const WS_CHANNEL_FFMPEG_OUT = "FFMpegOut";
@@ -175,6 +176,13 @@ class TranscodeConfigurator extends Slim {
         const m = document.createElement("modal-dialogue");
         m.header = "Scale";
         const d = m.appendChild(document.createElement("dialogue-scale"));
+        const video = this.streams.filter(
+            (s) => s.codec_type === TYPE_VIDEO
+        )?.[0];
+        if (video) {
+            d.setHeight(video.height);
+            d.setAspectRatio(video.display_aspect_ratio);
+        }
         document.body.appendChild(m);
         try {
             await m.open();

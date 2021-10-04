@@ -4,6 +4,8 @@ const DEFAULT_WIDTH = 720;
 const DEFAULT_HEIGHT = 576;
 const DEFAULT_ASPECT = "4:3";
 
+import { VALID_ASPECT_RATIOS } from "../Streams/Video";
+
 class Scale extends Slim {
     constructor() {
         super();
@@ -12,30 +14,45 @@ class Scale extends Slim {
             height: DEFAULT_HEIGHT,
             aspectRatio: DEFAULT_ASPECT,
         };
-        this.setWidth = this.setWidth.bind(this);
-        this.setHeight = this.setHeight.bind(this);
-        this.setAspectRatio = this.setAspectRatio.bind(this);
+        this.handleWidth = this.handleWidth.bind(this);
+        this.handleHeight = this.handleHeight.bind(this);
+        this.handleAspectRatio = this.handleAspectRatio.bind(this);
     }
 
     onAdded() {
         this.calculateWidth();
     }
 
-    setWidth(e) {
-        this.scale.width = e.currentTarget.value;
+    setWidth(value) {
+        this.scale.width = value;
     }
-    setHeight(e) {
-        this.scale.height = e.currentTarget.value;
-    }
-    setAspectRatio(e) {
-        this.scale.aspectRatio = e.currentTarget.value;
+    setHeight(value) {
+        this.scale.height = value;
         this.calculateWidth();
+    }
+    setAspectRatio(value) {
+        if (VALID_ASPECT_RATIOS.indexOf(value) > -1) {
+            this.scale.aspectRatio = value;
+            this.calculateWidth();
+        }
     }
 
     calculateWidth() {
         const ratio = this.scale.aspectRatio.split(":");
         this.scale.width = (this.scale.height / ratio[1]) * ratio[0];
         requestAnimationFrame(() => Utils.forceUpdate(this, "scale"));
+    }
+
+    handleWidth(e) {
+        this.setWidth(e.currentTarget.value);
+    }
+
+    handleHeight(e) {
+        this.setHeight(e.currentTarget.value);
+    }
+
+    handleAspectRatio(e) {
+        this.setAspectRatio(e.currentTarget.value);
     }
 }
 
@@ -75,21 +92,21 @@ Scale.template = /*html*/ `
 <fieldset>
     <legend>Dimensions:</legend>
     <label>
-        <span>Width:</span><input type="number" value="{{ this.scale.width }}" placeholder="Width" @input="{{ this.setWidth }}">
+        <span>Width:</span><input type="number" value="{{ this.scale.width }}" placeholder="Width" @input="{{ this.handleWidth }}">
     </label>
     <label>
-        <span>Height:</span><input type="number" value="{{ this.scale.height }}" placeholder="Height" @input="{{ this.setHeight }}">
+        <span>Height:</span><input type="number" value="{{ this.scale.height }}" placeholder="Height" @input="{{ this.handleHeight }}">
     </label>
 </fieldset>
 <fieldset>
     <legend>Aspect-Ratio:</legend>
     <label>
         <span>4:3</span>
-        <input type="radio" name="aspect" value="4:3" @change="{{ this.setAspectRatio }}" checked="checked">
+        <input type="radio" name="aspect" value="4:3" @change="{{ this.handleAspectRatio }}" .checked="{{ this.scale.aspectRatio === '4:3' }}">
     </label>
     <label>
         <span>16:9</span>
-        <input type="radio" name="aspect" value="16:9" @change="{{ this.setAspectRatio }}">
+        <input type="radio" name="aspect" value="16:9" @change="{{ this.handleAspectRatio }}" .checked="{{ this.scale.aspectRatio === '16:9' }}">
     </label>
 </fieldset>
 `;

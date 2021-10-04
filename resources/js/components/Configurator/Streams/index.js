@@ -10,6 +10,8 @@ const TYPE_AUDIO = 'audio'
 const TYPE_SUB = 'subtitle'
 const TYPE_DATA = 'data'
 
+export { TYPE_AUDIO, TYPE_VIDEO, TYPE_SUB, TYPE_DATA };
+
 class Streams extends Slim {
 
     onAdded() {

@@ -1,6 +1,8 @@
 import {Stream, MAINSTART, MAINEND} from "./Stream";
 import CARD_CSS from "../CardCss";
 
+export const VALID_ASPECT_RATIOS = ["4:3", "16:9"];
+
 class Video extends Stream {}
 
 Video.prototype.header = 'Video'
