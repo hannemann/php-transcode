@@ -90,18 +90,18 @@ class AbstractAction
      */
     protected function saveProgress(int $percentage, int $remaining, int $rate): void
     {
+        $percentage = $this->calculateProgress($percentage);
+        CurrentQueue::where('id', $this->current_queue_id)->update([
+            'percentage' => $percentage,
+            'remaining' => $remaining,
+            'rate' => $rate,
+        ]);
+        
+        FFMpegProgress::dispatch('queue.progress');
+
         $progressOutSecond = time();
         if ($progressOutSecond > $this->progressOutSecond) {
             $this->progressOutSecond = $progressOutSecond;
-            $percentage = $this->calculateProgress($percentage);
-            CurrentQueue::where('id', $this->current_queue_id)->update([
-                'percentage' => $percentage,
-                'remaining' => $remaining,
-                'rate' => $rate,
-            ]);
-            
-            FFMpegProgress::dispatch('queue.progress');
-
             $items = FilePicker::root('recordings')::getItems(dirname($this->path));
             $items = $items->map(function($item) {
                 $item['in_progress'] = $item['name'] === basename($this->getOutputFilename());
