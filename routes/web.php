@@ -8,6 +8,7 @@ use App\Events\Transcode\Config\Clips as BroadcastClips;
 use App\Exceptions\FilePicker\DeleteNoneInternalException;
 use App\Helper\Settings;
 use App\Http\Controllers\RemuxController;
+use App\Http\Controllers\ScaleController;
 use App\Http\Controllers\TranscodeController;
 use App\Models\FilePicker;
 use App\Models\Video\File as VideoFile;
@@ -67,13 +68,7 @@ Route::post('/concat/{path?}', function (string $path = null) {
 Route::post('/remux/{path}', [RemuxController::class, 'remux'])->where('path', '(.*)')->where('container', '(mp4|mkv|ts)');
 Route::post('/transcode/{path}', [TranscodeController::class, 'transcode'])->where('path', '(.*)');
 Route::post('/settings/{path}', [TranscodeController::class, 'saveSettings'])->where('path', '(.*)');
-
-Route::post('/scale/{width}/{height}/{aspect}/{path}', function (int $width, int $height, string $aspect, string $path) {
-
-    // (new Scale('recordings', $path, 0))->execute($width, $height);
-    ProcessVideo::dispatch('scale', 'recordings', $path, [], null, null, $width, $height, $aspect);
-
-})->where('path', '(.*)')->where('width', '[0-9]+')->where('height', '[0-9]+')->where('aspect', '(4:3|16:9)');
+Route::post('/scale/{path}', [ScaleController::class, 'scale'])->where('path', '(.*)');
 
 Route::post('/kill', fn () => KillFFMpeg::execute());
 

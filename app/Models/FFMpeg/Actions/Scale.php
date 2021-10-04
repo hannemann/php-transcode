@@ -44,6 +44,10 @@ Class Scale extends AbstractAction
 
         $cmds->push('-c:v');
         $cmds->push('libx264');
+        $cmds->push('-crf');
+        $cmds->push('18');
+        $cmds->push('-preset');
+        $cmds->push('ultrafast');
         $cmds->push('-c:a');
         $cmds->push('copy');
         $cmds->push('-c:s');

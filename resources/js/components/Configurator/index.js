@@ -185,11 +185,11 @@ class TranscodeConfigurator extends Slim {
                 d.scale.height,
                 d.scale.aspectRatio
             );
-            await Request.post(
-                `/scale/${d.scale.width}/${d.scale.height}/${encodeURIComponent(
-                    d.scale.aspectRatio
-                )}/${encodeURIComponent(this.item.path)}`
-            );
+            await Request.post(`/scale/${encodeURIComponent(this.item.path)}`, {
+                width: d.scale.width,
+                height: d.scale.height,
+                aspect: d.scale.aspectRatio,
+            });
         } catch (error) {}
     }
 
