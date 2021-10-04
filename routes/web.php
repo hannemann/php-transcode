@@ -7,6 +7,7 @@ use App\Events\Transcode\Config\Streams as BroadcastStreams;
 use App\Events\Transcode\Config\Clips as BroadcastClips;
 use App\Exceptions\FilePicker\DeleteNoneInternalException;
 use App\Helper\Settings;
+use App\Http\Controllers\ConcatController;
 use App\Http\Controllers\RemuxController;
 use App\Http\Controllers\ScaleController;
 use App\Http\Controllers\TranscodeController;
@@ -57,14 +58,7 @@ Route::delete('/file-picker/{path}', function (string $path) {
 
 })->where('path', '(.*)');
 
-Route::post('/concat/{path?}', function (string $path = null) {
-
-    // (new Concat('recordings', $path, 0))->execute();
-    
-    ProcessVideo::dispatch('concat', 'recordings', $path, []);
-
-})->where('path', '(.*)');
-
+Route::post('/concat/{path?}', [ConcatController::class, 'concat'])->where('path', '(.*)');
 Route::post('/remux/{path}', [RemuxController::class, 'remux'])->where('path', '(.*)')->where('container', '(mp4|mkv|ts)');
 Route::post('/transcode/{path}', [TranscodeController::class, 'transcode'])->where('path', '(.*)');
 Route::post('/settings/{path}', [TranscodeController::class, 'saveSettings'])->where('path', '(.*)');
