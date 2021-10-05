@@ -19,6 +19,7 @@ use App\Models\FFMpeg\Actions\Scale;
 use Throwable;
 use App\Models\CurrentQueue;
 use App\Models\FFMpeg\Actions\ConcatPrepare;
+use App\Models\FFMpeg\Actions\Crop;
 use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 
 class ProcessVideo implements ShouldQueue //, ShouldBeUnique
@@ -89,6 +90,15 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
             case 'transcode':
                 $model = Transcode::class;
                 break;
+            case 'scale':
+                $model = Scale::class;
+                break;
+            case 'crop':
+                $model = Crop::class;
+                break;
+            case 'prepare':
+                $model = ConcatPrepare::class;
+                break;
             case 'remux':
                 switch ($this->requestData['container']) {
                     case 'mp4':
@@ -101,12 +111,6 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
                         $model = RemuxTS::class;
                         break;
                 }
-                break;
-            case 'scale':
-                $model = Scale::class;
-                break;
-            case 'prepare':
-                $model = ConcatPrepare::class;
                 break;
         }
         (new $model($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();

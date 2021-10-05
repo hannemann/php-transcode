@@ -64,6 +64,7 @@ Route::post('/remux/{path}', [RemuxController::class, 'remux'])->where('path', '
 Route::post('/transcode/{path}', [TranscodeController::class, 'transcode'])->where('path', '(.*)');
 Route::post('/settings/{path}', [TranscodeController::class, 'saveSettings'])->where('path', '(.*)');
 Route::post('/scale/{path}', [ScaleController::class, 'scale'])->where('path', '(.*)');
+Route::post('/crop/{path}', [CropController::class, 'crop'])->where('path', '(.*)');
 
 Route::post('/kill', fn () => KillFFMpeg::execute());
 
