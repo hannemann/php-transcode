@@ -13,8 +13,8 @@ class ScaleController extends Controller
     {
         try {
             $data = $request->input();
-            // (new Scale('recordings', $path, 0))->execute($data['width'], $data['height'], $data['aspect']);
-            ProcessVideo::dispatch('scale', 'recordings', $path, [], null, null, $data['width'], $data['height'], $data['aspect']);
+            // (new Scale('recordings', $path, 0, $request->input()))->execute();
+            ProcessVideo::dispatch('scale', 'recordings', $path, $request);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => sprintf($e->getMessage())

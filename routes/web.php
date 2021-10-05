@@ -11,6 +11,7 @@ use App\Http\Controllers\ConcatController;
 use App\Http\Controllers\RemuxController;
 use App\Http\Controllers\ScaleController;
 use App\Http\Controllers\TranscodeController;
+use App\Http\Requests\FFMpegActionRequest;
 use App\Models\FilePicker;
 use App\Models\Video\File as VideoFile;
 use Illuminate\Support\Facades\Route;
@@ -83,13 +84,13 @@ Route::get('/streams/{path?}', function (string $path = null) {
 
 })->where('path', '(.*)');
 
-Route::get('/clips/{path?}', function (string $path = null) {
+Route::get('/clips/{path?}', function (FFMpegActionRequest $request, string $path = null) {
     
     try {
         $settings = Settings::getSettings($path)['clips'];
         // $clips = (new ConcatDemuxer('recordings', $path))->getClips();
         if (empty($settings['clips'])) {
-            $remux = new ConcatPrepare('recordings', $path, 0);
+            $remux = new ConcatPrepare('recordings', $path, 0, $request->input());
             $clips = Settings::getSettings($remux->getOutputFilename())['clips'];
             // $clips = (new ConcatDemuxer('recordings', $remux->getOutputFilename()))->getClips();
         }

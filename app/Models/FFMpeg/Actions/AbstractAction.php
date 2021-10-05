@@ -10,6 +10,7 @@ use ProtoneMedia\LaravelFFMpeg\Exporters\MediaExporter;
 
 use Alchemy\BinaryDriver\Listeners\DebugListener;
 use App\Events\FFMpegOut;
+use App\Http\Requests\FFMpegActionRequest;
 
 /**
  * @property MediaExporter $mediaExporter
@@ -22,17 +23,19 @@ class AbstractAction
     protected ?array $codecConfig = [];
     protected ?array $clips = [];
     protected string $pathHash;
+    protected array $requestData;
     private $processOutSecond = 0;
     private $progressOutSecond = 0;
 
-    public function __construct(string $disk, string $path, int $current_queue_id, array $codecConfig = [], array $clips = [])
+    public function __construct(string $disk, string $path, int $current_queue_id, array $requestData)
     {
         $this->disk = $disk;
         $this->path = $path;
         $this->current_queue_id = $current_queue_id;
+        $this->requestData = $requestData;
         $this->format = new $this->formatClass();
-        $this->codecConfig = $codecConfig;
-        $this->clips = $clips;
+        $this->codecConfig = $requestData['streams'] ?? [];
+        $this->clips = $requestData['clips'] ?? [];
         $this->pathHash = sha1($this->path);
     }
 

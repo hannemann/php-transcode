@@ -9,6 +9,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Events\FFMpegProgress;
+use App\Http\Requests\FFMpegActionRequest;
 use App\Models\FFMpeg\Actions\Concat;
 use App\Models\FFMpeg\Actions\Transcode;
 use App\Models\FFMpeg\Actions\RemuxTS;
@@ -32,17 +33,9 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
 
     protected array $streams;
 
-    protected ?array $clips = null;
-
-    protected ?string $container = null;
-
     protected int $current_queue_id;
 
-    protected ?int $width = null;
-
-    protected ?int $height = null;
-
-    protected ?string $aspect = null;
+    protected array $requestData;
 
     public int $tries = 1;
 
@@ -58,27 +51,17 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
         string $type,
         string $disk,
         string $path,
-        array $streams,
-        array $clips = null,
-        string $container = null,
-        int $width = null,
-        int $height = null,
-        string $aspect = null
+        FFMpegActionRequest $request
     ) {
         $this->type = $type;
         $this->path = $path;
         $this->disk = $disk;
-        $this->streams = $streams;
-        $this->clips = $clips;
-        $this->container = $container;
-        $this->width = $width;
-        $this->height = $height;
-        $this->aspect = $aspect;
+        $this->requestData = $request->input();
         $this->onQueue('ffmpeg');
         $currentQueue = new CurrentQueue([
             'path' => $this->path,
-            'streams' => $this->streams,
-            'clips' => json_encode($this->clips),
+            'streams' => $request->input('streams') ?? [],
+            'clips' => json_encode($request->input('clips') ?? []),
             'type' => $this->type,
             'state' => CurrentQueue::STATE_PENDING,
             'percentage' => 0,
@@ -101,29 +84,29 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
         FFMpegProgress::dispatch('queue.progress');
         switch($this->type) {
             case 'concat':
-                (new Concat($this->disk, $this->path, $this->current_queue_id))->execute();
+                (new Concat($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();
                 break;
             case 'transcode':
-                (new Transcode($this->disk, $this->path, $this->current_queue_id, $this->streams, $this->clips))->execute();
+                (new Transcode($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();
                 break;
             case 'remux':
-                switch ($this->container) {
+                switch ($this->requestData['container']) {
                     case 'mp4':
-                        (new RemuxMP4($this->disk, $this->path, $this->current_queue_id, $this->streams))->execute();
+                        (new RemuxMP4($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();
                         break;
                     case 'mkv':
-                        (new RemuxMKV($this->disk, $this->path, $this->current_queue_id, $this->streams))->execute();
+                        (new RemuxMKV($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();
                         break;
                     case 'ts':
-                        (new RemuxTS($this->disk, $this->path, $this->current_queue_id, $this->streams))->execute();
+                        (new RemuxTS($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();
                         break;
                 }
                 break;
             case 'scale':
-                (new Scale($this->disk, $this->path, $this->current_queue_id))->execute($this->width, $this->height, $this->aspect);
+                (new Scale($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();
                 break;
             case 'prepare':
-                (new ConcatPrepare($this->disk, $this->path, $this->current_queue_id, $this->streams))->execute();
+                (new ConcatPrepare($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();
                 break;
         }
         CurrentQueue::where('id', $this->current_queue_id)->update(['state' => CurrentQueue::STATE_DONE]);

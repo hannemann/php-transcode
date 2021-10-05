@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class ScaleRequest extends FormRequest
+class ScaleRequest extends FFMpegActionRequest
 {
     public function rules()
     {

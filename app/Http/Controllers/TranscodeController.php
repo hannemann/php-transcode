@@ -23,20 +23,20 @@ class TranscodeController extends Controller
             $data = $request->input();
             Settings::save($path, $data);
             if (false) {
-                $this->test($path, $data);
+                $this->test($path, $data, $request);
             } else {
                 if (count($data['clips']) === 1) {
                     Transcode::getFromToFilter($data['clips'][0]['from'], $data['clips'][0]['to']);
                 } else {
                     // prepare
-                    $pre = new ConcatPrepare('recordings', $path, 0);
+                    $pre = new ConcatPrepare('recordings', $path, 0, $request->input());
                     $pathCopy = $pre->getOutputFilename();
                     if (!Storage::disk('recordings')->exists($pathCopy)) {
-                        ProcessVideo::dispatch('prepare', 'recordings', $path, $data['streams']);
+                        ProcessVideo::dispatch('prepare', 'recordings', $path, $request);
                     }
                     $path = $pathCopy;
                 }
-                ProcessVideo::dispatch('transcode', 'recordings', $path, $data['streams'], $data['clips']);
+                ProcessVideo::dispatch('transcode', 'recordings', $path, $request);
                 FFMpegProgress::dispatch('queue.progress');
             }
         } catch (\Exception $e) {
@@ -47,7 +47,7 @@ class TranscodeController extends Controller
         return null;
     }
 
-    private function test(string $path, array $data): void
+    private function test(string $path, array $data, TranscodeRequest $request): void
     {
         $type = '';
         try {
@@ -66,7 +66,7 @@ class TranscodeController extends Controller
                 $currentQueue->save();
                 $current_queue_id = $currentQueue->getKey();
 
-                $pre = new ConcatPrepare('recordings', $path, $current_queue_id, $data['streams']);
+                $pre = new ConcatPrepare('recordings', $path, $current_queue_id, $request->input());
                 $path = $pre->getOutputFilename();
                 if (!Storage::disk('recordings')->exists($path)) {
                     $pre->execute();
@@ -87,7 +87,7 @@ class TranscodeController extends Controller
             $currentQueue->save();
             $current_queue_id = $currentQueue->getKey();
 
-            (new Transcode('recordings', $path, $current_queue_id, $data['streams'], $data['clips']))->execute();
+            (new Transcode('recordings', $path, $current_queue_id, $request->input()))->execute();
         } catch (EncodingException $e) {
             $command = $e->getCommand();
             $errorLog = $e->getErrorOutput();

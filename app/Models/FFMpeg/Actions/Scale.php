@@ -15,13 +15,13 @@ Class Scale extends AbstractAction
     /**
      * handle
      */
-    public function execute(int $width, int $height, string $aspect)
+    public function execute()
     {
         $this->format->setConstantQuantizationParameter(Format::HIGH_QUALITY_QP)
             ->setAudioCodec('copy');
-        $this->width = $width;
-        $this->height = $height;
-        $this->aspect = $aspect;
+        $this->width = $this->requestData['width'];
+        $this->height = $this->requestData['height'];
+        $this->aspect = $this->requestData['aspect'];
         $this->media = File::getMedia($this->disk, $this->path);
         $this->initStreams();
         $this->mediaExporter = $this->media->export();
