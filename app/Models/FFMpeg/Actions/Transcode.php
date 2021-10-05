@@ -20,9 +20,8 @@ class Transcode extends AbstractAction
      */
     public function execute()
     {
-        $this->format->setConstantQuantizationParameter();
-        $this->format->setAudioCodec('copy');
-        $this->format->unsetAudioKiloBitrate();
+        $this->format->setConstantQuantizationParameter()
+            ->setAudioCodec('copy');
 
         $this->media = File::getMedia($this->disk, $this->path);
         $this->duration = $this->media->getFormat()->get('duration');

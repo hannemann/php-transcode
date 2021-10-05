@@ -2,7 +2,7 @@
 
 namespace App\Models\FFMpeg\Actions;
 
-use App\Models\FFMpeg\Format\Video\Scale as Format;
+use App\Models\FFMpeg\Format\Video\h264_vaapi as Format;
 use App\Models\Video\File;
 use App\Models\FFMpeg\Actions\Helper\OutputMapper;
 
@@ -10,7 +10,6 @@ Class Scale extends AbstractAction
 {
     protected string $filenameAffix = 'scale';
     protected string $filenameSuffix = 'ts';
-
     protected string $formatClass = Format::class;
 
     /**
@@ -18,6 +17,8 @@ Class Scale extends AbstractAction
      */
     public function execute(int $width, int $height, string $aspect)
     {
+        $this->format->setConstantQuantizationParameter(Format::HIGH_QUALITY_QP)
+            ->setAudioCodec('copy');
         $this->width = $width;
         $this->height = $height;
         $this->aspect = $aspect;
@@ -36,20 +37,10 @@ Class Scale extends AbstractAction
         $cmds = collect($commands[0]);
         
         $cmds = $this->format->stripOptions($cmds);
-
         $cmds->push('-vf');
-        $cmds->push(sprintf('scale=%d:%d', $this->width, $this->height));
+        $cmds->push(sprintf('scale_vaapi=%d:%d', $this->width, $this->height));
         $cmds->push('-aspect');
         $cmds->push($this->aspect);
-
-        $cmds->push('-c:v');
-        $cmds->push('libx264');
-        $cmds->push('-crf');
-        $cmds->push('18');
-        $cmds->push('-preset');
-        $cmds->push('ultrafast');
-        $cmds->push('-c:a');
-        $cmds->push('copy');
         $cmds->push('-c:s');
         $cmds->push('copy');
         $cmds = OutputMapper::mapAll($cmds);

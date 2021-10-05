@@ -4,9 +4,11 @@ namespace App\Models\FFMpeg\Format\Video;
 
 use FFMpeg\Format\Video\X264;
 use Illuminate\Support\Collection;
+use App\Models\FFMpeg\Actions\Helper\Libx264Options;
 
 class h264_vaapi extends X264
 {
+    const HIGH_QUALITY_QP = 18;
 
     private $vaapiDevice;
 
@@ -22,6 +24,7 @@ class h264_vaapi extends X264
     {
         $this->kiloBitrate = 0;
         $this->constantQuantizationParameter = $p;
+        return $this;
     }
 
     public function setKiloBitrate($kiloBitrate)
@@ -43,6 +46,14 @@ class h264_vaapi extends X264
     public function getAvailableAudioCodecs()
     {
         return ['copy', 'aac', 'ac3', 'flac'];
+    }
+
+    public function setAudioCodec($audioCodec)
+    {
+        if ($audioCodec === 'copy') {
+            $this->unsetAudioKiloBitrate();
+        }
+        return parent::setAudioCodec($audioCodec);
     }
 
     /**
@@ -78,16 +89,6 @@ class h264_vaapi extends X264
 
     public function stripOptions(Collection $cmds): Collection
     {
-        $cmds->splice($cmds->search('-threads'), 2);
-        if (is_numeric($cmds->search('-refs'))) {
-            $startIndex = $cmds->search('-refs');
-            if ($endIndex = $cmds->search('-trellis')) {
-                $endIndex += 2;
-            } else {
-                $endIndex = $cmds->count() - 1;
-            }
-            $cmds->splice($startIndex, $endIndex - $startIndex);
-        }
-        return $cmds;
+        return Libx264Options::strip($cmds);
     }
 }
