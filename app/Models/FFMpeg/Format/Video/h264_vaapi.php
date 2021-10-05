@@ -42,7 +42,7 @@ class h264_vaapi extends X264
 
     public function getAvailableAudioCodecs()
     {
-        return ['copy', 'aac', 'ac3'];
+        return ['copy', 'aac', 'ac3', 'flac'];
     }
 
     /**
