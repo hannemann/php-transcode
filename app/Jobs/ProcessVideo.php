@@ -84,31 +84,32 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
         FFMpegProgress::dispatch('queue.progress');
         switch($this->type) {
             case 'concat':
-                (new Concat($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();
+                $model = Concat::class;
                 break;
             case 'transcode':
-                (new Transcode($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();
+                $model = Transcode::class;
                 break;
             case 'remux':
                 switch ($this->requestData['container']) {
                     case 'mp4':
-                        (new RemuxMP4($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();
+                        $model = RemuxMP4::class;
                         break;
                     case 'mkv':
-                        (new RemuxMKV($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();
+                        $model = RemuxMKV::class;
                         break;
                     case 'ts':
-                        (new RemuxTS($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();
+                        $model = RemuxTS::class;
                         break;
                 }
                 break;
             case 'scale':
-                (new Scale($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();
+                $model = Scale::class;
                 break;
             case 'prepare':
-                (new ConcatPrepare($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();
+                $model = ConcatPrepare::class;
                 break;
         }
+        (new $model($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();
         CurrentQueue::where('id', $this->current_queue_id)->update(['state' => CurrentQueue::STATE_DONE]);
         FFMpegProgress::dispatch('queue.progress');
     }
