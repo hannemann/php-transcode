@@ -11,6 +11,7 @@ use App\Http\Controllers\ConcatController;
 use App\Http\Controllers\RemuxController;
 use App\Http\Controllers\ScaleController;
 use App\Http\Controllers\TranscodeController;
+use App\Http\Controllers\CropController;
 use App\Http\Requests\FFMpegActionRequest;
 use App\Models\FilePicker;
 use App\Models\Video\File as VideoFile;

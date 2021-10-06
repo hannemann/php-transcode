@@ -16,10 +16,10 @@ use App\Models\FFMpeg\Actions\RemuxTS;
 use App\Models\FFMpeg\Actions\RemuxMP4;
 use App\Models\FFMpeg\Actions\RemuxMKV;
 use App\Models\FFMpeg\Actions\Scale;
-use Throwable;
-use App\Models\CurrentQueue;
 use App\Models\FFMpeg\Actions\ConcatPrepare;
 use App\Models\FFMpeg\Actions\Crop;
+use Throwable;
+use App\Models\CurrentQueue;
 use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 
 class ProcessVideo implements ShouldQueue //, ShouldBeUnique

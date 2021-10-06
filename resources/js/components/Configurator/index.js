@@ -6,6 +6,7 @@ import './Clips'
 import './Format'
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 import "./Dialogues/Scale";
+import "./Dialogues/Crop";
 import { TYPE_VIDEO } from "./Streams";
 
 const WS_CHANNEL = "Transcode.Config";
@@ -13,7 +14,7 @@ const WS_CHANNEL_FFMPEG_OUT = "FFMpegOut";
 class TranscodeConfigurator extends Slim {
     onAdded() {
         this.canConcat = false;
-        this.debounceOut = false
+        this.debounceOut = false;
         document.addEventListener("file-clicked", this.init.bind(this));
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot));
         this.remuxContainer = "MP4";
@@ -143,7 +144,7 @@ class TranscodeConfigurator extends Slim {
     handleOutEvent(ws) {
         if (!this.debounceOut) {
             this.debounceOut = true;
-            setTimeout(() => this.debounceOut = false, 500);
+            setTimeout(() => (this.debounceOut = false), 500);
             this.out = ws.out;
         }
     }
@@ -203,6 +204,36 @@ class TranscodeConfigurator extends Slim {
                 height: d.scale.height,
                 aspect: d.scale.aspectRatio,
             });
+        } catch (error) {}
+    }
+
+    async requestCrop(e) {
+        const m = document.createElement("modal-dialogue");
+        m.header = "Crop";
+        const d = m.appendChild(document.createElement("dialogue-crop"));
+        const video = this.streams.filter(
+            (s) => s.codec_type === TYPE_VIDEO
+        )?.[0];
+        if (video) {
+            d.setCropWidth(video.width);
+            d.setCropHeight(video.height);
+            d.setHeight(video.height);
+            d.setAspectRatio(video.display_aspect_ratio);
+        }
+        document.body.appendChild(m);
+        try {
+            await m.open();
+            console.info(
+                "Crop video file %s to %dx%d with an aspect-ratio of %s",
+                this.item.path,
+                d.crop.cw,
+                d.crop.ch,
+                d.crop.aspect
+            );
+            await Request.post(
+                `/crop/${encodeURIComponent(this.item.path)}`,
+                d.crop
+            );
         } catch (error) {}
     }
 
@@ -368,6 +399,7 @@ ${CSS}
                 <option value="mp4">Remux MP4</option>
                 <option value="ts">Remux TS</option>
             </combo-button>
+            <theme-button @click="this.requestCrop()">Crop</theme-button>
             <theme-button @click="this.requestScale()">Scale</theme-button>
             <theme-button *if="{{ this.canConcat }}" @click="this.requestConcat()">Concat</theme-button>
             <theme-button @click="this.transcode()">Transcode</theme-button>

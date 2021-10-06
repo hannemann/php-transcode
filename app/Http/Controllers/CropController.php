@@ -12,8 +12,8 @@ class CropController extends Controller
     public function crop(CropRequest $request, string $path):? JsonResponse
     {
         try {
-            (new Crop('recordings', $path, 0, $request->input()))->execute();
-            // ProcessVideo::dispatch('scale', 'recordings', $path, $request);
+            // (new Crop('recordings', $path, 0, $request->input()))->execute();
+            ProcessVideo::dispatch('crop', 'recordings', $path, $request);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => sprintf($e->getMessage())
