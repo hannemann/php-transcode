@@ -53,6 +53,7 @@ WantedBy=default.target
 
 # Transcoding
 ## Troubleshooting
+* The user of the php proces has to have rw access to the render device
 * If its the case that the Resolution changes in the Input than you should trim the Video first.
 * In case of green artifacts transcode with lossless audio and best video quality possible first, then transcode again
 

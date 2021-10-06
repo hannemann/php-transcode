@@ -7,6 +7,7 @@ use App\Events\Transcode\Config\Streams as BroadcastStreams;
 use App\Events\Transcode\Config\Clips as BroadcastClips;
 use App\Exceptions\FilePicker\DeleteNoneInternalException;
 use App\Helper\Settings;
+use App\Http\Controllers\ClipperController;
 use App\Http\Controllers\ConcatController;
 use App\Http\Controllers\RemuxController;
 use App\Http\Controllers\ScaleController;
@@ -66,8 +67,8 @@ Route::post('/transcode/{path}', [TranscodeController::class, 'transcode'])->whe
 Route::post('/settings/{path}', [TranscodeController::class, 'saveSettings'])->where('path', '(.*)');
 Route::post('/scale/{path}', [ScaleController::class, 'scale'])->where('path', '(.*)');
 Route::post('/crop/{path}', [CropController::class, 'crop'])->where('path', '(.*)');
-
 Route::post('/kill', fn () => KillFFMpeg::execute());
+Route::get('/image/{path}', [ClipperController::class, 'image'])->where('path', '(.*)');
 
 Route::get('/streams/{path?}', function (string $path = null) {
     
