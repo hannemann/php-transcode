@@ -11,6 +11,12 @@ class ThemeButton extends Slim {
             this.button.blur();
         });
     }
+    matches(selector) {
+        if (selector === ":focus") {
+            return this.button.matches(":focus");
+        }
+        return super.matches(selector);
+    }
 }
 
 ThemeButton.template = /*html*/ `
@@ -29,6 +35,9 @@ button:focus {
     border-color: var(--clr-enlightened);
     color: var(--clr-enlightened);
     background:var(--clr-bg-200);
+}
+button:focus-visible {
+    outline: none;
 }
 button:hover {
     background:var(--clr-bg-200);

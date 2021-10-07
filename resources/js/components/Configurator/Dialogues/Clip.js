@@ -1,73 +1,88 @@
-import { Slim, Utils } from "@/components/lib";
+import { Slim, Utils, Iconify } from "@/components/lib";
 
 class Clip extends Slim {
     constructor() {
         super();
-        this.previous = this.previous.bind(this);
-        this.next = this.next.bind(this);
-        this.decreaseBy = this.decreaseBy.bind(this);
-        this.increaseBy = this.increaseBy.bind(this);
+        this.rwd = this.rwd.bind(this);
+        this.ffwd = this.ffwd.bind(this);
         this.handleKey = this.handleKey.bind(this);
-        // this.current = 2988.795;
-        // this.current = 1.489078;
+        this.add = this.add.bind(this);
         this.current = 0;
+        this.clips = [];
     }
 
     onAdded() {
-        console.log(this.duration, this.path);
-
-        document.addEventListener("keyup", this.handleKey);
+        this.current = parseInt(this.start * 1000, 10) ?? 0;
+        document.addEventListener("keydown", this.handleKey);
+        requestAnimationFrame(() => {
+            Iconify.scan(this.shadowRoot);
+            this.addButton.focus();
+        });
     }
 
     onRemoved() {
-        document.removeEventListener("keyup", this.handleKey);
+        document.removeEventListener("keydown", this.handleKey);
+    }
+
+    add() {
+        this.clips.push(this.timestamp());
+        this.clips.sort();
+        Utils.forceUpdate(this, "clips");
+        this.dispatchEvent(
+            new CustomEvent("clipper", { detail: this.timestamp() })
+        );
     }
 
     handleKey(e) {
-        e.preventDefault();
-        console.log(e);
+        if (this.updateTimeout) {
+            clearTimeout(this.updateTimeout);
+        }
+        let prevent = false;
         switch (e.key) {
             case "ArrowRight":
-                e.shiftKey ? this.increaseBy(60) : this.next();
+                this.ffwd(
+                    e.shiftKey ? 2000 : e.ctrlKey ? 5000 : 1000 / this.fps
+                );
+                prevent = true;
                 break;
             case "ArrowLeft":
-                e.shiftKey ? this.decreaseBy(60) : this.previous();
+                this.rwd(
+                    e.shiftKey ? 2000 : e.ctrlKey ? 5000 : 1000 / this.fps
+                );
+                prevent = true;
                 break;
             case "ArrowUp":
-                this.increaseBy(e.shiftKey ? 10 : e.ctrlKey ? 300 : 2);
+                this.ffwd(e.shiftKey ? 300000 : e.ctrlKey ? 600000 : 60000);
+                prevent = true;
                 break;
             case "ArrowDown":
-                this.decreaseBy(e.shiftKey ? 10 : e.ctrlKey ? 300 : 2);
+                this.rwd(e.shiftKey ? 300000 : e.ctrlKey ? 600000 : 60000);
+                prevent = true;
                 break;
         }
+        if (prevent) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        this.updateTimeout = setTimeout(() => {
+            Utils.forceUpdate(this);
+            delete this.updateTimeout;
+        }, 150);
     }
 
-    previous() {
-        this.current = Math.max(0, this.current - 1 / this.fps);
-        Utils.forceUpdate(this);
+    rwd(seconds) {
+        this.current = Math.max(this.start * 1000, this.current - seconds);
     }
 
-    next() {
-        this.current = Math.min(this.duration, this.current + 1 / this.fps);
-        Utils.forceUpdate(this);
-    }
-
-    decreaseBy(seconds) {
-        this.current = Math.max(0, this.current - seconds);
-        Utils.forceUpdate(this);
-    }
-
-    increaseBy(seconds) {
-        this.current = Math.min(this.duration, this.current + seconds);
-        Utils.forceUpdate(this);
+    ffwd(seconds) {
+        this.current = Math.min(this.duration * 1000, this.current + seconds);
     }
 
     timestamp() {
-        let t = new Date(this.current * 1000)
+        let t = new Date(this.current)
             .toISOString()
             .replace(/^[0-9-]+T/, "")
             .replace(/z$/i, "");
-        console.log(t, this.current);
         return t;
     }
 
@@ -87,15 +102,40 @@ Clip.template = /*html*/ `
     img {
         max-width: 100%;
     }
+    .info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+    dl {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-column-gap: .5rem;
+        font-size: .75rem;
+    }
+    dd {
+        margin: 0;
+    }
 </style>
 <div>
-    <img src="{{ this.baseUrl + this.timestamp() }}">
+    <img src="{{ this.baseUrl + this.timestamp() }}" #ref="image">
 </div>
 <div>
     {{ this.timestamp() }}
 </div>
-<theme-button @click="{{ this.previous }}"><</theme-button>
-<theme-button @click="{{ this.next }}">></theme-button>
+<theme-button @click="{{ this.add }}" #ref="addButton">Add</theme-button>
+<div class="info">
+    <dl>
+        <dt><span class="iconify" data-icon="mdi-swap-horizontal-bold"></span></dt><dd>+/-1 Frame</dd>
+        <dt><span class="iconify" data-icon="mdi-swap-horizontal-bold"></span> + Shift</dt><dd>+/-2 Seconds</dd>
+        <dt><span class="iconify" data-icon="mdi-swap-horizontal-bold"></span> + Ctrl</dt><dd>+/-5 Seconds</dd>
+        <dt><span class="iconify" data-icon="mdi-swap-vertical-bold"></span></dt><dd>+/-1 Minute</dd>
+        <dt><span class="iconify" data-icon="mdi-swap-vertical-bold"></span> + Shift</dt><dd>+/-5 Minutes</dd>
+        <dt><span class="iconify" data-icon="mdi-swap-vertical-bold"></span> + Ctrl</dt><dd>+/-10 Minutes</dd>
+    </dl>
+    <div>
+        <div *foreach="{{ this.clips }}">{{ item }}</div>
+    </div>
+</div>
 `;
 
 customElements.define("dialogue-clip", Clip);

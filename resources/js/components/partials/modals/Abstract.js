@@ -77,10 +77,14 @@ class AbstractModal extends Slim {
                 this.reject();
                 break;
             case "ArrowLeft":
-                this.cancelButton.focus();
+                if (this.okButton.matches(":focus")) {
+                    this.cancelButton.focus();
+                }
                 break;
             case "ArrowRight":
-                this.okButton.focus();
+                if (this.cancelButton.matches(":focus")) {
+                    this.okButton.focus();
+                }
                 break;
         }
     }

@@ -238,7 +238,7 @@ class TranscodeConfigurator extends Slim {
         } catch (error) {}
     }
 
-    clipper() {
+    async clipper() {
         const m = document.createElement("modal-dialogue");
         m.header = "Clipper";
         const d = document.createElement("dialogue-clip");
@@ -247,12 +247,27 @@ class TranscodeConfigurator extends Slim {
             (s) => s.codec_type === TYPE_VIDEO
         )?.[0];
         if (video) {
-            d.fps = eval(video.avg_frame_rate);
-            d.current = parseFloat(video.start_time);
+            d.fps = parseInt(eval(video.avg_frame_rate), 10);
+            d.start = parseFloat(video.start_time);
         }
         d.path = this.item.path;
         m.appendChild(d);
         document.body.appendChild(m);
+        const clipperHandler = this.handleClipper.bind(this);
+        try {
+            d.addEventListener("clipper", clipperHandler);
+            await m.open();
+            d.removeEventListener("clipper", clipperHandler);
+            this.clips.clips = [];
+            for (let i = 0; i < d.clips.length; i += 2) {
+                this.clips.addClip(d.clips[i] ?? null, d.clips[i + 1] ?? null);
+            }
+            this.clips.update();
+        } catch (error) {}
+    }
+
+    handleClipper(e) {
+        console.log(e.detail);
     }
 
     handleConfigureStream(e) {
