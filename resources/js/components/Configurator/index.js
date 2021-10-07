@@ -7,6 +7,7 @@ import './Format'
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 import "./Dialogues/Scale";
 import "./Dialogues/Crop";
+import "./Dialogues/Clip";
 import { TYPE_VIDEO } from "./Streams";
 
 const WS_CHANNEL = "Transcode.Config";
@@ -237,6 +238,23 @@ class TranscodeConfigurator extends Slim {
         } catch (error) {}
     }
 
+    clipper() {
+        const m = document.createElement("modal-dialogue");
+        m.header = "Clipper";
+        const d = document.createElement("dialogue-clip");
+        d.duration = parseFloat(this.format.duration);
+        const video = this.streams.filter(
+            (s) => s.codec_type === TYPE_VIDEO
+        )?.[0];
+        if (video) {
+            d.fps = eval(video.avg_frame_rate);
+            d.current = parseFloat(video.start_time);
+        }
+        d.path = this.item.path;
+        m.appendChild(d);
+        document.body.appendChild(m);
+    }
+
     handleConfigureStream(e) {
         const offsetOrigin = e.detail.origin.getBoundingClientRect();
         const offsetMain = this.main.getBoundingClientRect();
@@ -399,6 +417,7 @@ ${CSS}
                 <option value="mp4">Remux MP4</option>
                 <option value="ts">Remux TS</option>
             </combo-button>
+            <theme-button @click="this.clipper()">Clipper</theme-button>
             <theme-button @click="this.requestCrop()">Crop</theme-button>
             <theme-button @click="this.requestScale()">Scale</theme-button>
             <theme-button *if="{{ this.canConcat }}" @click="this.requestConcat()">Concat</theme-button>

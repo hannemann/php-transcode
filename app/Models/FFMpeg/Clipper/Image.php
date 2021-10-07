@@ -15,7 +15,7 @@ class Image
         $file = static::getInputFilename($disk, $path);
 
         return FFMpegDriver::create(null, Arr::dot(config('laravel-ffmpeg')))->command([
-            '-ss', $timestamp, '-i', $file, '-c:v', 'mjpeg', '-frames:v', '1', '-f', 'image2', '-'
+            '-ss', $timestamp, '-i', $file, '-r', '25', '-frames:v', '1', '-f', 'image2', 'pipe:1'
         ]);
     }
 
