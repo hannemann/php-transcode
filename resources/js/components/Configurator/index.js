@@ -259,8 +259,11 @@ class TranscodeConfigurator extends Slim {
             await m.open();
             d.removeEventListener("clipper", clipperHandler);
             this.clips.clips = [];
-            for (let i = 0; i < d.clips.length; i += 2) {
-                this.clips.addClip(d.clips[i] ?? null, d.clips[i + 1] ?? null);
+            for (let i = 0; i < d.clips.length; i++) {
+                this.clips.addClip(
+                    d.clips[i]?.timestamps.start ?? null,
+                    d.clips[i]?.timestamps.end ?? null
+                );
             }
             this.clips.update();
         } catch (error) {}
