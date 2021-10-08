@@ -243,6 +243,7 @@ class TranscodeConfigurator extends Slim {
         m.header = "Clipper";
         const d = document.createElement("dialogue-clip");
         d.duration = parseFloat(this.format.duration);
+        d.setClips(this.clips.getTimestamps());
         const video = this.streams.filter(
             (s) => s.codec_type === TYPE_VIDEO
         )?.[0];

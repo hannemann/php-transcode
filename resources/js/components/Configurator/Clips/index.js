@@ -186,6 +186,22 @@ class Clips extends Slim {
             .toString()
             .padStart(2, "0")}.${d.getUTCMilliseconds()}`;
     }
+
+    milliSeconds(coord) {
+        return this.toSeconds(coord) * 1000;
+    }
+
+    getTimestamps() {
+        return this.clips.reduce((acc, cur) => {
+            if (cur.from) {
+                acc.push(this.milliSeconds(cur.from));
+            }
+            if (cur.to) {
+                acc.push(this.milliSeconds(cur.to));
+            }
+            return acc;
+        }, []);
+    }
 }
 
 Clips.template = /*html*/`

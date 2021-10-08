@@ -14,6 +14,7 @@ class Clip extends Slim {
         this.current = 0;
         this.clips = [];
         this.raw = [];
+        this.added = false;
     }
 
     onAdded() {
@@ -22,9 +23,12 @@ class Clip extends Slim {
         requestAnimationFrame(() => {
             Iconify.scan(this.shadowRoot);
         });
+        this.calculateClips()
+        this.added = true;
     }
 
     onRemoved() {
+        this.added = false;
         document.removeEventListener("keydown", this.handleKey);
     }
 
@@ -44,6 +48,13 @@ class Clip extends Slim {
             this.raw.splice(idx, 1);
             this.calculateClips();
             Utils.forceUpdate(this, "clips,raw");
+        }
+    }
+
+    setClips(clips) {
+        this.raw = clips;
+        if (this.added) {
+            Utils.forceUpdate(this);
         }
     }
 
@@ -117,11 +128,19 @@ class Clip extends Slim {
     }
 
     timestamp(current) {
-        let t = new Date(current ?? this.current)
+        return new Date(current ?? this.current)
             .toISOString()
             .replace(/^[0-9-]+T/, "")
             .replace(/z$/i, "");
-        return t;
+    }
+
+    toMilliSeconds(timestamp) {
+        const parts = timestamp.split(":");
+        const t = new Date(0);
+        t.setUTCHours(parts[0]);
+        t.setMinutes(parts[1]);
+        t.setMilliseconds(parts[2] * 1000);
+        return t.getTime();
     }
 
     src() {
