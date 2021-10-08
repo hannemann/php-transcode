@@ -15,6 +15,7 @@ class ImageRequest extends FormRequest
     {
         return [
             'timestamp' => ['required', 'regex:/^([0-9]+:)?[0-9]+:[0-9]+:[0-9]+\.[0-9]+$/'],
+            'height' => 'nullable|integer',
         ];
     }
 }

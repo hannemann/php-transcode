@@ -1,20 +1,27 @@
 import { Slim, Utils, Iconify } from "@/components/lib";
 
+const THUMBNAIL_HEIGHT = 30;
 class Clip extends Slim {
     constructor() {
         super();
-        this.rwd = this.rwd.bind(this);
-        this.ffwd = this.ffwd.bind(this);
-        this.handleKey = this.handleKey.bind(this);
-        this.add = this.add.bind(this);
-        this.timestamp = this.timestamp.bind(this);
-        this.getClipPos = this.getClipPos.bind(this);
-        this.getIndicatorPos = this.getIndicatorPos.bind(this);
-        this.getIndicashowCliptorPos = this.showClip.bind(this);
+        this.bindListeners();
         this.current = 0;
         this.clips = [];
         this.raw = [];
         this.added = false;
+    }
+
+    bindListeners() {
+        this.rwd = this.rwd.bind(this);
+        this.ffwd = this.ffwd.bind(this);
+        this.handleKey = this.handleKey.bind(this);
+        this.add = this.add.bind(this);
+        this.remove = this.remove.bind(this);
+        this.timestamp = this.timestamp.bind(this);
+        this.getClipPos = this.getClipPos.bind(this);
+        this.getIndicatorPos = this.getIndicatorPos.bind(this);
+        this.activateClip = this.activateClip.bind(this);
+        this.handleIndicatorClick = this.handleIndicatorClick.bind(this);
     }
 
     onAdded() {
@@ -22,8 +29,9 @@ class Clip extends Slim {
         document.addEventListener("keydown", this.handleKey);
         requestAnimationFrame(() => {
             Iconify.scan(this.shadowRoot);
+            this.addThumbnails();
         });
-        this.calculateClips()
+        this.calculateClips();
         this.added = true;
     }
 
@@ -58,56 +66,79 @@ class Clip extends Slim {
         }
     }
 
+    addThumbnails() {
+        let i = 1;
+        const count = Math.floor(
+            this.indicator.offsetWidth / (THUMBNAIL_HEIGHT * (4 / 3))
+        );
+        const fr = (this.duration * 1000) / (count + 2);
+        do {
+            const img = document.createElement("img");
+            const timestamp = this.timestamp(fr * i);
+            img.src = `${this.baseUrl}${timestamp}&height=${THUMBNAIL_HEIGHT}`;
+            this.indicator.appendChild(img);
+        } while (i++ <= count);
+    }
+
     handleKey(e) {
+        // console.log(this);
         if (this.updateTimeout) {
             clearTimeout(this.updateTimeout);
         }
-        let prevent = false;
-        const updateIndex = this.raw.indexOf(this.current);
+        let action = false;
+        const updateIndex = e.altKey ? this.raw.indexOf(this.current) : -1;
         switch (e.key) {
             case "ArrowRight":
                 this.ffwd(
                     e.shiftKey ? 2000 : e.ctrlKey ? 5000 : 1000 / this.fps
                 );
-                prevent = true;
+                action = true;
                 break;
             case "ArrowLeft":
                 this.rwd(
                     e.shiftKey ? 2000 : e.ctrlKey ? 5000 : 1000 / this.fps
                 );
-                prevent = true;
+                action = true;
                 break;
             case "ArrowUp":
                 this.ffwd(e.shiftKey ? 300000 : e.ctrlKey ? 600000 : 60000);
-                prevent = true;
+                action = true;
                 break;
             case "ArrowDown":
                 this.rwd(e.shiftKey ? 300000 : e.ctrlKey ? 600000 : 60000);
-                prevent = true;
+                action = true;
                 break;
             case "+":
                 this.add();
-                prevent = true;
+                action = true;
                 break;
             case "-": {
                 this.remove();
-                prevent = true;
+                action = true;
                 break;
             }
         }
-        if (prevent) {
+        if (action) {
             e.preventDefault();
             e.stopPropagation();
+            this.updateTimeout = setTimeout(() => {
+                if (updateIndex > -1) {
+                    this.raw.splice(updateIndex, 1, this.current);
+                    this.raw.sort((a, b) => a > b);
+                    this.calculateClips();
+                }
+                Utils.forceUpdate(this);
+                delete this.updateTimeout;
+            }, 150);
         }
-        this.updateTimeout = setTimeout(() => {
-            // if (updateIndex > -1) {
-            //     this.raw.splice(this.updateIndex, 1, this.current);
-            //     this.raw.sort((a, b) => a > b);
-            //     this.calculateClips();
-            // }
+    }
+
+    handleIndicatorClick(e) {
+        if (!e.composedPath().find((p) => p.classList?.contains("clip"))) {
+            this.current =
+                (this.duration * 1000 * e.layerX) / this.indicator.offsetWidth;
             Utils.forceUpdate(this);
-            delete this.updateTimeout;
-        }, 150);
+        }
     }
 
     rwd(seconds) {
@@ -118,7 +149,7 @@ class Clip extends Slim {
         this.current = Math.min(this.duration * 1000, this.current + seconds);
     }
 
-    showClip(item) {
+    activateClip(item) {
         if (this.current === item.raw.start && item.raw.end) {
             this.current = item.raw.end;
         } else {
@@ -193,18 +224,51 @@ class Clip extends Slim {
 
 Clip.template = /*html*/ `
 <style>
-    img {
-        max-width: 100%;
+    :host {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        grid-template-areas:
+            "help frame timestamps"
+            "thumbnails thumbnails thumbnails";
+        grid-column-gap: .5rem;
+    }
+
+    .frame {
+        grid-area: frame;
+        text-align: center;
+    }
+    .frame img {
+        max-width: 600px;
     }
     .indicator {
-        height: 20px;
+        grid-area: thumbnails;
+        height: ${THUMBNAIL_HEIGHT + 16}px;
         position: relative;
-        background: var(--clr-bg-100);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        overflow: hidden;
+        --background: var(--clr-bg-200);
+        --size: 3px;
+        background-image:
+            linear-gradient(to right, var(--background) var(--size), transparent var(--size)),
+            linear-gradient(to bottom, var(--background) var(--size), transparent var(--size)),
+            linear-gradient(to right, var(--background) var(--size), transparent var(--size)),
+            linear-gradient(to bottom, var(--background) var(--size), transparent var(--size)),
+            linear-gradient(to bottom, transparent var(--size), var(--background) var(--size));
+        background-size: calc(var(--size) * 2) var(--size), calc(var(--size) * 2) var(--size), calc(var(--size) * 2) var(--size), calc(var(--size) * 2) var(--size), 100% calc(100% - var(--size) * 3);
+        background-repeat: repeat-x;
+        background-position: 0 var(--size), top left, 0 calc(100% - var(--size)), bottom left, 0 var(--size);
+    }
+    .indicator img {
+        display: inline-block;
+        height: ${THUMBNAIL_HEIGHT}px;
+        aspect-ratio: 4 / 3;
     }
     .indicator .clip {
         position: absolute;
         inset-block: 0;
-        background: var(--clr-bg-200);
+        background: hsla(var(--hue-success) var(--sat-alert) var(--lit-alert) / .5);
     }
     .indicator .current {
         position: absolute;
@@ -212,34 +276,46 @@ Clip.template = /*html*/ `
         background: red;
         width: 1px;
     }
-    .info {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+    .help, .timestamps {
+        font-size: .75rem;
+    }
+    .help {
+        grid-area: help;
     }
     dl {
         display: grid;
         grid-template-columns: auto 1fr;
         grid-column-gap: .5rem;
-        font-size: .75rem;
     }
     dd {
         margin: 0;
     }
+    .timestamps {
+        grid-area: timestamps;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-auto-rows: min-content;
+        overflow-y: auto;
+    }
     .timestamp {
         cursor: pointer;
+        padding: .125rem;
+    }
+    .timestamp.active {
+        background: var(--clr-bg-100);
     }
 </style>
-<div>
+<div class="frame">
     <img src="{{ this.baseUrl + this.timestamp() }}" #ref="image">
 </div>
-<div>
+<div class="status">
     {{ this.timestamp() }}
 </div>
-<div class="indicator">
-    <div class="clip" *foreach="{{ this.clips }}" style="{{ this.getClipPos(item) }}" @click="{{ this.showClip(item) }}"></div>
-    <div class="current" style="{{ this.getIndicatorPos(item) }}"></div>
+<div class="indicator" #ref="indicator" @click="{{ this.handleIndicatorClick }}">
+    <div class="clip" *foreach="{{ this.clips }}" style="{{ this.getClipPos(item) }}" @click="{{ this.activateClip(item) }}"></div>
+    <div class="current" #ref="indicatorCurrent" style="{{ this.getIndicatorPos(item) }}"></div>
 </div>
-<div class="info">
+<div class="help">
     <dl>
         <dt><span class="iconify" data-icon="mdi-swap-horizontal-bold"></span></dt><dd>+/-1 Frame</dd>
         <dt><span class="iconify" data-icon="mdi-swap-horizontal-bold"></span> + Shift</dt><dd>+/-2 Seconds</dd>
@@ -249,10 +325,15 @@ Clip.template = /*html*/ `
         <dt><span class="iconify" data-icon="mdi-swap-vertical-bold"></span> + Ctrl</dt><dd>+/-10 Minutes</dd>
         <dt>+</dt><dd>Add</dd>
         <dt>-</dt><dd>Remove</dd>
+        <dt>
+            <span class="iconify" data-icon="mdi-swap-horizontal-bold"></span>
+            <span class="iconify" data-icon="mdi-swap-vertical-bold"></span> + Alt
+        </dt>
+        <dd>Move</dd>
     </dl>
-    <div>
-        <div class="timestamp" *foreach="{{ this.raw }}" @click="{{ this.showClip({raw:{start:item}}) }}">{{ this.timestamp(item) }}</div>
-    </div>
+</div>
+<div class="timestamps">
+    <div class="{{ item === this.current ? 'timestamp active' : 'timestamp' }}" *foreach="{{ this.raw }}" @click="{{ this.activateClip({raw:{start:item}}) }}">{{ this.timestamp(item) }}</div>
 </div>
 `;
 

@@ -30,7 +30,9 @@ class AbstractModal extends Slim {
     }
 
     show() {
-        this.cancelButton.focus();
+        if (this.cancelButton) {
+            this.cancelButton.focus();
+        }
         this.addEventListener(
             "transitionend",
             () => {
@@ -72,20 +74,22 @@ class AbstractModal extends Slim {
     }
 
     handleKey(e) {
-        switch (e.key) {
-            case "Escape":
-                this.reject();
-                break;
-            case "ArrowLeft":
-                if (this.okButton.matches(":focus")) {
-                    this.cancelButton.focus();
-                }
-                break;
-            case "ArrowRight":
-                if (this.cancelButton.matches(":focus")) {
-                    this.okButton.focus();
-                }
-                break;
+        if (this.cancelButton) {
+            switch (e.key) {
+                case "Escape":
+                    this.reject();
+                    break;
+                case "ArrowLeft":
+                    if (this.okButton.matches(":focus")) {
+                        this.cancelButton.focus();
+                    }
+                    break;
+                case "ArrowRight":
+                    if (this.cancelButton.matches(":focus")) {
+                        this.okButton.focus();
+                    }
+                    break;
+            }
         }
     }
 }

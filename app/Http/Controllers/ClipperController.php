@@ -13,7 +13,7 @@ class ClipperController extends Controller
     {
         try {
             return Response::stream(function () use ($path, $request) {
-                echo Image::getImageData('recordings', $path, $request->input('timestamp'));
+                echo Image::getImageData('recordings', $path, $request->input('timestamp'), $request->input('height'));
             }, 200, [
                 "Content-Type" => 'image/jpeg',
             ]);
