@@ -42,18 +42,19 @@ $audioCodecs = [
     ],
 ];
 $subtitleCodecs = [
-    "dvb_subtitle" => [
+    "copy" => [
         "v" => 0,
+        "l" => "Copy",
+        "default" => true,
+    ],
+    "dvb_subtitle" => [
+        "v" => 1,
         "l" => "dvb_subtitle",
         "default" => true,
     ],
     "dvd_subtitle" => [
-        "v" => 1,
-        "l" => "dvd_subtitle",
-    ],
-    "copy" => [
         "v" => 2,
-        "l" => "Copy",
+        "l" => "dvd_subtitle",
     ],
 ];
 
