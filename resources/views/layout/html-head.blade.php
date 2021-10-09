@@ -6,5 +6,6 @@
 <script>
     const VIDEO_CODECS = @json(config('transcode.videoCodecs'));
     const AUDIO_CODECS = @json(config('transcode.audioCodecs'));
+    const SUBTITLE_CODECS = @json(config('transcode.subtitleCodecs'));
 </script>
 <script src="{{ mix('/js/app.js') }}"></script>

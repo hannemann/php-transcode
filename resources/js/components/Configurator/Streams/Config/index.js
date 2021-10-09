@@ -6,6 +6,9 @@ class StreamConfig extends Slim {
         super()
         this.videoCodecs = Object.values(VIDEO_CODECS).sort((a,b) => a.v > b.v)
         this.audioCodecs = Object.values(AUDIO_CODECS).sort((a,b) => a.v > b.v)
+        this.subtitleCodecs = Object.values(SUBTITLE_CODECS).sort(
+            (a, b) => a.v > b.v
+        );
         this.channelOptions = [2,6]
         this.aspectRatioOptions = ['16:9','4:3']
         this.cleanup = this.cleanup.bind(this)

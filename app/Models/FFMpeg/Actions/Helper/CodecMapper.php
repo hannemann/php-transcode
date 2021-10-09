@@ -33,6 +33,7 @@ class CodecMapper
         $this->subtitle = $subtitle;
         $this->videoCodecs = collect(config('transcode.videoCodecs'));
         $this->audioCodecs = collect(config('transcode.audioCodecs'));
+        $this->subtitleCodecs = collect(config('transcode.subtitleCodecs'));
     }
 
     public function execute(Collection $cmds): Collection
@@ -127,7 +128,14 @@ class CodecMapper
         $streamId = $this->subtitleIndex;
         $this->subtitleIndex++;
         $this->cmds->push('-c:s:' . $streamId);
-        $this->cmds->push($this->forcedSubtitleCodec ?? 'dvd_subtitle');
+        if ($this->forcedSubtitleCodec) {
+            $codec = $this->forcedSubtitleCodec;
+        } elseif (isset($stream['config']['codec'])) {
+            $codec = $this->subtitleCodecs->filter(fn($c) => (int)$c->v === (int)$stream['config']['codec'])->keys()->first();
+        } else {
+            $codec = $this->getDefaultCodecName($this->subtitleCodecs);
+        }
+        $this->cmds->push($codec);
         return $cmds;
     }
 

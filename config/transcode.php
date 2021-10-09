@@ -41,9 +41,25 @@ $audioCodecs = [
         "l" => "Copy",
     ],
 ];
+$subtitleCodecs = [
+    "dvb_subtitle" => [
+        "v" => 0,
+        "l" => "dvb_subtitle",
+        "default" => true,
+    ],
+    "dvd_subtitle" => [
+        "v" => 1,
+        "l" => "dvd_subtitle",
+    ],
+    "copy" => [
+        "v" => 2,
+        "l" => "Copy",
+    ],
+];
 
 return [
     'vaapiDevice' => env('VAAPI_DEVICE', '/dev/dri/renderD128'),
     'videoCodecs' => json_decode(env('VIDEO_CODECS', json_encode($videoCodecs))),
     'audioCodecs' => json_decode(env('AUDIO_CODECS', json_encode($audioCodecs))),
+    'subtitleCodecs' => json_decode(env('SUBTITLE_CODECS', json_encode($subtitleCodecs))),
 ];
