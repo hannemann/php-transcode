@@ -261,6 +261,7 @@ class TranscodeConfigurator extends Slim {
         if (video) {
             d.fps = parseInt(eval(video.avg_frame_rate), 10);
             d.start = parseFloat(video.start_time);
+            d.aspectRatio = video.display_aspect_ratio;
         }
         d.path = this.item.path;
         m.appendChild(d);

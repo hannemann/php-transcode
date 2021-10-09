@@ -10,16 +10,16 @@ class Image
     /**
      * create image from timestamp
      */
-    public static function getImageData(string $disk, string $path, string $timestamp, int $height = null)
+    public static function getImageData(string $disk, string $path, string $timestamp, int $width = null, int $height = null)
     {
         $file = static::getInputFilename($disk, $path);
         $args = [
             '-ss', $timestamp, '-i', $file, '-r', '25', '-frames:v', '1', '-f', 'image2'
         ];
 
-        if ($height) {
+        if ($width || $height) {
             $args[] = '-vf';
-            $args[] = 'scale=w=-1:h=' . $height;
+            $args[] = sprintf('scale=w=%d:h=%d', $width ?? -1, $height ?? -1);
         }
 
         $args[] = 'pipe:1';

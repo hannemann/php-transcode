@@ -2,19 +2,24 @@ import { Slim, Utils, Iconify } from "@/components/lib";
 
 const THUMBNAIL_HEIGHT = 30;
 class Clipper extends Slim {
+    #aspect = "16:9";
+    #aspectDecimal = 16 / 9;
+    #height = 576;
+
     constructor() {
         super();
         this.bindListeners();
         this.current = 0;
         this.clips = [];
         this.raw = [];
-        this.added = false;
+        this.height = 576;
     }
 
     bindListeners() {
         this.rwd = this.rwd.bind(this);
         this.ffwd = this.ffwd.bind(this);
         this.handleKey = this.handleKey.bind(this);
+        this.getFrameUrl = this.getFrameUrl.bind(this);
         this.add = this.add.bind(this);
         this.remove = this.remove.bind(this);
         this.timestamp = this.timestamp.bind(this);
@@ -32,11 +37,9 @@ class Clipper extends Slim {
             this.addThumbnails();
         });
         this.calculateClips();
-        this.added = true;
     }
 
     onRemoved() {
-        this.added = false;
         document.removeEventListener("keydown", this.handleKey);
     }
 
@@ -61,7 +64,7 @@ class Clipper extends Slim {
 
     setClips(clips) {
         this.raw = clips;
-        if (this.added) {
+        if (this.parentNode) {
             Utils.forceUpdate(this);
         }
     }
@@ -217,6 +220,48 @@ class Clipper extends Slim {
         return `left: ${item.percentage.start}%;width:1px`;
     }
 
+    getFrameUrl() {
+        if (this.aspectDecimal) {
+            const width = this.height * this.aspectDecimal;
+            return `${this.baseUrl}${this.timestamp()}&width=${width}&height=${
+                this.height
+            }`;
+        }
+        return `${this.baseUrl}${this.timestamp()}`;
+    }
+
+    toggleAspect() {
+        switch (this.aspect) {
+            case "16:9":
+                this.aspect = "4:3";
+                this.aspectDecimal = 4 / 3;
+                break;
+            case "4:3":
+                this.aspect = "Native";
+                this.aspectDecimal = 0;
+                break;
+            default:
+                this.aspect = "16:9";
+                this.aspectDecimal = 16 / 9;
+        }
+        Utils.forceUpdate(this);
+    }
+
+    get aspectRatio() {
+        return this.aspect;
+    }
+
+    set aspectRatio(value) {
+        if (value.match(/([0-9]+):([0-9]+)/)) {
+            this.aspect = value;
+            this.aspectDecimal =
+                parseInt(RegExp.$1, 10) / parseInt(RegExp.$2, 10);
+            if (this.parentNode) {
+                Utils.forceUpdate(this);
+            }
+        }
+    }
+
     get baseUrl() {
         return `/image/${encodeURIComponent(this.path)}?timestamp=`;
     }
@@ -249,10 +294,6 @@ Clipper.template = /*html*/ `
         grid-area: thumbnails;
         height: ${THUMBNAIL_HEIGHT + 16}px;
         position: relative;
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        overflow: hidden;
         --background: var(--clr-bg-200);
         --size: 3px;
         background-image:
@@ -264,11 +305,14 @@ Clipper.template = /*html*/ `
         background-size: calc(var(--size) * 2) var(--size), calc(var(--size) * 2) var(--size), calc(var(--size) * 2) var(--size), calc(var(--size) * 2) var(--size), 100% calc(100% - var(--size) * 3);
         background-repeat: repeat-x;
         background-position: 0 var(--size), top left, 0 calc(100% - var(--size)), bottom left, 0 var(--size);
+        display: grid;
+        grid-auto-flow: column;
+        align-content: center;
+        justify-items: center;
     }
     .indicator img {
-        display: inline-block;
-        height: ${THUMBNAIL_HEIGHT}px;
-        aspect-ratio: 4 / 3;
+        max-width: 100%;
+        max-height: 100%;
     }
     .indicator .clip {
         position: absolute;
@@ -287,6 +331,9 @@ Clipper.template = /*html*/ `
     }
     .help {
         grid-area: help;
+    }
+    .toggle-aspect::part(button) {
+        width: 100%;
     }
     dl {
         display: grid;
@@ -311,7 +358,7 @@ Clipper.template = /*html*/ `
         background: var(--clr-bg-100);
     }
 </style>
-<img class="frame" src="{{ this.baseUrl + this.timestamp() }}" #ref="image">
+<img class="frame" src="{{ this.getFrameUrl() }}" #ref="image">
 <div class="status">
     {{ this.timestamp() }}
 </div>
@@ -320,6 +367,7 @@ Clipper.template = /*html*/ `
     <div class="current" #ref="indicatorCurrent" style="{{ this.getIndicatorPos(item) }}"></div>
 </div>
 <div class="help">
+    <theme-button class="toggle-aspect" @click="{{ this.toggleAspect() }}">{{ this.aspect }}</theme-button>
     <dl>
         <dt><span class="iconify" data-icon="mdi-swap-horizontal-bold"></span></dt><dd>+/-1 Frame</dd>
         <dt><span class="iconify" data-icon="mdi-swap-horizontal-bold"></span> + Shift</dt><dd>+/-2 Seconds</dd>

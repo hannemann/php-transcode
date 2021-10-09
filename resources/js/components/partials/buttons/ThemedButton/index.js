@@ -46,7 +46,7 @@ button:hover {
     border-color: var(--clr-enlightened);
     box-shadow: 0 0 20px 0 var(--clr-enlightened-glow), 0 0 10px 0 inset var(--clr-enlightened-glow);
 }</style>
-<button #ref="button">
+<button part="button" #ref="button">
     <slot></slot>
 </button>
 `;
