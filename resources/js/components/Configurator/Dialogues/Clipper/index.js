@@ -1,4 +1,5 @@
 import { Slim, Utils, Iconify } from "@/components/lib";
+import { handleKey, rwd, ffwd } from "./mixins/handleKey";
 
 const THUMBNAIL_HEIGHT = 30;
 class Clipper extends Slim {
@@ -16,9 +17,9 @@ class Clipper extends Slim {
     }
 
     bindListeners() {
-        this.rwd = this.rwd.bind(this);
-        this.ffwd = this.ffwd.bind(this);
-        this.handleKey = this.handleKey.bind(this);
+        this.rwd = rwd.bind(this);
+        this.ffwd = ffwd.bind(this);
+        this.handleKey = handleKey.bind(this);
         this.getFrameUrl = this.getFrameUrl.bind(this);
         this.add = this.add.bind(this);
         this.remove = this.remove.bind(this);
@@ -83,73 +84,12 @@ class Clipper extends Slim {
         } while (i++ <= count);
     }
 
-    handleKey(e) {
-        // console.log(this);
-        if (this.updateTimeout) {
-            clearTimeout(this.updateTimeout);
-        }
-        let action = false;
-        const updateIndex = e.altKey ? this.raw.indexOf(this.current) : -1;
-        switch (e.key) {
-            case "ArrowRight":
-                this.ffwd(
-                    e.shiftKey ? 2000 : e.ctrlKey ? 5000 : 1000 / this.fps
-                );
-                action = true;
-                break;
-            case "ArrowLeft":
-                this.rwd(
-                    e.shiftKey ? 2000 : e.ctrlKey ? 5000 : 1000 / this.fps
-                );
-                action = true;
-                break;
-            case "ArrowUp":
-                this.ffwd(e.shiftKey ? 300000 : e.ctrlKey ? 600000 : 60000);
-                action = true;
-                break;
-            case "ArrowDown":
-                this.rwd(e.shiftKey ? 300000 : e.ctrlKey ? 600000 : 60000);
-                action = true;
-                break;
-            case "+":
-                this.add();
-                action = true;
-                break;
-            case "-": {
-                this.remove();
-                action = true;
-                break;
-            }
-        }
-        if (action) {
-            e.preventDefault();
-            e.stopPropagation();
-            this.updateTimeout = setTimeout(() => {
-                if (updateIndex > -1) {
-                    this.raw.splice(updateIndex, 1, this.current);
-                    this.raw.sort((a, b) => a > b);
-                    this.calculateClips();
-                }
-                Utils.forceUpdate(this);
-                delete this.updateTimeout;
-            }, 150);
-        }
-    }
-
     handleIndicatorClick(e) {
         if (!e.composedPath().find((p) => p.classList?.contains("clip"))) {
             this.current =
                 (this.duration * 1000 * e.layerX) / this.indicator.offsetWidth;
             Utils.forceUpdate(this);
         }
-    }
-
-    rwd(seconds) {
-        this.current = Math.max(this.start * 1000, this.current - seconds);
-    }
-
-    ffwd(seconds) {
-        this.current = Math.min(this.duration * 1000, this.current + seconds);
     }
 
     activateClip(item) {
@@ -372,16 +312,26 @@ Clipper.template = /*html*/ `
         <dt><span class="iconify" data-icon="mdi-swap-horizontal-bold"></span></dt><dd>+/-1 Frame</dd>
         <dt><span class="iconify" data-icon="mdi-swap-horizontal-bold"></span> + Shift</dt><dd>+/-2 Seconds</dd>
         <dt><span class="iconify" data-icon="mdi-swap-horizontal-bold"></span> + Ctrl</dt><dd>+/-5 Seconds</dd>
+    </dl>
+    <dl>
         <dt><span class="iconify" data-icon="mdi-swap-vertical-bold"></span></dt><dd>+/-1 Minute</dd>
         <dt><span class="iconify" data-icon="mdi-swap-vertical-bold"></span> + Shift</dt><dd>+/-5 Minutes</dd>
         <dt><span class="iconify" data-icon="mdi-swap-vertical-bold"></span> + Ctrl</dt><dd>+/-10 Minutes</dd>
+    </dl>
+    <dl>
         <dt>+</dt><dd>Add</dd>
         <dt>-</dt><dd>Remove</dd>
+    </dl>
+    <dl>
         <dt>
             <span class="iconify" data-icon="mdi-swap-horizontal-bold"></span>
             <span class="iconify" data-icon="mdi-swap-vertical-bold"></span> + Alt
         </dt>
         <dd>Move</dd>
+        <dt>
+            <span class="iconify" data-icon="mdi-swap-horizontal-bold"></span> + Ctrl/Shift
+        </dt>
+        <dd>Skip</dd>
     </dl>
 </div>
 <div class="timestamps">
