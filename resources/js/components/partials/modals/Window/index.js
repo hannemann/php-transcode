@@ -24,7 +24,7 @@ ${MODAL_BASE_CSS}
         max-width: revert;
         min-width: revert;
         display: grid;
-        grid-template-rows: 1fr auto 1fr;
+        grid-template-rows: max-content auto max-content;
     }
     :host(.no-shadow) main {
         box-shadow: none;

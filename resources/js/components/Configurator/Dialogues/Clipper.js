@@ -226,19 +226,24 @@ Clipper.template = /*html*/ `
 <style>
     :host {
         display: grid;
-        grid-template-columns: 1fr auto 1fr;
+        grid-template-columns: auto 1fr auto;
+        grid-template-rows: 1fr min-content max-content;
         grid-template-areas:
             "help frame timestamps"
+            "status status status"
             "thumbnails thumbnails thumbnails";
         grid-column-gap: .5rem;
+        height: 100%;
     }
 
     .frame {
         grid-area: frame;
-        text-align: center;
+        max-width: 100%;
+        max-height: 100%;
+        justify-self: center;
     }
-    .frame img {
-        max-width: 600px;
+    .status {
+        grid-area: status;
     }
     .indicator {
         grid-area: thumbnails;
@@ -278,6 +283,7 @@ Clipper.template = /*html*/ `
     }
     .help, .timestamps {
         font-size: .75rem;
+        white-space: nowrap;
     }
     .help {
         grid-area: help;
@@ -305,9 +311,7 @@ Clipper.template = /*html*/ `
         background: var(--clr-bg-100);
     }
 </style>
-<div class="frame">
-    <img src="{{ this.baseUrl + this.timestamp() }}" #ref="image">
-</div>
+<img class="frame" src="{{ this.baseUrl + this.timestamp() }}" #ref="image">
 <div class="status">
     {{ this.timestamp() }}
 </div>
