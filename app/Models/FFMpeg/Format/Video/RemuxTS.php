@@ -43,6 +43,7 @@ class RemuxTS extends DefaultVideo
     public function stripOptions(Collection $cmds): Collection
     {
         $cmds->splice($cmds->search('-threads'), 2);
+        $cmds->splice($cmds->search('-b:v'), 2);
         if (is_numeric($cmds->search('-refs'))) {
             $cmds = $cmds->slice(0, $cmds->search('-refs'));
         }
