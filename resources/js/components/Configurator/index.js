@@ -7,7 +7,7 @@ import './Format'
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 import "./Dialogues/Scale";
 import "./Dialogues/Crop";
-import "./Dialogues/Clip";
+import "./Dialogues/Clipper";
 import { TYPE_VIDEO } from "./Streams";
 
 const WS_CHANNEL = "Transcode.Config";
@@ -252,7 +252,7 @@ class TranscodeConfigurator extends Slim {
         }
         const m = document.createElement("modal-window");
         m.header = "Clipper";
-        const d = document.createElement("dialogue-clip");
+        const d = document.createElement("dialogue-clipper");
         d.duration = parseFloat(this.format.duration);
         d.setClips(this.clips.getTimestamps());
         const video = this.streams.filter(

@@ -1,7 +1,7 @@
 import { Slim, Utils, Iconify } from "@/components/lib";
 
 const THUMBNAIL_HEIGHT = 30;
-class Clip extends Slim {
+class Clipper extends Slim {
     constructor() {
         super();
         this.bindListeners();
@@ -222,7 +222,7 @@ class Clip extends Slim {
     }
 }
 
-Clip.template = /*html*/ `
+Clipper.template = /*html*/ `
 <style>
     :host {
         display: grid;
@@ -337,4 +337,4 @@ Clip.template = /*html*/ `
 </div>
 `;
 
-customElements.define("dialogue-clip", Clip);
+customElements.define("dialogue-clipper", Clipper);

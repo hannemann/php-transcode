@@ -59,8 +59,6 @@ WantedBy=default.target
 
 
 ## TODO:
-* Aspect Ratio (currently Transcode only)
-* Scale
-* Crop
+* Test files for codec mismatch before concat
 
 ## Fix
