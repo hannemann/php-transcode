@@ -1,8 +1,9 @@
-const ICON_STACK_CSS = /*css*/`
+export const ICON_STACK_CSS = /*css*/ `
 <style>
 .icon-stack {
     position: relative;
     width: 1em;
+    height: 1em;
 }
 button.icon-stack {
     border: unset;
@@ -43,6 +44,4 @@ button.icon-stack {
     opacity: 0;
 }
 </style>
-`
-
-export {ICON_STACK_CSS};
+`;

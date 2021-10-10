@@ -248,6 +248,6 @@ ${CSS}
 </div>
 `;
 
-customElements.define('filepicker-item', FilePickerItem);
+customElements.define("filepicker-item", FilePickerItem);
 
-export default ITEM_TEMPLATE
+export default ITEM_TEMPLATE;
