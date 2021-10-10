@@ -49,7 +49,6 @@ class Settings
 
     public static function getSettingsFilename(string $path): string
     {
-        $path = rtrim(dirname($path), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-        return sprintf('%s%s.settings.json', $path, sha1($path));
+        return sprintf('%s.settings.json', $path);
     }
 }
