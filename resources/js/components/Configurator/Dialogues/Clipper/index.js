@@ -265,7 +265,7 @@ Clipper.template = /*html*/ `
         background: red;
         width: 1px;
     }
-    .help, .timestamps {
+    .help, .clips {
         font-size: .75rem;
         white-space: nowrap;
     }
@@ -275,27 +275,31 @@ Clipper.template = /*html*/ `
     .toggle-aspect::part(button) {
         width: 100%;
     }
-    dl {
+    .help dl {
         display: grid;
         grid-template-columns: auto 1fr;
         grid-column-gap: .5rem;
     }
-    dd {
+    .help dd {
         margin: 0;
     }
-    .timestamps {
+    .clips {
         grid-area: timestamps;
         display: grid;
         grid-template-columns: 1fr;
         grid-auto-rows: min-content;
         overflow-y: auto;
+        grid-row-gap: .25rem;
     }
-    .timestamp {
+    .clips .clip:nth-child(odd) {
+        background: var(--clr-bg-100);
+    }
+    .clips .clip .timestamp {
         cursor: pointer;
         padding: .125rem;
     }
-    .timestamp.active {
-        background: var(--clr-bg-100);
+    .clips .clip .timestamp.active {
+        background: var(--clr-bg-200);
     }
 </style>
 <img class="frame" src="{{ this.getFrameUrl() }}" #ref="image">
@@ -334,8 +338,19 @@ Clipper.template = /*html*/ `
         <dd>Skip</dd>
     </dl>
 </div>
-<div class="timestamps">
-    <div class="{{ item === this.current ? 'timestamp active' : 'timestamp' }}" *foreach="{{ this.raw }}" @click="{{ this.activateClip({raw:{start:item}}) }}">{{ this.timestamp(item) }}</div>
+<div class="clips">
+    <div class="clip" *foreach="{{ this.clips }}">
+        <div @click="{{ this.activateClip({raw:{start:item.raw.start}}) }}"
+            class="{{ item.raw.start === this.current ? 'timestamp active' : 'timestamp' }}"
+        >
+            {{ this.timestamp(item.raw.start) }}
+        </div>
+        <div @click="{{ this.activateClip({raw:{start:item.raw.end}}) }}"
+            class="{{ item.raw.end === this.current ? 'timestamp active' : 'timestamp' }}"
+        >
+            {{ this.timestamp(item.raw.end) }}
+        </div>
+    </div>
 </div>
 `;
 
