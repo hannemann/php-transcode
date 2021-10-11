@@ -9,7 +9,7 @@ use App\Models\FFMpeg\Actions\Helper\OutputMapper;
 Class Scale extends AbstractAction
 {
     protected string $filenameAffix = 'scale';
-    protected string $filenameSuffix = 'ts';
+    protected string $filenameSuffix = 'mkv';
     protected string $formatClass = Format::class;
 
     /**
