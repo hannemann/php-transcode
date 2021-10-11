@@ -53,9 +53,29 @@ WantedBy=default.target
 
 # Transcoding
 ## Troubleshooting
-* The user of the php proces has to have rw access to the render device
+* The user of the php process has to have rw access to the render device
 * If its the case that the Resolution changes in the Input than you should trim the Video first.
 * In case of green artifacts transcode with lossless audio and best video quality possible first, then transcode again
+### Message:
+```
+Impossible to convert between the formats supported by the filter 'Parsed_scale_vaapi_0' and the filter 'auto_scaler_0'
+Error reinitializing filters!
+Failed to inject frame into filter network: Function not implemented
+Error while processing the decoded data for stream #0:0
+```
+#### Possible cause:
+* Main movie with aspect ratio of 16:9 is surrounded by 4:3 frames
+* Vice versa (Letterboxed)
+#### Mitigate
+* Trim of unwanted material
+* In general: trim of pre- and post recording padding, scale to display aspect ratio if movie is 4:3 and commercials 16:9
+  * Concat
+  * Remux to mkv or mp4
+  * Use Clipper to find start and end timestamps
+  * Perform a transcode with codec copy of all wanted streams to trim padding
+  * Scale to desired aspect ratio
+  * Use Clipper to find parts to be skipped
+  * Perform final transcode
 
 
 ## TODO:

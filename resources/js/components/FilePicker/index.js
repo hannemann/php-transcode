@@ -15,6 +15,7 @@ class FilePicker extends FilePickerBase {
     }
 
     reload(e) {
+        this.items = [];
         this.requestItems();
     }
 }
