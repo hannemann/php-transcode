@@ -82,3 +82,4 @@ Error while processing the decoded data for stream #0:0
 * Test files for codec mismatch before concat
 
 ## Fix
+* Wrong Audio stream gets encoded to flac on prepare
