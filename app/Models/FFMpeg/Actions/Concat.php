@@ -12,7 +12,7 @@ use App\Models\FFMpeg\Filters\Video\ConcatDurationDummy;
 class Concat extends AbstractAction
 {
     protected string $filenameAffix = 'concat';
-    protected string $filenameSuffix = 'ts';
+    protected string $filenameSuffix = 'mkv';
 
     protected string $formatClass = RemuxTS::class;
 

@@ -108,6 +108,10 @@ class Clipper extends Slim {
             .replace(/z$/i, "");
     }
 
+    clipEndTimestamp(seconds) {
+        return seconds ? this.timestamp(seconds) : "-";
+    }
+
     toMilliSeconds(timestamp) {
         const parts = timestamp.split(":");
         const t = new Date(0);
@@ -115,12 +119,6 @@ class Clipper extends Slim {
         t.setMinutes(parts[1]);
         t.setMilliseconds(parts[2] * 1000);
         return t.getTime();
-    }
-
-    src() {
-        return `/image/${encodeURIComponent(
-            this.path
-        )}?timestamp=${this.timestamp()}`;
     }
 
     calculateClips() {
@@ -150,7 +148,7 @@ class Clipper extends Slim {
 
     getIndicatorPos(item) {
         const percentage = (100 / (this.duration * 1000)) * this.current;
-        return `left: ${percentage}%`;
+        return `left: min(${percentage}%, 100% - 1px`;
     }
 
     getClipPos(item) {
@@ -229,6 +227,7 @@ Clipper.template = /*html*/ `
     }
     .status {
         grid-area: status;
+        text-align: center;
     }
     .indicator {
         grid-area: thumbnails;
@@ -304,7 +303,7 @@ Clipper.template = /*html*/ `
 </style>
 <img class="frame" src="{{ this.getFrameUrl() }}" #ref="image">
 <div class="status">
-    {{ this.timestamp() }}
+    {{ this.timestamp() }} / {{ this.timestamp(this.duration * 1000) }}
 </div>
 <div class="indicator" #ref="indicator" @click="{{ this.handleIndicatorClick }}">
     <div class="clip" *foreach="{{ this.clips }}" style="{{ this.getClipPos(item) }}" @click="{{ this.activateClip(item) }}"></div>
@@ -348,7 +347,7 @@ Clipper.template = /*html*/ `
         <div @click="{{ this.activateClip({raw:{start:item.raw.end}}) }}"
             class="{{ item.raw.end === this.current ? 'timestamp active' : 'timestamp' }}"
         >
-            {{ this.timestamp(item.raw.end) }}
+            {{ this.clipEndTimestamp(item.raw.end) }}
         </div>
     </div>
 </div>

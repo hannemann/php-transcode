@@ -24,17 +24,6 @@ const arrow = function (e, back) {
     }
 };
 
-const arrowLeft = function (e) {
-    const idx = this.raw.indexOf(this.current);
-    if (e.ctrlKey && e.shiftKey && canSkipBwd.call(this, idx)) {
-        jump.call(this, idx - 1);
-    } else if (e.ctrlKey != e.shiftKey) {
-        this.rwd(e.shiftKey ? 2000 : 5000);
-    } else {
-        this.rwd(1000 / this.fps);
-    }
-};
-
 const jump = function (idx) {
     if (typeof this.raw[idx] !== "undefined") {
         this.current = this.raw[idx];
@@ -111,5 +100,8 @@ export const rwd = function (seconds) {
 };
 
 export const ffwd = function (seconds) {
-    this.current = Math.min(this.duration * 1000, this.current + seconds);
+    this.current = Math.min(
+        this.duration * 1000 - 1000 / this.fps,
+        this.current + seconds
+    );
 };
