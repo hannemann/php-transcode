@@ -21,6 +21,7 @@ class TranscodeConfigurator extends Slim {
         this.remuxContainer = "MP4";
         this.handleConfigureStream = this.handleConfigureStream.bind(this);
         this.requestRemux = this.requestRemux.bind(this);
+        this.requestScale = this.requestScale.bind(this);
         this.saveSettings = this.saveSettings.bind(this);
         this.hide = this.hide.bind(this);
     }
@@ -180,6 +181,7 @@ class TranscodeConfigurator extends Slim {
     }
 
     async requestScale(e) {
+        const type = e.target.value;
         const m = document.createElement("modal-dialogue");
         m.header = "Scale";
         const d = m.appendChild(document.createElement("dialogue-scale"));
@@ -198,12 +200,14 @@ class TranscodeConfigurator extends Slim {
                 this.item.path,
                 d.scale.width,
                 d.scale.height,
-                d.scale.aspectRatio
+                d.scale.aspectRatio,
+                e.target.value
             );
             await Request.post(`/scale/${encodeURIComponent(this.item.path)}`, {
                 width: d.scale.width,
                 height: d.scale.height,
                 aspect: d.scale.aspectRatio,
+                type: type,
             });
         } catch (error) {}
     }
@@ -449,7 +453,10 @@ ${CSS}
             </combo-button>
             <theme-button @click="this.clipper()">Clipper</theme-button>
             <theme-button @click="this.requestCrop()">Crop</theme-button>
-            <theme-button @click="this.requestScale()">Scale</theme-button>
+            <combo-button @click="{{ this.requestScale }}">
+                <option value="vaapi">Scale (VAAPI)</option>
+                <option value="cpu">Scale (CPU)</option>
+            </combo-button>
             <theme-button *if="{{ this.canConcat }}" @click="this.requestConcat()">Concat</theme-button>
             <theme-button @click="this.transcode()">Transcode</theme-button>
         </footer>

@@ -13,6 +13,7 @@ class ScaleRequest extends FFMpegActionRequest
             'width' => 'required|int',
             'height' => 'required|int',
             'aspect' => ['required', Rule::in(['4:3', '16:9'])],
+            'type' => ['required', Rule::in(['vaapi', 'cpu'])],
         ];
         return $rules;
     }
