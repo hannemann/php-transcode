@@ -1,34 +1,39 @@
-import { Slim, Utils } from '@/components/lib';
-import CARD_CSS from '../CardCss';
-import './Clip'
-import sortable from 'html5sortable/dist/html5sortable.es'
-import {Request} from '@/components/Request'
+import { Slim, Utils, Iconify } from "@/components/lib";
+import CARD_CSS from "../CardCss";
+import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
+import "./Clip";
+import sortable from "html5sortable/dist/html5sortable.es";
+import { Request } from "@/components/Request";
 
-const dataFactory = function*() {
-    let id = 0
-    while(true) {
+const dataFactory = function* () {
+    let id = 0;
+    while (true) {
         // yield {from: `0:0:${id}.0`, to: null, id: id++}
-        yield {from: null, to: null, id: id++}
+        yield { from: null, to: null, id: id++ };
     }
-}
+};
 
-const getClipInitData = (factory) => factory.next().value
+const getClipInitData = (factory) => factory.next().value;
 
-const WS_CHANNEL = 'Transcode.Clips'
+const WS_CHANNEL = "Transcode.Clips";
 
 class Clips extends Slim {
+    #mode;
+
     constructor() {
         super();
         this.clips = [this.newClip()];
         //this.clips = [this.newClip(), this.newClip(), this.newClip(), this.newClip()]
         this.valid = true;
         this.bindListener();
+        this.mode = "clips";
     }
 
     onAdded() {
         this.initWebsocket();
         requestAnimationFrame(() => {
             sortable(this.sortable);
+            Iconify.scan(this.shadowRoot);
         });
     }
 
@@ -65,6 +70,7 @@ class Clips extends Slim {
         this.handleSortupdate = this.handleSortupdate.bind(this);
         this.handleFocus = this.handleFocus.bind(this);
         this.handleBlur = this.handleBlur.bind(this);
+        this.handleCopy = this.handleCopy.bind(this);
     }
 
     newClip() {
@@ -202,23 +208,87 @@ class Clips extends Slim {
             return acc;
         }, []);
     }
+
+    handleCopy() {
+        this.mode = this.mode === "clips" ? "copy" : "clips";
+        if (this.mode === "copy") {
+            this.copyarea.rows = Math.max(
+                10,
+                Math.min(20, this.clips.length * 2)
+            );
+            this.copyarea.value = this.getCopyClips();
+            this.copyarea.select();
+        } else {
+            const raw = this.copyarea.value.split("\n");
+            const clips = [];
+            for (let i = 0; i < raw.length; i += 2) {
+                if (raw[i]) {
+                    let clip = {
+                        from: raw[i],
+                        to: raw[i + 1] ?? null,
+                    };
+                    clips.push(clip);
+                }
+            }
+            if (clips.length === 0) {
+                clips.push({ from: null, to: null });
+            }
+            this.clips = [];
+            clips.forEach((c) => this.addClip(c.from, c.to));
+            this.update();
+        }
+    }
+
+    getCopyClips() {
+        return this.clips
+            .reduce((acc, cur) => {
+                if (cur.from) {
+                    acc.push(cur.from);
+                }
+                if (cur.to) {
+                    acc.push(cur.to);
+                }
+                return acc;
+            }, [])
+            .join("\n");
+    }
 }
 
-Clips.template = /*html*/`
+Clips.template = /*html*/ `
+${ICON_STACK_CSS}
 ${CARD_CSS}
 <style>
     :host {
         user-select: none;
     }
-    div {
+    h2 {
+        display: flex;
+        justify-content: space-between;
+    }
+    div.copy, div.clips {
+        display: none;
+    }
+    .copy div.copy {
+        display: block;
+    }
+    .clips div.clips {
         display: flex;
         flex-direction: column;
         gap: .5rem;
     }
 </style>
-<main>
-    <h2>Clips</h2>
-    <div #ref="sortable" @sortupdate="{{ this.handleSortupdate }}">
+<main class="{{ this.mode }}">
+    <h2>
+        Clips
+        <div class="icon-stack" @click="{{ this.handleCopy }}">
+            <span class="iconify" data-icon="mdi-content-copy"></span>
+            <span class="iconify hover" data-icon="mdi-content-copy"></span>
+        </div>
+    </h2>
+    <div class="copy">
+        <textarea #ref="copyarea"></textarea>
+    </div>
+    <div class="clips" #ref="sortable" @sortupdate="{{ this.handleSortupdate }}">
         <transcode-configurator-clip
             data-clip="{{ item.id }}"
             *foreach="{{ this.clips }}"
@@ -234,5 +304,5 @@ ${CARD_CSS}
         </transcode-configurator-clip>
     </div>
 </main>
-`
-customElements.define('transcode-configurator-clips', Clips);
+`;
+customElements.define("transcode-configurator-clips", Clips);

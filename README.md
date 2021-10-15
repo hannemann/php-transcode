@@ -56,7 +56,7 @@ WantedBy=default.target
 # Clipper
 Search your recording frame by frame for unwanted material
 ## Usage:
-* coarse search using mouse or keyboard
+* coarse search using mouse or keyboard:
   * Click on Thumbnail bar
   * skip one minute forward: Arrow up
   * skip one minute backward: Arrow Down
@@ -64,7 +64,7 @@ Search your recording frame by frame for unwanted material
   * skip five minutes backward: Shift + Arrow Down
   * skip ten minutes forward: CTRL + Arrow up
   * skip ten minutes backward: CTRL + Arrow Down
-* fine search using keyboard
+* fine search using keyboard:
   * next frame: Arrow right
   * previous frame: Arrow left
   * 2 seconds forward: Shift + Arrow right
@@ -73,6 +73,10 @@ Search your recording frame by frame for unwanted material
   * 5 seconds forward: Shift + Arrow left
 * Set marker: +
 * remove marker: -
+* Move Marker (only if indicator is on clip border):
+  * Alt + Arrow left/right/up/down (works als with step modifiers)
+* Skip to next clip (only if indicator is on clip border):
+  * CTRL + Shift + Arrow left/right
 # Transcoding
 ## Multiple files produced by VDR
 1. Concat
