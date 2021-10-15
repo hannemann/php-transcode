@@ -400,6 +400,7 @@ main > div {
     display: grid;
     grid-template-areas: "data clips";
     gap: 1rem;
+    overflow-y: auto;
 }
 @media (max-width: 640px) {
     .info {
