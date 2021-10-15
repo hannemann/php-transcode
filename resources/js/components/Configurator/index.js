@@ -374,13 +374,6 @@ main {
     border-radius: var(--rel-gutter-100);
     padding: min(30px, var(--rel-gutter-200));
 }
-main > div {
-    overflow-y: auto;
-    height: calc(100% - 1.75rem - var(--rel-gutter-200) * 2);
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
 main h1 {
     display: flex;
     align-items: center;
@@ -395,10 +388,29 @@ main h1 div {
     height: 1em;
     width: 1em;
 }
-main div *:last-child {
-    margin-bottom: 0;
+main > div {
+    overflow-y: auto;
+    height: calc(100% - 1.75rem - var(--rel-gutter-200) * 2);
+    gap: 1rem;
+    display: grid;
+    grid-template-areas: "info clips" "footer footer";
+}
+@media (max-width: 640px) {
+    main > div {
+        grid-template-areas: "info" "clips""footer";
+    }
+}
+section.info {
+    grid-area: info;
+    display: grid;
+    gap: 1rem;
+    grid-auto-rows: min-content;
+}
+transcode-configurator-clips {
+    grid-area: clips;
 }
 footer {
+    grid-area: footer;
     display: flex;
     justify-content: flex-end;
     align-items: center;
@@ -438,8 +450,10 @@ ${CSS}
 <main #ref="main">
     ${HEADING}
     <div>
-        <transcode-configurator-format *if="{{ this.format }}" .format="{{ this.format }}" #ref="formatNode"></transcode-configurator-format>
-        <transcode-configurator-streams *if="{{ this.streams }}" .items="{{ this.streams }}"></transcode-configurator-streams>
+        <section class="info">
+            <transcode-configurator-format *if="{{ this.format }}" .format="{{ this.format }}" #ref="formatNode"></transcode-configurator-format>
+            <transcode-configurator-streams *if="{{ this.streams }}" .items="{{ this.streams }}"></transcode-configurator-streams>
+        </section>
         <transcode-configurator-clips *if="{{ this.streams }}" .path="{{ this.item.path }}"></transcode-configurator-clips>
         <footer>
             <button @click="this.saveSettings()" class="icon-stack" title="Save Settings">

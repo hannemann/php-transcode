@@ -109,6 +109,7 @@ section {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: .5rem;
 }
 .input span {
     flex-grow: 1;
@@ -154,6 +155,6 @@ input:invalid {
         <span class="iconify hover" data-icon="mdi-minus"></span>
     </button>
 </section>
-`
+`;
 
 customElements.define('transcode-configurator-clip', Clip);

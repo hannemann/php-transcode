@@ -161,7 +161,7 @@ class Clips extends Slim {
             if (isNaN(cutpoint)) {
                 return "";
             }
-            return `(Cutpoint: ${this.fromSeconds(cutpoint)})`;
+            return this.fromSeconds(cutpoint);
         }
         return "";
     }
