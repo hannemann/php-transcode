@@ -446,6 +446,11 @@ ${CSS}
                 <span class="iconify" data-icon="mdi-content-save-outline"></span>
                 <span class="iconify hover" data-icon="mdi-content-save-outline"></span>
             </button>
+            <theme-button *if="{{ this.canConcat }}" @click="this.requestConcat()">Concat</theme-button>
+            <combo-button @click="{{ this.requestScale }}">
+                <option value="vaapi">Scale (VAAPI)</option>
+                <option value="cpu">Scale (CPU)</option>
+            </combo-button>
             <combo-button @click="{{ this.requestRemux }}">
                 <option value="mkv">Remux MKV</option>
                 <option value="mp4">Remux MP4</option>
@@ -453,11 +458,6 @@ ${CSS}
             </combo-button>
             <theme-button @click="this.clipper()">Clipper</theme-button>
             <theme-button @click="this.requestCrop()">Crop</theme-button>
-            <combo-button @click="{{ this.requestScale }}">
-                <option value="vaapi">Scale (VAAPI)</option>
-                <option value="cpu">Scale (CPU)</option>
-            </combo-button>
-            <theme-button *if="{{ this.canConcat }}" @click="this.requestConcat()">Concat</theme-button>
             <theme-button @click="this.transcode()">Transcode</theme-button>
         </footer>
     </div>
