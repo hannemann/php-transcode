@@ -389,24 +389,30 @@ main h1 div {
     width: 1em;
 }
 main > div {
-    overflow-y: auto;
     height: calc(100% - 1.75rem - var(--rel-gutter-200) * 2);
     gap: 1rem;
     display: grid;
-    grid-template-areas: "info clips" "footer footer";
+    grid-template-areas: "info" "footer";
+    grid-template-rows: auto min-content;
+}
+.info {
+    grid-area: info;
+    display: grid;
+    grid-template-areas: "data clips";
+    gap: 1rem;
 }
 @media (max-width: 640px) {
-    main > div {
-        grid-template-areas: "info" "clips""footer";
+    .info {
+        grid-template-areas: "data" "clips";
     }
 }
-section.info {
-    grid-area: info;
+.info section {
+    grid-area: data;
     display: grid;
     gap: 1rem;
     grid-auto-rows: min-content;
 }
-transcode-configurator-clips {
+.info transcode-configurator-clips {
     grid-area: clips;
 }
 footer {
@@ -450,11 +456,13 @@ ${CSS}
 <main #ref="main">
     ${HEADING}
     <div>
-        <section class="info">
-            <transcode-configurator-format *if="{{ this.format }}" .format="{{ this.format }}" #ref="formatNode"></transcode-configurator-format>
-            <transcode-configurator-streams *if="{{ this.streams }}" .items="{{ this.streams }}"></transcode-configurator-streams>
-        </section>
-        <transcode-configurator-clips *if="{{ this.streams }}" .path="{{ this.item.path }}"></transcode-configurator-clips>
+        <div class="info">
+            <section>
+                <transcode-configurator-format *if="{{ this.format }}" .format="{{ this.format }}" #ref="formatNode"></transcode-configurator-format>
+                <transcode-configurator-streams *if="{{ this.streams }}" .items="{{ this.streams }}"></transcode-configurator-streams>
+            </section>
+            <transcode-configurator-clips *if="{{ this.streams }}" .path="{{ this.item.path }}"></transcode-configurator-clips>
+        </div>
         <footer>
             <button @click="this.saveSettings()" class="icon-stack" title="Save Settings">
                 <span class="iconify" data-icon="mdi-content-save-outline"></span>
