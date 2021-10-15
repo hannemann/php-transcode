@@ -430,7 +430,7 @@ footer .icon-stack {
 }
 .status {
     position: absolute;
-    inset: auto var(--rel-gutter-100) .25rem;
+    inset: auto var(--rel-gutter-200) .25rem;
     height: 1rem;
     font-size: .75rem;
 }
