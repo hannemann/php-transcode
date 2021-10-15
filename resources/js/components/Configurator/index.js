@@ -389,7 +389,7 @@ main h1 div {
     width: 1em;
 }
 main > div {
-    height: calc(100% - 1.75rem - var(--rel-gutter-200) * 2);
+    height: calc(100% - 1.75rem * 2);
     gap: 1rem;
     display: grid;
     grid-template-areas: "info" "footer";
@@ -422,7 +422,7 @@ footer {
     justify-content: flex-end;
     align-items: center;
     gap: .5rem;
-    padding: 0 1rem 1rem;
+    padding: 0 1rem;
 }
 footer .icon-stack {
     font-size: var(--font-size-200);
