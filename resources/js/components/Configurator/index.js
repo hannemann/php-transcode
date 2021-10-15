@@ -430,8 +430,8 @@ footer .icon-stack {
 }
 .status {
     position: absolute;
-    inset: auto var(--rel-gutter-100) .5rem;
-    height: auto;
+    inset: auto var(--rel-gutter-100) .25rem;
+    height: 1rem;
     font-size: .75rem;
 }
 combo-button {
