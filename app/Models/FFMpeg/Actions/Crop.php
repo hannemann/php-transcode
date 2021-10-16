@@ -11,7 +11,7 @@ Class Crop extends AbstractAction
     const TEMPLATE_FILTER_CROP = 'hwdownload,crop=%d:%d:%d:%d,format=nv12,hwupload,scale_vaapi=%d:%d';
 
     protected string $filenameAffix = 'crop';
-    protected string $filenameSuffix = 'ts';
+    protected string $filenameSuffix = 'mkv';
     protected string $formatClass = Format::class;
 
     /**
