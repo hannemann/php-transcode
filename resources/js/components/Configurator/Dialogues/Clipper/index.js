@@ -15,17 +15,14 @@ class Clipper extends VideoEditor {
         this.rwd = rwd.bind(this);
         this.ffwd = ffwd.bind(this);
         this.handleKey = handleKey.bind(this);
-        this.getFrameUrl = this.getFrameUrl.bind(this);
         this.add = this.add.bind(this);
         this.remove = this.remove.bind(this);
-        this.timestamp = this.timestamp.bind(this);
         this.getClipPos = this.getClipPos.bind(this);
         this.activateClip = this.activateClip.bind(this);
     }
 
     onAdded() {
         super.onAdded();
-        this.current = parseInt(this.start * 1000, 10) ?? 0;
         document.addEventListener("keydown", this.handleKey);
         requestAnimationFrame(() => this.calculateClips());
     }

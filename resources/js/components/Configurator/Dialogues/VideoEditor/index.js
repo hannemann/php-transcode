@@ -9,18 +9,23 @@ class VideoEditor extends Slim {
         this.aspectDecimal = 16 / 9;
         this.height = 576;
         this.current = 0;
+        this.duration = 0;
         this.bindListeners();
     }
 
     bindListeners() {
+        this.timestamp = this.timestamp.bind(this);
+        this.getFrameUrl = this.getFrameUrl.bind(this);
         this.handleIndicatorClick = this.handleIndicatorClick.bind(this);
         this.getIndicatorPos = this.getIndicatorPos.bind(this);
     }
 
     onAdded() {
+        this.current = parseInt(this.start * 1000, 10) ?? 0;
         requestAnimationFrame(() => {
             Iconify.scan(this.shadowRoot);
             this.addThumbnails();
+            Utils.forceUpdate(this)
         });
     }
 

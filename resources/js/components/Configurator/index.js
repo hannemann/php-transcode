@@ -8,6 +8,7 @@ import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 import "./Dialogues/Scale";
 import "./Dialogues/Crop";
 import "./Dialogues/Clipper";
+import "./Dialogues/Cropper";
 import { TYPE_VIDEO } from "./Streams";
 
 const WS_CHANNEL = "Transcode.Config";
@@ -213,32 +214,37 @@ class TranscodeConfigurator extends Slim {
     }
 
     async requestCrop(e) {
-        const m = document.createElement("modal-dialogue");
-        m.header = "Crop";
-        const d = m.appendChild(document.createElement("dialogue-crop"));
+        const m = document.createElement("modal-window");
+        m.header = "Cropper";
+        const d = document.createElement("dialogue-cropper");
+        d.duration = parseFloat(this.format.duration);
         const video = this.streams.filter(
             (s) => s.codec_type === TYPE_VIDEO
         )?.[0];
         if (video) {
-            d.setCropWidth(video.width);
-            d.setCropHeight(video.height);
-            d.setHeight(video.height);
-            d.setAspectRatio(video.display_aspect_ratio);
+            d.cropWidth = video.width;
+            d.cropHeight = video.height;
+            d.height = video.height;
+            d.aspectRatio = video.display_aspect_ratio;
+            d.start = parseFloat(video.start_time);
         }
+        d.path = this.item.path;
+        m.classList.add("no-shadow");
+        m.appendChild(d);
         document.body.appendChild(m);
         try {
             await m.open();
             console.info(
                 "Crop video file %s to %dx%d with an aspect-ratio of %s",
                 this.item.path,
-                d.crop.cw,
-                d.crop.ch,
-                d.crop.aspect
+                d.cropWidth,
+                d.cropHeight,
+                d.aspectRatio
             );
-            await Request.post(
-                `/crop/${encodeURIComponent(this.item.path)}`,
-                d.crop
-            );
+            // await Request.post(
+            //     `/crop/${encodeURIComponent(this.item.path)}`,
+            //     d.crop
+            // );
         } catch (error) {}
     }
 
@@ -480,7 +486,7 @@ ${CSS}
                 <option value="ts">Remux TS</option>
             </combo-button>
             <theme-button @click="this.clipper()">Clipper</theme-button>
-            <theme-button @click="this.requestCrop()">Crop</theme-button>
+            <theme-button @click="this.requestCrop()">Cropper</theme-button>
             <theme-button @click="this.transcode()">Transcode</theme-button>
         </footer>
     </div>
