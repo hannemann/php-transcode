@@ -5,7 +5,6 @@ const THUMBNAIL_HEIGHT = 30;
 class VideoEditor extends Slim {
     constructor() {
         super();
-        this.height = 576;
         this.bindListeners();
     }
 
@@ -17,10 +16,10 @@ class VideoEditor extends Slim {
     onAdded() {
         this.start = parseFloat(this.video.start_time);
         this.current = parseInt(this.start * 1000, 10) ?? 0;
-        this.aspectRatio = this.video.display_aspect_ratio;
         this.duration = this.toMilliSeconds(this.video.tags.DURATION);
         this.displayDuration = this.timestamp(this.duration);
         requestAnimationFrame(() => {
+            this.aspectRatio = this.video.display_aspect_ratio;
             Iconify.scan(this.shadowRoot);
         });
     }
@@ -81,10 +80,10 @@ class VideoEditor extends Slim {
 
     updateFrameUrl() {
         if (this.aspectDecimal) {
-            const width = this.height * this.aspectDecimal;
+            const width = this.video.height * this.aspectDecimal;
             this.frameUrl = `${
                 this.baseUrl
-            }${this.timestamp()}&width=${width}&height=${this.height}`;
+            }${this.timestamp()}&width=${width}&height=${this.video.height}`;
         } else {
             this.frameUrl = `${this.baseUrl}${this.timestamp()}`;
         }

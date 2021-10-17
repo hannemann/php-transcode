@@ -15,25 +15,20 @@ class Cropper extends VideoEditor {
     bindListeners() {
         super.bindListeners();
         this.initCrop = this.initCrop.bind(this);
-        this.setHeight = this.setHeight.bind(this);
         this.handleKey = this.handleKey.bind(this);
         this.handleClick = this.handleClick.bind(this);
         this.updateCropBox = this.updateCropBox.bind(this);
-        this.setAspectRatio = this.setAspectRatio.bind(this);
     }
 
     onAdded() {
-        this.start = parseFloat(this.video.start_time);
-        this.width = parseInt(this.video.width, 10);
-        this.height = parseInt(this.video.height, 10);
-        this.aspect = this.video.display_aspect_ratio;
-        this.aspectDecimal = this.width / this.height;
         super.onAdded();
+        this.aspectDecimal = this.video.width / this.video.height;
         requestAnimationFrame(() => {
             this.image.addEventListener("load", this.initCrop, {
                 once: true,
             });
             this.initImages();
+            this.height = parseInt(this.video.height, 10);
         });
     }
 
@@ -197,19 +192,30 @@ class Cropper extends VideoEditor {
         this.updateCropBox();
     }
 
-    setAspectRatio(value) {
-        if (value instanceof Event) {
-            this.aspect = value.target.value;
-        } else {
-            this.aspect = value;
+    get aspectRatio() {
+        return (
+            this.shadowRoot.querySelector('[name="input-aspect"]:checked')
+                ?.value ?? this.video.display_aspect_ratio
+        );
+    }
+
+    set aspectRatio(value) {
+        if (value.match(/([0-9]+):([0-9]+)/)) {
+            this.shadowRoot.querySelector(
+                `[name="input-aspect"][value="${value}"]`
+            ).checked = true;
         }
     }
 
-    setHeight(value) {
+    get height() {
+        return parseInt(this.inputHeight.value, 10);
+    }
+
+    set height(value) {
         if (value instanceof InputEvent) {
-            this.height = parseInt(value.target.value, 10);
+            this.inputHeight.value = parseInt(value.target.value, 10);
         } else {
-            this.height = parseInt(value, 10);
+            this.inputHeight.value = parseInt(value, 10);
         }
     }
 
@@ -219,10 +225,8 @@ class Cropper extends VideoEditor {
             ch: this.cropOffsetBottom - this.cropOffsetTop,
             cx: this.cropOffsetLeft,
             cy: this.cropOffsetTop,
-            height: parseInt(this.inputHeight.value, 10),
-            aspect: this.shadowRoot.querySelector(
-                '[name="input-aspect"]:checked'
-            )?.value,
+            height: this.height,
+            aspect: this.aspectRatio,
         };
     }
 
@@ -315,18 +319,18 @@ ${EDITOR_TEMPLATE}
         <legend>Scale:</legend>
         <label>
             <span>Height:</span>
-            <input type="number" #ref="inputHeight" @input="{{ this.setHeight }}" value="{{ this.height }}">
+            <input type="number" #ref="inputHeight">
         </label>
     </fieldset>
     <fieldset class="aspect-ratio">
         <legend>Aspect Ratio:</legend>
         <label>
             <span>4:3</span>
-            <input type="radio" name="input-aspect" .checked="{{ this.aspect === '4:3' }}" @change="{{ this.setAspectRatio }}" value="4:3">
+            <input type="radio" name="input-aspect" value="4:3">
         </label>
         <label>
             <span>16:9</span>
-            <input type="radio" name="input-aspect" .checked="{{ this.aspect === '16:9' }}" @change="{{ this.setAspectRatio }}" value="16:9">
+            <input type="radio" name="input-aspect" value="16:9">
         </label>
     </fieldset>
     <fieldset>
@@ -334,7 +338,9 @@ ${EDITOR_TEMPLATE}
         <label>{{ this.cropOffsetRight - this.cropOffsetLeft }} x {{ this.cropOffsetBottom - this.cropOffsetTop }}</label>
         <label>{{ this.cropOffsetLeft }} / {{ this.cropOffsetTop }}</label>
     </fieldset>
-    <div class="warning height-warning" title="For best results height should be dividable by 16"><span class="iconify" data-icon="mdi-alert-outline"></span></div>
+    <div class="warning height-warning" title="For best results height should be dividable by 16">
+        <span class="iconify" data-icon="mdi-alert-outline"></span>
+    </div>
 </div>
 `;
 
