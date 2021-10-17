@@ -30,13 +30,10 @@ class Cropper extends VideoEditor {
         this.aspectDecimal = this.width / this.height;
         super.onAdded();
         requestAnimationFrame(() => {
-            if (this.image.complete) {
-                this.initCrop();
-            } else {
-                this.image.addEventListener("load", this.initCrop, {
-                    once: true,
-                });
-            }
+            this.image.addEventListener("load", this.initCrop, {
+                once: true,
+            });
+            this.initImages();
         });
     }
 

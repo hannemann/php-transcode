@@ -6,7 +6,7 @@ const update = function (updateIndex) {
         this.raw.sort((a, b) => a > b);
         this.calculateClips();
     }
-    Utils.forceUpdate(this);
+    this.updateImages();
     delete this.updateTimeout;
 };
 

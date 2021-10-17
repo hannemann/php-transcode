@@ -15,23 +15,29 @@ class VideoEditor extends Slim {
 
     bindListeners() {
         this.timestamp = this.timestamp.bind(this);
-        this.getFrameUrl = this.getFrameUrl.bind(this);
         this.handleIndicatorClick = this.handleIndicatorClick.bind(this);
-        this.getIndicatorPos = this.getIndicatorPos.bind(this);
     }
 
     onAdded() {
         this.current = parseInt(this.start * 1000, 10) ?? 0;
         requestAnimationFrame(() => {
             Iconify.scan(this.shadowRoot);
-            this.addThumbnails();
-            Utils.forceUpdate(this)
         });
     }
 
-    getIndicatorPos(item) {
+    initImages() {
+        this.addThumbnails();
+        this.updateImages();
+    }
+
+    updateImages() {
+        this.updateFrameUrl();
+        this.updateIndicatorPos();
+    }
+
+    updateIndicatorPos() {
         const percentage = (100 / (this.duration * 1000)) * this.current;
-        return `left: min(${percentage}%, 100% - 1px`;
+        this.indicatorPos = `left: min(${percentage}%, 100% - 1px`;
     }
 
     addThumbnails() {
@@ -52,7 +58,7 @@ class VideoEditor extends Slim {
         if (!e.composedPath().find((p) => p.classList?.contains("clip"))) {
             this.current =
                 (this.duration * 1000 * e.layerX) / this.indicator.offsetWidth;
-            Utils.forceUpdate(this);
+            this.updateImages();
         }
     }
 
@@ -63,14 +69,15 @@ class VideoEditor extends Slim {
             .replace(/z$/i, "");
     }
 
-    getFrameUrl() {
+    updateFrameUrl() {
         if (this.aspectDecimal) {
             const width = this.height * this.aspectDecimal;
-            return `${this.baseUrl}${this.timestamp()}&width=${width}&height=${
-                this.height
-            }`;
+            this.frameUrl = `${
+                this.baseUrl
+            }${this.timestamp()}&width=${width}&height=${this.height}`;
+        } else {
+            this.frameUrl = `${this.baseUrl}${this.timestamp()}`;
         }
-        return `${this.baseUrl}${this.timestamp()}`;
     }
 
     toggleAspect() {
@@ -87,7 +94,7 @@ class VideoEditor extends Slim {
                 this.aspect = "16:9";
                 this.aspectDecimal = 16 / 9;
         }
-        Utils.forceUpdate(this);
+        this.updateImages();
     }
 
     get baseUrl() {
@@ -104,7 +111,7 @@ class VideoEditor extends Slim {
             this.aspectDecimal =
                 parseInt(RegExp.$1, 10) / parseInt(RegExp.$2, 10);
             if (this.parentNode) {
-                Utils.forceUpdate(this);
+                this.updateImages();
             }
         }
     }
@@ -179,13 +186,13 @@ export const EDITOR_CSS = /*html*/ `
 </style>`;
 
 export const EDITOR_TEMPLATE = /*html*/ `
-<img class="frame" src="{{ this.getFrameUrl() }}" #ref="image">
+<img class="frame" src="{{ this.frameUrl }}" #ref="image">
 <theme-button class="toggle-aspect" @click="{{ this.toggleAspect() }}">{{ this.aspect }}</theme-button>
 <div class="status">
     {{ this.timestamp() }} / {{ this.timestamp(this.duration * 1000) }}
 </div>
 <div class="indicator" #ref="indicator" @click="{{ this.handleIndicatorClick }}">
-    <div class="current" #ref="indicatorCurrent" style="{{ this.getIndicatorPos(item) }}"></div>
+    <div class="current" #ref="indicatorCurrent" style="{{ this.indicatorPos }}"></div>
 </div>`;
 
 export { VideoEditor };

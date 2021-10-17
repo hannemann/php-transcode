@@ -24,7 +24,10 @@ class Clipper extends VideoEditor {
     onAdded() {
         super.onAdded();
         document.addEventListener("keydown", this.handleKey);
-        requestAnimationFrame(() => this.calculateClips());
+        requestAnimationFrame(() => {
+            this.calculateClips();
+            this.initImages();
+        });
     }
 
     onRemoved() {
@@ -64,7 +67,7 @@ class Clipper extends VideoEditor {
         } else {
             this.current = item.raw.start;
         }
-        Utils.forceUpdate(this);
+        this.updateImages();
     }
 
     clipEndTimestamp(seconds) {
