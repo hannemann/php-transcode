@@ -59,6 +59,8 @@
     --lit-alert: calc(var(--clr-base-lit) + 20%);
     --hue-alert: 0;
 
+    --clr-cropper-gradient: red;
+
 }
 :root {
     --font-size-50: clamp(14px, 1.5vw, 18px);

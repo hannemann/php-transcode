@@ -222,8 +222,6 @@ class TranscodeConfigurator extends Slim {
             (s) => s.codec_type === TYPE_VIDEO
         )?.[0];
         if (video) {
-            d.cropWidth = video.width;
-            d.cropHeight = video.height;
             d.height = video.height;
             d.aspectRatio = video.display_aspect_ratio;
             d.start = parseFloat(video.start_time);
@@ -235,16 +233,19 @@ class TranscodeConfigurator extends Slim {
         try {
             await m.open();
             console.info(
-                "Crop video file %s to %dx%d with an aspect-ratio of %s",
+                "Crop video file %s to %dx%d at %d/%d and scale to %d pixel height with an aspect-ratio of %s",
                 this.item.path,
-                d.cropWidth,
-                d.cropHeight,
-                d.aspectRatio
+                d.crop.cw,
+                d.crop.ch,
+                d.crop.cx,
+                d.crop.cy,
+                d.crop.height,
+                d.crop.aspect
             );
-            // await Request.post(
-            //     `/crop/${encodeURIComponent(this.item.path)}`,
-            //     d.crop
-            // );
+            await Request.post(
+                `/crop/${encodeURIComponent(this.item.path)}`,
+                d.crop
+            );
         } catch (error) {}
     }
 
