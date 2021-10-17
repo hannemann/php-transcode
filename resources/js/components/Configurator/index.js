@@ -85,8 +85,7 @@ class TranscodeConfigurator extends Slim {
             WS_CHANNEL,
             this.handleConfiguratorEvent.bind(this)
         );
-        this.channel.subscribed(this.requestStreams.bind(this)) +
-            this.item.channel;
+        this.channel.subscribed(this.requestStreams.bind(this));
         this.channelOut = window.Echo.channel(
             `${WS_CHANNEL_FFMPEG_OUT}.${this.item.channel}`
         );
@@ -141,6 +140,7 @@ class TranscodeConfigurator extends Slim {
         console.info(ws);
         this.format = ws.format;
         this.streams = ws.streams;
+        this.crop = ws.crop ?? {}
         this.show();
     }
 
@@ -214,23 +214,22 @@ class TranscodeConfigurator extends Slim {
     }
 
     async requestCrop(e) {
-        const m = document.createElement("modal-window");
-        m.header = "Cropper";
-        const d = document.createElement("dialogue-cropper");
-        d.duration = parseFloat(this.format.duration);
-        const video = this.streams.filter(
-            (s) => s.codec_type === TYPE_VIDEO
-        )?.[0];
-        if (video) {
-            d.height = video.height;
-            d.aspectRatio = video.display_aspect_ratio;
-            d.start = parseFloat(video.start_time);
-        }
-        d.path = this.item.path;
-        m.classList.add("no-shadow");
-        m.appendChild(d);
-        document.body.appendChild(m);
         try {
+            const m = document.createElement("modal-window");
+            m.header = "Cropper";
+            const d = document.createElement("dialogue-cropper");
+            d.duration = parseFloat(this.format.duration);
+            const video = this.streams.filter(
+                (s) => s.codec_type === TYPE_VIDEO
+            )?.[0];
+            if (video) {
+                d.video = video;
+            }
+            d.crop = this.crop;
+            d.path = this.item.path;
+            m.classList.add("no-shadow");
+            m.appendChild(d);
+            document.body.appendChild(m);
             await m.open();
             console.info(
                 "Crop video file %s to %dx%d at %d/%d and scale to %d pixel height with an aspect-ratio of %s",
@@ -242,6 +241,7 @@ class TranscodeConfigurator extends Slim {
                 d.crop.height,
                 d.crop.aspect
             );
+            this.crop = d.crop;
             await Request.post(
                 `/crop/${encodeURIComponent(this.item.path)}`,
                 d.crop
@@ -349,6 +349,7 @@ class TranscodeConfigurator extends Slim {
         return {
             streams,
             clips: clipsData,
+            crop: this.crop
         };
     }
 

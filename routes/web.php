@@ -76,7 +76,8 @@ Route::get('/streams/{path?}', function (string $path = null) {
         $media = VideoFile::getMedia('recordings', $path);
         BroadcastStreams::dispatch(
             $media->getFormat()->all(),
-            Settings::decorateStreams($path, $media->getStreams())
+            Settings::decorateStreams($path, $media->getStreams()),
+            Settings::getSettings($path)['crop'] ?? []
         );
     } catch (\Exception $e) {
         return response()->json([

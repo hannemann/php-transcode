@@ -19,15 +19,18 @@ class Streams implements ShouldBroadcastNow
 
     public array $format;
 
+    public array $crop;
+
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(array $format, array $streams)
+    public function __construct(array $format, array $streams, array $crop)
     {
         $this->format = $format;
         $this->streams = collect($streams)->map(fn($stream) => $stream->all());
+        $this->crop = $crop;
     }
 
     /**

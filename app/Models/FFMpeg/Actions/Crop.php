@@ -8,7 +8,7 @@ use App\Models\FFMpeg\Actions\Helper\OutputMapper;
 
 Class Crop extends AbstractAction
 {
-    const TEMPLATE_FILTER_CROP = 'hwdownload,crop=%d:%d:%d:%d,format=nv12,hwupload,scale_vaapi=%d:%d';
+    const TEMPLATE_FILTER_CROP = 'hwdownload,crop=%d:%d:%d:%d,pad=%d:%d:(ow-iw)/2:(oh-ih)/2,format=nv12,hwupload,scale_vaapi=%d:%d';
 
     protected string $filenameAffix = 'crop';
     protected string $filenameSuffix = 'mkv';
@@ -43,6 +43,8 @@ Class Crop extends AbstractAction
             $this->requestData['ch'],
             $this->requestData['cx'],
             $this->requestData['cy'],
+            $this->calculateWidth($this->requestData['ch'],$this->requestData['aspect']),
+            $this->requestData['ch'],
             $this->calculateWidth($this->requestData['height'],$this->requestData['aspect']),
             $this->requestData['height']
         ));
