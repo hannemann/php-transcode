@@ -1,5 +1,3 @@
-import { Utils } from "@/components/lib";
-
 const update = function (updateIndex) {
     if (updateIndex > -1) {
         this.raw.splice(updateIndex, 1, this.current);
@@ -101,7 +99,7 @@ export const rwd = function (seconds) {
 
 export const ffwd = function (seconds) {
     this.current = Math.min(
-        this.duration * 1000 - 1000 / this.fps,
+        this.duration - 1000 / this.fps,
         this.current + seconds
     );
 };

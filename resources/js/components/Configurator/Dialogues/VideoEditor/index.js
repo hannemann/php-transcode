@@ -1,25 +1,25 @@
-import { Slim, Utils, Iconify } from "@/components/lib";
+import { Slim, Iconify } from "@/components/lib";
 
 const THUMBNAIL_HEIGHT = 30;
 
 class VideoEditor extends Slim {
     constructor() {
         super();
-        this.aspect = "16:9";
-        this.aspectDecimal = 16 / 9;
         this.height = 576;
-        this.current = 0;
-        this.duration = 0;
         this.bindListeners();
     }
 
     bindListeners() {
-        this.timestamp = this.timestamp.bind(this);
+        this.toggleAspect = this.toggleAspect.bind(this);
         this.handleIndicatorClick = this.handleIndicatorClick.bind(this);
     }
 
     onAdded() {
+        this.start = parseFloat(this.video.start_time);
         this.current = parseInt(this.start * 1000, 10) ?? 0;
+        this.aspectRatio = this.video.display_aspect_ratio;
+        this.duration = this.toMilliSeconds(this.video.tags.DURATION);
+        this.displayDuration = this.timestamp(this.duration);
         requestAnimationFrame(() => {
             Iconify.scan(this.shadowRoot);
         });
@@ -33,10 +33,11 @@ class VideoEditor extends Slim {
     updateImages() {
         this.updateFrameUrl();
         this.updateIndicatorPos();
+        this.currentTimestamp = this.timestamp();
     }
 
     updateIndicatorPos() {
-        const percentage = (100 / (this.duration * 1000)) * this.current;
+        const percentage = (100 / this.duration) * this.current;
         this.indicatorPos = `left: min(${percentage}%, 100% - 1px`;
     }
 
@@ -45,7 +46,7 @@ class VideoEditor extends Slim {
         const count = Math.floor(
             this.indicator.offsetWidth / (THUMBNAIL_HEIGHT * (4 / 3))
         );
-        const fr = (this.duration * 1000) / (count + 2);
+        const fr = this.duration / (count + 2);
         do {
             const img = document.createElement("img");
             const timestamp = this.timestamp(fr * i);
@@ -57,7 +58,7 @@ class VideoEditor extends Slim {
     handleIndicatorClick(e) {
         if (!e.composedPath().find((p) => p.classList?.contains("clip"))) {
             this.current =
-                (this.duration * 1000 * e.layerX) / this.indicator.offsetWidth;
+                (this.duration * e.layerX) / this.indicator.offsetWidth;
             this.updateImages();
         }
     }
@@ -67,6 +68,15 @@ class VideoEditor extends Slim {
             .toISOString()
             .replace(/^[0-9-]+T/, "")
             .replace(/z$/i, "");
+    }
+
+    toMilliSeconds(timestamp) {
+        const parts = timestamp.split(":");
+        const t = new Date(0);
+        t.setUTCHours(parts[0]);
+        t.setMinutes(parts[1]);
+        t.setMilliseconds(parts[2] * 1000);
+        return t.getTime();
     }
 
     updateFrameUrl() {
@@ -187,9 +197,9 @@ export const EDITOR_CSS = /*html*/ `
 
 export const EDITOR_TEMPLATE = /*html*/ `
 <img class="frame" src="{{ this.frameUrl }}" #ref="image">
-<theme-button class="toggle-aspect" @click="{{ this.toggleAspect() }}">{{ this.aspect }}</theme-button>
+<theme-button class="toggle-aspect" @click="{{ this.toggleAspect }}">{{ this.aspect }}</theme-button>
 <div class="status">
-    {{ this.timestamp() }} / {{ this.timestamp(this.duration * 1000) }}
+    {{ this.currentTimestamp }} / {{ this.displayDuration }}
 </div>
 <div class="indicator" #ref="indicator" @click="{{ this.handleIndicatorClick }}">
     <div class="current" #ref="indicatorCurrent" style="{{ this.indicatorPos }}"></div>

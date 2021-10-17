@@ -217,17 +217,13 @@ class TranscodeConfigurator extends Slim {
         try {
             const m = document.createElement("modal-window");
             m.header = "Cropper";
+            m.classList.add("no-shadow");
             const d = document.createElement("dialogue-cropper");
-            d.duration = parseFloat(this.format.duration);
-            const video = this.streams.filter(
+            d.video = this.streams.filter(
                 (s) => s.codec_type === TYPE_VIDEO
             )?.[0];
-            if (video) {
-                d.video = video;
-            }
             d.crop = this.crop;
             d.path = this.item.path;
-            m.classList.add("no-shadow");
             m.appendChild(d);
             document.body.appendChild(m);
             await m.open();
@@ -263,20 +259,14 @@ class TranscodeConfigurator extends Slim {
         }
         const m = document.createElement("modal-window");
         m.header = "Clipper";
+        m.classList.add("no-shadow");
         const d = document.createElement("dialogue-clipper");
-        d.duration = parseFloat(this.format.duration);
         d.setClips(this.clips.getTimestamps());
-        const video = this.streams.filter(
+        d.video = this.streams.filter(
             (s) => s.codec_type === TYPE_VIDEO
         )?.[0];
-        if (video) {
-            d.fps = parseInt(eval(video.avg_frame_rate), 10);
-            d.start = parseFloat(video.start_time);
-            d.aspectRatio = video.display_aspect_ratio;
-        }
         d.path = this.item.path;
         m.appendChild(d);
-        m.classList.add("no-shadow");
         document.body.appendChild(m);
         const clipperHandler = this.handleClipper.bind(this);
         try {

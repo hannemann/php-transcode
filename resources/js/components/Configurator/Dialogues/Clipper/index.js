@@ -1,8 +1,6 @@
 import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
 import { Utils } from "@/components/lib";
 import { handleKey, rwd, ffwd } from "./mixins/handleKey";
-
-const THUMBNAIL_HEIGHT = 30;
 class Clipper extends VideoEditor {
     constructor() {
         super();
@@ -23,6 +21,9 @@ class Clipper extends VideoEditor {
 
     onAdded() {
         super.onAdded();
+        this.fps =
+            this.video.avg_frame_rate.split("/")[0] /
+            this.video.avg_frame_rate.split("/")[1];
         document.addEventListener("keydown", this.handleKey);
         requestAnimationFrame(() => {
             this.calculateClips();
@@ -74,15 +75,6 @@ class Clipper extends VideoEditor {
         return seconds ? this.timestamp(seconds) : "-";
     }
 
-    toMilliSeconds(timestamp) {
-        const parts = timestamp.split(":");
-        const t = new Date(0);
-        t.setUTCHours(parts[0]);
-        t.setMinutes(parts[1]);
-        t.setMilliseconds(parts[2] * 1000);
-        return t.getTime();
-    }
-
     calculateClips() {
         this.clips.forEach((c) => {
             c.node.removeEventListener("click", this.activateClip);
@@ -94,7 +86,7 @@ class Clipper extends VideoEditor {
             const end = this.raw[i + 1]
                 ? this.timestamp(this.raw[i + 1])
                 : null;
-            const percentage = 100 / (this.duration * 1000);
+            const percentage = 100 / this.duration;
             const clip = {
                 index: this.clips.length,
                 timestamps: { start, end },
