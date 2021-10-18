@@ -11,6 +11,7 @@ class Cropper extends VideoEditor {
         this.aspectDecimal = 0;
         this.zoomed = 0;
         this.startCrop = false;
+        this.valid = true;
     }
 
     bindListeners() {
@@ -29,6 +30,7 @@ class Cropper extends VideoEditor {
             this.image.addEventListener("load", this.initCrop, {
                 once: true,
             });
+            this.runButton.disabled = true;
             this.current = parseInt(this.duration / 2, 10) ?? 0;
             this.initImages();
             this.height = parseInt(this.video.height, 10);
@@ -66,6 +68,16 @@ class Cropper extends VideoEditor {
             "height-error",
             (this.cropOffsetBottom - this.cropOffsetTop) % 16 !== 0
         );
+        this.validateDimensions();
+    }
+
+    validateDimensions() {
+        const croppedWidth = this.cropOffsetRight - this.cropOffsetLeft;
+        const croppedHeight = this.cropOffsetBottom - this.cropOffsetTop;
+        const ratios = this.aspectRatio.split(":").map((r) => parseInt(r, 10));
+        const padWidth = (croppedHeight / ratios[1]) * ratios[0];
+        this.valid = croppedHeight <= this.height && croppedWidth <= padWidth;
+        this.runButton.disabled = !this.valid;
     }
 
     get gradients() {
@@ -285,7 +297,7 @@ ${EDITOR_CSS}
     }
     fieldset {
         border: 2px solid var(--clr-bg-200);
-        padding: 1rem;
+        padding: .5rem;
         background: var(--clr-bg-100);
         display: flex;
         flex-direction: column;
@@ -310,10 +322,16 @@ ${EDITOR_CSS}
     }
     .info .warning {
         opacity: 0;
-        font-size: 3rem;
+        font-size: 1.5rem;
         color: hsl(var(--hue-warning) var(--sat-alert) var(--lit-alert));
         transition: opacity var(--transition-medium) ease-in-out;
         transform: scale(0);
+    }
+    .info .error {
+        white-space: normal;
+        background: hsl(var(--hue-error) var(--sat-alert) var(--lit-alert));
+        padding: .5rem;
+        border-radius: .25rem;
     }
     .height-error .height-warning {
         opacity: 1;
@@ -334,6 +352,9 @@ ${EDITOR_CSS}
 ${EDITOR_TEMPLATE}
 <div #ref="cropOverlay" class="crop"><div #ref="cropImage"></div></div>
 <div class="info" #ref="info">
+    <div *if="{{ !this.valid }}" class="error">
+        Resulting video does not fit into target aspect ratio;
+    </div>
     <fieldset>
         <legend>Scale:</legend>
         <label>
@@ -376,11 +397,11 @@ ${EDITOR_TEMPLATE}
             <dd>Set lower right</dd>
         </dl>
     </div>
-    <div class="warning height-warning" title="For best results height should be dividable by 16">
+    <div *v-if="{{ this.divisionBySixteenError }}" class="warning height-warning" title="For best results height should be dividable by 16">
         <span class="iconify" data-icon="mdi-alert-outline"></span>
     </div>
 </div>
-<theme-button class="run" @click="{{ this.run }}">Start</theme-button>
+<theme-button #ref="runButton" class="run" @click="{{ this.run }}">Start</theme-button>
 `;
 
 customElements.define("dialogue-cropper", Cropper);
