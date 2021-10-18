@@ -238,10 +238,12 @@ class TranscodeConfigurator extends Slim {
                 d.crop.aspect
             );
             this.crop = d.crop;
-            await Request.post(
-                `/crop/${encodeURIComponent(this.item.path)}`,
-                d.crop
-            );
+            if (d.startCrop) {
+                await Request.post(
+                    `/crop/${encodeURIComponent(this.item.path)}`,
+                    d.crop
+                );
+            }
         } catch (error) {}
     }
 

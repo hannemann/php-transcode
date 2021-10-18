@@ -10,10 +10,12 @@ class Cropper extends VideoEditor {
         this.video = null;
         this.aspectDecimal = 0;
         this.zoomed = 0;
+        this.startCrop = false;
     }
 
     bindListeners() {
         super.bindListeners();
+        this.run = this.run.bind(this);
         this.initCrop = this.initCrop.bind(this);
         this.handleKey = this.handleKey.bind(this);
         this.handleClick = this.handleClick.bind(this);
@@ -27,6 +29,7 @@ class Cropper extends VideoEditor {
             this.image.addEventListener("load", this.initCrop, {
                 once: true,
             });
+            this.current = parseInt(this.duration / 2, 10) ?? 0;
             this.initImages();
             this.height = parseInt(this.video.height, 10);
         });
@@ -192,6 +195,11 @@ class Cropper extends VideoEditor {
         this.updateCropBox();
     }
 
+    run() {
+        this.startCrop = true;
+        this.parentNode.confirmAction();
+    }
+
     get aspectRatio() {
         return (
             this.shadowRoot.querySelector('[name="input-aspect"]:checked')
@@ -271,6 +279,9 @@ ${EDITOR_CSS}
         grid-area: left;
         display: grid;
         grid-auto-rows: min-content;
+        gap: .5rem;
+        font-size: .75rem;
+        white-space: nowrap;
     }
     fieldset {
         border: 2px solid var(--clr-bg-200);
@@ -311,6 +322,14 @@ ${EDITOR_CSS}
     input[type="number"] {
         max-width: 4rem;
     }
+    .help dl {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-column-gap: .5rem;
+    }
+    .help dd {
+        margin: 0;
+    }
 </style>
 ${EDITOR_TEMPLATE}
 <div #ref="cropOverlay" class="crop"><div #ref="cropImage"></div></div>
@@ -338,10 +357,30 @@ ${EDITOR_TEMPLATE}
         <label>{{ this.cropOffsetRight - this.cropOffsetLeft }} x {{ this.cropOffsetBottom - this.cropOffsetTop }}</label>
         <label>{{ this.cropOffsetLeft }} / {{ this.cropOffsetTop }}</label>
     </fieldset>
+    <div class="help">
+        <dl>
+            <dt>
+                <span class="iconify" data-icon="mdi-mouse"></span> / 
+                <span class="iconify" data-icon="mdi-swap-vertical-bold"></span>
+                <span class="iconify" data-icon="mdi-swap-horizontal-bold"></span> + Ctrl
+            </dt>
+            </dt>
+            <dd>Set upper left</dd>
+        </dl>
+        <dl>
+            <dt>
+                <span class="iconify" data-icon="mdi-mouse"></span> / 
+                <span class="iconify" data-icon="mdi-swap-vertical-bold"></span>
+                <span class="iconify" data-icon="mdi-swap-horizontal-bold"></span> + Ctrl
+            </dt>
+            <dd>Set lower right</dd>
+        </dl>
+    </div>
     <div class="warning height-warning" title="For best results height should be dividable by 16">
         <span class="iconify" data-icon="mdi-alert-outline"></span>
     </div>
 </div>
+<theme-button class="run" @click="{{ this.run }}">Start</theme-button>
 `;
 
 customElements.define("dialogue-cropper", Cropper);
