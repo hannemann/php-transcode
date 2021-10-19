@@ -16,7 +16,7 @@ class VideoEditor extends Slim {
     onAdded() {
         this.start = parseFloat(this.video.start_time);
         this.current = parseInt(this.start * 1000, 10) ?? 0;
-        this.duration = this.toMilliSeconds(this.video.tags.DURATION);
+        this.duration = this.video.duration * 1000;
         this.displayDuration = this.timestamp(this.duration);
         requestAnimationFrame(() => {
             this.aspectRatio = this.video.display_aspect_ratio;

@@ -226,9 +226,10 @@ class TranscodeConfigurator extends Slim {
             m.header = "Cropper";
             m.classList.add("no-shadow");
             const d = document.createElement("dialogue-cropper");
-            d.video = this.streams.filter(
-                (s) => s.codec_type === TYPE_VIDEO
-            )?.[0];
+            d.video = {
+                ...this.streams.filter((s) => s.codec_type === TYPE_VIDEO)?.[0],
+                duration: parseFloat(this.format.duration),
+            };
             d.crop = this.crop;
             d.path = this.item.path;
             m.appendChild(d);
@@ -271,7 +272,10 @@ class TranscodeConfigurator extends Slim {
         m.classList.add("no-shadow");
         const d = document.createElement("dialogue-clipper");
         d.setClips(this.clips.getTimestamps());
-        d.video = this.streams.filter((s) => s.codec_type === TYPE_VIDEO)?.[0];
+        d.video = {
+            ...this.streams.filter((s) => s.codec_type === TYPE_VIDEO)?.[0],
+            duration: parseFloat(this.format.duration),
+        };
         d.path = this.item.path;
         m.appendChild(d);
         document.body.appendChild(m);
