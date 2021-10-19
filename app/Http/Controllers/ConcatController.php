@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\FFMpegActionRequest;
+use App\Http\Requests\ConcatRequest;
 use Illuminate\Http\JsonResponse;
 use App\Jobs\ProcessVideo;
 use App\Models\FFMpeg\Actions\Concat;
 
 class ConcatController extends Controller
 {
-    public function concat(FFMpegActionRequest $request, string $path):? JsonResponse
+    public function concat(ConcatRequest $request, string $path):? JsonResponse
     {
         try {
             // (new Concat('recordings', $path, 0, $request->input()))->execute();

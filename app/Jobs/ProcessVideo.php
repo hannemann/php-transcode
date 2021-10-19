@@ -20,6 +20,7 @@ use App\Models\FFMpeg\Actions\ConcatPrepare;
 use App\Models\FFMpeg\Actions\Crop;
 use Throwable;
 use App\Models\CurrentQueue;
+use App\Models\FFMpeg\Actions\ConcatMP4;
 use App\Models\FFMpeg\Actions\ScaleCPU;
 use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 
@@ -86,7 +87,14 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
         FFMpegProgress::dispatch('queue.progress');
         switch($this->type) {
             case 'concat':
-                $model = Concat::class;
+                switch ($this->requestData['container']) {
+                    case 'mp4':
+                        $model = ConcatMP4::class;
+                        break;
+                    case 'mkv':
+                        $model = Concat::class;
+                        break;
+                }
                 break;
             case 'transcode':
                 $model = Transcode::class;

@@ -21,6 +21,7 @@ class TranscodeConfigurator extends Slim {
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot));
         this.remuxContainer = "MP4";
         this.handleConfigureStream = this.handleConfigureStream.bind(this);
+        this.requestConcat = this.requestConcat.bind(this);
         this.requestRemux = this.requestRemux.bind(this);
         this.requestScale = this.requestScale.bind(this);
         this.saveSettings = this.saveSettings.bind(this);
@@ -140,7 +141,7 @@ class TranscodeConfigurator extends Slim {
         console.info(ws);
         this.format = ws.format;
         this.streams = ws.streams;
-        this.crop = ws.crop ?? {}
+        this.crop = ws.crop ?? {};
         this.show();
     }
 
@@ -160,10 +161,16 @@ class TranscodeConfigurator extends Slim {
             );
     }
 
-    async requestConcat() {
+    async requestConcat(e) {
         console.info("Concat video files in %s", this.item.path);
         try {
-            await Request.post(`/concat/${encodeURIComponent(this.item.path)}`);
+            await Request.post(
+                `/concat/${encodeURIComponent(this.item.path)}`,
+                {
+                    ...this.config,
+                    container: e.target.value,
+                }
+            );
         } catch (error) {
             console.error(error);
         }
@@ -264,9 +271,7 @@ class TranscodeConfigurator extends Slim {
         m.classList.add("no-shadow");
         const d = document.createElement("dialogue-clipper");
         d.setClips(this.clips.getTimestamps());
-        d.video = this.streams.filter(
-            (s) => s.codec_type === TYPE_VIDEO
-        )?.[0];
+        d.video = this.streams.filter((s) => s.codec_type === TYPE_VIDEO)?.[0];
         d.path = this.item.path;
         m.appendChild(d);
         document.body.appendChild(m);
@@ -341,7 +346,7 @@ class TranscodeConfigurator extends Slim {
         return {
             streams,
             clips: clipsData,
-            crop: this.crop
+            crop: this.crop,
         };
     }
 
@@ -469,7 +474,10 @@ ${CSS}
                 <span class="iconify" data-icon="mdi-content-save-outline"></span>
                 <span class="iconify hover" data-icon="mdi-content-save-outline"></span>
             </button>
-            <theme-button *if="{{ this.canConcat }}" @click="this.requestConcat()">Concat</theme-button>
+            <combo-button *if="{{ this.canConcat }}" @click="{{ this.requestConcat }}">
+                <option value="mkv">Concat MKV</option>
+                <option value="mp4">Concat MP4</option>
+            </combo-button>
             <combo-button @click="{{ this.requestScale }}">
                 <option value="vaapi">Scale (VAAPI)</option>
                 <option value="cpu">Scale (CPU)</option>
