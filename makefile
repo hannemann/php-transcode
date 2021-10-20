@@ -17,4 +17,4 @@ run-dev::
 	./vendor/bin/sail npm run watch
 
 restart-queue::
-	./vendor/bin/sail exec laravel.test supervisorctl restart queue
+	./vendor/bin/sail exec php_transcode supervisorctl restart queue
