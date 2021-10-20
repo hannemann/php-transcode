@@ -17,8 +17,7 @@ Since the project is based on the PHP framework laravel you can simply utilize l
 * git clone
 * cp .env.example .env # adjust settings
 * sail up -d
-* sail artisan migrate
-* sail down && sail up -d
+In case of `connection reset by peer` errors while pulling docker images just start again
 
 ## Configuration
 Please have a look into .env.example

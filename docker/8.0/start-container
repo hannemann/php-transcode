@@ -12,6 +12,13 @@ fi
 
 chmod -R ugo+rw /.composer
 
+. /var/www/html/.env
+if [ "" == "${APP_KEY}" ]; then
+    /usr/bin/php /var/www/html/artisan migrate || exit 1
+    /usr/bin/composer install --working-dir=/var/www/html
+    /usr/bin/php /var/www/html/artisan key:generate
+fi
+
 if [ $# -gt 0 ];then
     exec gosu $WWWUSER "$@"
 else
