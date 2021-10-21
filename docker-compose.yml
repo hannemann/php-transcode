@@ -1,7 +1,7 @@
 # For more information: https://laravel.com/docs/sail
 version: '3'
 services:
-    php_transcode:
+    transcode_php:
         build:
             context: ./docker/8.0
             dockerfile: Dockerfile
@@ -25,12 +25,12 @@ services:
         networks:
             - sail
         depends_on:
-            - mysql
+            - transcode_mysql
         extra_hosts:
             - "host.docker.internal:host-gateway"
         devices:
             - /dev/dri:/dev/dri
-    mysql:
+    transcode_mysql:
         image: 'mysql:8.0'
         ports:
             - '${FORWARD_DB_PORT:-3306}:3306'

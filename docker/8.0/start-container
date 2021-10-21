@@ -14,8 +14,18 @@ chmod -R ugo+rw /.composer
 
 . /var/www/html/.env
 if [ "" == "${APP_KEY}" ]; then
-    /usr/bin/php /var/www/html/artisan migrate || exit 1
     /usr/bin/composer install --working-dir=/var/www/html
+    for i in $(seq 1 10); do
+        echo "...waiting for database"
+        sleep 5
+        /usr/bin/php /var/www/html/artisan migrate 2>/dev/null
+        SUCCESS=$?
+        [ $SUCCESS -eq 0 ] && break
+    done
+    if [ $SUCCESS -gt 0 ]; then
+        echo "to many database errors... giving up"
+        exit 1
+    fi 
     /usr/bin/php /var/www/html/artisan key:generate
 fi
 
