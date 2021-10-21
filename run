@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+export WWWUSER=${WWWUSER:-$UID}
+export WWWGROUP=${WWWGROUP:-$(id -g)}
+export GROUP_ID_RENDER=${GROUP_ID_RENDER:-$(getent group render | awk -F\: '{ print $3 }')}
+
+docker-compose up -d && docker-compose logs --tail=10 -f

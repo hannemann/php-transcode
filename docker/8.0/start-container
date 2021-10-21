@@ -2,8 +2,8 @@
 
 if [ ! -z "$WWWUSER" ]; then
     usermod -u $WWWUSER sail
-    groupadd -g 109 render
-    usermod -aG 109 sail
+    groupadd -g $GROUP_ID_RENDER render
+    usermod -aG $GROUP_ID_RENDER sail
 fi
 
 if [ ! -d /.composer ]; then
@@ -14,16 +14,16 @@ chmod -R ugo+rw /.composer
 
 . /var/www/html/.env
 if [ "" == "${APP_KEY}" ]; then
-    /usr/bin/composer install --working-dir=/var/www/html
+    gosu $WWWUSER /usr/bin/composer install --working-dir=/var/www/html
     for i in $(seq 1 10); do
-        echo "...waiting for database"
+        echo "######## ...waiting for database"
         sleep 5
-        /usr/bin/php /var/www/html/artisan migrate 2>/dev/null
+        /usr/bin/php /var/www/html/artisan migrate
         SUCCESS=$?
         [ $SUCCESS -eq 0 ] && break
     done
     if [ $SUCCESS -gt 0 ]; then
-        echo "to many database errors... giving up"
+        echo "######## to many database errors... giving up"
         exit 1
     fi 
     /usr/bin/php /var/www/html/artisan key:generate

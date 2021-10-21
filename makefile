@@ -18,3 +18,9 @@ run-dev::
 
 restart-queue::
 	./vendor/bin/sail exec php_transcode supervisorctl restart queue
+
+wipe::
+	docker-compose down && \
+	docker volume rm php-transcode_sailmysql && \
+	docker rmi sail-8.0/app:latest && \
+	rm -rf vendor 
