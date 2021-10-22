@@ -17,7 +17,13 @@ run-dev::
 	./vendor/bin/sail npm run watch
 
 restart-queue::
-	./vendor/bin/sail exec php_transcode supervisorctl restart queue
+	./vendor/bin/sail exec transcode_php supervisorctl restart queue
+
+start-queue::
+	./vendor/bin/sail exec transcode_php supervisorctl start queue
+
+stop-queue::
+	./vendor/bin/sail exec transcode_php supervisorctl stop queue
 
 wipe::
 	docker-compose down && \
