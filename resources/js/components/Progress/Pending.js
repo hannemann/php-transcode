@@ -25,8 +25,8 @@ ${PROGRESS_ITEM_CSS}
 <header>Pending</header>
 <div *foreach="{{ this.items }}">
     <div @click="{{ this.cancel(item) }}" style="cursor: pointer" class="icon-stack">
-        <span class="iconify" data-icon="mdi-close"></span>
-        <span class="iconify hover" data-icon="mdi-close"></span>
+        <span class="iconify" data-icon="mdi-trash-can-outline"></span>
+        <span class="iconify hover" data-icon="mdi-trash-can-outline"></span>
     </div>
     <div class="path">{{ item.type.ucfirst() }}: {{ item.path }} {{ item.id }}</div>
     <div>{{ item.percentage }}%</div>
