@@ -122,3 +122,8 @@ Route::delete('/progress/{id}', function (CurrentQueue $id) {
     $id->delete();
     FFMpegProgress::dispatch('queue.progress');
 })->where('id', '[0-9]+');
+
+Route::post('/queue/cancel/{queue}', function (CurrentQueue $queue) {
+    $queue->update(['state' => CurrentQueue::STATE_CANCELED]);
+    FFMpegProgress::dispatch('queue.progress');
+});

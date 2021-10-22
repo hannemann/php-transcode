@@ -29,7 +29,7 @@ class FFMpegProgress implements ShouldBroadcastNow
      */
     public function __construct()
     {
-        $this->queue = CurrentQueue::all();
+        $this->queue = CurrentQueue::where('state', '!=', CurrentQueue::STATE_CANCELED)->get();
         $this->size = Queue::size();
     }
 

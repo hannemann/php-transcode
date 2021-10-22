@@ -83,50 +83,53 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
      */
     public function handle()
     {
-        CurrentQueue::where('id', $this->current_queue_id)->update(['state' => CurrentQueue::STATE_RUNNING]);
-        FFMpegProgress::dispatch('queue.progress');
-        switch($this->type) {
-            case 'concat':
-                switch ($this->requestData['container']) {
-                    case 'mp4':
-                        $model = ConcatMP4::class;
-                        break;
-                    case 'mkv':
-                        $model = Concat::class;
-                        break;
-                }
-                break;
-            case 'transcode':
-                $model = Transcode::class;
-                break;
-            case 'scale':
-                $model = Scale::class;
-                break;
-            case 'ScaleCPU':
-                $model = ScaleCPU::class;
-                break;
-            case 'crop':
-                $model = Crop::class;
-                break;
-            case 'prepare':
-                $model = ConcatPrepare::class;
-                break;
-            case 'remux':
-                switch ($this->requestData['container']) {
-                    case 'mp4':
-                        $model = RemuxMP4::class;
-                        break;
-                    case 'mkv':
-                        $model = RemuxMKV::class;
-                        break;
-                    case 'ts':
-                        $model = RemuxTS::class;
-                        break;
-                }
-                break;
+        $queue = CurrentQueue::where('id', $this->current_queue_id)->firstOrFail();
+        if ($queue->state !== CurrentQueue::STATE_CANCELED) {
+            CurrentQueue::where('id', $this->current_queue_id)->update(['state' => CurrentQueue::STATE_RUNNING]);
+            FFMpegProgress::dispatch('queue.progress');
+            switch($this->type) {
+                case 'concat':
+                    switch ($this->requestData['container']) {
+                        case 'mp4':
+                            $model = ConcatMP4::class;
+                            break;
+                        case 'mkv':
+                            $model = Concat::class;
+                            break;
+                    }
+                    break;
+                case 'transcode':
+                    $model = Transcode::class;
+                    break;
+                case 'scale':
+                    $model = Scale::class;
+                    break;
+                case 'ScaleCPU':
+                    $model = ScaleCPU::class;
+                    break;
+                case 'crop':
+                    $model = Crop::class;
+                    break;
+                case 'prepare':
+                    $model = ConcatPrepare::class;
+                    break;
+                case 'remux':
+                    switch ($this->requestData['container']) {
+                        case 'mp4':
+                            $model = RemuxMP4::class;
+                            break;
+                        case 'mkv':
+                            $model = RemuxMKV::class;
+                            break;
+                        case 'ts':
+                            $model = RemuxTS::class;
+                            break;
+                    }
+                    break;
+            }
+            (new $model($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();
+            CurrentQueue::where('id', $this->current_queue_id)->update(['state' => CurrentQueue::STATE_DONE]);
         }
-        (new $model($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();
-        CurrentQueue::where('id', $this->current_queue_id)->update(['state' => CurrentQueue::STATE_DONE]);
         FFMpegProgress::dispatch('queue.progress');
     }
 

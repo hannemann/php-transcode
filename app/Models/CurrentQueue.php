@@ -14,6 +14,7 @@ class CurrentQueue extends Model
     const STATE_RUNNING = 'running';
     const STATE_DONE = 'done';
     const STATE_FAILED = 'failed';
+    const STATE_CANCELED = 'canceled';
 
     protected $fillable = [
         'path',
