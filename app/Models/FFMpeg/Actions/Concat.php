@@ -33,7 +33,8 @@ class Concat extends AbstractAction
             ->map([FilePicker::class, 'getFileData']);
 
         return $collection->filter(function($item) {
-            return strpos($item['mime'], 'video') === 0;
+            return strpos($item['mime'], 'video') === 0 &&
+                in_array($item['name'], $this->requestData['files']);
         })->pluck('path')->sort()->toArray();
     }
 
@@ -68,7 +69,9 @@ class Concat extends AbstractAction
         $cmds->push($this->input);
         $cmds->push('-c');
         $cmds->push('copy');
-        $cmds = Helper\OutputMapper::mapAll($cmds);
+        foreach($this->requestData['streams'] as $stream) {
+            $cmds->push('-map', sprintf('0:%d', $stream));
+        }
         $cmds->push($file);
         return [$cmds->all()];
     }

@@ -6,7 +6,7 @@ import './Clips'
 import './Format'
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 import "./Dialogues/Scale";
-import "./Dialogues/Crop";
+import "./Dialogues/Concat";
 import "./Dialogues/Clipper";
 import "./Dialogues/Cropper";
 import { TYPE_VIDEO } from "./Streams";
@@ -162,13 +162,28 @@ class TranscodeConfigurator extends Slim {
     }
 
     async requestConcat(e) {
-        console.info("Concat video files in %s", this.item.path);
+        const m = document.createElement("modal-dialogue");
+        const d = m.appendChild(document.createElement("dialogue-concat"));
+        const container = e.target.value;
         try {
+            m.header = "Concat";
+            d.streams = this.streams;
+            d.files = this.item?.parent?.videoFiles?.filter((f) => !f.internal);
+            document.body.appendChild(m);
+            await m.open();
+            console.info(
+                "Concat video files in %s",
+                this.item.path,
+                container,
+                d.files,
+                d.streams
+            );
             await Request.post(
                 `/concat/${encodeURIComponent(this.item.path)}`,
                 {
-                    ...this.config,
-                    container: e.target.value,
+                    container,
+                    streams: d.streams.map((s) => s.index),
+                    files: d.files.map((f) => f.name),
                 }
             );
         } catch (error) {

@@ -119,8 +119,8 @@ class AbstractAction
         $processOutSecond = time();
         if ($processOutSecond > $this->processOutSecond && strpos($line, '[ERROR] frame=') === 0) {
             $this->processOutSecond = $processOutSecond;
-            $lines = explode('\n', $line);
-            $line = array_pop($lines);
+            $lines = explode("\r", trim($line));
+            $line = trim(array_pop($lines));
             FFMpegOut::dispatch($this->pathHash, str_replace('[ERROR] ', '', $line));
         }
     }
