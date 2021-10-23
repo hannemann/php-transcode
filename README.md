@@ -16,7 +16,7 @@ The heavy lifting can be done on the server utilizing hardware acceleration by V
 Since the project is based on the PHP framework laravel you can simply utilize laravel sail
 * git clone
 * cp .env.example .env # adjust settings
-* sail up -d
+* ./run
 In case of `connection reset by peer` errors while pulling docker images just start again
 
 ## Configuration
@@ -79,9 +79,13 @@ Search your recording frame by frame for unwanted material
 # Transcoding
 ## Multiple files produced by VDR
 1. Concat
-2. Scale to desired width
-3. Use Clipper to mark parts to be keeped
-4. Transcode
+2. Optionally scale to desired width
+3. If not scaled remux to mkv or mp4
+4. Use Clipper to mark parts to be keeped
+5. Transcode
+
+## Single file
+Like multiple files but skip step 1
 ## Troubleshooting
 * The user of the php process has to have rw access to the render device
 * If its the case that the Resolution changes in the Input than you should trim the Video first.
@@ -115,4 +119,3 @@ Error while processing the decoded data for stream #0:0
 * Test files for codec mismatch before concat
 
 ## Fix
-* Wrong Audio stream gets encoded to flac on prepare
