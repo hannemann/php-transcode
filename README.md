@@ -9,9 +9,14 @@ This program tries to mitigate that by providing a browser based gui for FFMpeg.
 The heavy lifting can be done on the server utilizing hardware acceleration by VAAPI (Tested with INTEL and AMD integrated GPU).
 
 ## Installation on Ubuntu 20.04
-* PHP 8.0
+* PHP 8.0, php-sqlite3
 * FFMpeg
 * Nginx
+* git clone
+* cp .env.example .env # adjust settings
+* touch database.sqlite
+* chmod www-data database.sqlite
+* add DB_DATABASE=/path/to/database.sqlite to .env
 ## Installation using docker
 Since the project is based on the PHP framework laravel you can simply utilize laravel sail
 * git clone
