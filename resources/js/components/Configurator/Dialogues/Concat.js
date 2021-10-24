@@ -1,6 +1,6 @@
 import { Slim, Utils } from "@/components/lib";
 
-const SKIP_CODECS = ["dvb_teletext"];
+const SKIP_CODECS = ["dvb_teletext", "bin_data"];
 
 class Concat extends Slim {
     onAdded() {
