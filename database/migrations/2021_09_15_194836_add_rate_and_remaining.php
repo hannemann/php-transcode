@@ -14,8 +14,8 @@ class AddRateAndRemaining extends Migration
     public function up()
     {
         Schema::table('current_queues', function (Blueprint $table) {
-            $table->integer('rate');
-            $table->integer('remaining');
+            $table->integer('rate')->default('null')->nullable();
+            $table->integer('remaining')->default('null')->nullable();
         });
     }
 
