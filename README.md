@@ -30,7 +30,7 @@ Description=Runs and keeps alive the PHP Transcode artisan websocket
 [Service]
 Restart=always
 WorkingDirectory=/var/www/php-transcode
-ExecStart=/usr/bin/php artisan websockets:serve
+ExecStart=/usr/bin/php artisan websockets:serve --port=8079
 User=www-data
 Group=www-data
 

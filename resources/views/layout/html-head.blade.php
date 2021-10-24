@@ -7,5 +7,7 @@
     const VIDEO_CODECS = @json(config('transcode.videoCodecs'));
     const AUDIO_CODECS = @json(config('transcode.audioCodecs'));
     const SUBTITLE_CODECS = @json(config('transcode.subtitleCodecs'));
+    const LARAVEL_WEBSOCKETS_PORT = {{ (int)config('websockets.dashboard.port') }};
+    const LARAVEL_WEBSOCKETS_KEY = {{ (int)(config('websockets.apps')[0]['key']) }};
 </script>
 <script src="{{ mix('/js/app.js') }}"></script>

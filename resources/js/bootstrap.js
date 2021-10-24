@@ -6,12 +6,12 @@
  import Echo from "laravel-echo"
 
  window.Pusher = require('pusher-js');
- 
- window.Echo = new Echo({
-     broadcaster: "pusher",
-     key: process.env.MIX_PUSHER_APP_KEY,
-     wsHost: window.location.hostname,
-     wsPort: process.env.MIX_LARAVEL_WEBSOCKETS_PORT,
-     forceTLS: false,
-     disableStats: true,
- });
+
+window.Echo = new Echo({
+    broadcaster: "pusher",
+    key: LARAVEL_WEBSOCKETS_KEY,
+    wsHost: window.location.hostname,
+    wsPort: LARAVEL_WEBSOCKETS_PORT,
+    forceTLS: false,
+    disableStats: true,
+});
