@@ -48,7 +48,7 @@ Class CropCPU extends Crop
             $this->requestData['cx'],
             $this->requestData['cy'],
             $this->calculateWidth($this->requestData['height'],$this->requestData['aspect']),
-            $this->requestData['ch'],
+            $this->requestData['height'],
             $this->calculateWidth($this->requestData['height'],$this->requestData['aspect']),
             $this->requestData['height']
         ));
