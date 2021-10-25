@@ -2,13 +2,13 @@
 
 namespace App\Models\FFMpeg\Actions;
 
-use App\Models\FFMpeg\Format\Video\h264_vaapi as Format;
+use FFMpeg\Format\Video\X264 as Format;
 use App\Models\Video\File;
 use App\Models\FFMpeg\Actions\Helper\OutputMapper;
+use App\Models\FFMpeg\Actions\Helper\Libx264Options;
 
-Class Crop extends AbstractAction
+Class CropCPU extends Crop
 {
-    // const TEMPLATE_FILTER_CROP = 'hwdownload,crop=%d:%d:%d:%d,pad=%d:%d:(ow-iw)/2:(oh-ih)/2,format=nv12,hwupload,scale_vaapi=%d:%d';
     const TEMPLATE_FILTER_CROP = 'crop=%d:%d:%d:%d,pad=%d:%d:(ow-iw)/2:(oh-ih)/2,scale=%d:%d';
 
     protected string $filenameAffix = 'crop';
@@ -20,8 +20,7 @@ Class Crop extends AbstractAction
      */
     public function execute()
     {
-        $this->format->setConstantQuantizationParameter(Format::HIGH_QUALITY_QP)
-            ->setAudioCodec('copy');
+        $this->format->setAudioCodec('copy')->setPasses(1);
         $this->media = File::getMedia($this->disk, $this->path);
         $this->initStreams();
         $this->mediaExporter = $this->media->export();
@@ -36,7 +35,11 @@ Class Crop extends AbstractAction
         $file = array_pop($commands[0]);
         $cmds = collect($commands[0]);
         
-        $cmds = $this->format->stripOptions($cmds);
+        $cmds = Libx264Options::strip($cmds);
+        $cmds->splice($cmds->search('-b:v'), 2);
+        $cmds->splice($cmds->search('-b:a'), 2);
+        $cmds->push('-crf', 18);
+        $cmds->push('-preset', 'ultrafast');
         $cmds->push('-vf');
         $cmds->push(sprintf(
             self::TEMPLATE_FILTER_CROP,
@@ -44,7 +47,7 @@ Class Crop extends AbstractAction
             $this->requestData['ch'],
             $this->requestData['cx'],
             $this->requestData['cy'],
-            $this->calculateWidth($this->requestData['ch'],$this->requestData['aspect']),
+            $this->calculateWidth($this->requestData['height'],$this->requestData['aspect']),
             $this->requestData['ch'],
             $this->calculateWidth($this->requestData['height'],$this->requestData['aspect']),
             $this->requestData['height']

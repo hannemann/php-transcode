@@ -22,6 +22,7 @@ use Throwable;
 use App\Models\CurrentQueue;
 use App\Models\FFMpeg\Actions\ConcatMP4;
 use App\Models\FFMpeg\Actions\ScaleCPU;
+use App\Models\FFMpeg\Actions\CropCPU;
 use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 
 class ProcessVideo implements ShouldQueue //, ShouldBeUnique
@@ -109,6 +110,9 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
                     break;
                 case 'crop':
                     $model = Crop::class;
+                    break;
+                case 'cropCPU':
+                    $model = CropCPU::class;
                     break;
                 case 'prepare':
                     $model = ConcatPrepare::class;

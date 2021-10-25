@@ -24,6 +24,7 @@ class TranscodeConfigurator extends Slim {
         this.requestConcat = this.requestConcat.bind(this);
         this.requestRemux = this.requestRemux.bind(this);
         this.requestScale = this.requestScale.bind(this);
+        this.requestCrop = this.requestCrop.bind(this);
         this.saveSettings = this.saveSettings.bind(this);
         this.hide = this.hide.bind(this);
     }
@@ -236,6 +237,7 @@ class TranscodeConfigurator extends Slim {
     }
 
     async requestCrop(e) {
+        const type = e.target.value;
         try {
             const m = document.createElement("modal-window");
             m.header = "Cropper";
@@ -247,6 +249,7 @@ class TranscodeConfigurator extends Slim {
             };
             d.crop = this.crop;
             d.path = this.item.path;
+            d.type = type;
             m.appendChild(d);
             document.body.appendChild(m);
             await m.open();
@@ -498,8 +501,8 @@ ${CSS}
                 <option value="mp4">Concat MP4</option>
             </combo-button>
             <combo-button @click="{{ this.requestScale }}">
-                <option value="vaapi">Scale (VAAPI)</option>
                 <option value="cpu">Scale (CPU)</option>
+                <option value="vaapi">Scale (VAAPI)</option>
             </combo-button>
             <combo-button @click="{{ this.requestRemux }}">
                 <option value="mkv">Remux MKV</option>
@@ -507,7 +510,10 @@ ${CSS}
                 <option value="ts">Remux TS</option>
             </combo-button>
             <theme-button @click="this.clipper()">Clipper</theme-button>
-            <theme-button @click="this.requestCrop()">Cropper</theme-button>
+            <combo-button @click="{{ this.requestCrop }}">
+                <option value="cpu">Crop (CPU)</option>
+                <option value="vaapi">Crop (VAAPI)</option>
+            </combo-button>
             <theme-button @click="this.transcode()">Transcode</theme-button>
         </footer>
     </div>

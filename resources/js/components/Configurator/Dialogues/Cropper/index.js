@@ -76,7 +76,9 @@ class Cropper extends VideoEditor {
         const croppedHeight = this.cropOffsetBottom - this.cropOffsetTop;
         const ratios = this.aspectRatio.split(":").map((r) => parseInt(r, 10));
         const padWidth = (croppedHeight / ratios[1]) * ratios[0];
-        this.valid = croppedHeight <= this.height && croppedWidth <= padWidth;
+        this.valid =
+            this.type === "cpu" ||
+            (croppedHeight <= this.height && croppedWidth <= padWidth);
         this.runButton.disabled = !this.valid;
     }
 
@@ -247,6 +249,7 @@ class Cropper extends VideoEditor {
             cy: this.cropOffsetTop,
             height: this.height,
             aspect: this.aspectRatio,
+            type: this.type
         };
     }
 
