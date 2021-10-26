@@ -47,8 +47,11 @@ Class CropCPU extends Crop
             $this->requestData['ch'],
             $this->requestData['cx'],
             $this->requestData['cy'],
-            $this->calculateWidth($this->requestData['height'],$this->requestData['aspect']),
-            $this->requestData['height'],
+            $this->calculateWidth(
+                $this->requestData['replaceBlackBorders'] ? $this->requestData['height'] : $this->requestData['ch'],
+                $this->requestData['aspect']
+            ),
+            $this->requestData['replaceBlackBorders'] ? $this->requestData['height'] : $this->requestData['ch'],
             $this->calculateWidth($this->requestData['height'],$this->requestData['aspect']),
             $this->requestData['height']
         ));
@@ -58,11 +61,5 @@ Class CropCPU extends Crop
 
         $cmds->push($file);
         return [$cmds->all()];
-    }
-
-    private function calculateWidth(int $height, string $aspect): int
-    {
-        $ratios = explode(':', $aspect);
-        return ($height / (int)$ratios[1]) * (int)$ratios[0];
     }
 }

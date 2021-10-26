@@ -8,8 +8,7 @@ use App\Models\FFMpeg\Actions\Helper\OutputMapper;
 
 Class Crop extends AbstractAction
 {
-    // const TEMPLATE_FILTER_CROP = 'hwdownload,crop=%d:%d:%d:%d,pad=%d:%d:(ow-iw)/2:(oh-ih)/2,format=nv12,hwupload,scale_vaapi=%d:%d';
-    const TEMPLATE_FILTER_CROP = 'crop=%d:%d:%d:%d,pad=%d:%d:(ow-iw)/2:(oh-ih)/2,scale=%d:%d';
+    const TEMPLATE_FILTER_CROP = 'hwdownload,crop=%d:%d:%d:%d,pad=%d:%d:(ow-iw)/2:(oh-ih)/2,format=nv12,hwupload,scale_vaapi=%d:%d';
 
     protected string $filenameAffix = 'crop';
     protected string $filenameSuffix = 'mkv';
@@ -44,8 +43,11 @@ Class Crop extends AbstractAction
             $this->requestData['ch'],
             $this->requestData['cx'],
             $this->requestData['cy'],
-            $this->calculateWidth($this->requestData['ch'],$this->requestData['aspect']),
-            $this->requestData['ch'],
+            $this->calculateWidth(
+                $this->requestData['replaceBlackBorders'] ? $this->requestData['height'] : $this->requestData['ch'],
+                $this->requestData['aspect']
+            ),
+            $this->requestData['replaceBlackBorders'] ? $this->requestData['height'] : $this->requestData['ch'],
             $this->calculateWidth($this->requestData['height'],$this->requestData['aspect']),
             $this->requestData['height']
         ));
@@ -57,7 +59,7 @@ Class Crop extends AbstractAction
         return [$cmds->all()];
     }
 
-    private function calculateWidth(int $height, string $aspect): int
+    protected function calculateWidth(int $height, string $aspect): int
     {
         $ratios = explode(':', $aspect);
         return ($height / (int)$ratios[1]) * (int)$ratios[0];
