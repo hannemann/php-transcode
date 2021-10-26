@@ -9,7 +9,7 @@ import "./Dialogues/Scale";
 import "./Dialogues/Concat";
 import "./Dialogues/Clipper";
 import "./Dialogues/Cropper";
-import { TYPE_VIDEO } from "./Streams";
+import { toolProxy } from "./Tools";
 
 const WS_CHANNEL = "Transcode.Config";
 const WS_CHANNEL_FFMPEG_OUT = "FFMpegOut";
@@ -21,11 +21,8 @@ class TranscodeConfigurator extends Slim {
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot));
         this.remuxContainer = "MP4";
         this.handleConfigureStream = this.handleConfigureStream.bind(this);
-        this.requestConcat = this.requestConcat.bind(this);
-        this.requestRemux = this.requestRemux.bind(this);
-        this.requestScale = this.requestScale.bind(this);
-        this.requestCrop = this.requestCrop.bind(this);
         this.saveSettings = this.saveSettings.bind(this);
+        this.toolProxy = toolProxy.bind(this);
         this.hide = this.hide.bind(this);
     }
 
@@ -160,159 +157,6 @@ class TranscodeConfigurator extends Slim {
             !this.item.parent.videoFiles.find(
                 (i) => i.name === `${this.item.parent.channelHash}-concat.ts`
             );
-    }
-
-    async requestConcat(e) {
-        const m = document.createElement("modal-dialogue");
-        const d = m.appendChild(document.createElement("dialogue-concat"));
-        const container = e.target.value;
-        try {
-            m.header = "Concat";
-            d.streams = this.streams;
-            d.files = this.item?.parent?.videoFiles?.filter((f) => !f.internal);
-            document.body.appendChild(m);
-            await m.open();
-            console.info(
-                "Concat video files in %s",
-                this.item.path,
-                container,
-                d.files,
-                d.streams
-            );
-            await Request.post(
-                `/concat/${encodeURIComponent(this.item.path)}`,
-                {
-                    container,
-                    streams: d.streams.map((s) => s.index),
-                    files: d.files.map((f) => f.name),
-                }
-            );
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    async requestRemux(e) {
-        console.info("Remux video file %s", this.item.path);
-        try {
-            await Request.post(`/remux/${encodeURIComponent(this.item.path)}`, {
-                ...this.config,
-                container: e.target.value,
-            });
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    async requestScale(e) {
-        const type = e.target.value;
-        const m = document.createElement("modal-dialogue");
-        m.header = "Scale";
-        const d = m.appendChild(document.createElement("dialogue-scale"));
-        const video = this.streams.filter(
-            (s) => s.codec_type === TYPE_VIDEO
-        )?.[0];
-        if (video) {
-            d.setHeight(video.height);
-            d.setAspectRatio(video.display_aspect_ratio);
-        }
-        document.body.appendChild(m);
-        try {
-            await m.open();
-            console.info(
-                "Scale video file %s to %dx%d with an aspect-ratio of %s",
-                this.item.path,
-                d.scale.width,
-                d.scale.height,
-                d.scale.aspectRatio,
-                e.target.value
-            );
-            await Request.post(`/scale/${encodeURIComponent(this.item.path)}`, {
-                width: d.scale.width,
-                height: d.scale.height,
-                aspect: d.scale.aspectRatio,
-                type: type,
-            });
-        } catch (error) {}
-    }
-
-    async requestCrop(e) {
-        const type = e.target.value;
-        try {
-            const m = document.createElement("modal-window");
-            m.header = "Cropper";
-            m.classList.add("no-shadow");
-            const d = document.createElement("dialogue-cropper");
-            d.video = {
-                ...this.streams.filter((s) => s.codec_type === TYPE_VIDEO)?.[0],
-                duration: parseFloat(this.format.duration),
-            };
-            d.crop = this.crop;
-            d.path = this.item.path;
-            d.type = type;
-            m.appendChild(d);
-            document.body.appendChild(m);
-            await m.open();
-            console.info(
-                "Crop video file %s to %dx%d at %d/%d and scale to %d pixel height with an aspect-ratio of %s",
-                this.item.path,
-                d.crop.cw,
-                d.crop.ch,
-                d.crop.cx,
-                d.crop.cy,
-                d.crop.height,
-                d.crop.aspect
-            );
-            this.crop = d.crop;
-            if (d.startCrop) {
-                await Request.post(
-                    `/crop/${encodeURIComponent(this.item.path)}`,
-                    d.crop
-                );
-            }
-        } catch (error) {}
-    }
-
-    async clipper() {
-        if (this.format.format_name === "mpegts") {
-            const m = document.createElement("modal-alert");
-            m.appendChild(
-                document.createTextNode(
-                    "Clipper does not work with mpegts Files. Remux first."
-                )
-            );
-            document.body.appendChild(m);
-            await m.alert();
-            return;
-        }
-        const m = document.createElement("modal-window");
-        m.header = "Clipper";
-        m.classList.add("no-shadow");
-        const d = document.createElement("dialogue-clipper");
-        d.setClips(this.clips.getTimestamps());
-        d.video = {
-            ...this.streams.filter((s) => s.codec_type === TYPE_VIDEO)?.[0],
-            duration: parseFloat(this.format.duration),
-        };
-        d.path = this.item.path;
-        m.appendChild(d);
-        document.body.appendChild(m);
-        const clipperHandler = this.handleClipper.bind(this);
-        try {
-            await m.open();
-            this.clips.clips = [];
-            for (let i = 0; i < d.clips.length; i++) {
-                this.clips.addClip(
-                    d.clips[i]?.timestamps.start ?? null,
-                    d.clips[i]?.timestamps.end ?? null
-                );
-            }
-            this.clips.update();
-        } catch (error) {}
-    }
-
-    handleClipper(e) {
-        console.log(e.detail);
     }
 
     handleConfigureStream(e) {
@@ -496,24 +340,18 @@ ${CSS}
                 <span class="iconify" data-icon="mdi-content-save-outline"></span>
                 <span class="iconify hover" data-icon="mdi-content-save-outline"></span>
             </button>
-            <combo-button *if="{{ this.canConcat }}" @click="{{ this.requestConcat }}">
-                <option value="mkv">Concat MKV</option>
-                <option value="mp4">Concat MP4</option>
+            <combo-button @click="{{ this.toolProxy }}">
+                <option *if="{{ this.canConcat }}" value="concat:mkv">Concat MKV</option>
+                <option *if="{{ this.canConcat }}" value="concat:mp4">Concat MP4</option>
+                <option value="scale:cpu">Scale (CPU)</option>
+                <option value="scale:vaapi">Scale (VAAPI)</option>
+                <option value="remux:mkv">Remux MKV</option>
+                <option value="remux:mp4">Remux MP4</option>
+                <option value="remux:ts">Remux TS</option>
+                <option value="crop:cpu">Crop (CPU)</option>
+                <option value="crop:vaapi">Crop (VAAPI)</option>
             </combo-button>
-            <combo-button @click="{{ this.requestScale }}">
-                <option value="cpu">Scale (CPU)</option>
-                <option value="vaapi">Scale (VAAPI)</option>
-            </combo-button>
-            <combo-button @click="{{ this.requestRemux }}">
-                <option value="mkv">Remux MKV</option>
-                <option value="mp4">Remux MP4</option>
-                <option value="ts">Remux TS</option>
-            </combo-button>
-            <theme-button @click="this.clipper()">Clipper</theme-button>
-            <combo-button @click="{{ this.requestCrop }}">
-                <option value="cpu">Crop (CPU)</option>
-                <option value="vaapi">Crop (VAAPI)</option>
-            </combo-button>
+            <theme-button @click="this.toolProxy({target:{value:'clip'}})">Clipper</theme-button>
             <theme-button @click="this.transcode()">Transcode</theme-button>
         </footer>
     </div>
