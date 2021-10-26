@@ -77,8 +77,7 @@ class Cropper extends VideoEditor {
         const ratios = this.aspectRatio.split(":").map((r) => parseInt(r, 10));
         const padWidth = (croppedHeight / ratios[1]) * ratios[0];
         this.valid =
-            true ||
-            this.type === "cpu" ||
+            this.replaceBlackBorders ||
             (croppedHeight <= this.height && croppedWidth <= padWidth);
         this.runButton.disabled = !this.valid;
     }
@@ -372,7 +371,7 @@ ${EDITOR_TEMPLATE}
         </label>
         <label>
             <span>Replace Borders</span>
-            <input type="checkbox" name="replaceBlackBorders" #ref="inputReplaceBlackBorders">
+            <input type="checkbox" name="replaceBlackBorders" #ref="inputReplaceBlackBorders" @change="{{ this.validateDimensions() }}">
         </label>
     </fieldset>
     <fieldset class="aspect-ratio">
