@@ -9,6 +9,7 @@ import "./Dialogues/Scale";
 import "./Dialogues/Concat";
 import "./Dialogues/Clipper";
 import "./Dialogues/Cropper";
+import "./Dialogues/Delogo";
 import { toolProxy } from "./Tools";
 
 const WS_CHANNEL = "Transcode.Config";
@@ -350,6 +351,8 @@ ${CSS}
                 <option value="remux:ts">Remux TS</option>
                 <option value="crop:cpu">Crop (CPU)</option>
                 <option value="crop:vaapi">Crop (VAAPI)</option>
+                <option value="delogo:cpu">DeLogo (CPU)</option>
+                <option value="delogo:vaapi">DeLogo (VAAPI)</option>
             </combo-button>
             <theme-button @click="this.toolProxy({target:{value:'clip'}})">Clipper</theme-button>
             <theme-button @click="this.transcode()">Transcode</theme-button>

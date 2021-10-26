@@ -3,6 +3,7 @@ import { requestConcat } from "./concat.js";
 import { requestCrop } from "./crop.js";
 import { requestRemux } from "./remux.js";
 import { clipper } from "./clipper.js";
+import { requestDelogo } from "./delogo.js";
 
 export const toolProxy = function (e) {
     const args = e.target.value.split(":");
@@ -21,6 +22,9 @@ export const toolProxy = function (e) {
             break;
         case "clip":
             clipper.apply(this, args);
+            break;
+        case "delogo":
+            requestDelogo.apply(this, args);
             break;
     }
 };
