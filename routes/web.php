@@ -13,6 +13,7 @@ use App\Http\Controllers\RemuxController;
 use App\Http\Controllers\ScaleController;
 use App\Http\Controllers\TranscodeController;
 use App\Http\Controllers\CropController;
+use App\Http\Controllers\DelogoController;
 use App\Http\Requests\FFMpegActionRequest;
 use App\Models\FilePicker;
 use App\Models\Video\File as VideoFile;
@@ -67,6 +68,7 @@ Route::post('/transcode/{path}', [TranscodeController::class, 'transcode'])->whe
 Route::post('/settings/{path}', [TranscodeController::class, 'saveSettings'])->where('path', '(.*)');
 Route::post('/scale/{path}', [ScaleController::class, 'scale'])->where('path', '(.*)');
 Route::post('/crop/{path}', [CropController::class, 'crop'])->where('path', '(.*)');
+Route::post('/delogo/{path}', [DelogoController::class, 'delogo'])->where('path', '(.*)');
 Route::post('/kill', fn () => KillFFMpeg::execute());
 Route::get('/image/{path}', [ClipperController::class, 'image'])->where('path', '(.*)');
 

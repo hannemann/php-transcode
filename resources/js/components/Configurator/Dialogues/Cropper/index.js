@@ -39,6 +39,8 @@ class Cropper extends VideoEditor {
 
     onRemoved() {
         this.image.removeEventListener("load", this.updateCropBox);
+        document.removeEventListener("keydown", this.handleKey);
+        document.removeEventListener("keyup", this.handleKey);
     }
 
     initCrop() {

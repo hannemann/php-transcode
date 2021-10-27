@@ -16,13 +16,18 @@ export const requestDelogo = async function (type) {
         m.appendChild(d);
         document.body.appendChild(m);
         await m.open();
-        console.info("Delogo video file %s at", this.item.path);
-        // this.crop = d.crop;
-        // if (d.startCrop) {
-        //     await Request.post(
-        //         `/crop/${encodeURIComponent(this.item.path)}`,
-        //         d.crop
-        //     );
-        // }
+        this.delogo = d.coords;
+        console.info(
+            "Delogo video file %s. x: %d, x: %d, w: %d, h: %d",
+            this.item.path,
+            this.delogo.x,
+            this.delogo.y,
+            this.delogo.w,
+            this.delogo.h
+        );
+        await Request.post(`/delogo/${encodeURIComponent(this.item.path)}`, {
+            ...this.delogo,
+            type,
+        });
     } catch (error) {}
 };

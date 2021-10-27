@@ -352,7 +352,6 @@ ${CSS}
                 <option value="crop:cpu">Crop (CPU)</option>
                 <option value="crop:vaapi">Crop (VAAPI)</option>
                 <option value="delogo:cpu">DeLogo (CPU)</option>
-                <option value="delogo:vaapi">DeLogo (VAAPI)</option>
             </combo-button>
             <theme-button @click="this.toolProxy({target:{value:'clip'}})">Clipper</theme-button>
             <theme-button @click="this.transcode()">Transcode</theme-button>

@@ -18,6 +18,7 @@ use App\Models\FFMpeg\Actions\RemuxMKV;
 use App\Models\FFMpeg\Actions\Scale;
 use App\Models\FFMpeg\Actions\ConcatPrepare;
 use App\Models\FFMpeg\Actions\Crop;
+use App\Models\FFMpeg\Actions\DelogoCPU;
 use Throwable;
 use App\Models\CurrentQueue;
 use App\Models\FFMpeg\Actions\ConcatMP4;
@@ -113,6 +114,9 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
                     break;
                 case 'cropCPU':
                     $model = CropCPU::class;
+                    break;
+                case 'delogoCPU':
+                    $model = DelogoCPU::class;
                     break;
                 case 'prepare':
                     $model = ConcatPrepare::class;
