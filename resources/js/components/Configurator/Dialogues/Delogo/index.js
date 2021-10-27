@@ -10,6 +10,7 @@ class DeLogo extends VideoEditor {
     }
 
     bindListeners() {
+        super.bindListeners();
         this.initDelogo = this.initDelogo.bind(this);
         this.addDelogoBox = this.addDelogoBox.bind(this);
         this.handleKey = this.handleKey.bind(this);

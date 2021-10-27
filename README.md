@@ -8,21 +8,21 @@ To circumvent these flaws in the video stream one would have to create several c
 This program tries to mitigate that by providing a browser based gui for FFMpeg.
 The heavy lifting can be done on the server utilizing hardware acceleration by VAAPI (Tested with INTEL and AMD integrated GPU).
 
-## Installation on Ubuntu 20.04
-* PHP 8.0, php-sqlite3
-* FFMpeg
-* Nginx
-* git clone
-* cp .env.example .env # adjust settings
-* touch database.sqlite
-* chmod www-data database.sqlite
-* add DB_DATABASE=/path/to/database.sqlite to .env
 ## Installation using docker
 Since the project is based on the PHP framework laravel you can simply utilize laravel sail
 * git clone
 * cp .env.example .env # adjust settings
 * ./run
 In case of `connection reset by peer` errors while pulling docker images just start again
+## Installation on Ubuntu 20.04
+* PHP 8.0, php-sqlite3
+* FFMpeg
+* Nginx
+* git clone
+* cp .env.example .env # adjust settings
+* touch storage/database.sqlite
+* chmod www-data database.sqlite
+* add DB_DATABASE=/path/to/database.sqlite to .env
 
 ## Configuration
 Please have a look into .env.example
@@ -121,6 +121,5 @@ Error while processing the decoded data for stream #0:0
 
 
 ## TODO:
-* Test files for codec mismatch before concat
 
 ## Fix
