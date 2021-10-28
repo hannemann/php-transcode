@@ -25,10 +25,33 @@ services:
             - '${RECORDINGS_DOCKER_SRC}:${RECORDINGS_PATH}'
         networks:
             - sail
+        depends_on:
+            - transcode_mysql
         extra_hosts:
             - "host.docker.internal:host-gateway"
         devices:
             - /dev/dri:/dev/dri
+    transcode_mysql:
+        image: 'mysql:8.0'
+        ports:
+            - '${FORWARD_DB_PORT:-3306}:3306'
+        environment:
+            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD:-password}'
+            MYSQL_DATABASE: '${DB_DATABASE:-php_transcode}'
+            MYSQL_USER: '${DB_USERNAME:-sail}'
+            MYSQL_PASSWORD: '${DB_PASSWORD:-password}'
+            MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+        volumes:
+            - 'sailmysql:/var/lib/mysql'
+        networks:
+            - sail
+        healthcheck:
+          test: ["CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}"]
+          retries: 3
+          timeout: 5s
 networks:
     sail:
         driver: bridge
+volumes:
+    sailmysql:
+        driver: local
