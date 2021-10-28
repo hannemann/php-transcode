@@ -15,15 +15,11 @@ chmod -R ugo+rw /.composer
 . /var/www/html/.env
 if [ "" == "${APP_KEY}" ]; then
     gosu $WWWUSER /usr/bin/composer install --working-dir=/var/www/html
-    for i in $(seq 1 10); do
-        echo "######## ...waiting for database"
-        sleep 5
-        /usr/bin/php /var/www/html/artisan migrate
-        SUCCESS=$?
-        [ $SUCCESS -eq 0 ] && break
-    done
+    gosu $WWWUSER touch /var/www/html/database/database.sqlite
+    /usr/bin/php /var/www/html/artisan migrate
+    SUCCESS=$?
     if [ $SUCCESS -gt 0 ]; then
-        echo "######## to many database errors... giving up"
+        echo "######## database error... giving up"
         exit 1
     fi 
     /usr/bin/php /var/www/html/artisan key:generate

@@ -36,7 +36,7 @@ stop-websocket::
 
 wipe::
 	docker-compose down; \
-	docker volume rm php-transcode_sailmysql; \
 	docker rmi sail-8.0/app:latest; \
 	rm -rf vendor; \
+	rm storage/database.sqlite; \
 	sed -e 's/APP_KEY=.*/APP_KEY=/g' -i ./.env
