@@ -26,6 +26,7 @@ class AbstractAction
     protected array $requestData;
     private $processOutSecond = 0;
     private $progressOutSecond = 0;
+    private $outputFileExists = false;
 
     public function __construct(string $disk, string $path, int $current_queue_id, array $requestData)
     {
@@ -102,9 +103,11 @@ class AbstractAction
         
         FFMpegProgress::dispatch('queue.progress');
 
-        $progressOutSecond = time();
-        if ($progressOutSecond > $this->progressOutSecond) {
-            $this->progressOutSecond = $progressOutSecond;
+        if ($percentage === 100 ||
+            !$this->outputFileExists &&
+            FilePicker::root('recordings')::disk()->exists($this->getOutputFilename())
+        ) {
+            $this->outputFileExists = true;
             $items = FilePicker::root('recordings')::getItems(dirname($this->path));
             $items = $items->map(function($item) {
                 $item['in_progress'] = $item['name'] === basename($this->getOutputFilename());
