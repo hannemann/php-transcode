@@ -20,7 +20,7 @@ export const requestRemovelogo = async function (type) {
         await Request.post(
             `/removelogo/${encodeURIComponent(this.item.path)}`,
             {
-                ts: d.timestamp(),
+                timestamp: d.timestamp(),
                 w: d.video.width,
                 h: d.video.height,
                 type,
