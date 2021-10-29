@@ -138,10 +138,19 @@ class DeLogo extends VideoEditor {
             const box = this.delogoBox.getBoundingClientRect();
             const image = this.image.getBoundingClientRect();
             return {
-                x: parseInt(((box.left - image.left) * 1920) / image.width, 10),
-                y: parseInt(((box.top - image.top) * 1920) / image.width, 10),
-                w: parseInt((box.width * 1920) / image.width, 10),
-                h: parseInt((box.height * 1920) / image.width, 10),
+                x: parseInt(
+                    ((box.left - image.left) * this.video.width) / image.width,
+                    10
+                ),
+                y: parseInt(
+                    ((box.top - image.top) * this.video.height) / image.height,
+                    10
+                ),
+                w: parseInt((box.width * this.video.width) / image.width, 10),
+                h: parseInt(
+                    (box.height * this.video.height) / image.height,
+                    10
+                ),
             };
         } else {
             return null;
@@ -172,6 +181,12 @@ ${EDITOR_CSS}
         aspect-ratio: 1;
         overflow: hidden;
         position: relative;
+        z-index: 1;
+        transform-origin: left top;
+        transition: transform 200ms linear;
+    }
+    .zoom:hover {
+        transform: scale(2);
     }
 </style>
 ${EDITOR_TEMPLATE}
