@@ -4,6 +4,7 @@ import { requestCrop } from "./crop.js";
 import { requestRemux } from "./remux.js";
 import { clipper } from "./clipper.js";
 import { requestDelogo } from "./delogo.js";
+import { requestRemovelogo } from "./removelogo.js";
 
 export const toolProxy = function (e) {
     const args = e.target.value.split(":");
@@ -25,6 +26,9 @@ export const toolProxy = function (e) {
             break;
         case "delogo":
             requestDelogo.apply(this, args);
+            break;
+        case "removelogo":
+            requestRemovelogo.apply(this, args);
             break;
     }
 };
