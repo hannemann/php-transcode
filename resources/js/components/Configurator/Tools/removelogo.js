@@ -17,9 +17,14 @@ export const requestRemovelogo = async function (type) {
         document.body.appendChild(m);
         await m.open();
         console.info("Removelogo video file %s.", this.item.path);
-        // await Request.post(`/delogo/${encodeURIComponent(this.item.path)}`, {
-        //     ...this.delogo,
-        //     type,
-        // });
+        await Request.post(
+            `/removelogo/${encodeURIComponent(this.item.path)}`,
+            {
+                ts: d.timestamp(),
+                w: d.video.width,
+                h: d.video.height,
+                type,
+            }
+        );
     } catch (error) {}
 };

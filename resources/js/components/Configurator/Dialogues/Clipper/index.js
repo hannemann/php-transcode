@@ -21,9 +21,6 @@ class Clipper extends VideoEditor {
 
     onAdded() {
         super.onAdded();
-        this.fps =
-            this.video.avg_frame_rate.split("/")[0] /
-            this.video.avg_frame_rate.split("/")[1];
         document.addEventListener("keydown", this.handleKey);
         requestAnimationFrame(() => {
             this.calculateClips();

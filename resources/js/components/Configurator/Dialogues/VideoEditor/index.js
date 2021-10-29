@@ -14,6 +14,9 @@ class VideoEditor extends Slim {
     }
 
     onAdded() {
+        this.fps =
+            this.video.avg_frame_rate.split("/")[0] /
+            this.video.avg_frame_rate.split("/")[1];
         this.start = parseFloat(this.video.start_time);
         this.current = parseInt(this.start * 1000, 10) ?? 0;
         this.duration = this.video.duration * 1000;
@@ -49,7 +52,7 @@ class VideoEditor extends Slim {
         do {
             const img = document.createElement("img");
             const timestamp = this.timestamp(fr * i);
-            img.src = `${this.baseUrl}${timestamp}&height=${THUMBNAIL_HEIGHT}`;
+            img.src = `${this.baseThumbUrl}${timestamp}&width=${THUMBNAIL_HEIGHT * (4 / 3)}&height=${THUMBNAIL_HEIGHT}`;
             this.indicator.appendChild(img);
         } while (i++ <= count);
     }
@@ -108,6 +111,10 @@ class VideoEditor extends Slim {
 
     get baseUrl() {
         return `/image/${encodeURIComponent(this.path)}?timestamp=`;
+    }
+
+    get baseThumbUrl() {
+        return this.baseUrl;
     }
 
     get aspectRatio() {

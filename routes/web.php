@@ -14,6 +14,7 @@ use App\Http\Controllers\ScaleController;
 use App\Http\Controllers\TranscodeController;
 use App\Http\Controllers\CropController;
 use App\Http\Controllers\DelogoController;
+use App\Http\Controllers\RemovelogoController;
 use App\Http\Requests\FFMpegActionRequest;
 use App\Models\FilePicker;
 use App\Models\Video\File as VideoFile;
@@ -69,6 +70,8 @@ Route::post('/settings/{path}', [TranscodeController::class, 'saveSettings'])->w
 Route::post('/scale/{path}', [ScaleController::class, 'scale'])->where('path', '(.*)');
 Route::post('/crop/{path}', [CropController::class, 'crop'])->where('path', '(.*)');
 Route::post('/delogo/{path}', [DelogoController::class, 'delogo'])->where('path', '(.*)');
+Route::post('/removelogo/{path}', [RemovelogoController::class, 'removelogo'])->where('path', '(.*)');
+Route::get('/removelogoImage/{path}', [RemovelogoController::class, 'image'])->where('path', '(.*)');
 Route::post('/kill', fn () => KillFFMpeg::execute());
 Route::get('/image/{path}', [ClipperController::class, 'image'])->where('path', '(.*)');
 
