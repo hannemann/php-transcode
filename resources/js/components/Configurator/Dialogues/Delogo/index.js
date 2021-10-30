@@ -37,6 +37,15 @@ class DeLogo extends VideoEditor {
         document.addEventListener("keydown", this.handleKey);
         this.zoomImage = this.zoom.appendChild(document.createElement("img"));
         this.zoomImage.src = this.image.src;
+        console.log(this.image.width, this.image.height);
+        this.addDelogoBox({
+            layerX: Math.round(
+                this.image.offsetLeft + this.image.width / 2 - 10
+            ),
+            layerY: Math.round(
+                this.image.offsetTop + this.image.height / 2 - 10
+            ),
+        });
     }
 
     handleIndicatorClick(e) {
@@ -222,7 +231,6 @@ ${EDITOR_CSS}
         grid-auto-rows: min-content;
         gap: .5rem;
         font-size: .75rem;
-        white-space: nowrap;
     }
     .zoom {
         width: 250px;
@@ -240,31 +248,43 @@ ${EDITOR_CSS}
         display: none;
     }
     .info dl {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        grid-column-gap: .5rem;
+        display: flex;
+        justify-content: space-between;
+        margin: 0;
+    }
+    p {
+        max-width: 250px;
         margin: 0;
     }
 </style>
 ${EDITOR_TEMPLATE}
 <div class="info">
-    <dl>
-        <dt>x</dt>
-        <dl #ref="displayLeft">0</dl>
-    </dl>
-    <dl>
-        <dt>y</dt>
-        <dl #ref="displayTop">0</dl>
-    </dl>
-    <dl>
-        <dt>w</dt>
-        <dl #ref="displayWidth">0</dl>
-    </dl>
-    <dl>
-        <dt>h</dt>
-        <dl #ref="displayHeight">0</dl>
-    </dl>
     <div class="zoom" #ref="zoom"></div>
+    <p>
+        Click on image to set delogo rectangle
+    </p>
+    <dl>
+        <dt>x/y</dt>
+        <dd><span #ref="displayLeft">0px</span>&nbsp;/&nbsp;<span #ref="displayTop">0px</span></dd>
+    </dl>
+    <dl>
+        <dt>w/h</dt>
+        <dd><span #ref="displayWidth">0px</span>&nbsp;/&nbsp;<span #ref="displayHeight">0px</span></dd>
+    </dl>
+    <dl>
+        <dt>
+            <span class="iconify" data-icon="mdi-swap-vertical-bold"></span>
+            <span class="iconify" data-icon="mdi-swap-horizontal-bold"></span>
+        </dt>
+        <dd>Adjust dimensions</dd>
+    </dl>
+    <dl>
+        <dt>
+            <span class="iconify" data-icon="mdi-swap-vertical-bold"></span>
+            <span class="iconify" data-icon="mdi-swap-horizontal-bold"></span> + Ctrl
+        </dt>
+        <dd>Adjust position</dd>
+    </dl>
 </div>
 `;
 
