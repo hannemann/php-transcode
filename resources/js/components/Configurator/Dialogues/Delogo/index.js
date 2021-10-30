@@ -52,8 +52,6 @@ class DeLogo extends VideoEditor {
     }
 
     addDelogoBox(e) {
-        this.delogoOffsetTop = e.layerY - 10;
-        this.delogoOffsetLeft = e.layerX - 10;
         if (!this.delogoBox) {
             this.delogoBox = document.createElement("div");
             this.shadowRoot.appendChild(this.delogoBox);
@@ -61,11 +59,31 @@ class DeLogo extends VideoEditor {
             this.zoomDelogoBox = this.zoom.appendChild(
                 this.delogoBox.cloneNode(true)
             );
+            this.delogoBox.style.width = `20px`;
+            this.delogoBox.style.height = `20px`;
         }
-        this.delogoBox.style.top = `${this.delogoOffsetTop}px`;
-        this.delogoBox.style.left = `${this.delogoOffsetLeft}px`;
-        this.delogoBox.style.width = `20px`;
-        this.delogoBox.style.height = `20px`;
+        this.delogoOffsetTop =
+            e.layerY - Math.round(this.delogoBox.offsetHeight / 2);
+        this.delogoOffsetLeft =
+            e.layerX - Math.round(this.delogoBox.offsetWidth / 2);
+        this.delogoBox.style.top = `${Math.max(
+            this.image.offsetTop,
+            Math.min(
+                this.image.offsetTop +
+                    this.image.height -
+                    this.delogoBox.offsetHeight,
+                this.delogoOffsetTop
+            )
+        )}px`;
+        this.delogoBox.style.left = `${Math.max(
+            this.image.offsetLeft,
+            Math.min(
+                this.image.offsetLeft +
+                    this.image.width -
+                    this.delogoBox.offsetWidth,
+                this.delogoOffsetLeft
+            )
+        )}px`;
         this.updateZoom();
     }
 
@@ -97,46 +115,62 @@ class DeLogo extends VideoEditor {
             e.preventDefault();
             if (e.ctrlKey) {
                 if (e.key === "ArrowRight") {
-                    this.delogoBox.style.left = `${
-                        parseInt(this.delogoBox.style.left, 10) + 1
-                    }px`;
+                    this.delogoBox.style.left = `${Math.min(
+                        this.delogoBox.offsetLeft + 1,
+                        this.image.offsetLeft +
+                            this.image.width -
+                            this.delogoBox.offsetWidth
+                    )}px`;
                 }
                 if (e.key === "ArrowLeft") {
-                    this.delogoBox.style.left = `${
-                        parseInt(this.delogoBox.style.left, 10) - 1
-                    }px`;
+                    this.delogoBox.style.left = `${Math.max(
+                        this.delogoBox.offsetLeft - 1,
+                        this.image.offsetLeft
+                    )}px`;
                 }
                 if (e.key === "ArrowDown") {
-                    this.delogoBox.style.top = `${
-                        parseInt(this.delogoBox.style.top, 10) + 1
-                    }px`;
+                    this.delogoBox.style.top = `${Math.min(
+                        this.delogoBox.offsetTop + 1,
+                        this.image.offsetTop +
+                            this.image.height -
+                            this.delogoBox.offsetHeight
+                    )}px`;
                 }
                 if (e.key === "ArrowUp") {
-                    this.delogoBox.style.top = `${
-                        parseInt(this.delogoBox.style.top, 10) - 1
-                    }px`;
+                    this.delogoBox.style.top = `${Math.max(
+                        this.delogoBox.offsetTop - 1,
+                        this.image.offsetTop
+                    )}px`;
                 }
             } else {
                 const box = this.delogoBox.getBoundingClientRect();
                 if (e.key === "ArrowRight") {
-                    this.delogoBox.style.width = `${
-                        parseInt(this.delogoBox.style.width, 10) + 1
-                    }px`;
+                    this.delogoBox.style.width = `${Math.min(
+                        this.delogoBox.offsetWidth + 1,
+                        this.image.offsetLeft +
+                            this.image.offsetWidth -
+                            this.delogoBox.offsetLeft
+                    )}px`;
                 }
                 if (e.key === "ArrowLeft") {
-                    this.delogoBox.style.width = `${
-                        parseInt(this.delogoBox.style.width, 10) - 1
-                    }px`;
+                    this.delogoBox.style.width = `${Math.max(
+                        this.delogoBox.offsetWidth - 1,
+                        5
+                    )}px`;
                 }
                 if (e.key === "ArrowDown") {
-                    this.delogoBox.style.height = `${
-                        parseInt(this.delogoBox.style.height, 10) + 1
-                    }px`;
+                    this.delogoBox.style.height = `${Math.min(
+                        this.delogoBox.offsetHeight + 1,
+                        this.image.offsetTop +
+                            this.image.offsetHeight -
+                            this.delogoBox.offsetTop
+                    )}px`;
                 }
                 if (e.key === "ArrowUp") {
-                    this.delogoBox.style.height = `${
-                        parseInt(this.delogoBox.style.height, 10) - 1
-                    }px`;
+                    this.delogoBox.style.height = `${Math.max(
+                        this.delogoBox.offsetHeight - 1,
+                        5
+                    )}px`;
                 }
             }
             this.updateZoom();
@@ -197,6 +231,9 @@ ${EDITOR_CSS}
     }
     .zoom:hover {
         transform: scale(2);
+    }
+    .toggle-aspect {
+        display: none;
     }
 </style>
 ${EDITOR_TEMPLATE}
