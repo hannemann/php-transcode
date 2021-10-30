@@ -108,6 +108,10 @@ class DeLogo extends VideoEditor {
         this.zoomDelogoBox.style.width = `${this.coords.w}px`;
         this.zoomDelogoBox.style.height = `${this.coords.h}px`;
         this.zoomDelogoBox.style.transform = tr;
+        this.displayLeft.innerText = `${this.coords.x}px`;
+        this.displayTop.innerText = `${this.coords.y}px`;
+        this.displayWidth.innerText = `${this.coords.w}px`;
+        this.displayHeight.innerText = `${this.coords.h}px`;
     }
 
     handleKey(e) {
@@ -235,9 +239,31 @@ ${EDITOR_CSS}
     .toggle-aspect {
         display: none;
     }
+    .info dl {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-column-gap: .5rem;
+        margin: 0;
+    }
 </style>
 ${EDITOR_TEMPLATE}
 <div class="info">
+    <dl>
+        <dt>x</dt>
+        <dl #ref="displayLeft">0</dl>
+    </dl>
+    <dl>
+        <dt>y</dt>
+        <dl #ref="displayTop">0</dl>
+    </dl>
+    <dl>
+        <dt>w</dt>
+        <dl #ref="displayWidth">0</dl>
+    </dl>
+    <dl>
+        <dt>h</dt>
+        <dl #ref="displayHeight">0</dl>
+    </dl>
     <div class="zoom" #ref="zoom"></div>
 </div>
 `;
