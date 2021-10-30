@@ -228,9 +228,13 @@ class Cropper extends VideoEditor {
     }
 
     set aspectRatio(value) {
-        if (value.match(/([0-9]+):([0-9]+)/)) {
+        if (["4:3", "16:9"].indexOf(value) > -1) {
             this.shadowRoot.querySelector(
                 `[name="input-aspect"][value="${value}"]`
+            ).checked = true;
+        } else if (value.match(/([0-9]+):([0-9]+)/)) {
+            this.shadowRoot.querySelector(
+                `[name="input-aspect"][value="custom"]`
             ).checked = true;
         }
     }
@@ -396,14 +400,14 @@ ${EDITOR_TEMPLATE}
             <input type="radio" name="input-aspect" value="16:9" @change="{{ this.validateDimensions() }}">
         </label>
         <label>
-            <span>Custom</span>
+            <span>Custom ({{ this.cropOffsetRight - this.cropOffsetLeft }}x{{ this.cropOffsetBottom - this.cropOffsetTop }})</span>
             <input type="radio" name="input-aspect" value="custom" @change="{{ this.validateDimensions() }}">
         </label>
     </fieldset>
     <fieldset>
         <legend>Crop Box:</legend>
-        <label>{{ this.cropOffsetRight - this.cropOffsetLeft }} x {{ this.cropOffsetBottom - this.cropOffsetTop }}</label>
-        <label>{{ this.cropOffsetLeft }} / {{ this.cropOffsetTop }}</label>
+        <label>w:h {{ this.cropOffsetRight - this.cropOffsetLeft }}:{{ this.cropOffsetBottom - this.cropOffsetTop }}</label>
+        <label>x:y {{ this.cropOffsetLeft }}:{{ this.cropOffsetTop }}</label>
     </fieldset>
     <div class="help">
         <dl>

@@ -346,12 +346,10 @@ ${CSS}
                 <option *if="{{ this.canConcat }}" value="concat:mkv">Concat MKV</option>
                 <option *if="{{ this.canConcat }}" value="concat:mp4">Concat MP4</option>
                 <option value="scale:cpu">Scale (CPU)</option>
-                <option value="scale:vaapi">Scale (VAAPI)</option>
                 <option value="remux:mkv">Remux MKV</option>
                 <option value="remux:mp4">Remux MP4</option>
                 <option value="remux:ts">Remux TS</option>
                 <option value="crop:cpu">Crop (CPU)</option>
-                <option value="crop:vaapi">Crop (VAAPI)</option>
                 <option value="delogo:cpu">DeLogo (CPU)</option>
                 <option value="removelogo:cpu">RemoveLogo (CPU)</option>
             </combo-button>
