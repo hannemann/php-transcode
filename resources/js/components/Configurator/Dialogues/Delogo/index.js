@@ -71,8 +71,18 @@ class DeLogo extends VideoEditor {
 
     updateZoom() {
         const tr = `translate(
-            -${this.coords.x - this.zoom.offsetWidth / 2 + this.coords.w / 2}px,
-            -${this.coords.y - this.zoom.offsetHeight / 2 + this.coords.h / 2}px
+            ${
+                (this.coords.x -
+                    this.zoom.offsetWidth / 2 +
+                    this.coords.w / 2) *
+                -1
+            }px,
+            ${
+                (this.coords.y -
+                    this.zoom.offsetHeight / 2 +
+                    this.coords.h / 2) *
+                -1
+            }px
             )`;
         this.zoomImage.style.transform = tr;
         this.zoomDelogoBox.style.top = `${this.coords.y}px`;
