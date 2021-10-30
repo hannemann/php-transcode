@@ -80,8 +80,12 @@ class Cropper extends VideoEditor {
         const padWidth = (croppedHeight / ratios[1]) * ratios[0];
         this.valid =
             this.replaceBlackBorders ||
+            this.aspectRatio === "custom" ||
             (croppedHeight <= this.height && croppedWidth <= padWidth);
         this.runButton.disabled = !this.valid;
+        if (this.aspectRatio === "custom") {
+            this.inputHeight.value = this.cropOffsetBottom - this.cropOffsetTop;
+        }
     }
 
     get gradients() {
@@ -254,7 +258,12 @@ class Cropper extends VideoEditor {
             cx: this.cropOffsetLeft,
             cy: this.cropOffsetTop,
             height: this.height,
-            aspect: this.aspectRatio,
+            aspect:
+                this.aspectRatio === "custom"
+                    ? `${this.cropOffsetRight - this.cropOffsetLeft}:${
+                          this.cropOffsetBottom - this.cropOffsetTop
+                      }`
+                    : this.aspectRatio,
             type: this.type,
             replaceBlackBorders: this.replaceBlackBorders,
         };
@@ -380,11 +389,15 @@ ${EDITOR_TEMPLATE}
         <legend>Aspect Ratio:</legend>
         <label>
             <span>4:3</span>
-            <input type="radio" name="input-aspect" value="4:3">
+            <input type="radio" name="input-aspect" value="4:3" @change="{{ this.validateDimensions() }}">
         </label>
         <label>
             <span>16:9</span>
-            <input type="radio" name="input-aspect" value="16:9">
+            <input type="radio" name="input-aspect" value="16:9" @change="{{ this.validateDimensions() }}">
+        </label>
+        <label>
+            <span>Custom</span>
+            <input type="radio" name="input-aspect" value="custom" @change="{{ this.validateDimensions() }}">
         </label>
     </fieldset>
     <fieldset>
