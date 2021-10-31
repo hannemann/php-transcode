@@ -14,11 +14,9 @@ import "./Dialogues/RemoveLogo";
 import { toolProxy } from "./Tools";
 
 const WS_CHANNEL = "Transcode.Config";
-const WS_CHANNEL_FFMPEG_OUT = "FFMpegOut";
 class TranscodeConfigurator extends Slim {
     onAdded() {
         this.canConcat = false;
-        this.debounceOut = false;
         document.addEventListener("file-clicked", this.init.bind(this));
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot));
         this.remuxContainer = "MP4";
@@ -87,20 +85,11 @@ class TranscodeConfigurator extends Slim {
             this.handleConfiguratorEvent.bind(this)
         );
         this.channel.subscribed(this.requestStreams.bind(this));
-        this.channelOut = window.Echo.channel(
-            `${WS_CHANNEL_FFMPEG_OUT}.${this.item.channel}`
-        );
-        this.channelOut.listen(
-            WS_CHANNEL_FFMPEG_OUT,
-            this.handleOutEvent.bind(this)
-        );
     }
 
     leaveWebsocket() {
         this.channel.stopListening(WS_CHANNEL);
         window.Echo.leave(WS_CHANNEL);
-        this.channelOut.stopListening(WS_CHANNEL_FFMPEG_OUT);
-        window.Echo.leave(`${WS_CHANNEL_FFMPEG_OUT}.${this.item.channel}`);
         delete this.channel;
     }
 
@@ -143,14 +132,6 @@ class TranscodeConfigurator extends Slim {
         this.streams = ws.streams;
         this.crop = ws.crop ?? {};
         this.show();
-    }
-
-    handleOutEvent(ws) {
-        if (!this.debounceOut) {
-            this.debounceOut = true;
-            setTimeout(() => (this.debounceOut = false), 500);
-            this.out = ws.out;
-        }
     }
 
     setCanConcat() {
@@ -301,12 +282,6 @@ footer .icon-stack {
     font-size: var(--font-size-200);
     aspect-ratio: 1;
 }
-.status {
-    position: absolute;
-    inset: auto var(--rel-gutter-200) .25rem;
-    height: 1rem;
-    font-size: .75rem;
-}
 combo-button {
     min-width: 190px;
 }
@@ -358,7 +333,6 @@ ${CSS}
         </footer>
     </div>
     <transcode-configurator-stream-config #ref="streamConfig"></transcode-configurator-stream-config>
-    <div class="status">{{ this.out }}</div>
 </main>
 `;
 

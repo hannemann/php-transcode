@@ -1,16 +1,17 @@
-import {PROGRESS_ITEM_CSS, ProgressItem} from './Items'
-
+import { PROGRESS_ITEM_CSS, ProgressItem } from "./Items";
 
 class ProgressFailed extends ProgressItem {
     showException(item) {
-        console.error(item)
-        document.dispatchEvent(new CustomEvent('show-textcontent', {
-            detail: {content: item.exception}
-        }))
+        console.error(item);
+        document.dispatchEvent(
+            new CustomEvent("show-textcontent", {
+                detail: { content: item.exception },
+            })
+        );
     }
 }
 
-ProgressFailed.template = /*html*/`
+ProgressFailed.template = /*html*/ `
 ${PROGRESS_ITEM_CSS}
 <header>Failed</header>
 <div *foreach="{{ this.items }}">
@@ -21,6 +22,6 @@ ${PROGRESS_ITEM_CSS}
     <div @click="{{ this.showException(item) }}" class="path" style="cursor: pointer">{{ item.type.ucfirst() }}: {{ item.path }}</div>
     <div>{{ item.percentage }}%</div>
 </div>
-`
+`;
 
-customElements.define('ffmpeg-progress-failed', ProgressFailed);
+customElements.define("status-progress-failed", ProgressFailed);

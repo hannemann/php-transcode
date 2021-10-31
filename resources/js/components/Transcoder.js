@@ -4,7 +4,7 @@ import "./Configurator";
 import "./TextViewer";
 import "./Request";
 import "./Toast";
-import "./Progress";
+import "./Statusbar";
 
 class Transcoder extends Slim {
     constructor() {
@@ -64,6 +64,7 @@ Transcoder.template = /*html*/ `
     }
     h1 {
         user-select: none;
+        grid-area: header;
     }
     main {
         padding: .2rem;
@@ -74,6 +75,9 @@ Transcoder.template = /*html*/ `
     filepicker-root {
         height: 100%;
     }
+    status-bar {
+        grid-area: status;
+    }
 </style>
 <h1>PVR Toolbox</h1>
 <main>
@@ -81,9 +85,9 @@ Transcoder.template = /*html*/ `
 </main>
 <transcode-configurator #ref="configurator"></transcode-configurator>
 <text-viewer></text-viewer>
-<transcoder-loading></transcoder-loading>
-<ffmpeg-progress></ffmpeg-progress>
+<status-bar></status-bar>
 <transcoder-toast></transcoder-toast>
+<transcoder-loading></transcoder-loading>
 `;
 
 customElements.define("ffmpeg-transcoder", Transcoder);

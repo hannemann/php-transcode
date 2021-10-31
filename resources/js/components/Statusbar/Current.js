@@ -1,4 +1,4 @@
-import {PROGRESS_ITEM_CSS, ProgressItem} from './Items'
+import { PROGRESS_ITEM_CSS, ProgressItem } from "./Items";
 import { Request } from "@/components/Request";
 
 class ProgressCurrent extends ProgressItem {
@@ -49,4 +49,4 @@ ${PROGRESS_ITEM_CSS}
 </div>
 `;
 
-customElements.define('ffmpeg-progress-current', ProgressCurrent);
+customElements.define("status-progress-current", ProgressCurrent);

@@ -36,6 +36,6 @@ class FFMpegOut implements ShouldBroadcastNow
      */
     public function broadcastOn()
     {
-        return new Channel('FFMpegOut.' . $this->pathHash);
+        return new Channel('FFMpegOut');
     }
 }

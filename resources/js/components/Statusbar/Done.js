@@ -1,8 +1,8 @@
-import {PROGRESS_ITEM_CSS, ProgressItem} from './Items'
+import { PROGRESS_ITEM_CSS, ProgressItem } from "./Items";
 
 class ProgressDone extends ProgressItem {}
 
-ProgressDone.template = /*html*/`
+ProgressDone.template = /*html*/ `
 ${PROGRESS_ITEM_CSS}
 <header>Done</header>
 <div *foreach="{{ this.items }}">
@@ -13,6 +13,6 @@ ${PROGRESS_ITEM_CSS}
     <div class="path">{{ item.type.ucfirst() }}: {{ item.path }}</div>
     <div>{{ item.percentage }}%</div>
 </div>
-`
+`;
 
-customElements.define('ffmpeg-progress-done', ProgressDone);
+customElements.define("status-progress-done", ProgressDone);
