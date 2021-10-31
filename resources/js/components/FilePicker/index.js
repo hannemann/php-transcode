@@ -23,6 +23,10 @@ class FilePicker extends FilePickerBase {
 FilePicker.template = /*html*/ `
 ${ICON_STACK_CSS}
 <style>
+    :host {
+        display: grid;
+        grid-template-rows: min-content 1fr;
+    }
 .toolbar {
     display: grid;
     grid-auto-flow: column;
@@ -40,18 +44,24 @@ ${ICON_STACK_CSS}
     place-items: center;
     border-radius: .125rem;
 }
+main {
+    overflow: auto;
+    padding: 0 1rem;
+}
 </style>
-<div>
-    <div class="toolbar">
-        <div class="tool-button" @click="{{ this.reload }}">
-            <div class="icon-stack">
-                <span class="iconify inactive" data-icon="mdi-reload"></span>
-                <span class="iconify active" data-icon="mdi-reload"></span>
-                <span class="iconify hover" data-icon="mdi-reload"></span>
-            </div>
+<div class="toolbar">
+    <div class="tool-button" @click="{{ this.reload }}">
+        <div class="icon-stack">
+            <span class="iconify inactive" data-icon="mdi-reload"></span>
+            <span class="iconify active" data-icon="mdi-reload"></span>
+            <span class="iconify hover" data-icon="mdi-reload"></span>
         </div>
     </div>
-    ${ITEM_TEMPLATE}
 </div>
+<main>
+    <div>
+        ${ITEM_TEMPLATE}
+    </div>
+</main>
 `;
 customElements.define("filepicker-root", FilePicker);

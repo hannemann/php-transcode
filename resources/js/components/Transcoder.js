@@ -54,18 +54,25 @@ Transcoder.template = /*html*/ `
         grid-template-rows: 5rem calc(100vh - 7rem) 2rem;
         grid-template-areas: "header" "filepicker" "status";
     }
+    :host(.background) h1,
     :host(.background) main {
         filter: blur(3px);
     }
-    main {
-        padding: .2rem;
+    main, h1 {
         filter: blur(0);
         transition: var(--loading-transition);
-        grid-area: filepicker;
-        overflow: hidden;
     }
     h1 {
         user-select: none;
+    }
+    main {
+        padding: .2rem;
+        grid-area: filepicker;
+        overflow: hidden;
+        align-self: stretch;
+    }
+    filepicker-root {
+        height: 100%;
     }
 </style>
 <h1>PVR Toolbox</h1>
