@@ -15,7 +15,7 @@ class Image
     {
         $file = static::getInputFilename($disk, $path);
         $args = [
-            '-y', '-ss', $timestamp, '-i', $file, '-r', '25', '-frames:v', '1', '-f', 'image2'
+            '-y', '-ss', $timestamp, '-i', $file, '-frames:v', '1', '-f', 'image2'
         ];
 
         if ($width || $height) {
