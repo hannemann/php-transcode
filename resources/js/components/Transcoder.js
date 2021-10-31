@@ -49,7 +49,10 @@ class Transcoder extends Slim {
 Transcoder.template = /*html*/ `
 <style>
     :host {
-        display: block;
+        height: 100%;
+        display: grid;
+        grid-template-rows: 5rem calc(100vh - 7rem) 2rem;
+        grid-template-areas: "header" "filepicker" "status";
     }
     :host(.background) main {
         filter: blur(3px);
@@ -58,13 +61,15 @@ Transcoder.template = /*html*/ `
         padding: .2rem;
         filter: blur(0);
         transition: var(--loading-transition);
+        grid-area: filepicker;
+        overflow: hidden;
     }
     h1 {
         user-select: none;
     }
 </style>
+<h1>PVR Toolbox</h1>
 <main>
-    <h1>Transcoder</h1>
     <filepicker-root #ref="filePicker"></filepicker-root>
 </main>
 <transcode-configurator #ref="configurator"></transcode-configurator>
