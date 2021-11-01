@@ -10,7 +10,7 @@ $videoCodecs = [
     "hevc_vaapi" => [
         "v" => 1,
         "l" => "H265 (VAAPI)",
-        "qp" => 28,
+        "qp" => 21,
     ],
     "copy" => [
         "v" => 2,
