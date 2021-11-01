@@ -270,6 +270,7 @@ class Cropper extends VideoEditor {
                     : this.aspectRatio,
             type: this.type,
             replaceBlackBorders: this.replaceBlackBorders,
+            mirror: this.inputMirror.checked,
         };
     }
 
@@ -387,6 +388,10 @@ ${EDITOR_TEMPLATE}
         <label>
             <span>Replace Borders</span>
             <input type="checkbox" name="replaceBlackBorders" #ref="inputReplaceBlackBorders" @change="{{ this.validateDimensions() }}">
+        </label>
+        <label>
+            <span>Mirror</span>
+            <input type="checkbox" name="mirror" #ref="inputMirror">
         </label>
     </fieldset>
     <fieldset class="aspect-ratio">
