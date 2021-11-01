@@ -23,9 +23,7 @@ class Statusbar extends Slim {
         this.out = "";
         this.rate = "";
         this.remaining = "";
-        this.size = 0;
         this.percentage = 0;
-        this.detail = false;
         this.dataset.hasItems = false;
     }
 
@@ -42,6 +40,17 @@ class Statusbar extends Slim {
             WS_CHANNEL_FFMPEG_OUT,
             this.handleOutEvent.bind(this)
         );
+        document.addEventListener("click", (e) => {
+            const p = e.composedPath();
+            if (
+                !this.sectionDetail.classList.contains("hidden") &&
+                p.indexOf(this.sectionDetail) < 0
+            ) {
+                this.toggleDetail();
+            } else if (p.indexOf(this.buttonDetail) > -1) {
+                this.toggleDetail();
+            }
+        });
     }
 
     handleOutEvent(ws) {
@@ -49,11 +58,11 @@ class Statusbar extends Slim {
     }
 
     toggleDetail() {
-        this.detail = !this.detail;
-        this.classList.toggle("detail", this.detail);
-        this.iconShort.classList.toggle("hidden", this.detail);
-        this.iconDetail.classList.toggle("hidden", !this.detail);
-        this.sectionDetail.classList.toggle("hidden", !this.detail);
+        const detail = this.sectionDetail.classList.contains("hidden");
+        this.classList.toggle("detail", detail);
+        this.iconShort.classList.toggle("hidden", detail);
+        this.iconDetail.classList.toggle("hidden", !detail);
+        this.sectionDetail.classList.toggle("hidden", !detail);
         this.requestProgress();
     }
 
@@ -160,6 +169,7 @@ section {
     padding: 0 .5rem;
     border: 1px solid;
     border-color: var(--clr-bg-0) var(--clr-bg-0) var(--clr-bg-200) var(--clr-bg-200);
+    background-color: var(--clr-bg-140);
     --duration: var(--transition-medium);
     transform-origin: bottom right;
     transition: transform var(--duration) ease-in-out,
@@ -205,7 +215,7 @@ section.hidden {
 }
 .runtime span:last-of-type {
     position: absolute;
-    inset: 0;
+    inset: 0 0 1px;
     background: var(--clr-enlightened);
     box-shadow: 0 0 5px 5px inset var(--clr-enlightened-glow);
     color: var(--clr-text-200-inverse);
@@ -229,20 +239,22 @@ ${ICON_STACK_CSS}
         <span style="{{ 'width:' + this.percentage + '%' }}">{{ this.runtime }}</span>
     </section>
     <section #ref="sectionShort">{{ this.percentage }}%</section>
-    <div #ref="iconShort" @click="this.toggleDetail()">
-        <div class="icon-stack">
-            <span class="iconify" data-icon="mdi-plus-box-outline"></span>
-            <span class="iconify hover" data-icon="mdi-plus-box-outline"></span>
+    <section #ref="buttonDetail">
+        <div #ref="iconShort">
+            <div class="icon-stack">
+                <span class="iconify" data-icon="mdi-plus-box-outline"></span>
+                <span class="iconify hover" data-icon="mdi-plus-box-outline"></span>
+            </div>
         </div>
-    </div>
-    <div #ref="iconDetail" class="hidden" @click="this.toggleDetail()">
-        <div class="icon-stack">
-            <span class="iconify" data-icon="mdi-minus-box-outline"></span>
-            <span class="iconify hover" data-icon="mdi-minus-box-outline"></span>
+        <div #ref="iconDetail" class="hidden">
+            <div class="icon-stack">
+                <span class="iconify" data-icon="mdi-minus-box-outline"></span>
+                <span class="iconify hover" data-icon="mdi-minus-box-outline"></span>
+            </div>
         </div>
-    </div>
+    </section>
 </main>
-    <section #ref="sectionDetail" class="detail hidden"></section>
+<section #ref="sectionDetail" class="detail hidden"></section>
 `;
 
 customElements.define("status-bar", Statusbar);

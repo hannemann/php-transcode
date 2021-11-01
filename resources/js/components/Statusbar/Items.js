@@ -17,7 +17,7 @@ class ProgressItem extends Slim {
     }
 }
 
-const PROGRESS_ITEM_CSS = /*css*/`
+const PROGRESS_ITEM_CSS = /*css*/ `
 <style>
 :host > div {
     display: flex;
@@ -26,6 +26,7 @@ const PROGRESS_ITEM_CSS = /*css*/`
 }
 header {
     font-weight: bold;
+    user-select: none;
 }
 div > div:last-child {
     text-align: right;
@@ -42,6 +43,6 @@ div.icon-stack {
 }
 </style>
 ${ICON_STACK_CSS}
-`
+`;
 
 export { PROGRESS_ITEM_CSS, ProgressItem }
