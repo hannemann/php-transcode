@@ -39,8 +39,10 @@ class RemuxMapper
     {
         $streamId = $this->videoIndex;
         $this->videoIndex++;
-        $cmds->push('-aspect:v:' . $streamId);
-        $cmds->push($stream['config']['aspectRatio'] ?? '16:9');
+        if ($stream['config']['aspectRatio'] && $stream['config']['aspectRatio'] !== 'Keep') {
+            $cmds->push('-aspect:v:' . $streamId);
+            $cmds->push($stream['config']['aspectRatio']);
+        }
         return $cmds;
     }
 }

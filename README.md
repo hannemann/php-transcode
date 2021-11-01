@@ -121,7 +121,6 @@ Error while processing the decoded data for stream #0:0
 
 
 ## TODO:
-* hide queue on document click
-* allow custom aspect rations when transcoding
+* test pages instead of modals
 
 ## Fix
