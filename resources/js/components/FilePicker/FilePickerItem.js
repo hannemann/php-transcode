@@ -73,16 +73,20 @@ class FilePickerItem extends FilePickerBase {
             result += ` - ${this.size}`;
         }
         if (this.lastModified) {
-            let d = new Date(this.lastModified * 1000);
-            let date = d.toLocaleDateString(d.getTimezoneOffset(), {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-            });
-            let time = d.toLocaleTimeString(d.getTimezoneOffset());
-            result += ` - ${date} ${time}`;
+            result += ` - ${this.getLocalDate()}`;
         }
         return result;
+    }
+
+    getLocalDate() {
+        let d = new Date(this.lastModified * 1000);
+        let date = d.toLocaleDateString(d.getTimezoneOffset(), {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+        });
+        let time = d.toLocaleTimeString(d.getTimezoneOffset());
+        return `${date} ${time}`;
     }
 
     async delete() {
@@ -202,6 +206,12 @@ const CSS = /*css*/ `
         font-size: 1rem;
         display: revert;
     }
+    .dummy-button {
+        width: 1rem;
+    }
+    .info {
+        font-size: .85em;
+    }
 </style>
 ${ICON_STACK_CSS}
 `;
@@ -239,10 +249,13 @@ ${CSS}
         <span @click="this.handleClick()" title="{{ this.title }}" class="label">
             <slot></slot>
         </span>
+        <span *if="{{ this.type === 'f' }}" class="info">{{ this.size }}</span>
+        <span *if="{{ this.type === 'f' }}" class="info">{{ this.getLocalDate() }}</span>
         <button *if="{{ this.internal }}" class="icon-stack delete" @click="{{ this.delete }}">
             <span class="iconify" data-icon="mdi-trash-can-outline"></span>
             <span class="iconify hover" data-icon="mdi-trash-can-outline"></span>
         </button>
+        <div class="dummy-button" *if="{{ !this.internal }}"></div>
     </div>
     ${ITEM_TEMPLATE}
 </div>
