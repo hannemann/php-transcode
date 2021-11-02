@@ -35,7 +35,7 @@ div > div:last-child {
 }
 div.path {
     white-space: nowrap;
-    overflow: hidden;
+    overflow-x: hidden;
     text-overflow: ellipsis;
 }
 div.icon-stack {

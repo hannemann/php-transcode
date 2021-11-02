@@ -21,17 +21,16 @@ ${PROGRESS_ITEM_CSS}
 <style>
     .path {
         position: relative;
-        height: 1rem;
         width: 100%;
     }
     .path span:last-of-type {
-        padding-inline: .25rem;
+        text-indent: .25rem;
         position: absolute;
         inset: 0;
         background: var(--clr-enlightened);
         box-shadow: 0 0 5px 5px inset var(--clr-enlightened-glow);
         color: var(--clr-text-200-inverse);
-        overflow: hidden;
+        overflow-x: hidden;
         border-radius: .2rem;
     }
 </style>
