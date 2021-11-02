@@ -4,6 +4,18 @@
     --rel-gutter-200: clamp(.75rem, 2vw, 2rem);
     --rel-gutter-400: clamp(1rem, 2vw, 4rem);
     --rel-gutter-500: clamp(1rem, 5vw, 5rem);
+
+    --statusbar-height: 2rem;
+
+    --window-inset: min(60px, var(--rel-gutter-500));
+    --window-border-radius: var(var(--rel-gutter-100));
+    --window-border: 2px solid var(--clr-bg-100);
+}
+
+:root[data-layout="app"] {
+    --window-inset: 0 0 var(--statusbar-height);
+    --window-border-radius: 0;
+    --window-border: none;
 }
 :root {
 

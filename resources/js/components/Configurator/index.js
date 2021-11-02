@@ -223,9 +223,9 @@ const CSS = /*css*/ `
 main {
     position: absolute;
     box-shadow: 0 0 10vw 3vw var(--clr-shadow-0);
-    inset: min(60px, var(--rel-gutter-500));
+    inset: var(--window-inset);
     background-color: var(--clr-bg-0);
-    border-radius: var(--rel-gutter-100);
+    border-radius: var(--window-border-radius);
     padding: min(30px, var(--rel-gutter-200));
 }
 main h1 {

@@ -116,7 +116,7 @@ main {
     min-width: 300px;
     background: var(--clr-bg-0);
     box-shadow: 0 0 10vw 3vw var(--clr-shadow-0);
-    border: 2px solid var(--clr-bg-100);
+    border: var(--window-border);
     border-radius: .5rem;
     padding: 1rem;
 }

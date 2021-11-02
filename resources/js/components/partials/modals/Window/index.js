@@ -17,9 +17,9 @@ ${MODAL_BASE_CSS}
     main {
         position: absolute;
         box-shadow: 0 0 10vw 3vw var(--clr-shadow-0);
-        inset: min(60px, var(--rel-gutter-500));
+        inset: var(--window-inset);
+        border-radius: var(--window-border-radius);
         background-color: var(--clr-bg-0);
-        border-radius: var(--rel-gutter-100);
         padding: min(30px, var(--rel-gutter-200));
         max-width: revert;
         min-width: revert;

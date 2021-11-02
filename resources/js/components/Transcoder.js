@@ -51,7 +51,7 @@ Transcoder.template = /*html*/ `
     :host {
         height: 100%;
         display: grid;
-        grid-template-rows: 5rem calc(100vh - 7rem) 2rem;
+        grid-template-rows: 5rem calc(100vh - 7rem) var(--statusbar-height);
         grid-template-areas: "header" "filepicker" "status";
     }
     :host(.background) h1,
