@@ -411,8 +411,8 @@ ${EDITOR_TEMPLATE}
     </fieldset>
     <fieldset>
         <legend>Crop Box:</legend>
-        <label>w:h {{ this.cropOffsetRight - this.cropOffsetLeft }}:{{ this.cropOffsetBottom - this.cropOffsetTop }}</label>
-        <label>x:y {{ this.cropOffsetLeft }}:{{ this.cropOffsetTop }}</label>
+        <label><span>w:h</span><span>{{ this.cropOffsetRight - this.cropOffsetLeft }}:{{ this.cropOffsetBottom - this.cropOffsetTop }}</span></label>
+        <label><span>x:y</span><span>{{ this.cropOffsetLeft }}:{{ this.cropOffsetTop }}</span></label>
     </fieldset>
     <div class="help">
         <dl>
