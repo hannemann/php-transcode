@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 
 class Hls
 {
+    const TMP_PATH = 'pvr_toolbox_stream';
 
     public function stream(string $disk, string $path)
     {
@@ -21,8 +22,8 @@ class Hls
         Storage::disk($disk)->makeDirectory(static::getOutputPath($path));
 
         $i = $this->getInputFilename($disk, $path);
-        $o = dirname($i) . DIRECTORY_SEPARATOR . 'pvr_toolbox_stream' . DIRECTORY_SEPARATOR;
-        $b = implode(DIRECTORY_SEPARATOR, ['stream-segment', dirname($path), 'pvr_toolbox_stream']);
+        $o = dirname($i) . DIRECTORY_SEPARATOR . static::TMP_PATH . DIRECTORY_SEPARATOR;
+        $b = implode(DIRECTORY_SEPARATOR, ['stream-segment', dirname($path), static::TMP_PATH]);
         $b = DIRECTORY_SEPARATOR . $b . DIRECTORY_SEPARATOR;
         $args = collect($format->getInitialParameters());
         $args->push('-i', $i);
@@ -38,7 +39,7 @@ class Hls
         $args->push('-hls_time', '10');
         $args->push('-hls_base_url', $b);
         $args->push('-hls_segment_filename', $o . 'hls-%03d.ts');
-        $args->push('-master_pl_name', 'master_0.m3u8');
+        $args->push('-master_pl_name', 'master.m3u8');
         $args->push($o . 'hls.m3u8');
 
         FFMpegDriver::create(null, Arr::dot(config('laravel-ffmpeg')))->command($args->all());
@@ -46,9 +47,9 @@ class Hls
 
     public static function playlist(string $disk, string $path): string
     {
-        $attempts = 0;
+        $wait = 0;
         $playlist = static::getPlayListName($path);
-        while ($attempts < 10 && !Storage::disk($disk)->exists($playlist)) {
+        while ($wait++ < 10 && !Storage::disk($disk)->exists($playlist)) {
             sleep(1);
         }
         return Storage::disk($disk)->get($playlist);
@@ -65,6 +66,10 @@ class Hls
         if ($pid = static::getProcess()) {
             $driver->command([$pid]);
         }
+        $wait = 0;
+        while($wait++ < 10 && static::getProcess()) {
+            sleep(1);
+        }
 
         $ro = static::getOutputPath($path);
         $d = Storage::disk($disk);
@@ -77,7 +82,7 @@ class Hls
 
     private static function getPlayListName(string $path): string
     {
-        return dirname($path) . DIRECTORY_SEPARATOR . 'pvr_toolbox_stream' . DIRECTORY_SEPARATOR . 'hls.m3u8';
+        return dirname($path) . DIRECTORY_SEPARATOR . static::TMP_PATH . DIRECTORY_SEPARATOR . 'hls.m3u8';
     }
 
     /**
@@ -94,7 +99,7 @@ class Hls
 
     private static function getOutputPath(string $path): string
     {
-        return dirname($path) . DIRECTORY_SEPARATOR . 'pvr_toolbox_stream';
+        return dirname($path) . DIRECTORY_SEPARATOR . static::TMP_PATH;
     }
 
     private static function getProcess():? string
@@ -102,7 +107,7 @@ class Hls
         $driver = PsDriver::load(config('process.binaries.ps'));
         $processList = collect(explode("\n", $driver->command(['-axo', 'pid,command'])));
         $idx = $processList->search(function ($item) {
-            return Str::containsAll($item, ['ffmpeg', 'pvr_toolbox_stream', 'hls']);
+            return Str::containsAll($item, ['ffmpeg', static::TMP_PATH, 'hls']);
         });
         return $idx ? explode(' ', trim($processList[$idx]))[0] : null;
     }
