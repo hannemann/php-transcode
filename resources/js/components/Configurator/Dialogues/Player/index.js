@@ -3,8 +3,11 @@ import { Request } from "@/components/Request";
 import Hls from "hls.js";
 
 class Player extends Slim {
-    onAdded() {
-        Request.get(`/stream/${encodeURIComponent(this.path)}`);
+    async onAdded() {
+        let response = await Request.post(
+            `/stream/${encodeURIComponent(this.path)}`,
+            this.config
+        );
         requestAnimationFrame(() => {
             this.hls = new Hls();
             this.hls.loadSource(

@@ -5,7 +5,7 @@ export const requestPlay = async function () {
     const d = m.appendChild(document.createElement("dialogue-player"));
     try {
         d.path = this.item.path;
-        console.log(this, d, this.item.path, d.path);
+        d.config = this.config;
         m.header = "Player";
         document.body.appendChild(m);
         await m.open();

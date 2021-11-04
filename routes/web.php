@@ -77,7 +77,7 @@ Route::post('/kill', fn () => KillFFMpeg::execute());
 Route::get('/image/{path}', [ClipperController::class, 'image'])->where('path', '(.*)');
 Route::get('/stream-playlist/{path}.m3u8', [PlayerController::class, 'playlist'])->where('path', '(.*)');
 Route::get('/stream-segment/{path}', [PlayerController::class, 'segment'])->where('path', '(.*)');
-Route::get('/stream/{path}', [PlayerController::class, 'stream'])->where('path', '(.*)');
+Route::post('/stream/{path}', [PlayerController::class, 'stream'])->where('path', '(.*)');
 Route::delete('/stream/{path}', [PlayerController::class, 'cleanup'])->where('path', '(.*)');
 
 Route::get('/streams/{path?}', function (string $path = null) {

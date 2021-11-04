@@ -13,7 +13,7 @@ class Hls
 {
     const TMP_PATH = 'pvr_toolbox_stream';
 
-    public function stream(string $disk, string $path)
+    public function stream(string $disk, string $path, array $config)
     {
         $this->path = $path;
         $format = (new h264_vaapi);
@@ -27,9 +27,11 @@ class Hls
         $b = DIRECTORY_SEPARATOR . $b . DIRECTORY_SEPARATOR;
         $args = collect($format->getInitialParameters());
         $args->push('-i', $i);
-        $args->push('-map', '0:v:0');
-        $args->push('-map', '0:a:0');
-        $args->push('-c:v', 'copy');
+        foreach($config['streams'] as $stream) {
+            $args->push('-map', '0:' . $stream['id']);
+        }
+        $args->push('-c:v', 'h264_vaapi');
+        $args->push('-qp', '21');
         $args->push('-c:a', 'aac');
         $args->push('-b:a', '128k');
         $args->push('-ac', '2');

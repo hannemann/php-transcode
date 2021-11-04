@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PlayerRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use App\Jobs\Player;
@@ -9,13 +10,16 @@ use App\Models\FFMpeg\Player\Hls;
 
 class PlayerController extends Controller
 {
-    public function stream(string $path):? JsonResponse
+    public function stream(PlayerRequest $request, string $path):? JsonResponse
     {
         try {
 
             // (new Hls())->stream('recordings', $path);
 
-            Player::dispatch('recordings', $path);
+            Player::dispatch('recordings', $path, $request->input());
+            return response()->json([
+                'message' => 'Stream started'
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => sprintf($e->getMessage())

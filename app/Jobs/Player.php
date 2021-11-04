@@ -19,6 +19,8 @@ class Player implements ShouldQueue //, ShouldBeUnique
 
     protected string $disk;
 
+    protected array $config;
+
     public int $tries = 1;
 
     //TODO: should be config option
@@ -29,9 +31,10 @@ class Player implements ShouldQueue //, ShouldBeUnique
      *
      * @return void
      */
-    public function __construct(string $disk, string $path) {
+    public function __construct(string $disk, string $path, array $config) {
         $this->disk = $disk;
         $this->path = $path;
+        $this->config = $config;
     }
 
     /**
@@ -41,7 +44,7 @@ class Player implements ShouldQueue //, ShouldBeUnique
      */
     public function handle()
     {
-        (new Hls())->stream($this->disk, $this->path);
+        (new Hls())->stream($this->disk, $this->path, $this->config);
     }
 
     /**
