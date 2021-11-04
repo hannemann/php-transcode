@@ -15,6 +15,7 @@ use App\Http\Controllers\TranscodeController;
 use App\Http\Controllers\CropController;
 use App\Http\Controllers\DelogoController;
 use App\Http\Controllers\RemovelogoController;
+use App\Http\Controllers\PlayerController;
 use App\Http\Requests\FFMpegActionRequest;
 use App\Models\FilePicker;
 use App\Models\Video\File as VideoFile;
@@ -74,6 +75,10 @@ Route::post('/removelogo/{path}', [RemovelogoController::class, 'removelogo'])->
 Route::get('/removelogoImage/{path}', [RemovelogoController::class, 'image'])->where('path', '(.*)');
 Route::post('/kill', fn () => KillFFMpeg::execute());
 Route::get('/image/{path}', [ClipperController::class, 'image'])->where('path', '(.*)');
+Route::get('/stream-playlist/{path}.m3u8', [PlayerController::class, 'playlist'])->where('path', '(.*)');
+Route::get('/stream-segment/{path}', [PlayerController::class, 'segment'])->where('path', '(.*)');
+Route::get('/stream/{path}', [PlayerController::class, 'stream'])->where('path', '(.*)');
+Route::delete('/stream/{path}', [PlayerController::class, 'cleanup'])->where('path', '(.*)');
 
 Route::get('/streams/{path?}', function (string $path = null) {
     

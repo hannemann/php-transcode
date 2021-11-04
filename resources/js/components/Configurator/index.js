@@ -327,6 +327,7 @@ ${CSS}
                 <option value="crop:cpu">Crop (CPU)</option>
                 <option value="delogo:cpu">DeLogo (CPU)</option>
                 <option value="removelogo:cpu">RemoveLogo (CPU)</option>
+                <option value="play:cpu">Play</option>
             </combo-button>
             <theme-button @click="this.toolProxy({target:{value:'clip'}})">Clipper</theme-button>
             <theme-button @click="this.transcode()">Transcode</theme-button>

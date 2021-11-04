@@ -121,6 +121,6 @@ Error while processing the decoded data for stream #0:0
 
 
 ## TODO:
-* test pages instead of modals
+* Inotify
 
 ## Fix
