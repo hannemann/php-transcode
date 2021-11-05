@@ -1,4 +1,4 @@
-# PHP Transcode (doc incomplete)
+# PHP Transcode Toolbox (doc incomplete)
 ## Create frame perfect cuts out of your DVB Recordings
 Cutting DVB recordings with FFMPEG can be a hazzle since you have to take several things in mind.
 * If the movie is 4:3 and the commercials are 16:9 the encode fails as soon as the resolution changes
@@ -7,6 +7,27 @@ Cutting DVB recordings with FFMPEG can be a hazzle since you have to take severa
 To circumvent these flaws in the video stream one would have to create several complicated FFMpeg commands.
 This program tries to mitigate that by providing a browser based gui for FFMpeg.
 The heavy lifting can be done on the server utilizing hardware acceleration by VAAPI (Tested with INTEL and AMD integrated GPU).
+
+## Features
+* Frame perfect h264 cutting using the concat filter
+* Transcode (vaapi)
+  * h264_vaapi
+  * h265_vaapi
+  * aac
+  * ac3
+  * flac
+  * copy
+  * cvb_subtitle
+  * dvd_subtitle
+  * Stream selection
+  * Aspect ration selection
+* Clipper GUI
+* Cropper Gui
+* GUI for DeLogo Filter
+* Gui for RemoveLogo Filter
+* Scale
+* Remux
+* Experimental HLS Player (for checking the result only. no fancy features provided)
 
 ## Installation using docker
 Since the project is based on the PHP framework laravel you can simply utilize laravel sail
@@ -124,3 +145,8 @@ Error while processing the decoded data for stream #0:0
 * Inotify
 
 ## Fix
+
+## Resources
+* https://github.com/video-dev/hls.js/blob/master/docs/API.md
+* https://ffmpeg.org/ffmpeg-all.html
+* https://github.com/protonemedia/laravel-ffmpeg
