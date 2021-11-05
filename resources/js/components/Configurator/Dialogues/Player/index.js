@@ -26,6 +26,11 @@ class Player extends Slim {
 
 Player.template = /*html*/ `
 <style>
+    :host {
+        display: grid;
+        place-items: center;
+        height: 100%;
+    }
     video {
         width: 100%;
         max-height: 99%;
