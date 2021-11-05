@@ -6,6 +6,8 @@ export const requestPlay = async function () {
     try {
         d.path = this.item.path;
         d.config = this.config;
+        m.dataset.closeButton = "true";
+        m.dataset.noFooter = "true";
         m.header = "Player";
         document.body.appendChild(m);
         await m.open();

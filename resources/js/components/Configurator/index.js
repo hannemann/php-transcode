@@ -317,6 +317,10 @@ ${CSS}
                 <span class="iconify" data-icon="mdi-content-save-outline"></span>
                 <span class="iconify hover" data-icon="mdi-content-save-outline"></span>
             </button>
+            <button @click="this.toolProxy({target:{value:'play:cpu'}})" class="icon-stack" title="Play">
+                <span class="iconify" data-icon="mdi-play"></span>
+                <span class="iconify hover" data-icon="mdi-play"></span>
+            </button>
             <combo-button @click="{{ this.toolProxy }}">
                 <option *if="{{ this.canConcat }}" value="concat:mkv">Concat MKV</option>
                 <option *if="{{ this.canConcat }}" value="concat:mp4">Concat MP4</option>
@@ -327,7 +331,6 @@ ${CSS}
                 <option value="crop:cpu">Crop (CPU)</option>
                 <option value="delogo:cpu">DeLogo (CPU)</option>
                 <option value="removelogo:cpu">RemoveLogo (CPU)</option>
-                <option value="play:cpu">Play</option>
             </combo-button>
             <theme-button @click="this.toolProxy({target:{value:'clip'}})">Clipper</theme-button>
             <theme-button @click="this.transcode()">Transcode</theme-button>

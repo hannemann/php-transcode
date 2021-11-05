@@ -1,4 +1,5 @@
 import { Slim, Iconify } from "@/components/lib";
+import { ICON_STACK_CSS } from "../../Icons/Stack.css";
 
 class AbstractModal extends Slim {
     constructor() {
@@ -18,7 +19,9 @@ class AbstractModal extends Slim {
         try {
             const p = () => this.promise;
             await p();
-            this.dispatchEvent(new CustomEvent("confirm"));
+            if (!this.skipConfirm) {
+                this.dispatchEvent(new CustomEvent("confirm"));
+            }
         } catch (error) {
             this.dispatchEvent(new CustomEvent("cancel"));
             if (error) {
@@ -30,6 +33,7 @@ class AbstractModal extends Slim {
     }
 
     show() {
+        Iconify.scan(this.shadowRoot);
         if (this.cancelButton) {
             this.cancelButton.focus();
         }
@@ -73,6 +77,11 @@ class AbstractModal extends Slim {
         this.reject();
     }
 
+    closeAction() {
+        this.skipConfirm = true;
+        this.resolve();
+    }
+
     handleKey(e) {
         if (this.cancelButton) {
             switch (e.key) {
@@ -91,6 +100,10 @@ class AbstractModal extends Slim {
                     break;
             }
         }
+    }
+
+    canClose() {
+        return this.dataset.closeButton;
     }
 }
 
@@ -126,6 +139,8 @@ header {
     border-bottom: 2px solid var(--clr-bg-100);
     user-select: none;
     text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
 }
 section {
     padding-block: 1rem;
@@ -145,14 +160,27 @@ button {
     padding: .5rem;
     font-size: 1rem;
 }
+:host:not([data-close-button]) .close-button {
+    display: none;
+}
+.close-button {
+    font-size: 1.5rem;
+}
+:host([data-no-footer]) footer {
+    display: none;
+}
 </style>
 `;
 
 const MODAL_TEMPLATE_BEGIN = /*html*/ `
-
+${ICON_STACK_CSS}
 <main>
     <header>
         {{ this.header }}
+        <div @click="{{ this.closeAction() }}" class="icon-stack close-button">
+            <span class="iconify" data-icon="mdi-close"></span>
+            <span class="iconify hover" data-icon="mdi-close"></span>
+        </div>
     </header>
     <section>
 `;
