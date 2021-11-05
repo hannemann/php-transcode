@@ -160,7 +160,7 @@ button {
     padding: .5rem;
     font-size: 1rem;
 }
-:host:not([data-close-button]) .close-button {
+:host(:not([data-close-button])) .close-button {
     display: none;
 }
 .close-button {
