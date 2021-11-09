@@ -4,4 +4,6 @@ export WWWUSER=${WWWUSER:-$UID}
 export WWWGROUP=${WWWGROUP:-$(id -g)}
 export GROUP_ID_RENDER=${GROUP_ID_RENDER:-$(getent group render | awk -F\: '{ print $3 }')}
 
+[ -f run.d/pre-start ] && run.d/pre-start 
+
 docker-compose up -d && docker-compose logs --tail=10 -f

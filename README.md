@@ -29,7 +29,7 @@ The heavy lifting can be done on the server utilizing hardware acceleration by V
 * Remux
 * Experimental HLS Player (for checking the result only. no fancy features provided)
 
-## Installation using docker
+## Installation using docker (recommended)
 Since the project is based on the PHP framework laravel you can simply utilize laravel sail
 * git clone
 * cp .env.example .env # adjust settings
@@ -150,3 +150,7 @@ Error while processing the decoded data for stream #0:0
 * https://github.com/video-dev/hls.js/blob/master/docs/API.md
 * https://ffmpeg.org/ffmpeg-all.html
 * https://github.com/protonemedia/laravel-ffmpeg
+* https://trac.ffmpeg.org/wiki/Concatenate
+* https://materialdesignicons.com/
+* https://slimjs.com/#/welcome
+* https://github.com/slimjs/slim.js
