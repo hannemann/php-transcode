@@ -35,49 +35,12 @@ Since the project is based on the PHP framework laravel you can simply utilize l
 * cp .env.example .env # adjust settings
 * ./run
 In case of `connection reset by peer` errors while pulling docker images just start again
-## Installation on Ubuntu 20.04
-* PHP 8.0, php-sqlite3
-* FFMpeg
-* Nginx
-* git clone
-* cp .env.example .env # adjust settings
-* touch storage/database.sqlite
-* chmod www-data database.sqlite
-* add DB_DATABASE=/path/to/database.sqlite to .env
 
+## Hooks
+* run.d/pre-start
+  * use it to e.g. mount the recordings directory from your server. Have a look at run.d/pre-start.example
 ## Configuration
 Please have a look into .env.example
-## Systemd (non docker installation)
-### Laravel Websockets
-```
-[Unit]
-Description=Runs and keeps alive the PHP Transcode artisan websocket
-
-[Service]
-Restart=always
-WorkingDirectory=/var/www/php-transcode
-ExecStart=/usr/bin/php artisan websockets:serve --port=8079
-User=www-data
-Group=www-data
-
-[Install]
-WantedBy=default.target
-```
-### Laravel Queue worker
-```
-[Unit]
-Description=Runs and keeps alive the PHP Transcoder artisan queue:work process
-
-[Service]
-Restart=always
-WorkingDirectory=/var/www/php-transcode
-ExecStart=/usr/bin/php artisan queue:work --queue=default,ffmpeg
-User=www-data
-Group=www-data
-
-[Install]
-WantedBy=default.target
-```
 # Clipper
 Search your recording frame by frame for unwanted material
 ## Usage:
@@ -139,6 +102,47 @@ Error while processing the decoded data for stream #0:0
 
 #### Mitigate:
 * Scale 
+
+## Installation on Ubuntu 20.04
+* PHP 8.0, php-sqlite3
+* FFMpeg
+* Nginx
+* git clone
+* cp .env.example .env # adjust settings
+* touch storage/database.sqlite
+* chmod www-data database.sqlite
+* add DB_DATABASE=/path/to/database.sqlite to .env
+## Systemd (non docker installation)
+### Laravel Websockets
+```
+[Unit]
+Description=Runs and keeps alive the PHP Transcode artisan websocket
+
+[Service]
+Restart=always
+WorkingDirectory=/var/www/php-transcode
+ExecStart=/usr/bin/php artisan websockets:serve --port=8079
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=default.target
+```
+### Laravel Queue worker
+```
+[Unit]
+Description=Runs and keeps alive the PHP Transcoder artisan queue:work process
+
+[Service]
+Restart=always
+WorkingDirectory=/var/www/php-transcode
+ExecStart=/usr/bin/php artisan queue:work --queue=default,ffmpeg
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=default.target
+```
 
 
 ## TODO:

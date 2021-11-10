@@ -2,4 +2,4 @@
 
 source .env
 
-mount ${RECORDINGS_DOCKER_SRC}
+mount ${RECORDINGS_PATH}
