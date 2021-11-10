@@ -115,7 +115,7 @@ class StreamConfig extends Slim {
     }
 
     isAspectRatio(ratio) {
-        return this.aspectRatio === ratio
+        return this.aspectRatio === ratio || "Keep" === ratio;
     }
 }
 
