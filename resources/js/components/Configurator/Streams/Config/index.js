@@ -10,7 +10,7 @@ class StreamConfig extends Slim {
             (a, b) => a.v > b.v
         );
         this.channelOptions = [2,6]
-        this.aspectRatioOptions = ["16:9", "4:3", "Keep"];
+        this.aspectRatioOptions = ["Keep", "16:9", "4:3"];
         this.cleanup = this.cleanup.bind(this)
         this.handleQpRange = this.handleQpRange.bind(this)
         this.handleCodecChange = this.handleCodecChange.bind(this)
