@@ -61,7 +61,7 @@ class Toast extends Slim {
     }
 }
 
-Toast.template = /*html*/`
+Toast.template = /*html*/ `
 <style>
 :host {
     position: fixed;
@@ -76,7 +76,8 @@ main {
     gap: .5rem;
 }
 main > div {
-    width: 240px;
+    width: 25rem;
+    font-size: var(--font-size-50);
     color: hsla(0, 0%, 100%, .8);
     border-radius: .5rem;
     position: relative;
@@ -146,6 +147,6 @@ svg[data-icon="mdi-close"] {
         </section>
     </div>
 </main>
-`
+`;
 
 customElements.define('transcoder-toast', Toast);
