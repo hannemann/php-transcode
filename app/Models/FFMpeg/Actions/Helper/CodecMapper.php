@@ -93,7 +93,7 @@ class CodecMapper
             $cmds->push('-qp:v:' . $streamId);
             $cmds->push($stream['config']['qp'] ?? $this->getDefaultCodec($this->videoCodecs)->qp);
         }
-        if ($stream['config']['aspectRatio'] && $stream['config']['aspectRatio'] !== 'Keep') {
+        if (($stream['config']['aspectRatio'] ?? 'Keep') !== 'Keep') {
             $cmds->push('-aspect:v:' . $streamId);
             $cmds->push($stream['config']['aspectRatio']);
         }
