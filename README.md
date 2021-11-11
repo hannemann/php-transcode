@@ -146,7 +146,8 @@ WantedBy=default.target
 
 
 ## TODO:
-* Inotify
+* Inotify?
+* save commandline when job is done
 
 ## Fix
 

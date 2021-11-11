@@ -55,12 +55,25 @@ class AbstractAction
                 ->onProgress(\Closure::fromCallable([$this, 'saveProgress']))
                 ->inFormat($this->format)
                 ->beforeSaving(\Closure::fromCallable([$this, 'updateCommands']))
+                ->beforeSaving(\Closure::fromCallable([$this, 'saveCommand']))
                 ->save($this->getOutputFilename());
         } catch (EncodingException $e) {
             if (!Str::contains($e->getErrorOutput(), 'Exiting normally')) {
                 throw $e;
             }
         }
+    }
+
+    protected function saveCommand(array $commands): array
+    {
+        $binary = $this->driver->getConfiguration()->get('ffmpeg.binaries');
+        $command = collect($commands)->map(function($command) use ($binary) {
+            return collect($command)->prepend($binary)->implode(' ');
+        })->implode("\n");
+        CurrentQueue::where('id', $this->current_queue_id)->update([
+            'command' => $command,
+        ]);
+        return $commands;
     }
 
     /**
