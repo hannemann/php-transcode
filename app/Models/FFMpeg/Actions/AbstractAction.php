@@ -7,10 +7,12 @@ use App\Events\FilePicker as EventsFilePicker;
 use App\Models\CurrentQueue;
 use App\Models\FilePicker;
 use ProtoneMedia\LaravelFFMpeg\Exporters\MediaExporter;
+use Illuminate\Support\Str;
 
 use Alchemy\BinaryDriver\Listeners\DebugListener;
 use App\Events\FFMpegOut;
 use App\Http\Requests\FFMpegActionRequest;
+use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 
 /**
  * @property MediaExporter $mediaExporter
@@ -48,11 +50,17 @@ class AbstractAction
         $this->driver = $this->mediaExporter->getFFMpegDriver();
         $this->mediaExporter->addListener(new DebugListener());
         $this->driver->on('debug', \Closure::fromCallable([$this, 'broadcastProcessOutput']));
-        $this->mediaExporter
-            ->onProgress(\Closure::fromCallable([$this, 'saveProgress']))
-            ->inFormat($this->format)
-            ->beforeSaving(\Closure::fromCallable([$this, 'updateCommands']))
-            ->save($this->getOutputFilename());
+        try {
+            $this->mediaExporter
+                ->onProgress(\Closure::fromCallable([$this, 'saveProgress']))
+                ->inFormat($this->format)
+                ->beforeSaving(\Closure::fromCallable([$this, 'updateCommands']))
+                ->save($this->getOutputFilename());
+        } catch (EncodingException $e) {
+            if (!Str::contains($e->getErrorOutput(), 'Exiting normally')) {
+                throw $e;
+            }
+        }
     }
 
     /**
