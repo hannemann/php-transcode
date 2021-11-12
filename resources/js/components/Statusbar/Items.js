@@ -7,12 +7,20 @@ const CSRF_TOKEN = document.head.querySelector("[name~=csrf-token][content]").co
 
 class ProgressItem extends Slim {
     onAdded() {
-        requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
+        requestAnimationFrame(() => Iconify.scan(this.shadowRoot));
+    }
+
+    showCommand(item) {
+        document.dispatchEvent(
+            new CustomEvent("show-textcontent", {
+                detail: { content: item.command },
+            })
+        );
     }
 
     async delete(item) {
         try {
-            Request.delete(`/progress/${item.id}`)
+            Request.delete(`/progress/${item.id}`);
         } catch (error) {}
     }
 }
@@ -37,6 +45,9 @@ div.path {
     white-space: nowrap;
     overflow-x: hidden;
     text-overflow: ellipsis;
+}
+div.path.show {
+    cursor: pointer;
 }
 div.icon-stack {
     width: 1em;
