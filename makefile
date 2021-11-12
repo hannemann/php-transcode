@@ -34,9 +34,16 @@ start-websocket::
 stop-websocket::
 	./vendor/bin/sail exec transcode_php supervisorctl stop websockets
 
+db-renew::
+	$(MAKE) stop-queue; \
+	rm database/database.sqlite; \
+	touch database/database.sqlite; \
+	./vendor/bin/sail artisan migrate; \
+	$(MAKE) start-queue;
+
 wipe::
 	docker-compose down; \
 	docker rmi sail-8.0/app:latest; \
 	rm -rf vendor; \
-	rm storage/database.sqlite; \
+	rm database/database.sqlite; \
 	sed -e 's/APP_KEY=.*/APP_KEY=/g' -i ./.env
