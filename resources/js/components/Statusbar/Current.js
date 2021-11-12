@@ -40,7 +40,7 @@ ${PROGRESS_ITEM_CSS}
         <span class="iconify" data-icon="mdi-skull-crossbones-outline"></span>
         <span class="iconify hover" data-icon="mdi-skull-crossbones-outline"></span>
     </div>
-    <div @click="{{ this.showCommand(item) }}" class="path show">
+    <div @click="{{ this.showCommand(this.item) }}" class="path show">
         <span>{{ this.item.type.ucfirst() }}: {{ this.item.path }}</span>
         <span style="{{ this.width }}">{{ this.item.type.ucfirst() }}: {{ this.item.path }}</span>
     </div>
