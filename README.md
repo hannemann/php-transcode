@@ -41,6 +41,10 @@ In case of `connection reset by peer` errors while pulling docker images just st
   * use it to e.g. mount the recordings directory from your server. Have a look at run.d/pre-start.example
 ## Configuration
 Please have a look into .env.example
+# Usage:
+Point your Browser to http://127.0.0.1:8078  
+(The IP has to match the websocket configuration which currently is hardcoded as 127.0.0.1)
+
 # Clipper
 Search your recording frame by frame for unwanted material
 ## Usage:

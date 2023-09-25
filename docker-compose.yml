@@ -6,7 +6,7 @@ services:
             context: ./docker/8.0
             dockerfile: Dockerfile
             args:
-                WWWGROUP: '${WWWGROUP}'
+              WWWGROUP: '${WWWGROUP}'
         image: sail-8.0/app
         ports:
             - '${APP_PORT:-8078}:80'
@@ -22,7 +22,7 @@ services:
             - '.:/var/www/html'
             - './docker/8.0/php.ini:/etc/php/8.0/cli/conf.d/99-sail.ini'
             - './docker/8.0/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf'
-            - '${RECORDINGS_PATH}:${RECORDINGS_PATH}'
+            - '${MEDIA_PATH_HOST}:${MEDIA_PATH_CONTAINER}'
         networks:
             - sail
         extra_hosts:

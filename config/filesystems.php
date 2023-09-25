@@ -55,7 +55,7 @@ return [
 
         'recordings' => [
             'driver' => 'local',
-            'root' => rtrim(env('RECORDINGS_PATH', false), DIRECTORY_SEPARATOR),
+            'root' => rtrim(env('MEDIA_PATH_CONTAINER', false), DIRECTORY_SEPARATOR),
             'permissions' => [
                 'file' => [
                     'private' => 0664,
