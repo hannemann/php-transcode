@@ -1,6 +1,6 @@
 import { Slim, Iconify } from '@/components/lib';
 import {Request} from '@/components/Request'
-import { COMBO_BUTTON_CSS } from '@/components//partials';
+import { COMBO_BUTTON_CSS } from '@/components/partials';
 import './Streams'
 import './Clips'
 import './Format'

@@ -64,7 +64,7 @@ class Cropper extends VideoEditor {
             this.cropOverlay.style.width = `${this.image.offsetWidth}px`;
             this.cropOverlay.style.height = `${this.image.offsetHeight}px`;
         }
-        this.cropImage.style.backgroundImage = `${this.gradients},url(${this.image.src})`;
+        this.cropImage.style.backgroundImage = `${this.gradients},url("${this.image.src}")`;
         this.image.style.display = "none";
         this.info.classList.toggle(
             "height-error",

@@ -41,20 +41,6 @@ combo-button:hover::part(toggle)::before {
     background: var(--clr-bg-200);
     box-shadow: 0 0 20px 0 var(--clr-enlightened-glow), 0 0 10px 0 inset var(--clr-enlightened-glow);
 }
-combo-button::part(dropdown) {
-    color: var(--clr-text-100);
-    background: var(--clr-bg-100);
-    border: 2px  solid var(--clr-bg-200);
-}
-combo-button::part(option) {
-    padding-inline: .5rem;
-    text-align: right;
-}
-combo-button::part(option-hover) {
-    background: var(--clr-bg-200);
-    text-shadow: 0 0 5px var(--clr-enlightened-glow), 0 0 10px var(--clr-enlightened-glow);
-    color: var(--clr-enlightened);
-}
 combo-button option {
     display: none;
 }

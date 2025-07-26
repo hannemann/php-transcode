@@ -1,4 +1,5 @@
 import { Slim, Iconify } from "@/components/lib";
+import COMBO_BUTTON_DROPDOWN_CSS from './ComboButton/DropdownCSS';
 
 class ComboButton extends Slim {
     constructor() {
@@ -10,13 +11,11 @@ class ComboButton extends Slim {
         this.selectedIndex = 0;
         this.value = this.options[0].value;
         this.label = this.options[0].textContent;
-        this.nodeId = `combo-button-${performance.now()}`;
     }
 
     onAdded() {
         requestAnimationFrame(() => {
             Iconify.scan(this.shadowRoot);
-            this.addOptionWrapperStylesheet();
             requestAnimationFrame(() => {
                 this.shadowRoot
                     .querySelector("svg")
@@ -26,36 +25,6 @@ class ComboButton extends Slim {
                     .setAttribute("part", "icon icon-hover");
             });
         });
-    }
-
-    addOptionWrapperStylesheet() {
-        let style = document.createElement("style");
-        let css = `#${this.nodeId} {`;
-        css += this.getCssRules(this.dropdown);
-        css += `} #${this.nodeId} option {`;
-        css += this.getCssRules(this.dummyOption);
-        css += `} #${this.nodeId} option:hover {`;
-        css += this.getCssRules(this.dummyOptionHover);
-        css += "}";
-        style.appendChild(document.createTextNode(css));
-        document.querySelector(":root head").appendChild(style);
-    }
-
-    getCssRules(el) {
-        let styles = getComputedStyle(el);
-        let defaultStyles = getDefaultComputedStyle(el);
-        let css = "";
-        Array.from(styles).forEach((key) => {
-            let value = styles.getPropertyValue(key);
-            let priority = styles.getPropertyPriority(key);
-            if (
-                value != defaultStyles.getPropertyValue(key) ||
-                priority != defaultStyles.getPropertyPriority(key)
-            ) {
-                css += `${key}: ${value} ${priority};`;
-            }
-        });
-        return css;
     }
 
     /**
@@ -88,7 +57,7 @@ class ComboButton extends Slim {
             });
             document.body.appendChild(this.wrapper);
             document.addEventListener("click", this.toggle, { once: true });
-            this.wrapper.id = this.nodeId;
+            this.wrapper.classList.add("combo-button-dropdown");
             this.applyWrapperPosition();
         }
     }
@@ -177,5 +146,10 @@ ComboButton.template = /*html*/ `
     <option part="option-hover" #ref="dummyOptionHover"/>
 </div>
 `;
+
+
+const dropDownStyle = document.createElement("style");
+dropDownStyle.appendChild(document.createTextNode(COMBO_BUTTON_DROPDOWN_CSS));
+document.querySelector(":root head").appendChild(dropDownStyle);
 
 export { ComboButton };
