@@ -80,6 +80,8 @@
     --font-size-50: clamp(14px, 1.5vw, 18px);
     --font-size-100: clamp(14px, 2vw, 20px);
     --font-size-200: clamp(20px, 3vw, 32px);
+
+    --line-height-100: 1.3;
 }
 :root {
     --transition-fast: 100ms;
@@ -110,6 +112,7 @@ section.content {
 }
 html {
     font-size: var(--font-size-100);
+    line-height: var(--line-height-100);
     height:100vh;
 }
 

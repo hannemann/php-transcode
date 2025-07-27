@@ -136,9 +136,10 @@ class VideoEditor extends Slim {
 export const EDITOR_CSS = /*html*/ `
 <style>
 :host {
+        --thumbnail-height: ${THUMBNAIL_HEIGHT + 16}px;
         display: grid;
         grid-template-columns: auto 1fr auto;
-        grid-template-rows: 1fr min-content max-content;
+        grid-template-rows: calc(100% - var(--thumbnail-height) - var(--font-size-100) * var(--line-height-100)) min-content max-content;
         grid-template-areas:
             "left frame right"
             "status status status"
@@ -159,7 +160,7 @@ export const EDITOR_CSS = /*html*/ `
     }
     .indicator {
         grid-area: thumbnails;
-        height: ${THUMBNAIL_HEIGHT + 16}px;
+        height: var(--thumbnail-height);
         position: relative;
         --background: var(--clr-bg-200);
         --size: 3px;
