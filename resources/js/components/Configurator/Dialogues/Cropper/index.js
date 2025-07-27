@@ -48,7 +48,7 @@ class Cropper extends VideoEditor {
         this.image.addEventListener("load", this.updateCropBox);
         document.addEventListener("keydown", this.handleKey);
         document.addEventListener("keyup", this.handleKey);
-        this.cropOverlay.addEventListener("click", this.handleClick);
+        this.cropImage.addEventListener("click", this.handleClick);
         if (this.cropOffsetBottom === null) {
             this.cropOffsetBottom = this.image.naturalHeight;
         }
@@ -205,14 +205,18 @@ class Cropper extends VideoEditor {
     }
 
     handleClick(e) {
-        if (this.zoomed === 1) {
-            this.cropOffsetLeft = e.layerX;
-            this.cropOffsetTop = e.layerY;
-        } else if (this.zoomed === 2) {
-            this.cropOffsetBottom = e.layerY;
-            this.cropOffsetRight = e.layerX;
-        }
-        this.updateCropBox();
+        console.log(e);
+        requestAnimationFrame(() => {
+            const imageRect = this.cropImage.getBoundingClientRect();
+            if (this.zoomed === 1) {
+                this.cropOffsetLeft = parseInt(e.pageX - imageRect.left);
+                this.cropOffsetTop = parseInt(e.pageY - imageRect.top);
+            } else if (this.zoomed === 2) {
+                this.cropOffsetBottom = parseInt(e.pageY - imageRect.top);
+                this.cropOffsetRight = parseInt(e.pageX - imageRect.left);
+            }
+            this.updateCropBox();
+        });
     }
 
     run() {
@@ -428,7 +432,7 @@ ${EDITOR_TEMPLATE}
             <dt>
                 <span class="iconify" data-icon="mdi-mouse"></span> / 
                 <span class="iconify" data-icon="mdi-swap-vertical-bold"></span>
-                <span class="iconify" data-icon="mdi-swap-horizontal-bold"></span> + Ctrl
+                <span class="iconify" data-icon="mdi-swap-horizontal-bold"></span> + Shift
             </dt>
             <dd>Set lower right</dd>
         </dl>

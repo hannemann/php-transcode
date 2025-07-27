@@ -59,8 +59,9 @@ class VideoEditor extends Slim {
 
     handleIndicatorClick(e) {
         if (!e.composedPath().find((p) => p.classList?.contains("clip"))) {
+        const indicatorClickPos = parseInt(e.pageX - this.indicator.getBoundingClientRect().left);
             this.current =
-                (this.duration * e.layerX) / this.indicator.offsetWidth;
+                (this.duration * indicatorClickPos) / this.indicator.offsetWidth;
             this.updateImages();
         }
     }

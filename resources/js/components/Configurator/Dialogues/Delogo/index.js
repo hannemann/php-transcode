@@ -37,12 +37,11 @@ class DeLogo extends VideoEditor {
         document.addEventListener("keydown", this.handleKey);
         this.zoomImage = this.zoom.appendChild(document.createElement("img"));
         this.zoomImage.src = this.image.src;
-        console.log(this.image.width, this.image.height);
         this.addDelogoBox({
-            layerX: Math.round(
+            offsetX: Math.round(
                 this.image.offsetLeft + this.image.width / 2 - 10
             ),
-            layerY: Math.round(
+            offsetY: Math.round(
                 this.image.offsetTop + this.image.height / 2 - 10
             ),
         });
@@ -61,39 +60,43 @@ class DeLogo extends VideoEditor {
     }
 
     addDelogoBox(e) {
-        if (!this.delogoBox) {
-            this.delogoBox = document.createElement("div");
-            this.shadowRoot.appendChild(this.delogoBox);
-            this.delogoBox.classList.add("box");
-            this.zoomDelogoBox = this.zoom.appendChild(
-                this.delogoBox.cloneNode(true)
-            );
-            this.delogoBox.style.width = `20px`;
-            this.delogoBox.style.height = `20px`;
-        }
-        this.delogoOffsetTop =
-            e.layerY - Math.round(this.delogoBox.offsetHeight / 2);
-        this.delogoOffsetLeft =
-            e.layerX - Math.round(this.delogoBox.offsetWidth / 2);
-        this.delogoBox.style.top = `${Math.max(
-            this.image.offsetTop,
-            Math.min(
-                this.image.offsetTop +
-                    this.image.height -
-                    this.delogoBox.offsetHeight,
-                this.delogoOffsetTop
-            )
-        )}px`;
-        this.delogoBox.style.left = `${Math.max(
-            this.image.offsetLeft,
-            Math.min(
-                this.image.offsetLeft +
-                    this.image.width -
-                    this.delogoBox.offsetWidth,
-                this.delogoOffsetLeft
-            )
-        )}px`;
-        this.updateZoom();
+        requestAnimationFrame(() => {
+            // need to wait for offset properties to be calculated properly
+            if (!this.delogoBox) {
+                this.delogoBox = document.createElement("div");
+                this.shadowRoot.appendChild(this.delogoBox);
+                this.delogoBox.classList.add("box");
+                this.zoomDelogoBox = this.zoom.appendChild(
+                    this.delogoBox.cloneNode(true)
+                );
+                this.delogoBox.style.width = `20px`;
+                this.delogoBox.style.height = `20px`;
+            }
+            console.log(e, e.offsetX, e.offsetY);
+            this.delogoOffsetTop =
+                e.offsetY - Math.round(this.delogoBox.offsetHeight / 2);
+            this.delogoOffsetLeft =
+                e.offsetX - Math.round(this.delogoBox.offsetWidth / 2);
+            this.delogoBox.style.top = `${Math.max(
+                this.image.offsetTop,
+                Math.min(
+                    this.image.offsetTop +
+                        this.image.height -
+                        this.delogoBox.offsetHeight,
+                    this.delogoOffsetTop
+                )
+            )}px`;
+            this.delogoBox.style.left = `${Math.max(
+                this.image.offsetLeft,
+                Math.min(
+                    this.image.offsetLeft +
+                        this.image.width -
+                        this.delogoBox.offsetWidth,
+                    this.delogoOffsetLeft
+                )
+            )}px`;
+            this.updateZoom();
+        });
     }
 
     updateZoom() {
