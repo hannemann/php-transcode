@@ -54,6 +54,6 @@
     --lit-alert: calc(var(--clr-base-lit) + 20%);
     --hue-alert: 0;
 
-    --clr-cropper-gradient: red;
+    --clr-cropper-gradient: green;
 
 }

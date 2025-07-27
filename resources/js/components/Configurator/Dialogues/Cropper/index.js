@@ -322,6 +322,7 @@ ${EDITOR_CSS}
         gap: .5rem;
         font-size: .75rem;
         white-space: nowrap;
+        width: 250px;
     }
     fieldset {
         border: 2px solid var(--clr-bg-200);
