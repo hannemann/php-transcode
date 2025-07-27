@@ -163,3 +163,17 @@ WantedBy=default.target
 * https://materialdesignicons.com/
 * https://slimjs.com/#/welcome
 * https://github.com/slimjs/slim.js
+
+## Dev
+Start container:
+```shell
+vendor/bin/sail up -d
+```
+Run assets watcher:
+```shell
+vendor/bin/sail npm run watch
+```
+Stop container:
+```shell
+vendor/bin/sail down
+```
