@@ -14,6 +14,8 @@ class h264_vaapi extends X264
 
     private ?int $constantQuantizationParameter = null;
 
+    private string $accelerationFramework = '';
+
     public function __construct($audioCodec = 'aac', $videoCodec = 'h264_vaapi')
     {
         $this->vaapiDevice = config('transcode.vaapiDevice');
@@ -61,11 +63,23 @@ class h264_vaapi extends X264
      */
     public function getInitialParameters()
     {
-        $hardware = [
-            '-hwaccel', 'vaapi',
-            '-hwaccel_output_format', 'vaapi',
-            '-vaapi_device', $this->vaapiDevice
-        ];
+        if ($this->accelerationFramework === 'vaapi') {
+            $hardware = [
+                '-hwaccel', 'vaapi',
+                '-hwaccel_output_format', 'vaapi',
+                '-vaapi_device', $this->vaapiDevice
+            ];
+        }
+
+        if ($this->accelerationFramework === 'cuda') {
+            $hardware = [
+                '-hwaccel', 'cuda',
+                '-probesize', '101M',
+                '-analyzeduration', '150M',
+                '-vf', 'format=nv12,hwupload'
+            ];
+        }
+
         return array_merge($hardware, parent::getInitialParameters() ?? []);
     }
 
@@ -90,5 +104,9 @@ class h264_vaapi extends X264
     public function stripOptions(Collection $cmds): Collection
     {
         return Libx264Options::strip($cmds);
+    }
+
+    public function setAccelerationFramework($framework) {
+        $this->accelerationFramework = $framework;
     }
 }

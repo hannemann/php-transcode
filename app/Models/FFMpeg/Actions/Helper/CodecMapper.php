@@ -24,6 +24,10 @@ class CodecMapper
     private $audioIndex = 0;
     private $subtitleIndex = 0;
 
+    public $currentVideoCodec = null;
+    public $currentAudioCodec = null;
+    public $currentSubtitleCodec = null;
+
     public function __construct(array $codecConfig, Collection $streams, Collection $video, Collection $audio, Collection $subtitle) {
         $this->codecConfig = $codecConfig;
         $this->wantedStreams = collect($this->codecConfig)->pluck('id')->all();
@@ -65,6 +69,12 @@ class CodecMapper
         $this->forcedSubtitleCodec = $subtitle;
     }
 
+    public function resetIndices() {
+        $this->videoIndex = 0;
+        $this->audioIndex = 0;
+        $this->subtitleIndex = 0;
+    }
+
     private function cleanCommands(): static
     {
         $commands = ['-vcodec', '-acodec', '-qp'];
@@ -88,6 +98,7 @@ class CodecMapper
         } else {
             $codec = $this->getDefaultCodecName($this->videoCodecs);
         }
+        $this->currentVideoCodec = $codec;
         $cmds->push($codec);
         if ($codec !== 'copy') {
             $cmds->push('-qp:v:' . $streamId);
@@ -112,6 +123,7 @@ class CodecMapper
         } else {
             $codec = $this->getDefaultCodecName($this->audioCodecs);
         }
+        $this->currentAudioCodec = $codec;
         $channels = $stream['config']['channels'] ?? $this->getDefaultCodec($this->audioCodecs)->channels;
         $cmds->push($codec);
         if ($codec !== 'copy') {
@@ -137,6 +149,7 @@ class CodecMapper
         } else {
             $codec = $this->getDefaultCodecName($this->subtitleCodecs);
         }
+        $this->currentSubtitleCodec = $codec;
         $this->cmds->push($codec);
         return $cmds;
     }

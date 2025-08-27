@@ -39,6 +39,15 @@ class Transcode extends AbstractAction
         $this->outputMapper = new Helper\OutputMapper($this->codecConfig, $this->video, $this->audio, $this->subtitle);
         $this->clipDuration = $this->concatDemuxer->getDuration();
         $this->mediaExporter = $this->media->export();
+
+        if ($this->format instanceof h264_vaapi) {
+            $this->codecMapper->execute(collect([]));
+            $this->codecMapper->resetIndices();
+            $this->format->setAccelerationFramework(
+                strpos($this->codecMapper->currentVideoCodec, 'nvenc') !== false ? 'cuda' : 'vaapi'
+            );
+        }
+
         $this->export();
     }
 
