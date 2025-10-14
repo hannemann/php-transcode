@@ -114,7 +114,7 @@ Error while processing the decoded data for stream #0:0
 * git clone
 * cp .env.example .env # adjust settings
 * touch storage/database.sqlite
-* chmod www-data database.sqlite
+* chown www-data database.sqlite
 * add DB_DATABASE=/path/to/database.sqlite to .env
 ## Systemd (non docker installation)
 ### Laravel Websockets

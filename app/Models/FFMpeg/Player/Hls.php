@@ -17,6 +17,7 @@ class Hls
     {
         $this->path = $path;
         $format = (new h264_vaapi);
+        $format->setAccelerationFramework(h264_vaapi::ACCEL_VAAPI);
 
         static::cleanup($disk, $path);
         Storage::disk($disk)->makeDirectory(static::getOutputPath($path));
@@ -30,8 +31,9 @@ class Hls
         foreach($config['streams'] as $stream) {
             $args->push('-map', '0:' . $stream['id']);
         }
+        $args->push('-filter:v', 'format=nv12,hwupload');
         $args->push('-c:v', 'h264_vaapi');
-        $args->push('-qp', '21');
+        $args->push('-qp', '28');
         $args->push('-c:a', 'aac');
         $args->push('-b:a', '128k');
         $args->push('-ac', '2');

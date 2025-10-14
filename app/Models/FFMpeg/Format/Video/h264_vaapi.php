@@ -10,11 +10,15 @@ class h264_vaapi extends X264
 {
     const HIGH_QUALITY_QP = 18;
 
+    const ACCEL_VAAPI = 'vaapi';
+
+    const ACCEL_CUDA = 'cuda';
+
     private $vaapiDevice;
 
     private ?int $constantQuantizationParameter = null;
 
-    private string $accelerationFramework = '';
+    public string $accelerationFramework = '';
 
     public function __construct($audioCodec = 'aac', $videoCodec = 'h264_vaapi')
     {
@@ -63,20 +67,16 @@ class h264_vaapi extends X264
      */
     public function getInitialParameters()
     {
+        $hardware = [];
         if ($this->accelerationFramework === 'vaapi') {
             $hardware = [
-                '-hwaccel', 'vaapi',
-                '-hwaccel_output_format', 'vaapi',
-                '-vaapi_device', $this->vaapiDevice
+                '-vaapi_device', $this->vaapiDevice,
             ];
         }
 
         if ($this->accelerationFramework === 'cuda') {
             $hardware = [
                 '-hwaccel', 'cuda',
-                '-probesize', '101M',
-                '-analyzeduration', '150M',
-                '-vf', 'format=nv12,hwupload'
             ];
         }
 

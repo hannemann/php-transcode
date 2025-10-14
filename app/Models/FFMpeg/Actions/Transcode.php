@@ -77,7 +77,7 @@ class Transcode extends AbstractAction
             $cmds = $this->concatDemuxer->addCommands($cmds);
         }
         if ($this->complexConcat->isActive()) {
-            $cmds = $this->complexConcat->getFilter($cmds);
+            $cmds = $this->complexConcat->getFilter($cmds, $this->format);
         } else {
             $cmds = $this->outputMapper->execute($cmds);
         }

@@ -3,6 +3,7 @@
 namespace App\Models\FFMpeg\Filters\Video;
 
 use FFMpeg\Coordinate\TimeCode;
+use App\Models\FFMpeg\Format\Video\h264_vaapi;
 use Illuminate\Support\Collection;
 
 class ComplexConcat
@@ -21,12 +22,17 @@ class ComplexConcat
         return count($this->clips) > 1;
     }
 
-    public function getFilter(Collection $cmds): Collection
+    public function getFilter(Collection $cmds, h264_vaapi $format): Collection
     {
 
-        $tmplVideo = '[0:v:%d]trim=%f:%f,setpts=PTS-STARTPTS[v%d]';
+        $tmplVideo = '[0:v:%d]trim=%f:%f,setpts=PTS-STARTPTS%s[v%d]';
         $tmplAudio = '[0:a:%d]atrim=%f:%f,asetpts=PTS-STARTPTS[a%d]';
         $tmplSubtitle = '[0:s:%d]atrim=%f:%f,asetpts=PTS-STARTPTS[s%d]';
+
+        $acceleration = '';
+        if ($format && $format instanceof h264_vaapi && $format->accelerationFramework) {
+            $acceleration = ',format=nv12,hwupload';
+        }
 
         $streamIds = $this->getStreamIds();
 
@@ -39,7 +45,7 @@ class ComplexConcat
             $to = TimeCode::fromString($clip['to'])->toSeconds() + (float)('0' . substr($clip['to'], strpos($clip['to'], '.')));
 
             foreach($streamIds['video'] as $id) {
-                $items[] = sprintf($tmplVideo, $id, $from, $to, $n);
+                $items[] = sprintf($tmplVideo, $id, $from, $to, $acceleration, $n);
                 $parts[] = sprintf('[v%d]', $n);
             }
             foreach($streamIds['audio'] as $id) {

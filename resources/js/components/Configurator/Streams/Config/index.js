@@ -198,7 +198,7 @@ StreamConfig.template = /*html*/`
     </div>
     <label id="qpslider">
         <span>QP (<span #ref="qpDisplay">{{ this.qp }}</span>)</span>
-        <input #ref="qpSlider" list="tickmarks" .disabled="{{ this.codec === this.copyCodec }}" type="range" min="18" max="30" step="1" value="{{ this.qp }}" @input="{{ this.handleQpRange }}">
+        <input #ref="qpSlider" list="tickmarks" .disabled="{{ this.codec === this.copyCodec }}" type="range" min="18" max="51" step="1" value="{{ this.qp }}" @input="{{ this.handleQpRange }}">
     </label>
     <div id="aspect-ratio">
         <span>Aspect Ratio</span>
