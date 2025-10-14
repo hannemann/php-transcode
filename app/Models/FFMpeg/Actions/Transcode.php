@@ -27,7 +27,9 @@ class Transcode extends AbstractAction
         $this->duration = $this->media->getFormat()->get('duration');
         $this->initStreams();
 
-        if (count($this->clips) === 1) {
+        $isSingleClip = count($this->clips) === 1;
+
+        if ($isSingleClip) {
             $this->media->addFilter(
                 static::getFromToFilter($this->clips[0]['from'], $this->clips[0]['to'])
             );
@@ -43,9 +45,18 @@ class Transcode extends AbstractAction
         if ($this->format instanceof h264_vaapi) {
             $this->codecMapper->execute(collect([]));
             $this->codecMapper->resetIndices();
-            $this->format->setAccelerationFramework(
-                strpos($this->codecMapper->currentVideoCodec, 'nvenc') !== false ? 'cuda' : 'vaapi'
-            );
+            
+            if (strpos($this->codecMapper->currentVideoCodec, 'nvenc') !== false) {
+                $this->format->setAccelerationFramework(h264_vaapi::ACCEL_CUDA);
+            }
+            
+            if (strpos($this->codecMapper->currentVideoCodec, 'vaapi') !== false) {
+                $this->format->setAccelerationFramework(h264_vaapi::ACCEL_VAAPI);
+            }
+
+            if ($this->format->getAccelerationFramework() && $isSingleClip) {
+                $this->media->addFilter(['-filter:v', 'format=nv12,hwupload']);
+            }
         }
 
         $this->export();

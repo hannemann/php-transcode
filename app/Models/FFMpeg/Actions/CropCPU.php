@@ -42,7 +42,7 @@ Class CropCPU extends Crop
         $cmds->splice($cmds->search('-b:a'), 2);
         $cmds->push('-crf', 18);
         $cmds->push('-preset', 'ultrafast');
-        $cmds->push('-vf');
+        $cmds->push('-filter:v');
         $cmds->push(sprintf(
             self::TEMPLATE_FILTER_CROP,
             $this->requestData['cw'],

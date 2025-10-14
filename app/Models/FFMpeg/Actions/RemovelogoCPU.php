@@ -7,6 +7,7 @@ use App\Models\Video\File;
 use App\Models\FFMpeg\Actions\Helper\OutputMapper;
 use App\Models\FFMpeg\Actions\Helper\Libx264Options;
 use App\Models\FFMpeg\Clipper\Image;
+use Illuminate\Support\Facades\Storage;
 
 Class RemovelogoCPU extends Crop
 {
@@ -21,13 +22,27 @@ Class RemovelogoCPU extends Crop
      */
     public function execute()
     {
-        $this->bitmap = Image::createLogoMask(
-            $this->disk,
-            $this->path,
-            $this->requestData['timestamp'],
-            $this->requestData['w'],
-            $this->requestData['h']
-        );
+        $customMask = sprintf(
+            '%s/%s',
+            dirname($this->path),
+            'logomask.jpg'
+        );        
+
+        if (Storage::disk($this->disk)->exists($customMask)) {
+            $this->bitmap = sprintf(
+                '%s/%s',
+                config('filesystems.disks.' . $this->disk . '.root'),
+                $customMask
+            );
+        } else {
+            $this->bitmap = Image::createLogoMask(
+                $this->disk,
+                $this->path,
+                $this->requestData['timestamp'],
+                $this->requestData['w'],
+                $this->requestData['h']
+            );
+        }
         $this->format->setAudioCodec('copy')->setPasses(1);
         $this->media = File::getMedia($this->disk, $this->path);
         $this->initStreams();
@@ -48,7 +63,7 @@ Class RemovelogoCPU extends Crop
         $cmds->splice($cmds->search('-b:a'), 2);
         $cmds->push('-crf', 18);
         $cmds->push('-preset', 'ultrafast');
-        $cmds->push('-vf');
+        $cmds->push('-filter:v');
         $cmds->push(sprintf(
             self::TEMPLATE_FILTER,
             $this->bitmap

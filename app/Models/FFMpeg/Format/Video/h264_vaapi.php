@@ -109,4 +109,9 @@ class h264_vaapi extends X264
     public function setAccelerationFramework($framework) {
         $this->accelerationFramework = $framework;
     }
+
+    public function getAccelerationFramework(): string
+    {
+        return $this->accelerationFramework;
+    }
 }

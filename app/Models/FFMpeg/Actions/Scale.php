@@ -37,7 +37,7 @@ Class Scale extends AbstractAction
         $cmds = collect($commands[0]);
         
         $cmds = $this->format->stripOptions($cmds);
-        $cmds->push('-vf');
+        $cmds->push('-filter:v');
         $cmds->push(sprintf('scale_vaapi=%d:%d', $this->width, $this->height));
         $cmds->push('-aspect');
         $cmds->push($this->aspect);

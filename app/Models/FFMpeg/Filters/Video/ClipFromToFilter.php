@@ -42,11 +42,6 @@ class ClipFromToFilter extends ClipFilter
         if ($this->to !== null) {
           $commands[] = '-to';
           $commands[] = (string) $this->to;
-        } 
-
-        if ($format instanceof h264_vaapi && $format->accelerationFramework) { 
-          $commands[] = '-filter:v';
-          $commands[] = 'format=nv12,hwupload';
         }
 
         return $commands;

@@ -39,7 +39,7 @@ Class ScaleCPU extends Scale
         $cmds->splice($cmds->search('-b:a'), 2);
         $cmds->push('-crf', 18);
         $cmds->push('-preset', 'ultrafast');
-        $cmds->push('-vf', sprintf('scale=%d:%d', $this->width, $this->height));
+        $cmds->push('-filter:v', sprintf('scale=%d:%d', $this->width, $this->height));
         $cmds->push('-aspect', $this->aspect);
         $cmds->push('-c:s', 'copy');
         $cmds = OutputMapper::mapAll($cmds);

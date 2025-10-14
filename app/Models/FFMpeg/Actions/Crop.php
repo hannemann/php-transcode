@@ -36,7 +36,7 @@ Class Crop extends AbstractAction
         $cmds = collect($commands[0]);
         
         $cmds = $this->format->stripOptions($cmds);
-        $cmds->push('-vf');
+        $cmds->push('-filter:v');
         $cmds->push(sprintf(
             self::TEMPLATE_FILTER_CROP,
             $this->requestData['cw'],
