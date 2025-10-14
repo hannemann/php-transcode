@@ -14,6 +14,7 @@ class CropRequest extends FFMpegActionRequest
             'ch' => 'required|int',
             'cx' => 'required|int',
             'cy' => 'required|int',
+            'width' => 'required|int',
             'height' => 'required|int',
             'aspect' => ['required', 'regex:/[0-9]+:[0-9]+/'],
             'type' => ['required', Rule::in(['cpu', 'vaapi'])],

@@ -10,7 +10,8 @@ use App\Models\FFMpeg\Actions\Helper\Libx264Options;
 Class CropCPU extends Crop
 {
     const TEMPLATE_FILTER_CROP = 'crop=%d:%d:%d:%d,pad=%d:%d:(ow-iw)/2:(oh-ih)/2%s';
-    const TEMPLATE_FILTER_FILLBORDERS = ',fillborders=left=0:right=0:top=%d:bottom=%d:mode=mirror';
+    // TODO: add left and right (cx, width - cw - cx)
+    const TEMPLATE_FILTER_FILLBORDERS = ',fillborders=left=%d:right=%d:top=%d:bottom=%d:mode=mirror';
 
     protected string $filenameAffix = 'crop';
     protected string $filenameSuffix = 'mkv';
@@ -53,9 +54,12 @@ Class CropCPU extends Crop
                 $this->requestData['aspect']
             ),
             $this->requestData['replaceBlackBorders'] ? $this->requestData['height'] : $this->requestData['ch'],
+            // TODO: add left and right (cx, width - cw - cx)
             $this->requestData['mirror'] ?
                 sprintf(
                     self::TEMPLATE_FILTER_FILLBORDERS,
+                    $this->requestData['cx'],
+                    $this->requestData['width'] - $this->requestData['cw'] - $this->requestData['cx'],
                     $this->requestData['cy'],
                     $this->requestData['height'] - $this->requestData['ch'] - $this->requestData['cy']
                 ) :

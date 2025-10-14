@@ -33,6 +33,7 @@ class Cropper extends VideoEditor {
             this.runButton.disabled = true;
             this.current = parseInt(this.duration / 2, 10) ?? 0;
             this.initImages();
+            this.width = parseInt(this.video.width, 10);
             this.height = parseInt(this.video.height, 10);
         });
     }
@@ -243,6 +244,18 @@ class Cropper extends VideoEditor {
         }
     }
 
+    get width() {
+        return parseInt(this.inputWidth.value, 10);
+    }
+
+    set width(value) {
+        if (value instanceof InputEvent) {
+            this.inputWidth.value = parseInt(value.target.value, 10);
+        } else {
+            this.inputWidth.value = parseInt(value, 10);
+        }
+    }
+
     get height() {
         return parseInt(this.inputHeight.value, 10);
     }
@@ -265,6 +278,7 @@ class Cropper extends VideoEditor {
             ch: this.cropOffsetBottom - this.cropOffsetTop,
             cx: this.cropOffsetLeft,
             cy: this.cropOffsetTop,
+            width: this.width,
             height: this.height,
             aspect:
                 this.aspectRatio === "custom"
@@ -386,6 +400,10 @@ ${EDITOR_TEMPLATE}
     </div>
     <fieldset>
         <legend>Scale:</legend>
+        <label>
+            <span>Width:</span>
+            <input type="number" #ref="inputWidth">
+        </label>
         <label>
             <span>Height:</span>
             <input type="number" #ref="inputHeight">
