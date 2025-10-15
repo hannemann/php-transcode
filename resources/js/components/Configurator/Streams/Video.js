@@ -1,3 +1,4 @@
+import { Utils } from '@/components/lib';
 import {Stream, MAINSTART, MAINEND} from "./Stream";
 import CARD_CSS from "../CardCss";
 
@@ -18,6 +19,10 @@ ${MAINSTART}
         Stream #0:{{ item.index }}
         {{ item.codec_name }}
         {{ [item.width, item.height].filter(i => i).join('x') }}
+        &nbsp;->&nbsp;
+        {{ Object.values(VIDEO_CODECS).find(c => c.v === item.transcodeConfig.codec).l }},
+        QP: {{ 'undefined' !== typeof item.transcodeConfig.qp ? item.transcodeConfig.qp : 'N/A' }},
+        DAR: {{ item.transcodeConfig.aspectRatio }}
     </div>
     <div class="{{ (!item.shortView && 'visible') }}" @click="{{ this.toggleView(item) }}" data-toggle="true">
         <span class="iconify" data-icon="mdi-chevron-down"></span>

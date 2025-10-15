@@ -16,6 +16,9 @@ ${MAINSTART}
         {{ item.channel_layout && item.channel_layout + ',' || '' }}
         {{ (item.bit_rate && Math.round(item.bit_rate / 1000) + ' kb/s') || '' }}
         {{ (item.tags?.language || '').wrap('(', ')') }}
+        &nbsp;->&nbsp;
+        {{ Object.values(AUDIO_CODECS).find(c => c.v === item.transcodeConfig.codec).l }},
+        Channels: {{ item.transcodeConfig.channels }}
     </div>
     <div class="{{ (!item.shortView && 'visible') }}" @click="{{ this.toggleView(item) }}" data-toggle="true">
         <span class="iconify" data-icon="mdi-chevron-down"></span>

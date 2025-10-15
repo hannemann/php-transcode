@@ -1,4 +1,4 @@
-import { Slim, Iconify } from '@/components/lib';
+import { Slim, Utils, Iconify } from '@/components/lib';
 import {Request} from '@/components/Request'
 import { COMBO_BUTTON_CSS } from '@/components/partials';
 import './Streams'
@@ -21,6 +21,7 @@ class TranscodeConfigurator extends Slim {
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot));
         this.remuxContainer = "MP4";
         this.handleConfigureStream = this.handleConfigureStream.bind(this);
+        this.handleConfigureStreamReady = this.handleStreamConfig.bind(this);
         this.saveSettings = this.saveSettings.bind(this);
         this.toolProxy = toolProxy.bind(this);
         this.hide = this.hide.bind(this);
@@ -70,9 +71,7 @@ class TranscodeConfigurator extends Slim {
             "stream-configure",
             this.handleConfigureStream
         );
-        document.removeEventListener("stream-config", this.handleStreamConfig, {
-            once: true,
-        });
+        document.removeEventListener("stream-config", this.handleConfigureStreamReady);
         document.dispatchEvent(
             new CustomEvent("configurator-show", { detail: false })
         );
@@ -129,9 +128,36 @@ class TranscodeConfigurator extends Slim {
     handleConfiguratorEvent(ws) {
         console.info(ws);
         this.format = ws.format;
-        this.streams = ws.streams;
+        this.streams = this.initTranscodeConfig(ws.streams);
         this.crop = ws.crop ?? {};
         this.show();
+    }
+
+    initTranscodeConfig(streams) {
+        const codecsMap = new Map();
+        codecsMap.set('videoCodecs', Object.values(VIDEO_CODECS).sort((a,b) => a.v > b.v));
+        codecsMap.set('audioCodecs', Object.values(AUDIO_CODECS).sort((a,b) => a.v > b.v));
+        codecsMap.set('subtitleCodecs', Object.values(SUBTITLE_CODECS).sort((a,b) => a.v > b.v));
+        streams.forEach((stream) => {
+            const type = stream.codec_type;
+            const codecs = codecsMap.get(`${type}Codecs`);
+            const channels = stream.transcodeConfig?.channels
+            const qp = stream.transcodeConfig?.qp
+            stream.transcodeConfig = stream.transcodeConfig || {};
+            stream.transcodeConfig.codec = typeof stream.transcodeConfig?.codec !== "undefined" ? stream.transcodeConfig.codec : codecs.find(c => c.default).v
+            switch (type) {
+                case 'video':
+                    stream.transcodeConfig.qp = typeof stream.transcodeConfig?.qp !== "undefined" ? stream.transcodeConfig.qp : codecs.find(c => c.default).qp
+                    stream.transcodeConfig.aspectRatio = stream.transcodeConfig.aspectRatio || '16:9';
+                    break;
+                case 'audio':
+                    stream.transcodeConfig.channels = typeof stream.transcodeConfig?.channels !== "undefined" ? stream.transcodeConfig.channels : codecs.find(c => c.default).channels
+                    break;
+                case 'subtitle':
+                    break;
+            }
+        });
+        return streams;
     }
 
     setCanConcat() {
@@ -149,7 +175,7 @@ class TranscodeConfigurator extends Slim {
             top: offsetOrigin.top - offsetMain.top,
             right: offsetMain.right - offsetOrigin.left,
         };
-        document.addEventListener("stream-config", this.handleStreamConfig, {
+        document.addEventListener("stream-config", this.handleConfigureStreamReady, {
             once: true,
         });
         if (

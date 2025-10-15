@@ -15,6 +15,8 @@ ${MAINSTART}
         {{ item.codec_name }}
         {{ (item.tags?.language || '').wrap('(', ')') }}
         {{ Object.keys(item.disposition).filter(k => item.disposition[k] > 0).join(', ').wrap('(', ')') }}
+        &nbsp;->&nbsp;
+        {{ Object.values(SUBTITLE_CODECS).find(c => c.v === item.transcodeConfig.codec).l }}
     </div>
     <div class="{{ (!item.shortView && 'visible') }}" @click="{{ this.toggleView(item) }}" data-toggle="true">
         <span class="iconify" data-icon="mdi-chevron-down"></span>

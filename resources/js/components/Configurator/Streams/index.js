@@ -1,4 +1,4 @@
-import { Slim } from '@/components/lib';
+import { Slim, Utils } from '@/components/lib';
 import './Video'
 import './Audio'
 import './Sub'
@@ -15,8 +15,18 @@ export { TYPE_AUDIO, TYPE_VIDEO, TYPE_SUB, TYPE_DATA };
 class Streams extends Slim {
 
     onAdded() {
+        this.updateHandler = this.handleUpdates.bind(this);
         this.video?.find(v => v.active) || this.video?.forEach((v, k) => v.active = k === 0)
         this.audio?.find(a => a.active) || this.audio?.forEach((v, k) => v.active = k === 0)
+        document.addEventListener('stream-config', this.updateHandler);
+    }
+
+    onRemoved() {
+        document.removeEventListener('stream-config', this.updateHandler);
+    }
+
+    handleUpdates() {
+        Utils.forceUpdate(this);
     }
 
     get video() {
