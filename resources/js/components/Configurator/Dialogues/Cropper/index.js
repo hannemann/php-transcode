@@ -148,11 +148,23 @@ class Cropper extends VideoEditor {
                     Math.floor(this.image.naturalWidth / 2),
                     this.cropOffsetLeft + 1
                 );
+                if (this.equal) {
+                    this.cropOffsetRight = Math.max(
+                        Math.floor(this.image.naturalWidth / 2),
+                        this.image.naturalWidth - this.cropOffsetLeft
+                    );
+                }
                 this.updateCropBox();
             }
             if (e.key === "ArrowLeft") {
                 e.preventDefault();
                 this.cropOffsetLeft = Math.max(0, this.cropOffsetLeft - 1);
+                if (this.equal) {
+                    this.cropOffsetRight = Math.max(
+                        Math.floor(this.image.naturalWidth / 2),
+                        this.image.naturalWidth - this.cropOffsetLeft
+                    );
+                }
                 this.updateCropBox();
             }
             if (e.key === "ArrowDown") {
@@ -161,11 +173,23 @@ class Cropper extends VideoEditor {
                     Math.floor(this.image.naturalHeight / 2),
                     this.cropOffsetTop + 1
                 );
+                if (this.equal) {
+                    this.cropOffsetBottom = Math.max(
+                        Math.floor(this.image.naturalHeight / 2),
+                        this.image.naturalHeight - this.cropOffsetTop
+                    );
+                }
                 this.updateCropBox();
             }
             if (e.key === "ArrowUp") {
                 e.preventDefault();
                 this.cropOffsetTop = Math.max(0, this.cropOffsetTop - 1);
+                if (this.equal) {
+                    this.cropOffsetBottom = Math.min(
+                        this.image.naturalHeight,
+                        this.image.naturalHeight - this.cropOffsetTop
+                    );
+                }
                 this.updateCropBox();
             }
         }
@@ -176,6 +200,12 @@ class Cropper extends VideoEditor {
                     this.image.naturalWidth,
                     this.cropOffsetRight + 1
                 );
+                if (this.equal) {
+                    this.cropOffsetLeft = Math.max(
+                        0,
+                        this.image.naturalWidth - this.cropOffsetRight
+                    );
+                }
                 this.updateCropBox();
             }
             if (e.key === "ArrowLeft") {
@@ -184,6 +214,14 @@ class Cropper extends VideoEditor {
                     Math.floor(this.image.naturalWidth / 2),
                     this.cropOffsetRight - 1
                 );
+                if (this.equal) {
+                if (this.equal) {
+                    this.cropOffsetLeft = Math.min(
+                        Math.floor(this.image.naturalWidth / 2),
+                        this.image.naturalWidth - this.cropOffsetRight
+                    );
+                }
+                }
                 this.updateCropBox();
             }
             if (e.key === "ArrowDown") {
@@ -192,6 +230,12 @@ class Cropper extends VideoEditor {
                     this.image.naturalHeight,
                     this.cropOffsetBottom + 1
                 );
+                if (this.equal) {
+                    this.cropOffsetTop = Math.max(
+                        0,
+                        this.image.naturalHeight - this.cropOffsetBottom
+                    );
+                }
                 this.updateCropBox();
             }
             if (e.key === "ArrowUp") {
@@ -200,6 +244,12 @@ class Cropper extends VideoEditor {
                     Math.floor(this.image.naturalHeight / 2),
                     this.cropOffsetBottom - 1
                 );
+                if (this.equal) {
+                    this.cropOffsetTop = Math.min(
+                        Math.floor(this.image.naturalHeight / 2),
+                        this.image.naturalHeight - this.cropOffsetBottom
+                    );
+                }
                 this.updateCropBox();
             }
         }
@@ -270,6 +320,10 @@ class Cropper extends VideoEditor {
 
     get replaceBlackBorders() {
         return this.inputReplaceBlackBorders.checked;
+    }
+
+    get equal() {
+        return this.inputEqual.checked;
     }
 
     get crop() {
@@ -415,6 +469,10 @@ ${EDITOR_TEMPLATE}
         <label>
             <span>Mirror</span>
             <input type="checkbox" name="mirror" #ref="inputMirror">
+        </label>
+        <label>
+            <span>Equal Borders</span>
+            <input type="checkbox" name="equal" #ref="inputEqual" checked="checked">
         </label>
     </fieldset>
     <fieldset class="aspect-ratio">
