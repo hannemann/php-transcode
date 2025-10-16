@@ -6,11 +6,11 @@ use FFMpeg\Format\Video\X264 as Format;
 use App\Models\Video\File;
 use App\Models\FFMpeg\Actions\Helper\OutputMapper;
 use App\Models\FFMpeg\Actions\Helper\Libx264Options;
+use App\Models\FFMpeg\Actions\Crop;
 
 Class CropCPU extends Crop
 {
     const TEMPLATE_FILTER_CROP = 'crop=%d:%d:%d:%d,pad=%d:%d:(ow-iw)/2:(oh-ih)/2%s';
-    // TODO: add left and right (cx, width - cw - cx)
     const TEMPLATE_FILTER_FILLBORDERS = ',fillborders=left=%d:right=%d:top=%d:bottom=%d:mode=mirror';
 
     protected string $filenameAffix = 'crop';
@@ -43,33 +43,36 @@ Class CropCPU extends Crop
         $cmds->push('-crf', 18);
         $cmds->push('-preset', 'ultrafast');
         $cmds->push('-filter:v');
-        $cmds->push(sprintf(
-            self::TEMPLATE_FILTER_CROP,
-            $this->requestData['cw'],
-            $this->requestData['ch'],
-            $this->requestData['cx'],
-            $this->requestData['cy'],
-            $this->calculateWidth(
-                $this->requestData['replaceBlackBorders'] ? $this->requestData['height'] : $this->requestData['ch'],
-                $this->requestData['aspect']
-            ),
-            $this->requestData['replaceBlackBorders'] ? $this->requestData['height'] : $this->requestData['ch'],
-            // TODO: add left and right (cx, width - cw - cx)
-            $this->requestData['mirror'] ?
-                sprintf(
-                    self::TEMPLATE_FILTER_FILLBORDERS,
-                    $this->requestData['cx'],
-                    $this->requestData['width'] - $this->requestData['cw'] - $this->requestData['cx'],
-                    $this->requestData['cy'],
-                    $this->requestData['height'] - $this->requestData['ch'] - $this->requestData['cy']
-                ) :
-                ''
-        ));
+        $cmds->push(self::getFilterString($this->requestData));
         $cmds->push('-c:s');
         $cmds->push('copy');
         $cmds = OutputMapper::mapAll($cmds);
 
         $cmds->push($file);
         return [$cmds->all()];
+    }
+
+    public static function getFilterString(array $data) {
+        return sprintf(
+            self::TEMPLATE_FILTER_CROP,
+            $data['cw'],
+            $data['ch'],
+            $data['cx'],
+            $data['cy'],
+            Crop::calculateWidth(
+                $data['replaceBlackBorders'] ? $data['height'] : $data['ch'],
+                $data['aspect']
+            ),
+            $data['replaceBlackBorders'] ? $data['height'] : $data['ch'],
+            $data['mirror'] ?
+                sprintf(
+                    self::TEMPLATE_FILTER_FILLBORDERS,
+                    $data['cx'],
+                    $data['width'] - $data['cw'] - $data['cx'],
+                    $data['cy'],
+                    $data['height'] - $data['ch'] - $data['cy']
+                ) :
+                ''
+        );
     }
 }

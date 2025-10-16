@@ -30,7 +30,7 @@ export const requestRemovelogo = async function (type) {
                 d.removeLogo
             );
         } else {
-            this.filterGraph.push(this.removeLogo);
+            this.filterGraph.push({...this.removeLogo, ...{filterType: 'removeLogo'}});
         }
     } catch (error) {}
 };

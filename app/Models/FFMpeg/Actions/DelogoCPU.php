@@ -41,18 +41,23 @@ Class DelogoCPU extends Crop
         $cmds->push('-crf', 18);
         $cmds->push('-preset', 'ultrafast');
         $cmds->push('-filter:v');
-        $cmds->push(sprintf(
-            self::TEMPLATE_FILTER,
-            $this->requestData['x'],
-            $this->requestData['y'],
-            $this->requestData['w'],
-            $this->requestData['h'],
-        ));
+        $cmds->push(self::getFilterString($this->requestData));
         $cmds->push('-c:s');
         $cmds->push('copy');
         $cmds = OutputMapper::mapAll($cmds);
 
         $cmds->push($file);
         return [$cmds->all()];
+    }
+
+    public static function getFilterString($data): string
+    {
+        return sprintf(
+            self::TEMPLATE_FILTER,
+            $data['x'],
+            $data['y'],
+            $data['w'],
+            $data['h'],
+        );
     }
 }

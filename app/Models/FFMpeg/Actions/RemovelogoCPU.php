@@ -7,6 +7,7 @@ use App\Models\Video\File;
 use App\Models\FFMpeg\Actions\Helper\OutputMapper;
 use App\Models\FFMpeg\Actions\Helper\Libx264Options;
 use App\Models\FFMpeg\Clipper\Image;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
 Class RemovelogoCPU extends Crop
@@ -17,32 +18,20 @@ Class RemovelogoCPU extends Crop
     protected string $filenameSuffix = 'mkv';
     protected string $formatClass = Format::class;
 
+    private string $bitmap;
+
     /**
      * handle
      */
     public function execute()
     {
-        $customMask = sprintf(
-            '%s/%s',
-            dirname($this->path),
-            'logomask.jpg'
-        );        
-
-        if (Storage::disk($this->disk)->exists($customMask)) {
-            $this->bitmap = sprintf(
-                '%s/%s',
-                config('filesystems.disks.' . $this->disk . '.root'),
-                $customMask
-            );
-        } else {
-            $this->bitmap = Image::createLogoMask(
-                $this->disk,
-                $this->path,
-                $this->requestData['timestamp'],
-                $this->requestData['w'],
-                $this->requestData['h']
-            );
-        }
+        $this->bitmap = self::getBitmap(
+            $this->disk,
+            $this->path,
+            $this->requestData['timestamp'],
+            $this->requestData['w'],
+            $this->requestData['h']
+        );
         $this->format->setAudioCodec('copy')->setPasses(1);
         $this->media = File::getMedia($this->disk, $this->path);
         $this->initStreams();
@@ -64,15 +53,46 @@ Class RemovelogoCPU extends Crop
         $cmds->push('-crf', 18);
         $cmds->push('-preset', 'ultrafast');
         $cmds->push('-filter:v');
-        $cmds->push(sprintf(
-            self::TEMPLATE_FILTER,
-            $this->bitmap
-        ));
+        $cmds->push(self::getFilterString($this->bitmap));
         $cmds->push('-c:s');
         $cmds->push('copy');
         $cmds = OutputMapper::mapAll($cmds);
 
         $cmds->push($file);
         return [$cmds->all()];
+    }
+
+    public static function getBitMap(string $disk, string $path, string $timestamp, string $w, string $h, ?string $withFilters = ''): string
+    {
+        $customMask = sprintf(
+            '%s/%s',
+            dirname($path),
+            'logomask.jpg'
+        );        
+
+        if (Storage::disk($disk)->exists($customMask)) {
+            return sprintf(
+                '%s/%s',
+                config('filesystems.disks.' . $disk . '.root'),
+                $customMask
+            );
+        } else {
+            return Image::createLogoMask(
+                $disk,
+                $path,
+                $timestamp,
+                $w,
+                $h,
+                $withFilters
+            );
+        }
+    }
+
+    public static function getFilterString(string $bitmap): string
+    {
+        return sprintf(
+            self::TEMPLATE_FILTER,
+            $bitmap
+        );
     }
 }

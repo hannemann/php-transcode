@@ -87,9 +87,9 @@ class VideoEditor extends Slim {
             const width = this.video.height * this.aspectDecimal;
             this.frameUrl = `${
                 this.baseUrl
-            }${this.timestamp()}&width=${width}&height=${this.video.height}`;
+            }${this.timestamp()}&width=${width}&height=${this.video.height}&filtered=1`;
         } else {
-            this.frameUrl = `${this.baseUrl}${this.timestamp()}`;
+            this.frameUrl = `${this.baseUrl}${this.timestamp()}&filtered=1`;
         }
     }
 

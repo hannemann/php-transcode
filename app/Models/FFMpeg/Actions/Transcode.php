@@ -4,6 +4,7 @@ namespace App\Models\FFMpeg\Actions;
 
 use App\Models\FFMpeg\Filters\Video\ClipFromToFilter;
 use App\Models\FFMpeg\Filters\Video\ComplexConcat;
+use App\Models\FFMpeg\Filters\Video\FilterGraph;
 use App\Models\FFMpeg\Format\Video\h264_vaapi;
 use App\Models\Video\File;
 use FFMpeg\Coordinate\TimeCode;
@@ -42,6 +43,15 @@ class Transcode extends AbstractAction
         $this->clipDuration = $this->concatDemuxer->getDuration();
         $this->mediaExporter = $this->media->export();
 
+        $filters = collect([]);
+
+        if ($isSingleClip) {
+            $filterGraph = (string)new FilterGraph($this->disk, $this->path);
+            if ($filterGraph) {
+                $filters->push($filterGraph);
+            }
+        }
+
         if ($this->format instanceof h264_vaapi) {
             $this->codecMapper->execute(collect([]));
             $this->codecMapper->resetIndices();
@@ -55,8 +65,13 @@ class Transcode extends AbstractAction
             }
 
             if ($this->format->getAccelerationFramework() && $isSingleClip) {
-                $this->media->addFilter(['-filter:v', 'format=nv12,hwupload']);
+                $filters->push('format=nv12');
+                $filters->push('hwupload');
             }
+        }
+
+        if ($filters->isNotEmpty()) {
+            $this->media->addFilter(['-filter:v', $filters->join(',')]);
         }
 
         $this->export();
@@ -88,7 +103,7 @@ class Transcode extends AbstractAction
             $cmds = $this->concatDemuxer->addCommands($cmds);
         }
         if ($this->complexConcat->isActive()) {
-            $cmds = $this->complexConcat->getFilter($cmds, $this->format);
+            $cmds = $this->complexConcat->getFilter($cmds, $this->format, $this->disk, $this->path);
         } else {
             $cmds = $this->outputMapper->execute($cmds);
         }

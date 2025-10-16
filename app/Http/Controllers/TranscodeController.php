@@ -35,6 +35,7 @@ class TranscodeController extends Controller
                         ProcessVideo::dispatch('prepare', 'recordings', $path, $request);
                     }
                     $path = $pathCopy;
+                    Settings::save($path, $data);
                 }
                 ProcessVideo::dispatch('transcode', 'recordings', $path, $request);
                 FFMpegProgress::dispatch('queue.progress');
@@ -71,6 +72,7 @@ class TranscodeController extends Controller
                 if (!Storage::disk('recordings')->exists($path)) {
                     $pre->execute();
                 }
+                Settings::save($path, $data);
             }
 
             $type = 'transcode';

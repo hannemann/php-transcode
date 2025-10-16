@@ -8,6 +8,12 @@ use Illuminate\Support\Collection;
 
 class ComplexConcat
 {
+    private array $streamIds;
+    private Collection $video;
+    private Collection $audio;
+    private Collection $subtitle;
+    private array $clips;
+
     public function __construct(array $codecConfig, Collection $video, Collection $audio, Collection $subtitle, array $clips = [])
     {
         $this->streamIds = collect($codecConfig)->pluck('id')->all();
@@ -22,16 +28,27 @@ class ComplexConcat
         return count($this->clips) > 1;
     }
 
-    public function getFilter(Collection $cmds, h264_vaapi $format): Collection
+    public function getFilter(Collection $cmds, h264_vaapi $format, string $disk, string $path): Collection
     {
 
         $tmplVideo = '[0:v:%d]trim=%f:%f,setpts=PTS-STARTPTS%s[v%d]';
         $tmplAudio = '[0:a:%d]atrim=%f:%f,asetpts=PTS-STARTPTS[a%d]';
         $tmplSubtitle = '[0:s:%d]atrim=%f:%f,asetpts=PTS-STARTPTS[s%d]';
 
-        $acceleration = '';
+        $filterString = '';
+        $filters = collect([]);
+        $filterGraph = (string)new FilterGraph($disk, $path);
+        if ($filterGraph) {
+            $filters->push($filterGraph);
+        }
+
         if ($format && $format instanceof h264_vaapi && $format->accelerationFramework) {
-            $acceleration = ',format=nv12,hwupload';
+            $filters->push('format=nv12');
+            $filters->push('hwupload');
+        }
+
+        if ($filters->isNotEmpty()) {
+            $filterString = ',' . $filters->join(',');
         }
 
         $streamIds = $this->getStreamIds();
@@ -45,7 +62,7 @@ class ComplexConcat
             $to = TimeCode::fromString($clip['to'])->toSeconds() + (float)('0' . substr($clip['to'], strpos($clip['to'], '.')));
 
             foreach($streamIds['video'] as $id) {
-                $items[] = sprintf($tmplVideo, $id, $from, $to, $acceleration, $n);
+                $items[] = sprintf($tmplVideo, $id, $from, $to, $filterString, $n);
                 $parts[] = sprintf('[v%d]', $n);
             }
             foreach($streamIds['audio'] as $id) {

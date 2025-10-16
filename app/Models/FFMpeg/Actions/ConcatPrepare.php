@@ -2,7 +2,7 @@
 
 namespace App\Models\FFMpeg\Actions;
 
-use App\Models\FFMpeg\Format\Video\ConcatPrepare as Format;
+use App\Models\FFMpeg\Format\Video\h264_vaapi as Format;
 use App\Models\Video\File;
 use Illuminate\Support\Collection;
 
@@ -22,9 +22,33 @@ class ConcatPrepare extends AbstractAction
         $this->initStreams();
         $this->configureAudio();
         $this->codecMapper = new Helper\CodecMapper($this->codecConfig, $this->streams, $this->video, $this->audio, $this->subtitle);
-        $this->codecMapper->forceCodec('copy', 'flac');
+        $this->codecMapper->forceCodec(null, 'flac');
         $this->outputMapper = new Helper\OutputMapper($this->codecConfig, $this->video, $this->audio, $this->subtitle);
         $this->mediaExporter = $this->media->export();
+
+        $filters = collect([]);
+        $this->codecMapper->execute(collect([]));
+        $this->codecMapper->resetIndices();
+        
+        if (strpos($this->codecMapper->currentVideoCodec, 'nvenc') !== false) {
+            $this->codecMapper->forceCodec('hevc_nvenc', 'flac');
+            $this->format->setAccelerationFramework(Format::ACCEL_CUDA);
+        }
+        
+        if (strpos($this->codecMapper->currentVideoCodec, 'vaapi') !== false) {
+            $this->codecMapper->forceCodec('hevc_vaapi', 'flac');
+            $this->format->setAccelerationFramework(Format::ACCEL_VAAPI);
+        }
+
+        if ($this->format->getAccelerationFramework()) {
+            $filters->push('format=nv12');
+            $filters->push('hwupload');
+        }
+
+        if ($filters->isNotEmpty()) {
+            $this->media->addFilter(['-filter:v', $filters->join(',')]);
+        }
+
         $this->export();
     }
 
@@ -37,9 +61,7 @@ class ConcatPrepare extends AbstractAction
         $cmds = collect($commands[0]);
 
         $cmds = $this->format->stripOptions($cmds);
-        $cmds->push('-map', '0:v?');
-        $cmds = $this->mapAudio($this->streams, $cmds, $this->codecConfig);
-        $cmds->push('-map', '0:s?');
+        $cmds->push('-map', '0');
         $cmds = $this->codecMapper->execute($cmds);
         $cmds = $cmds->replace([$cmds->search('-c:v:0') => '-c:v']);
         $cmds->push('-c:s');

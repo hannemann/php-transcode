@@ -48,7 +48,7 @@ Class Crop extends AbstractAction
                 $this->requestData['aspect']
             ),
             $this->requestData['replaceBlackBorders'] ? $this->requestData['height'] : $this->requestData['ch'],
-            $this->calculateWidth($this->requestData['height'],$this->requestData['aspect']),
+            self::calculateWidth($this->requestData['height'],$this->requestData['aspect']),
             $this->requestData['height']
         ));
         $cmds->push('-c:s');
@@ -59,7 +59,7 @@ Class Crop extends AbstractAction
         return [$cmds->all()];
     }
 
-    protected function calculateWidth(int $height, string $aspect): int
+    protected static function calculateWidth(int $height, string $aspect): int
     {
         $ratios = explode(':', $aspect);
         return ($height / (int)$ratios[1]) * (int)$ratios[0];
