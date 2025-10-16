@@ -130,6 +130,9 @@ class TranscodeConfigurator extends Slim {
         this.format = ws.format;
         this.streams = this.initTranscodeConfig(ws.streams);
         this.crop = ws.crop ?? {};
+        this.removeLogo = ws.removeLogo ?? {};
+        this.delogo = ws.delogo ?? {}
+        this.filterGraph = ws.filterGraph ?? [];
         this.show();
     }
 
@@ -222,6 +225,9 @@ class TranscodeConfigurator extends Slim {
             streams,
             clips: clipsData,
             crop: this.crop,
+            removeLogo: this.removeLogo,
+            delogo: this.delogo,
+            filterGraph: this.filterGraph
         };
     }
 

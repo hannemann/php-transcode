@@ -33,6 +33,8 @@ export const requestCrop = async function (type) {
                 `/crop/${encodeURIComponent(this.item.path)}`,
                 d.crop
             );
+        } else {
+            this.filterGraph.push(d.crop);
         }
     } catch (error) {}
 };

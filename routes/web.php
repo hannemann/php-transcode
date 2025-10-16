@@ -87,7 +87,10 @@ Route::get('/streams/{path?}', function (string $path = null) {
         BroadcastStreams::dispatch(
             $media->getFormat()->all(),
             Settings::decorateStreams($path, $media->getStreams()),
-            Settings::getSettings($path)['crop'] ?? []
+            Settings::getSettings($path)['crop'] ?? [],
+            Settings::getSettings($path)['removeLogo'] ?? [],
+            Settings::getSettings($path)['delogo'] ?? [],
+            Settings::getSettings($path)['filterGraph'] ?? []
         );
     } catch (\Exception $e) {
         return response()->json([

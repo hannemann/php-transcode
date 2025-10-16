@@ -12,6 +12,7 @@ class RemoveLogo extends VideoEditor {
 
     bindListeners() {
         super.bindListeners();
+        this.run = this.run.bind(this);
         this.initRemovelogo = this.initRemovelogo.bind(this);
         this.rwd = rwd.bind(this);
         this.ffwd = ffwd.bind(this);
@@ -31,6 +32,11 @@ class RemoveLogo extends VideoEditor {
 
     onRemoved() {
         document.removeEventListener("keydown", this.handleKey);
+    }
+
+    run() {
+        this.startRemoveLogo = true;
+        this.parentNode.confirmAction();
     }
 
     initRemovelogo() {
@@ -54,6 +60,15 @@ class RemoveLogo extends VideoEditor {
         return this.imageType === IMAGE_TYPE_ORIGINAL
             ? super.baseUrl
             : `/removelogoImage/${encodeURIComponent(this.path)}?timestamp=`;
+    }
+
+    get removeLogo() {
+        return {
+            timestamp: this.timestamp(),
+            w: this.video.width,
+            h: this.video.height,
+            type: this.type
+        }
     }
 
     add() {}
@@ -93,6 +108,8 @@ ${EDITOR_TEMPLATE}
         Find a black frame containing only the logo
     </p>
 </div>
+<!-- TODO: Create logomask without running action -->
+<theme-button #ref="runButton" class="run" @click="{{ this.run }}">Start</theme-button>
 `;
 
 customElements.define("dialogue-removelogo", RemoveLogo);

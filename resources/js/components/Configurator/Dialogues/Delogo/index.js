@@ -11,6 +11,7 @@ class DeLogo extends VideoEditor {
 
     bindListeners() {
         super.bindListeners();
+        this.run = this.run.bind(this);
         this.initDelogo = this.initDelogo.bind(this);
         this.addDelogoBox = this.addDelogoBox.bind(this);
         this.handleKey = this.handleKey.bind(this);
@@ -29,6 +30,11 @@ class DeLogo extends VideoEditor {
     onRemoved() {
         this.image.removeEventListener("click", this.addDelogoBox);
         document.removeEventListener("keydown", this.handleKey);
+    }
+
+    run() {
+        this.startDelogo = true;
+        this.parentNode.confirmAction();
     }
 
     initDelogo() {
@@ -289,6 +295,7 @@ ${EDITOR_TEMPLATE}
         <dd>Adjust position</dd>
     </dl>
 </div>
+<theme-button #ref="runButton" class="run" @click="{{ this.run }}">Start</theme-button>
 `;
 
 customElements.define("dialogue-delogo", DeLogo);

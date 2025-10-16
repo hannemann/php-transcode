@@ -16,15 +16,21 @@ export const requestRemovelogo = async function (type) {
         m.appendChild(d);
         document.body.appendChild(m);
         await m.open();
-        console.info("Removelogo video file %s.", this.item.path);
-        await Request.post(
-            `/removelogo/${encodeURIComponent(this.item.path)}`,
-            {
-                timestamp: d.timestamp(),
-                w: d.video.width,
-                h: d.video.height,
-                type,
-            }
+        console.info("Removelogo video file %s. Create logomask at timestamp %s, width: %s, height: %s, type: %s",
+            this.item.path,
+            d.removeLogo.timestamp,
+            d.removeLogo.w,
+            d.removeLogo.h,
+            d.removeLogo.type
         );
+        this.removeLogo = d.removeLogo;
+        if (this.startRemoveLogo) {
+            await Request.post(
+                `/removelogo/${encodeURIComponent(this.item.path)}`,
+                d.removeLogo
+            );
+        } else {
+            this.filterGraph.push(this.removeLogo);
+        }
     } catch (error) {}
 };
