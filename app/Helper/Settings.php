@@ -5,6 +5,7 @@ namespace App\Helper;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use stdClass;
+use FFMpeg\FFProbe\DataMapping\Stream;
 
 class Settings
 {
@@ -12,7 +13,7 @@ class Settings
     {
         $settings = static::getSettings($path);
         foreach($settings['streams'] as $streamSetting) {
-            foreach($streams as $key => $stream) {
+            foreach($streams as $key => /* @var Stream */$stream) {
                 if ($stream->get('index') === $streamSetting['id']) {
                     if ($stream->get('codec_type') === 'video') {
                         $streamSetting['config']['aspectRatio'] = $streamSetting['config']['aspectRatio'] ?? $stream->get('display_aspect_ratio');

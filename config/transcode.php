@@ -63,4 +63,5 @@ return [
     'videoCodecs' => json_decode(env('VIDEO_CODECS', json_encode($videoCodecs))),
     'audioCodecs' => json_decode(env('AUDIO_CODECS', json_encode($audioCodecs))),
     'subtitleCodecs' => json_decode(env('SUBTITLE_CODECS', json_encode($subtitleCodecs))),
+    'preferredLanguages' => json_decode(env('PREFERRED_LANGUAGES', json_encode([]))),
 ];
