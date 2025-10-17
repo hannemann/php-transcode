@@ -445,6 +445,9 @@ ${EDITOR_CSS}
     .help dd {
         margin: 0;
     }
+    :host > theme-button {
+        justify-self: end;
+    }
 </style>
 ${EDITOR_TEMPLATE}
 <div #ref="cropOverlay" class="crop"><div #ref="cropImage"></div></div>
@@ -464,7 +467,7 @@ ${EDITOR_TEMPLATE}
         </label>
         <label>
             <span>Replace Borders</span>
-            <input type="checkbox" name="replaceBlackBorders" #ref="inputReplaceBlackBorders" @change="{{ this.validateDimensions() }}">
+            <input type="checkbox" name="replaceBlackBorders" #ref="inputReplaceBlackBorders" @change="{{ this.validateDimensions() }}" checked="checked">
         </label>
         <label>
             <span>Mirror</span>

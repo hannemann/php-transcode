@@ -139,7 +139,7 @@ export const EDITOR_CSS = /*html*/ `
 :host {
         --thumbnail-height: ${THUMBNAIL_HEIGHT + 16}px;
         display: grid;
-        grid-template-columns: auto 1fr auto;
+        grid-template-columns: 1fr auto 1fr;
         grid-template-rows: calc(100% - var(--thumbnail-height) - var(--font-size-100) * var(--line-height-100)) min-content max-content;
         grid-template-areas:
             "left frame right"
@@ -162,6 +162,9 @@ export const EDITOR_CSS = /*html*/ `
     .indicator {
         grid-area: thumbnails;
         height: var(--thumbnail-height);
+        width: 100%;
+        max-width: 100rem;
+        justify-self: center;
         position: relative;
         --background: var(--clr-bg-200);
         --size: 3px;

@@ -149,6 +149,7 @@ ${EDITOR_CSS}
         grid-auto-rows: min-content;
         overflow-y: auto;
         grid-row-gap: .25rem;
+        justify-self: end;
     }
     .clips .clip:nth-child(odd) {
         background: var(--clr-bg-100);
