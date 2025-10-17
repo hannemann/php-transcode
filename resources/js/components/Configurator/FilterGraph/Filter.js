@@ -22,6 +22,15 @@ class Filter extends Slim {
         this.configurator.saveSettings();
         Utils.forceUpdate(this.configurator);
     }
+
+    get description() {
+        if (this.filterData.filterType === 'crop') {
+            if (this.filterData.replaceBlackBorders) {
+                return `replace borders${this.filterData.mirror ? ' (mirrored)' : ''}`;
+            }
+        }
+        return '';
+    }
 }
 
 Filter.template = /*html*/ `
@@ -39,7 +48,10 @@ section {
 </style>
 <section>
     <div class="item">
-        {{ this.filterData.filterType }}
+        <span>{{ this.filterData.filterType }}</span>
+        <span>
+            {{ this.description }}
+        </span>
     </div>
     <div @click="{{ this.handleDelete }}" class="icon-stack">
         <span class="iconify" data-icon="mdi-close"></span>
