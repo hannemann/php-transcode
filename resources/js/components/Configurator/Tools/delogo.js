@@ -30,6 +30,7 @@ export const requestDelogo = async function (type) {
             await Request.post(`/delogo/${encodeURIComponent(this.item.path)}`, this.delogo);
         } else {
             this.filterGraph.push({...this.delogo, ...{filterType: 'delogo'}});
+            this.saveSettings();
         }
     } catch (error) {}
 };

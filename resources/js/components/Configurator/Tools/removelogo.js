@@ -30,7 +30,25 @@ export const requestRemovelogo = async function (type) {
                 d.removeLogo
             );
         } else {
-            this.filterGraph.push({...this.removeLogo, ...{filterType: 'removeLogo'}});
+            const filterData = {...this.removeLogo, ...{filterType: 'removeLogo'}};
+            const idx = this.filterGraph.findIndex(f => f.filterType === 'removeLogo');
+            if (idx > -1) {
+                const m = document.createElement("modal-confirm");
+                m.header = "Replace existing filter?";
+                m.content = "RemoveLogo filter can only be applied once.";
+                document.body.appendChild(m);
+                try {
+                    await m.confirm();
+                    this.filterGraph[idx] = filterData;
+                    this.saveSettings();
+                    console.log("Replace removeLogo filter confirmed");
+                } catch (error) {
+                    console.log("Replace removeLogo filter canceled");
+                }
+                return;
+            }
+            this.filterGraph.push(filterData);
+            this.saveSettings();
         }
     } catch (error) {}
 };
