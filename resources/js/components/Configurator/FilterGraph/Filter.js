@@ -10,7 +10,6 @@ class Filter extends Slim {
     }
 
     bindListener() {
-        this.handleClick = this.handleClick.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
     }
 
