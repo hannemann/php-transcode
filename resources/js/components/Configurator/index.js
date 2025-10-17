@@ -212,12 +212,9 @@ class TranscodeConfigurator extends Slim {
     }
 
     get config() {
-        const clipsData = [...this.clips.clips];
-        if (clipsData[0].from === null) {
-            clipsData[0].from = "0:0:0.0";
-        }
-        if (clipsData.length === 1 && clipsData[0].to === null) {
-            clipsData[0].to = this.formatNode.duration;
+        let clipsData = [...this.clips.clips];
+        if (clipsData.length === 1 && clipsData[0].from === null) {
+            clipsData = [];
         }
         const streams = this.streams
             .filter((s) => s.active)

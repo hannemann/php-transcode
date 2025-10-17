@@ -38,5 +38,7 @@ export const requestCrop = async function (type) {
             this.filterGraph.push(filterData);
             this.saveSettings();
         }
-    } catch (error) {}
+    } catch (error) {
+        console.error(error);
+    }
 };

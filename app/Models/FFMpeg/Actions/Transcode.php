@@ -28,9 +28,9 @@ class Transcode extends AbstractAction
         $this->duration = $this->media->getFormat()->get('duration');
         $this->initStreams();
 
-        $isSingleClip = count($this->clips) === 1;
+        $isSingleClip = count($this->clips) <= 1;
 
-        if ($isSingleClip) {
+        if (count($this->clips) === 1) {
             $this->media->addFilter(
                 static::getFromToFilter($this->clips[0]['from'], $this->clips[0]['to'])
             );
@@ -114,7 +114,7 @@ class Transcode extends AbstractAction
 
     protected function calculateProgress(int $percentage): int
     {
-        if ($this->duration !== $this->clipDuration && $percentage < 100) {
+        if (count($this->clips) > 0 && $this->duration !== $this->clipDuration && $percentage < 100) {
             $processed = $this->duration * $percentage / 100;
             $percentage = round(100 / $this->clipDuration * $processed);
         }

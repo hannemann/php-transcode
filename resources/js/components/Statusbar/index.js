@@ -73,7 +73,11 @@ class Statusbar extends Slim {
     }
 
     handleProgressEvent({ queue }) {
-        this.dataset.hasItems = (queue.length > 0).toString();
+        const hasItems = Boolean(queue.length);
+        this.dataset.hasItems = hasItems.toString();
+        if (!hasItems) {
+            this.sectionDetail.classList.add('hidden');
+        }
         let current = queue.filter((q) => q.state === STATE_RUNNING);
         let pending = queue.filter((q) => q.state === STATE_PENDING);
         let failed = queue.filter((q) => q.state === STATE_FAILED);

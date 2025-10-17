@@ -33,7 +33,7 @@ class TranscodeRequest extends FFMpegActionRequest
             'streams.*.config.qp'       => 'nullable|integer',
             'streams.*.config.channels' => 'nullable|integer',
             'streams.*.config.aspect'   => ['nullable', Rule::in(['4:3', '16:9', 'Keep'])],
-            'clips'                     => 'required|array',
+            'clips'                     => 'array',
             'clips.*'                   => 'array',
             'clips.*.to'                => ['nullable', 'regex:/^([0-9]+:)?[0-9]+:[0-9]+:[0-9]+\.[0-9]+$/'],
             'clips.*.from'              => ['nullable', 'regex:/^([0-9]+:)?[0-9]+:[0-9]+:[0-9]+\.[0-9]+$/'],

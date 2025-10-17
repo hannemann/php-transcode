@@ -101,16 +101,10 @@ Route::get('/streams/{path?}', function (string $path = null) {
 
 })->where('path', '(.*)');
 
-Route::get('/clips/{path?}', function (FFMpegActionRequest $request, string $path = null) {
+Route::get('/clips/{path?}', function (FFMpegActionRequest $request, ?string $path = null) {
     
     try {
         $clips = Settings::getSettings($path)['clips'];
-        // $clips = (new ConcatDemuxer('recordings', $path))->getClips();
-        if (empty($clips)) {
-            $remux = new ConcatPrepare('recordings', $path, 0, $request->input());
-            $clips = Settings::getSettings($remux->getOutputFilename())['clips'];
-            // $clips = (new ConcatDemuxer('recordings', $remux->getOutputFilename()))->getClips();
-        }
         BroadcastClips::dispatch($clips);
     } catch (\Exception $e) {
         return response()->json([

@@ -27,7 +27,7 @@ class TranscodeController extends Controller
             } else {
                 if (count($data['clips']) === 1) {
                     Transcode::getFromToFilter($data['clips'][0]['from'], $data['clips'][0]['to']);
-                } else {
+                } elseif (count($data['clips']) > 1) {
                     // prepare
                     $pre = new ConcatPrepare('recordings', $path, 0, $request->input());
                     $pathCopy = $pre->getOutputFilename();

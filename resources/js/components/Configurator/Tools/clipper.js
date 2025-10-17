@@ -34,5 +34,8 @@ export const clipper = async function () {
             );
         }
         this.clips.update();
-    } catch (error) {}
+        this.saveSettings();
+    } catch (error) {
+        console.error(error);
+    }
 };
