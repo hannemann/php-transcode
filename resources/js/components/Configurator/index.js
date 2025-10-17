@@ -4,6 +4,7 @@ import { COMBO_BUTTON_CSS } from '@/components/partials';
 import './Streams'
 import './Clips'
 import './Format'
+import './FilterGraph'
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 import "./Dialogues/Scale";
 import "./Dialogues/Concat";
@@ -207,6 +208,7 @@ class TranscodeConfigurator extends Slim {
             `/settings/${encodeURIComponent(this.item.path)}`,
             this.config
         );
+        Utils.forceUpdate(this);
     }
 
     get config() {
@@ -284,7 +286,8 @@ main > div {
 .info {
     grid-area: info;
     display: grid;
-    grid-template-areas: "data clips";
+    grid-template-areas: "data clips" "filterGraph .";
+    grid-template-rows: repeat(2, min-content);
     gap: 1rem;
     overflow-y: auto;
 }
@@ -343,6 +346,7 @@ ${CSS}
                 <transcode-configurator-streams *if="{{ this.streams }}" .items="{{ this.streams }}"></transcode-configurator-streams>
             </section>
             <transcode-configurator-clips *if="{{ this.streams }}" .path="{{ this.item.path }}"></transcode-configurator-clips>
+            <transcode-configurator-filter-graph *if="{{ this.filterGraph.length }}" .filters="{{ this.filterGraph }}" .configurator="{{ this }}"></transcode-configurator-filter-graph>
         </div>
         <footer>
             <button @click="this.saveSettings()" class="icon-stack" title="Save Settings">

@@ -34,7 +34,8 @@ export const requestCrop = async function (type) {
                 d.crop
             );
         } else {
-            this.filterGraph.push({...d.crop, ...{filterType: 'crop'}});
+            const filterData = {...d.crop, ...{filterType: 'crop'}};
+            this.filterGraph.push(filterData);
             this.saveSettings();
         }
     } catch (error) {}

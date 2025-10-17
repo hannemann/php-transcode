@@ -40,14 +40,14 @@ export const requestRemovelogo = async function (type) {
                 try {
                     await m.confirm();
                     this.filterGraph[idx] = filterData;
-                    this.saveSettings();
                     console.log("Replace removeLogo filter confirmed");
                 } catch (error) {
                     console.log("Replace removeLogo filter canceled");
+                    return;
                 }
-                return;
+            } else {
+                this.filterGraph.push(filterData);
             }
-            this.filterGraph.push(filterData);
             this.saveSettings();
         }
     } catch (error) {}
