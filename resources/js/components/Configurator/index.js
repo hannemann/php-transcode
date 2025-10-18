@@ -181,31 +181,29 @@ class TranscodeConfigurator extends Slim {
     }
 
     handleClipsUpdated() {
-        document.removeEventListener('clips-updated', this.handleClipsUpdated);
-        const preferredAudioCodes = (this.clips.clips?.length || 0) > 1 ? PREFERRED_AUDIO_CODECS?.['multiClip'] : PREFERRED_AUDIO_CODECS?.['singleClip'];
-        this.streams = this.streams.map((stream) => {
-            const type = stream.codec_type;
-            switch (type) {
-                case 'video':
-                    break;
-                case 'audio':
-                    if (!stream.transcodeConfig.manual) {
-                        const preferredCodec = AUDIO_CODECS[preferredAudioCodes?.[stream.channels]]?.v;
-                        if ("undefined" !== typeof preferredCodec) {
-                            stream.transcodeConfig.codec = preferredCodec;
+        requestAnimationFrame(() => {
+            const preferredAudioCodes = (this.clips.clips?.length || 0) > 1 ? PREFERRED_AUDIO_CODECS?.['multiClip'] : PREFERRED_AUDIO_CODECS?.['singleClip'];
+            this.streams = this.streams.map((stream) => {
+                const type = stream.codec_type;
+                switch (type) {
+                    case 'video':
+                        break;
+                    case 'audio':
+                        if (!stream.transcodeConfig.manual) {
+                            const preferredCodec = AUDIO_CODECS[preferredAudioCodes?.[stream.channels]]?.v;
+                            if ("undefined" !== typeof preferredCodec) {
+                                stream.transcodeConfig.codec = preferredCodec;
+                            }
                         }
-                    }
-                    stream.transcodeConfig.channels = stream.channels
-                    break;
-                case 'subtitle':
-                    break;
-            }
-            return stream;
+                        stream.transcodeConfig.channels = stream.channels
+                        break;
+                    case 'subtitle':
+                        break;
+                }
+                return stream;
+            });
+            document.dispatchEvent(new CustomEvent('stream-config'));
         });
-        document.dispatchEvent(new CustomEvent('stream-config'));
-        document.addEventListener('clips-updated', () => {
-            document.addEventListener('clips-updated', this.handleClipsUpdated);
-        }, {once: true});
     }
 
     setCanConcat() {
