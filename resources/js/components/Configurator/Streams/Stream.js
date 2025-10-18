@@ -10,14 +10,20 @@ class Stream extends Slim {
             item.shortView = true
         });
         this.short = true
+        this.handleToggleStream = this.handleToggleStream.bind(this);
     }
 
     onAdded() {
+        document.addEventListener('stream-toggle', this.handleToggleStream)
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
     }
 
     toggleView(item) {
         item.shortView = !item.shortView
+        Utils.forceUpdate(this)
+    }
+
+    handleToggleStream() {
         Utils.forceUpdate(this)
     }
 }
@@ -26,7 +32,7 @@ const MAINSTART = /*html*/ `
 <main>
     <h2>{{ this.header }}</h2>
     <div *foreach="{{ this.streams }}">
-        <div class="stream">
+        <div class="stream" data-active="{{ item.active ? 'true' : 'false' }}">
 `
 
 const MAINEND = /*html*/ `

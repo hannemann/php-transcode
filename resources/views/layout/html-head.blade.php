@@ -10,5 +10,6 @@
     const LARAVEL_WEBSOCKETS_PORT = {{ (int)config('websockets.dashboard.port') }};
     const LARAVEL_WEBSOCKETS_KEY = {{ (int)(config('websockets.apps')[0]['key']) }};
     const PREFERRED_LANGUAGES = @json(config('transcode.preferredLanguages'));
+    const PREFERRED_AUDIO_CODECS = @json(config('transcode.preferredAudioCodecs'));
 </script>
 <script src="{{ mix('/js/app.js') }}"></script>

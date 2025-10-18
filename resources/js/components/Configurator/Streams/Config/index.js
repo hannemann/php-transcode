@@ -2,6 +2,8 @@ import { Slim, Utils } from '@/components/lib';
 
 class StreamConfig extends Slim {
 
+    #manual = false;
+
     constructor() {
         super()
         this.videoCodecs = Object.values(VIDEO_CODECS).sort((a,b) => a.v > b.v)
@@ -43,7 +45,7 @@ class StreamConfig extends Slim {
     }
 
     hide() {
-        this.item.transcodeConfig = {codec: this.codec}
+        this.item.transcodeConfig = {codec: this.codec, manual: this.#manual};
         if (this.item.codec_type === 'video') {
             this.item.transcodeConfig.qp = this.qp
             this.item.transcodeConfig.aspectRatio = this.aspectRatio
@@ -84,6 +86,7 @@ class StreamConfig extends Slim {
 
     handleQpRange(e) {
         this.qp = parseInt(this.qpSlider.value)
+        this.#manual = true;
     }
 
     handleCodecChange(e) {
@@ -95,15 +98,18 @@ class StreamConfig extends Slim {
             this.qp = this.codecs.find(c => c.v === this.codec).qp
             this.qpSlider.value = this.qp
         }
+        this.#manual = true;
         Utils.forceUpdate(this)
     }
 
     handleChannelsChange(e) {
         this.channels = parseInt(e.currentTarget.value)
+        this.#manual = true;
     }
 
     handleAspectRatioChange(e) {
         this.aspectRatio = e.currentTarget.value
+        this.#manual = true;
     }
 
     isCodecChecked(codec) {

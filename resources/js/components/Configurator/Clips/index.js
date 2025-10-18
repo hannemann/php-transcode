@@ -141,6 +141,7 @@ class Clips extends Slim {
                 this.shadowRoot
                     .querySelectorAll("transcode-configurator-clip")
                     .forEach((c, i) => (c.clipData = this.clips[i]));
+                document.dispatchEvent(new CustomEvent("clips-updated"));
                 resolve();
             });
         });

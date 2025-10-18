@@ -12,18 +12,11 @@ const TYPE_DATA = 'data'
 
 export { TYPE_AUDIO, TYPE_VIDEO, TYPE_SUB, TYPE_DATA };
 
-const PREFERRED_LANGUAGES_LALA = [
-    'deu',
-    'ger',
-    'de'
-]
-
 class Streams extends Slim {
 
     onAdded() {
         this.updateHandler = this.handleUpdates.bind(this);
         this.video?.find(v => v.active) || this.video?.forEach((v, k) => v.active = k === 0)
-        // TODO: search for configured preferred language and set that to active instead
         this.audio?.find(a => a.active) || this.audio?.forEach((v, k) => v.active = PREFERRED_LANGUAGES.includes(v.tags?.language));
         this.audio?.find(a => a.active) || this.audio?.forEach((v, k) => v.active = k === 0)
         document.addEventListener('stream-config', this.updateHandler);

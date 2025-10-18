@@ -57,6 +57,16 @@ $subtitleCodecs = [
         "l" => "dvd_subtitle",
     ],
 ];
+$preferredAudioCodecs = [
+    "singleClip" => [
+        2 => 'aac',
+        6 => 'copy'
+    ],
+    "multiClip" => [
+        2 => 'aac',
+        6 => 'ac3'
+    ]
+];
 
 return [
     'vaapiDevice' => env('VAAPI_DEVICE', '/dev/dri/renderD128'),
@@ -64,4 +74,5 @@ return [
     'audioCodecs' => json_decode(env('AUDIO_CODECS', json_encode($audioCodecs))),
     'subtitleCodecs' => json_decode(env('SUBTITLE_CODECS', json_encode($subtitleCodecs))),
     'preferredLanguages' => json_decode(env('PREFERRED_LANGUAGES', json_encode([]))),
+    'preferredAudioCodecs' => json_decode(env('PREFERRED_AUDIO_CODECS', json_encode($preferredAudioCodecs))),
 ];

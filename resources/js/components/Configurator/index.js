@@ -16,6 +16,7 @@ import { toolProxy } from "./Tools";
 
 const WS_CHANNEL = "Transcode.Config";
 class TranscodeConfigurator extends Slim {
+
     onAdded() {
         this.canConcat = false;
         document.addEventListener("file-clicked", this.init.bind(this));
@@ -23,6 +24,7 @@ class TranscodeConfigurator extends Slim {
         this.remuxContainer = "MP4";
         this.handleConfigureStream = this.handleConfigureStream.bind(this);
         this.handleConfigureStreamReady = this.handleStreamConfig.bind(this);
+        this.handleClipsUpdated = this.handleClipsUpdated.bind(this);
         this.saveSettings = this.saveSettings.bind(this);
         this.toolProxy = toolProxy.bind(this);
         this.hide = this.hide.bind(this);
@@ -49,6 +51,10 @@ class TranscodeConfigurator extends Slim {
             "stream-configure",
             this.handleConfigureStream
         );
+        document.addEventListener(
+            "clips-updated",
+            this.handleClipsUpdated
+        );
         console.info("Show streams of %s", this.item.path);
     }
 
@@ -71,6 +77,10 @@ class TranscodeConfigurator extends Slim {
         document.removeEventListener(
             "stream-configure",
             this.handleConfigureStream
+        );
+        document.removeEventListener(
+            "clips-updated",
+            this.handleClipsUpdated
         );
         document.removeEventListener("stream-config", this.handleConfigureStreamReady);
         document.dispatchEvent(
@@ -129,7 +139,7 @@ class TranscodeConfigurator extends Slim {
     handleConfiguratorEvent(ws) {
         console.info(ws);
         this.format = ws.format;
-        this.streams = this.initTranscodeConfig(ws.streams);
+        this.streams = this.initTranscodeConfig(ws.streams, ws.clips);
         this.crop = ws.crop ?? {};
         this.removeLogo = ws.removeLogo ?? {};
         this.delogo = ws.delogo ?? {}
@@ -137,7 +147,9 @@ class TranscodeConfigurator extends Slim {
         this.show();
     }
 
-    initTranscodeConfig(streams) {
+    initTranscodeConfig(streams, clips) {
+        console.log('Initialize transcode config');
+        const preferredAudioCodes = (clips?.length || 0) > 1 ? PREFERRED_AUDIO_CODECS?.['multiClip'] : PREFERRED_AUDIO_CODECS?.['singleClip'];
         const codecsMap = new Map();
         codecsMap.set('videoCodecs', Object.values(VIDEO_CODECS).sort((a,b) => a.v > b.v));
         codecsMap.set('audioCodecs', Object.values(AUDIO_CODECS).sort((a,b) => a.v > b.v));
@@ -145,8 +157,6 @@ class TranscodeConfigurator extends Slim {
         streams.forEach((stream) => {
             const type = stream.codec_type;
             const codecs = codecsMap.get(`${type}Codecs`);
-            const channels = stream.transcodeConfig?.channels
-            const qp = stream.transcodeConfig?.qp
             stream.transcodeConfig = stream.transcodeConfig || {};
             stream.transcodeConfig.codec = typeof stream.transcodeConfig?.codec !== "undefined" ? stream.transcodeConfig.codec : codecs.find(c => c.default).v
             switch (type) {
@@ -155,13 +165,47 @@ class TranscodeConfigurator extends Slim {
                     stream.transcodeConfig.aspectRatio = stream.transcodeConfig.aspectRatio || '16:9';
                     break;
                 case 'audio':
-                    stream.transcodeConfig.channels = typeof stream.transcodeConfig?.channels !== "undefined" ? stream.transcodeConfig.channels : codecs.find(c => c.default).channels
+                    if (!stream.transcodeConfig.manual) {
+                        const preferredCodec = AUDIO_CODECS[preferredAudioCodes?.[stream.channels]]?.v;
+                        if ("undefined" !== typeof preferredCodec) {
+                            stream.transcodeConfig.codec = preferredCodec;
+                        }
+                    }
+                    stream.transcodeConfig.channels = stream.channels
                     break;
                 case 'subtitle':
                     break;
             }
         });
         return streams;
+    }
+
+    handleClipsUpdated() {
+        document.removeEventListener('clips-updated', this.handleClipsUpdated);
+        const preferredAudioCodes = (this.clips.clips?.length || 0) > 1 ? PREFERRED_AUDIO_CODECS?.['multiClip'] : PREFERRED_AUDIO_CODECS?.['singleClip'];
+        this.streams = this.streams.map((stream) => {
+            const type = stream.codec_type;
+            switch (type) {
+                case 'video':
+                    break;
+                case 'audio':
+                    if (!stream.transcodeConfig.manual) {
+                        const preferredCodec = AUDIO_CODECS[preferredAudioCodes?.[stream.channels]]?.v;
+                        if ("undefined" !== typeof preferredCodec) {
+                            stream.transcodeConfig.codec = preferredCodec;
+                        }
+                    }
+                    stream.transcodeConfig.channels = stream.channels
+                    break;
+                case 'subtitle':
+                    break;
+            }
+            return stream;
+        });
+        document.dispatchEvent(new CustomEvent('stream-config'));
+        document.addEventListener('clips-updated', () => {
+            document.addEventListener('clips-updated', this.handleClipsUpdated);
+        }, {once: true});
     }
 
     setCanConcat() {
@@ -173,6 +217,7 @@ class TranscodeConfigurator extends Slim {
     }
 
     handleConfigureStream(e) {
+        console.log('Start stream config');
         const offsetOrigin = e.detail.origin.getBoundingClientRect();
         const offsetMain = this.main.getBoundingClientRect();
         const offset = {
@@ -342,7 +387,7 @@ ${CSS}
                 <transcode-configurator-format *if="{{ this.format }}" .format="{{ this.format }}" #ref="formatNode"></transcode-configurator-format>
                 <transcode-configurator-streams *if="{{ this.streams }}" .items="{{ this.streams }}"></transcode-configurator-streams>
             </section>
-            <transcode-configurator-clips *if="{{ this.streams }}" .path="{{ this.item.path }}"></transcode-configurator-clips>
+            <transcode-configurator-clips *if="{{ this.format }}" .path="{{ this.item.path }}"></transcode-configurator-clips>
             <transcode-configurator-filter-graph *if="{{ this.filterGraph.length }}" .filters="{{ this.filterGraph }}" .configurator="{{ this }}"></transcode-configurator-filter-graph>
         </div>
         <footer>

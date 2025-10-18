@@ -10,6 +10,10 @@ class Buttons extends Slim {
 
     toggle() {
         this.item.active = !this.item.active
+        document.dispatchEvent(new CustomEvent('stream-toggle', {detail: {
+            origin: this,
+            item: this.item
+        }}))
         requestAnimationFrame(() => {
             Utils.forceUpdate(this, 'item')
             Iconify.scan(this.shadowRoot)

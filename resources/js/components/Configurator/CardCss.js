@@ -40,6 +40,14 @@ div.stream {
     align-items: center;
     justify-content: space-between;
     gap: .5rem;
+
+    & > section {
+        opacity: 1;
+        transition: opacity var(--transition-slow) linear;
+    }
+}
+div.stream[data-active]:not(:hover, [data-active="true"]) > section {
+    opacity: .5;
 }
 </style>
 `
