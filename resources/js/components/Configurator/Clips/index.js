@@ -20,6 +20,8 @@ const WS_CHANNEL = "Transcode.Clips";
 class Clips extends Slim {
     #mode;
 
+    #totalDuration = 0;
+
     constructor() {
         super();
         this.clips = [this.newClip()];
@@ -141,6 +143,7 @@ class Clips extends Slim {
                 this.shadowRoot
                     .querySelectorAll("transcode-configurator-clip")
                     .forEach((c, i) => (c.clipData = this.clips[i]));
+                this.calculateTotalDuration();
                 document.dispatchEvent(new CustomEvent("clips-updated"));
                 resolve();
             });
@@ -210,6 +213,16 @@ class Clips extends Slim {
         }, []);
     }
 
+    calculateTotalDuration() {
+        /**
+         * @type Array
+         */
+        const timeStamps = this.getTimestamps();
+        const first = timeStamps.shift();
+        const last = timeStamps.pop();
+        this.#totalDuration = last - first;
+    }
+
     handleCopy() {
         this.mode = this.mode === "clips" ? "copy" : "clips";
         if (this.mode === "copy") {
@@ -252,6 +265,10 @@ class Clips extends Slim {
                 return acc;
             }, [])
             .join("\n");
+    }
+
+    get totalDuration() {
+        return this.#totalDuration;
     }
 }
 

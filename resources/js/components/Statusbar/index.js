@@ -12,6 +12,7 @@ const STATE_PENDING = "pending";
 const STATE_DONE = "done";
 const STATE_FAILED = "failed";
 const WS_CHANNEL_FFMPEG_OUT = "FFMpegOut";
+const WS_CHANNEL_FFMPEG_PROGRESS = "FFMpegProgress";
 let runtimeInterval = false;
 let currentRuntime = 0;
 
@@ -20,41 +21,65 @@ class Statusbar extends Slim {
         super();
         this.running = false;
         this.runtime = "00:00:00";
+        this.remainTime = "00:00:00";
         this.out = "";
         this.rate = "";
         this.remaining = "";
         this.percentage = 0;
         this.dataset.hasItems = false;
+        this.handleDocumentClick = this.handleDocumentClick.bind(this);
+        this.handleProgressEvent = this.handleProgressEvent.bind(this);
+        this.handleOutEvent = this.handleOutEvent.bind(this);
     }
 
     onAdded() {
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot));
-        this.channel = window.Echo.channel("FFMpegProgress");
+        this.channel = window.Echo.channel(WS_CHANNEL_FFMPEG_PROGRESS);
         this.channel.subscribed(this.requestProgress.bind(this));
-        this.channel.listen(
-            "FFMpegProgress",
-            this.handleProgressEvent.bind(this)
-        );
-        this.channelOut = window.Echo.channel(`${WS_CHANNEL_FFMPEG_OUT}`);
-        this.channelOut.listen(
-            WS_CHANNEL_FFMPEG_OUT,
-            this.handleOutEvent.bind(this)
-        );
-        document.addEventListener("click", (e) => {
-            const p = e.composedPath();
-            if (
-                !this.sectionDetail.classList.contains("hidden") &&
-                p.indexOf(this.sectionDetail) < 0
-            ) {
-                this.toggleDetail();
-            } else if (p.indexOf(this.buttonDetail) > -1) {
-                this.toggleDetail();
-            }
-        });
+        this.channel.listen(WS_CHANNEL_FFMPEG_PROGRESS, this.handleProgressEvent);
+        this.channelOut = window.Echo.channel(WS_CHANNEL_FFMPEG_OUT);
+        this.channelOut.listen(WS_CHANNEL_FFMPEG_OUT, this.handleOutEvent);
+        document.addEventListener("click", this.handleDocumentClick);
+    }
+
+    onRemoved() {
+        this.channel.stopListening(WS_CHANNEL_FFMPEG_PROGRESS);
+        window.Echo.leave(WS_CHANNEL_FFMPEG_PROGRESS);
+        delete this.channel;
+        this.channelOut.stopListening(WS_CHANNEL_FFMPEG_OUT);
+        window.Echo.leave(WS_CHANNEL_FFMPEG_OUT);
+        delete this.channelOut;
+    }
+
+    handleDocumentClick(e) {
+        const p = e.composedPath();
+        if (
+            !this.sectionDetail.classList.contains("hidden") &&
+            p.indexOf(this.sectionDetail) < 0
+        ) {
+            this.toggleDetail();
+        } else if (p.indexOf(this.buttonDetail) > -1) {
+            this.toggleDetail();
+        }
     }
 
     handleOutEvent(ws) {
         this.out = ws.out;
+
+        const speed = parseFloat(this.out.split(' ').find(p => p.includes('speed'))?.split('=').pop());
+        const at = this.out.split(' ').find(p => p.includes('time'))?.split('=').pop();
+        if (speed && at) {
+            const totalDuration = this.configurator.clips.totalDuration;
+            const elapsedUt = new Date(`1970-01-01T${at}`).valueOf();
+            const fromUtZero = new Date('1970-01-01T00:00:00.00').valueOf();
+            const elapsed = Math.abs(fromUtZero) + elapsedUt;
+            const remainTime = new Date((totalDuration - elapsed) / speed);
+            
+            if (remainTime.getDate()) {
+                this.remainTime = remainTime.toISOString().split('T').pop().split('.').shift();
+                //console.log(speed, at, totalDuration, elapsed, this.remainTime);
+            }
+        }
     }
 
     toggleDetail() {
@@ -227,6 +252,7 @@ section.hidden {
     border-radius: .2rem;
     text-indent: .5rem;
     max-width: 100%;
+    white-space: nowrap;
 }
 </style>
 ${ICON_STACK_CSS}
@@ -239,8 +265,8 @@ ${ICON_STACK_CSS}
         </div>
     </section>
     <section #ref="sectionRuntime" class="runtime">
-        <span>{{ this.runtime }}</span>
-        <span style="{{ 'width:' + this.percentage + '%' }}">{{ this.runtime }}</span>
+        <span>{{ this.runtime }} / {{ this.remainTime }}</span>
+        <span style="{{ 'width:' + this.percentage + '%' }}">{{ this.runtime }} / {{ this.remainTime }}</span>
     </section>
     <section #ref="sectionShort">{{ this.percentage }}%</section>
     <section #ref="buttonDetail">

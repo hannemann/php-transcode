@@ -85,7 +85,7 @@ Transcoder.template = /*html*/ `
 </main>
 <transcode-configurator #ref="configurator"></transcode-configurator>
 <text-viewer></text-viewer>
-<status-bar></status-bar>
+<status-bar .configurator="{{ this.configurator }}"></status-bar>
 <transcoder-toast></transcoder-toast>
 <transcoder-loading></transcoder-loading>
 `;

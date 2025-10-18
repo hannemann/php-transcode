@@ -8,6 +8,7 @@ use App\Models\CurrentQueue;
 use App\Models\FilePicker;
 use ProtoneMedia\LaravelFFMpeg\Exporters\MediaExporter;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 use Alchemy\BinaryDriver\Listeners\DebugListener;
 use App\Events\FFMpegOut;
@@ -48,8 +49,9 @@ class AbstractAction
     protected function export(): void
     {
         $this->driver = $this->mediaExporter->getFFMpegDriver();
+        $listener = \Closure::fromCallable([$this, 'broadcastProcessOutput']);
         $this->mediaExporter->addListener(new DebugListener());
-        $this->driver->on('debug', \Closure::fromCallable([$this, 'broadcastProcessOutput']));
+        $this->driver->on('debug', $listener);
         try {
             $this->mediaExporter
                 ->onProgress(\Closure::fromCallable([$this, 'saveProgress']))
@@ -61,6 +63,9 @@ class AbstractAction
             if (!Str::contains($e->getErrorOutput(), 'Exiting normally')) {
                 throw $e;
             }
+        } finally {
+            Log::info('Removing listener');
+            $this->driver->removeListener('debug', $listener);
         }
     }
 
