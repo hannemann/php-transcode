@@ -4,6 +4,7 @@ import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 import "./Clip";
 import sortable from "html5sortable/dist/html5sortable.es";
 import { Request } from "@/components/Request";
+import { Time } from "../../../Helper/Time";
 
 const dataFactory = function* () {
     let id = 0;
@@ -18,9 +19,6 @@ const getClipInitData = (factory) => factory.next().value;
 const WS_CHANNEL = "Transcode.Clips";
 
 class Clips extends Slim {
-    #mode;
-
-    #totalDuration = 0;
 
     constructor() {
         super();
@@ -29,6 +27,7 @@ class Clips extends Slim {
         this.valid = true;
         this.bindListener();
         this.mode = "clips";
+        this.totalDuration = Time.fromSeconds(this.videoDuration);
     }
 
     onAdded() {
@@ -165,62 +164,35 @@ class Clips extends Slim {
                 .reverse()
                 .reduce(
                     (acc, cur) =>
-                        acc + this.toSeconds(cur.to) - this.toSeconds(cur.from),
+                        acc + Time.toSeconds(cur.to) - Time.toSeconds(cur.from),
                     0
                 );
             if (isNaN(cutpoint)) {
                 return "";
             }
-            return this.fromSeconds(cutpoint);
+            return Time.fromSeconds(cutpoint);
         }
         return "";
-    }
-
-    toSeconds(coord) {
-        const [hours, minutes, seconds] = coord.split(":");
-        return (
-            parseFloat(hours) * 60 * 60 +
-            parseFloat(minutes) * 60 +
-            parseFloat(seconds)
-        );
-    }
-
-    fromSeconds(coord) {
-        const d = new Date(null);
-        d.setMilliseconds(coord * 1000);
-        return `${d.getUTCHours().toString().padStart(2, "0")}:${d
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, "0")}:${d
-            .getUTCSeconds()
-            .toString()
-            .padStart(2, "0")}.${d.getUTCMilliseconds()}`;
-    }
-
-    milliSeconds(coord) {
-        return this.toSeconds(coord) * 1000;
     }
 
     getTimestamps() {
         return this.clips.reduce((acc, cur) => {
             if (cur.from) {
-                acc.push(this.milliSeconds(cur.from));
+                acc.push(Time.milliSeconds(cur.from));
             }
             if (cur.to) {
-                acc.push(this.milliSeconds(cur.to));
+                acc.push(Time.milliSeconds(cur.to));
             }
             return acc;
         }, []);
     }
 
     calculateTotalDuration() {
-        /**
-         * @type Array
-         */
-        const timeStamps = this.getTimestamps();
-        const first = timeStamps.shift();
-        const last = timeStamps.pop();
-        this.#totalDuration = last - first;
+        if (this.clips.length) {
+            this.totalDuration = Time.calculateClipsDuration(this.clips);
+        } else {
+            this.totalDuration = Time.fromSeconds(this.videoDuration);
+        }
     }
 
     handleCopy() {
@@ -266,10 +238,6 @@ class Clips extends Slim {
             }, [])
             .join("\n");
     }
-
-    get totalDuration() {
-        return this.#totalDuration;
-    }
 }
 
 Clips.template = /*html*/ `
@@ -278,6 +246,10 @@ ${CARD_CSS}
 <style>
     :host {
         user-select: none;
+    }
+    main {
+        display: grid;
+        gap: .5rem;
     }
     h2 {
         display: flex;
@@ -292,6 +264,10 @@ ${CARD_CSS}
     .clips div.clips {
         display: flex;
         flex-direction: column;
+        gap: .5rem;
+    }
+    .clips .duration {
+        display: flex;
         gap: .5rem;
     }
 </style>
@@ -320,6 +296,9 @@ ${CARD_CSS}
             .clip-data="{{ item }}"
             .cutpoint="{{ this.getCutpoint(item) }}">
         </transcode-configurator-clip>
+    </div>
+    <div class="duration">
+        <h2>Duration:</h2> <span>{{ this.totalDuration }}</span>
     </div>
 </main>
 `;

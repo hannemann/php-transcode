@@ -1,6 +1,7 @@
 import { Slim } from "@/components/lib";
 import Iconify from "@iconify/iconify";
 import { Request } from "@/components/Request";
+import { Time } from "../../Helper/Time";
 import "./Done";
 import "./Failed";
 import "./Current";
@@ -64,12 +65,13 @@ class Statusbar extends Slim {
     }
 
     handleOutEvent(ws) {
-        this.out = ws.out;
+        const {line, clips} = ws.out;
+        this.out = line;
 
         const speed = parseFloat(this.out.split(' ').find(p => p.includes('speed'))?.split('=').pop());
         const at = this.out.split(' ').find(p => p.includes('time'))?.split('=').pop();
         if (speed && at) {
-            const totalDuration = this.configurator.clips.totalDuration;
+            const totalDuration = Time.milliSeconds(Time.calculateClipsDuration(clips));
             const elapsedUt = new Date(`1970-01-01T${at}`).valueOf();
             const fromUtZero = new Date('1970-01-01T00:00:00.00').valueOf();
             const elapsed = Math.abs(fromUtZero) + elapsedUt;

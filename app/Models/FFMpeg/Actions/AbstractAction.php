@@ -14,6 +14,8 @@ use Alchemy\BinaryDriver\Listeners\DebugListener;
 use App\Events\FFMpegOut;
 use App\Http\Requests\FFMpegActionRequest;
 use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
+use FFMpeg\Format\Video\DefaultVideo;
+use FFMpeg\Coordinate\TimeCode;
 
 /**
  * @property MediaExporter $mediaExporter
@@ -27,6 +29,7 @@ class AbstractAction
     protected ?array $clips = [];
     protected string $pathHash;
     protected array $requestData;
+    protected DefaultVideo $format;
     private $processOutSecond = 0;
     private $progressOutSecond = 0;
     private $outputFileExists = false;
@@ -150,7 +153,18 @@ class AbstractAction
             $this->processOutSecond = $processOutSecond;
             $lines = explode("\r", trim($line));
             $line = trim(array_pop($lines));
-            FFMpegOut::dispatch($this->pathHash, str_replace('[ERROR] ', '', $line));
+            if ($this instanceof Transcode && count($this->clips) > 0) {
+                $clips = $this->clips;
+            } else {
+                $clips = [[
+                    'from' => '00:00:00.000',
+                    'to' => (string)TimeCode::fromSeconds($this->media->getFormat()->get('duration'))
+                ]];
+            }
+            FFMpegOut::dispatch($this->pathHash, [
+                'line' => str_replace('[ERROR] ', '', $line),
+                'clips' => $clips
+            ]);
         }
     }
 }

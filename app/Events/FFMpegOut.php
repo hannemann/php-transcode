@@ -14,7 +14,7 @@ class FFMpegOut implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public string $out;
+    public array $out;
 
     private string $pathHash;
 
@@ -23,7 +23,7 @@ class FFMpegOut implements ShouldBroadcastNow
      *
      * @return void
      */
-    public function __construct(string $pathHash, string $out)
+    public function __construct(string $pathHash, array $out)
     {
         $this->out = $out;
         $this->pathHash = $pathHash;

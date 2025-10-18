@@ -385,7 +385,7 @@ ${CSS}
                 <transcode-configurator-format *if="{{ this.format }}" .format="{{ this.format }}" #ref="formatNode"></transcode-configurator-format>
                 <transcode-configurator-streams *if="{{ this.streams }}" .items="{{ this.streams }}"></transcode-configurator-streams>
             </section>
-            <transcode-configurator-clips *if="{{ this.format }}" .path="{{ this.item.path }}"></transcode-configurator-clips>
+            <transcode-configurator-clips *if="{{ this.format }}" .path="{{ this.item.path }}" .video-duration="{{ this.format.duration }}"></transcode-configurator-clips>
             <transcode-configurator-filter-graph *if="{{ this.filterGraph.length }}" .filters="{{ this.filterGraph }}" .configurator="{{ this }}"></transcode-configurator-filter-graph>
         </div>
         <footer>
