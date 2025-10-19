@@ -4,7 +4,18 @@ import CARD_CSS from "../CardCss";
 
 export const VALID_ASPECT_RATIOS = ["4:3", "16:9"];
 
-class Video extends Stream {}
+class Video extends Stream {
+
+    getDefaultQp(item) {
+        const qp = Object.values(VIDEO_CODECS).find(c => c.v === item.transcodeConfig.codec).qp;
+        if (qp === item.transcodeConfig.qp) return '';
+        return ` (Default: ${qp})`;
+    }
+
+    hasQp(item) {
+        return !!item.transcodeConfig.qp;
+    }
+}
 
 Video.prototype.header = 'Video'
 
@@ -21,7 +32,7 @@ ${MAINSTART}
         {{ [item.width, item.height].filter(i => i).join('x') }}
         &nbsp;->&nbsp;
         {{ Object.values(VIDEO_CODECS).find(c => c.v === item.transcodeConfig.codec).l }},
-        QP: {{ 'undefined' !== typeof item.transcodeConfig.qp ? item.transcodeConfig.qp : 'N/A' }},
+        {{ 'undefined' !== typeof item.transcodeConfig.qp ? 'QP: ' + item.transcodeConfig.qp + this.getDefaultQp(item) + ', ' : '' }}
         DAR: {{ item.transcodeConfig.aspectRatio }}
     </div>
     <div class="{{ (!item.shortView && 'visible') }}" @click="{{ this.toggleView(item) }}" data-toggle="true">
