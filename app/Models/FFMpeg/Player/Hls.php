@@ -10,6 +10,8 @@ use App\Models\Drivers\PsDriver;
 use App\Models\Video\File;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use App\Models\FFMpeg\Filters\Video\FilterGraph;
+use App\Helper\Settings;
 
 class Hls
 {
@@ -25,6 +27,16 @@ class Hls
             ->filter(fn($stream) => $stream->get('codec_type') === 'video');
 
         $frameRate = explode('/', $videoStreams->first()->get('r_frame_rate'))[0];
+
+        $clips = Settings::getSettings($path)['clips'] ?? [];
+
+        $filters = collect([]);
+        $filterGraph = (string)new FilterGraph($disk, $path);
+        if ($filterGraph) {
+            $filters->push($filterGraph);
+        }
+        $filters->push('format=nv12');
+        $filters->push('hwupload');
 
         $this->path = $path;
         $format = (new h264_vaapi);
@@ -42,7 +54,10 @@ class Hls
         foreach($config['streams'] as $stream) {
             $args->push('-map', '0:' . $stream['id']);
         }
-        $args->push('-filter:v', 'format=nv12,hwupload');
+        if ($clips && $clips[0]['from']) {
+            $args->push('-ss', $clips[0]['from']);
+        }
+        $args->push('-filter:v', $filters->join(','));
         $args->push('-c:v', 'h264_vaapi');
         $args->push('-qp', '28');
         $args->push('-c:a', 'aac');
