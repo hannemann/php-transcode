@@ -7,14 +7,25 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use App\Models\FFMpeg\Format\Video\h264_vaapi;
 use App\Models\Drivers\PsDriver;
+use App\Models\Video\File;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class Hls
 {
+    private string $path;
+
     const TMP_PATH = 'pvr_toolbox_stream';
 
     public function stream(string $disk, string $path, array $config)
     {
+        $media = File::getMedia($disk, $path);
+        $duration = $media->getFormat()->get('duration');
+        $videoStreams = collect($media->getStreams())
+            ->filter(fn($stream) => $stream->get('codec_type') === 'video');
+
+        $frameRate = explode('/', $videoStreams->first()->get('r_frame_rate'))[0];
+
         $this->path = $path;
         $format = (new h264_vaapi);
         $format->setAccelerationFramework(h264_vaapi::ACCEL_VAAPI);
@@ -38,9 +49,11 @@ class Hls
         $args->push('-b:a', '128k');
         $args->push('-ac', '2');
         $args->push('-sc_threshold', '0');
-        $args->push('-g', '48');
+        $args->push('-g', $frameRate);
         $args->push('-hls_playlist_type', 'event');
-        $args->push('-hls_time', '10');
+        $args->push('-hls_time', '4');
+        $args->push('-hls_list_size', '0');
+        $args->push('-hls_flags', 'independent_segments');
         $args->push('-hls_base_url', $b);
         $args->push('-hls_segment_filename', $o . 'hls-%03d.ts');
         $args->push('-master_pl_name', 'master.m3u8');

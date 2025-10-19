@@ -14,7 +14,7 @@ class PlayerController extends Controller
     {
         try {
 
-            // (new Hls())->stream('recordings', $path);
+            //(new Hls())->stream('recordings', $path, $request->input());
 
             Player::dispatch('recordings', $path, $request->input());
             return response()->json([
@@ -22,7 +22,7 @@ class PlayerController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => sprintf($e->getMessage())
+                'message' => $e->getMessage()
             ], 500);
         }
         return null;
