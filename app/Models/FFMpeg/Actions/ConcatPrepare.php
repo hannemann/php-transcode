@@ -32,11 +32,13 @@ class ConcatPrepare extends AbstractAction
         
         if (strpos($this->codecMapper->currentVideoCodec, 'nvenc') !== false) {
             $this->codecMapper->forceCodec('hevc_nvenc', 'flac');
+            $this->codecMapper->forceQp(10);
             $this->format->setAccelerationFramework(Format::ACCEL_CUDA);
         }
         
         if (strpos($this->codecMapper->currentVideoCodec, 'vaapi') !== false) {
             $this->codecMapper->forceCodec('hevc_vaapi', 'flac');
+            $this->codecMapper->forceQp(10);
             $this->format->setAccelerationFramework(Format::ACCEL_VAAPI);
         }
 
@@ -62,7 +64,7 @@ class ConcatPrepare extends AbstractAction
 
         $cmds = $this->format->stripOptions($cmds);
         $cmds->push('-map', '0');
-        $cmds = $this->codecMapper->execute($cmds);
+        $cmds = $this->codecMapper->execute($cmds, 18);
         $cmds = $cmds->replace([$cmds->search('-c:v:0') => '-c:v']);
         $cmds->push('-c:s');
         $cmds->push('copy');

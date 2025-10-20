@@ -20,6 +20,8 @@ class CodecMapper
     private ?string $forcedAudioCodec = null;
     private ?string $forcedSubtitleCodec = null;
 
+    private ?int $forcedQp = null;
+
     private $videoIndex = 0;
     private $audioIndex = 0;
     private $subtitleIndex = 0;
@@ -69,6 +71,10 @@ class CodecMapper
         $this->forcedSubtitleCodec = $subtitle;
     }
 
+    public function forceQp(int $qp) {
+        $this->forcedQp = $qp;
+    }
+
     public function resetIndices() {
         $this->videoIndex = 0;
         $this->audioIndex = 0;
@@ -102,7 +108,8 @@ class CodecMapper
         $cmds->push($codec);
         if ($codec !== 'copy') {
             $cmds->push('-qp:v:' . $streamId);
-            $cmds->push($stream['config']['qp'] ?? $this->getDefaultCodec($this->videoCodecs)->qp);
+            $qp = $this->forcedQp ?? ($stream['config']['qp'] ?? $this->getDefaultCodec($this->videoCodecs)->qp);
+            $cmds->push($qp);
         }
         if (($stream['config']['aspectRatio'] ?? 'Keep') !== 'Keep') {
             $cmds->push('-aspect:v:' . $streamId);
