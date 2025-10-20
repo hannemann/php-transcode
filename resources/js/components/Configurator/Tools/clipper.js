@@ -22,6 +22,7 @@ export const clipper = async function () {
         duration: parseFloat(this.format.duration),
     };
     d.path = this.item.path;
+    d.chapters = this.chapters;
     m.appendChild(d);
     document.body.appendChild(m);
     try {
@@ -36,6 +37,8 @@ export const clipper = async function () {
         this.clips.update();
         this.saveSettings();
     } catch (error) {
-        console.error(error);
+        if (error) {
+            console.error(error);
+        }
     }
 };

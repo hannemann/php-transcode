@@ -22,6 +22,8 @@ export const requestConcat = async function (container) {
             files: d.files.map((f) => f.name),
         });
     } catch (error) {
-        console.error(error);
+        if (error) {
+            console.error(error);
+        }
     }
 };

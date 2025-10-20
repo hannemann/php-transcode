@@ -144,6 +144,7 @@ class TranscodeConfigurator extends Slim {
         this.removeLogo = ws.removeLogo ?? {};
         this.delogo = ws.delogo ?? {}
         this.filterGraph = ws.filterGraph ?? [];
+        this.chapters = ws.chapters ?? [];
         this.show();
     }
 

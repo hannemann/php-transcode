@@ -8,6 +8,8 @@ export const requestRemux = async function (container) {
             container,
         });
     } catch (error) {
-        console.error(error);
+        if (error) {
+            console.error(error);
+        }
     }
 };

@@ -26,6 +26,7 @@ use App\Models\CurrentQueue;
 use App\Models\FFMpeg\Actions\ConcatPrepare;
 use Illuminate\Support\Facades\Storage;
 use App\Models\FFMpeg\Actions\Scale;
+use Illuminate\Support\Arr;
 
 /*
 |--------------------------------------------------------------------------
@@ -84,13 +85,24 @@ Route::get('/streams/{path?}', function (string $path = null) {
     
     try {
         $media = VideoFile::getMedia('recordings', $path);
+        $probe = FFMpeg\Driver\FFProbeDriver::create(Arr::dot(config('laravel-ffmpeg')), null);
+        $commands[] = '-show_chapters';
+        $commands[] = '-print_format';
+        $commands[] = 'json';
+        $commands[] = sprintf(
+            '%s/%s',
+            config('filesystems.disks.recordings.root'),
+            $path
+        );
+        $chapters = json_decode($probe->command($commands));
         BroadcastStreams::dispatch(
             $media->getFormat()->all(),
             Settings::decorateStreams($path, $media->getStreams()),
             Settings::getSettings($path)['crop'] ?? [],
             Settings::getSettings($path)['removeLogo'] ?? [],
             Settings::getSettings($path)['delogo'] ?? [],
-            Settings::getSettings($path)['filterGraph'] ?? []
+            Settings::getSettings($path)['filterGraph'] ?? [],
+            $chapters->chapters
         );
     } catch (\Exception $e) {
         return response()->json([

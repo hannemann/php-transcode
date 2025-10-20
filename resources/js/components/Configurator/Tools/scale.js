@@ -28,6 +28,8 @@ export const requestScale = async function (type) {
             type: type,
         });
     } catch (error) {
-        console.error(error);
+        if (error) {
+            console.error(error);
+        }
     }
 };

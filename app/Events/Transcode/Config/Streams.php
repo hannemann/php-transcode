@@ -27,12 +27,14 @@ class Streams implements ShouldBroadcastNow
 
     public array $filterGraph;
 
+    public array $chapters;
+
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(array $format, array $streams, array $crop, array $removeLogo, array $delogo, array $filterGraph)
+    public function __construct(array $format, array $streams, array $crop, array $removeLogo, array $delogo, array $filterGraph, array $chapters)
     {
         $this->format = $format;
         $this->streams = collect($streams)->map(fn($stream) => $stream->all());
@@ -40,6 +42,7 @@ class Streams implements ShouldBroadcastNow
         $this->removeLogo = $removeLogo;
         $this->delogo = $delogo;
         $this->filterGraph = $filterGraph;
+        $this->chapters = $chapters;
     }
 
     /**

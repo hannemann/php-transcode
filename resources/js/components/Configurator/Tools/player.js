@@ -13,6 +13,8 @@ export const requestPlay = async function () {
         document.body.appendChild(m);
         await m.open();
     } catch (error) {
-        console.error(error);
+        if (error) {
+            console.error(error);
+        }
     }
 };

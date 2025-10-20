@@ -51,6 +51,8 @@ export const requestRemovelogo = async function (type) {
             this.saveSettings();
         }
     } catch (error) {
-        console.error(error);
+        if (error) {
+            console.error(error);
+        }
     }
 };

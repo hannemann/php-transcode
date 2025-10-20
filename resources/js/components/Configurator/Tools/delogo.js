@@ -50,6 +50,8 @@ export const requestDelogo = async function (type) {
             this.saveSettings();
         }
     } catch (error) {
-        console.error(error);
+        if (error) {
+            console.error(error);
+        }
     }
 };
