@@ -147,6 +147,21 @@ Group=www-data
 [Install]
 WantedBy=default.target
 ```
+### Laravel Player Queue worker
+```
+[Unit]
+Description=Runs and keeps alive the PHP Transcoder artisan queue:work process for the player
+
+[Service]
+Restart=always
+WorkingDirectory=/var/www/php-transcode
+ExecStart=/usr/bin/php artisan queue:work --queue=player
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=default.target
+```
 
 
 ## TODO:

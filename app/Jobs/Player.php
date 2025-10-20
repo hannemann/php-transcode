@@ -35,6 +35,7 @@ class Player implements ShouldQueue //, ShouldBeUnique
         $this->disk = $disk;
         $this->path = $path;
         $this->config = $config;
+        $this->onQueue('player');
     }
 
     /**

@@ -59,7 +59,7 @@ class Hls
         }
         $args->push('-filter:v', $filters->join(','));
         $args->push('-c:v', 'h264_vaapi');
-        $args->push('-qp', '28');
+        $args->push('-qp', '18');
         $args->push('-c:a', 'aac');
         $args->push('-b:a', '128k');
         $args->push('-ac', '2');
@@ -74,7 +74,8 @@ class Hls
         $args->push('-master_pl_name', 'master.m3u8');
         $args->push($o . 'hls.m3u8');
 
-        FFMpegDriver::create(null, Arr::dot(config('laravel-ffmpeg')))->command($args->all());
+        $bypassErrors = true;
+        FFMpegDriver::create(null, Arr::dot(config('laravel-ffmpeg')))->command($args->all(), $bypassErrors);
     }
 
     public static function playlist(string $disk, string $path): string

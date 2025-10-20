@@ -14,6 +14,7 @@ class PlayerController extends Controller
     {
         try {
 
+            // we cannot stream sync but for debugging this is useful
             //(new Hls())->stream('recordings', $path, $request->input());
 
             Player::dispatch('recordings', $path, $request->input());
