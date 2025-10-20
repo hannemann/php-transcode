@@ -14,6 +14,7 @@ export const requestCrop = async function (type) {
         d.crop = this.crop;
         d.path = this.item.path;
         d.type = type;
+        d.chapters = this.chapters;
         m.appendChild(d);
         document.body.appendChild(m);
         await m.open();

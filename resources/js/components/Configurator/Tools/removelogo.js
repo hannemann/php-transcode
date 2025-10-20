@@ -13,6 +13,7 @@ export const requestRemovelogo = async function (type) {
         };
         d.path = this.item.path;
         d.type = type;
+        d.chapters = this.chapters;
         m.appendChild(d);
         document.body.appendChild(m);
         await m.open();
