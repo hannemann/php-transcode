@@ -13,13 +13,21 @@ const arrow = function (e, back) {
     const canSkip = back
         ? canSkipBwd.call(this, idx)
         : canSkipFwd.call(this, idx);
+
     if (e.ctrlKey && e.shiftKey && canSkip) {
+        //console.log('Skip', e);
         jump.call(this, back ? idx - 1 : idx + 1);
-    } else if (e.ctrlKey != e.shiftKey) {
-        this[back ? "rwd" : "ffwd"](e.shiftKey ? 2000 : 5000);
-    } else {
-        this[back ? "rwd" : "ffwd"](1000 / this.fps);
+        return;
     }
+    
+    if (e.ctrlKey != e.shiftKey) {
+        //console.log('2s/3s', e);
+        this[back ? "rwd" : "ffwd"](e.shiftKey ? 2000 : 5000);
+        return;
+    }
+     
+    //console.log('1 Frame', 1000 / this.fps, e);
+    this[back ? "rwd" : "ffwd"](1000 / this.fps);
 };
 
 const jump = function (idx) {
@@ -52,11 +60,37 @@ const isClipEnd = function (idx) {
     return idx > -1 && idx % 2 > 0;
 };
 
+export const handleKeyDown = function(e) {
+    const hasChanged =  e.ctrlKey != this.isKeyDown?.ctrlKey
+        || e.shiftKey != this.isKeyDown?.shiftKey
+        || e.altKey != this.isKeyDown?.altKey
+        || e.key != this.isKeyDown?.key;
+
+    if (this.isKeyDown && !hasChanged) return;
+    this.isKeyDown = e;
+
+    if (!this.imageLoadHandler) {
+        this.imageLoadHandler = () => this.image.decode().then(() => {
+            setTimeout(() => {
+                delete this.isKeyDown;
+            }, 100);
+        });
+        this.image.addEventListener('load', this.imageLoadHandler);
+    }
+    handleKey.call(this, e);
+}
+
+export const handleKeyUp = function() {
+    this.image.removeEventListener('load', this.imageLoadHandler);
+    delete this.isKeyDown;
+    delete this.imageLoadHandler;
+}
+
 export const handleKey = function (e) {
     // console.log(this);
-    if (this.updateTimeout) {
+   // if (this.updateTimeout) {
         clearTimeout(this.updateTimeout);
-    }
+   // }
     let action = false;
     const updateIndex = e.altKey ? this.raw.indexOf(this.current) : -1;
     switch (e.key) {
@@ -89,7 +123,8 @@ export const handleKey = function (e) {
     if (action) {
         e.preventDefault();
         e.stopPropagation();
-        this.updateTimeout = setTimeout(update.bind(this, updateIndex), 150);
+        //this.updateTimeout = setTimeout(update.bind(this, updateIndex), 150);
+        update.call(this, updateIndex);
     }
 };
 

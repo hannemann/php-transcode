@@ -1,6 +1,6 @@
 import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
 import { Utils } from "@/components/lib";
-import { handleKey, rwd, ffwd } from "./mixins/handleKey";
+import { handleKeyDown, handleKeyUp, rwd, ffwd } from "../VideoEditor/mixins/handleKey";
 class Clipper extends VideoEditor {
     constructor() {
         super();
@@ -12,7 +12,8 @@ class Clipper extends VideoEditor {
         super.bindListeners();
         this.rwd = rwd.bind(this);
         this.ffwd = ffwd.bind(this);
-        this.handleKey = handleKey.bind(this);
+        this.handleKeyDown = handleKeyDown.bind(this);
+        this.handleKeyUp = handleKeyUp.bind(this);
         this.add = this.add.bind(this);
         this.remove = this.remove.bind(this);
         this.getClipPos = this.getClipPos.bind(this);
@@ -21,7 +22,8 @@ class Clipper extends VideoEditor {
 
     onAdded() {
         super.onAdded();
-        document.addEventListener("keydown", this.handleKey);
+        document.addEventListener("keydown", this.handleKeyDown);
+        document.addEventListener("keyup", this.handleKeyUp);
         requestAnimationFrame(() => {
             this.calculateClips();
             this.initImages();
@@ -29,7 +31,8 @@ class Clipper extends VideoEditor {
     }
 
     onRemoved() {
-        document.removeEventListener("keydown", this.handleKey);
+        document.removeEventListener("keydown", this.handleKeyDown);
+        document.removeEventListener("keyup", this.handleKeyUp);
     }
 
     add() {

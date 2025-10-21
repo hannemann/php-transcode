@@ -1,5 +1,5 @@
 import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
-import { handleKey, rwd, ffwd } from "../Clipper/mixins/handleKey";
+import { handleKeyDown, handleKeyUp, rwd, ffwd } from "../VideoEditor/mixins/handleKey";
 import Painterro from 'painterro';
 import { Request } from "../../../Request";
 
@@ -20,12 +20,15 @@ class RemoveLogo extends VideoEditor {
         this.initRemovelogo = this.initRemovelogo.bind(this);
         this.rwd = rwd.bind(this);
         this.ffwd = ffwd.bind(this);
-        this.handleKey = handleKey.bind(this);
+        this.handleKeyDown = handleKeyDown.bind(this);
+        this.handleKeyUp = handleKeyUp.bind(this);
     }
 
     onAdded() {
         super.onAdded();
-        document.addEventListener("keydown", this.handleKey);
+        document.addEventListener("keydown", this.handleKeyDown);
+        document.addEventListener("keyup", this.handleKeyUp);
+
         requestAnimationFrame(() => {
             this.image.addEventListener("load", this.initRemovelogo, {
                 once: true,
@@ -35,7 +38,8 @@ class RemoveLogo extends VideoEditor {
     }
 
     onRemoved() {
-        document.removeEventListener("keydown", this.handleKey);
+        document.removeEventListener("keydown", this.handleKeyDown);
+        document.removeEventListener("keyup", this.handleKeyUp);
     }
 
     run() {
@@ -70,7 +74,7 @@ class RemoveLogo extends VideoEditor {
                 new CustomEvent("toast", {
                     detail: {
                         message: response.message,
-                        type: 'success'
+                        type: 'info'
                     },
                 })
             );
