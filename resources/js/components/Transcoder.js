@@ -19,6 +19,7 @@ class Transcoder extends Slim {
         document.addEventListener("configurator-show", backgroundHandler);
         document.addEventListener("textviewer-show", backgroundHandler);
         document.addEventListener("modal-show", backgroundHandler);
+        document.body.appendChild(document.createElement('transcoder-toast'));
     }
 
     toggleBackground(e) {
@@ -86,7 +87,6 @@ Transcoder.template = /*html*/ `
 <transcode-configurator #ref="configurator"></transcode-configurator>
 <text-viewer></text-viewer>
 <status-bar .configurator="{{ this.configurator }}"></status-bar>
-<transcoder-toast></transcoder-toast>
 <transcoder-loading></transcoder-loading>
 `;
 

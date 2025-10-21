@@ -16,7 +16,7 @@ export const requestCrop = async function (type) {
         d.type = type;
         d.chapters = this.chapters;
         m.appendChild(d);
-        document.body.appendChild(m);
+        document.body.insertBefore(m, document.querySelector('transcoder-toast'));
         await m.open();
         console.info(
             "Crop video file %s to %dx%d at %d/%d and scale to %d pixel height with an aspect-ratio of %s",

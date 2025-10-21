@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RemovelogoRequest;
+use App\Http\Requests\RemoveLogoCustomMaskUploadRequest;
 use App\Http\Requests\Clipper\ImageRequest;
 use App\Models\FFMpeg\Clipper\Image;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Http\JsonResponse;
 use App\Jobs\ProcessVideo;
-use App\Models\FFMpeg\Actions\Removelogo;
-use App\Models\FFMpeg\Actions\RemovelogoCPU;
+use Illuminate\Support\Facades\Storage;
 
 class RemovelogoController extends Controller
 {
@@ -43,9 +43,36 @@ class RemovelogoController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json([
+                'status' => 500,
                 'message' => sprintf($e->getMessage())
             ], 500);
         }
         return null;
+    }
+
+    public function saveCustomMask(RemoveLogoCustomMaskUploadRequest $request, string $path): JsonResponse
+    {
+        try {
+            $imageName = 'logomask.jpg';
+
+            $imageBase64 = $request->input('image');
+            $imageBase64 = preg_replace('/^data:[^,]*,/', '', $imageBase64);
+            $image = imageCreateFromString(base64_decode($imageBase64));
+
+            $stream = fopen('php://memory','r+');
+            imagejpeg($image, $stream, 100);
+            rewind($stream);
+            $imageData = stream_get_contents($stream);
+            //throw new \Exception('Huba lala');
+
+            Storage::disk('recordings')->put(dirname($path) . DIRECTORY_SEPARATOR . $imageName, $imageData);
+            return response()->json([
+                'message' => 'Image uploaded successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

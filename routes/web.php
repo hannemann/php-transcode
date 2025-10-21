@@ -72,6 +72,7 @@ Route::post('/settings/{path}', [TranscodeController::class, 'saveSettings'])->w
 Route::post('/scale/{path}', [ScaleController::class, 'scale'])->where('path', '(.*)');
 Route::post('/crop/{path}', [CropController::class, 'crop'])->where('path', '(.*)');
 Route::post('/delogo/{path}', [DelogoController::class, 'delogo'])->where('path', '(.*)');
+Route::post('/removelogoCustomMask/{path}', [RemovelogoController::class, 'saveCustomMask'])->where('path', '(.*)');
 Route::post('/removelogo/{path}', [RemovelogoController::class, 'removelogo'])->where('path', '(.*)');
 Route::get('/removelogoImage/{path}', [RemovelogoController::class, 'image'])->where('path', '(.*)');
 Route::post('/kill', fn () => KillFFMpeg::execute());

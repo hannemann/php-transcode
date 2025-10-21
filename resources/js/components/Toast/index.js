@@ -69,6 +69,7 @@ Toast.template = /*html*/ `
     top: 2rem;
     display: block;
     overflow-y: hidden;
+    z-index: 100;
 }
 main {
     display: flex;

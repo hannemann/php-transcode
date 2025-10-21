@@ -1,5 +1,7 @@
 import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
 import { handleKey, rwd, ffwd } from "../Clipper/mixins/handleKey";
+import Painterro from 'painterro';
+import { Request } from "../../../Request";
 
 const IMAGE_TYPE_ORIGINAL = "Original";
 const IMAGE_TYPE_MASK = "Mask";
@@ -13,6 +15,8 @@ class RemoveLogo extends VideoEditor {
     bindListeners() {
         super.bindListeners();
         this.run = this.run.bind(this);
+        this.paint = this.paint.bind(this);
+        this.handleSaveImage = this.handleSaveImage.bind(this);
         this.initRemovelogo = this.initRemovelogo.bind(this);
         this.rwd = rwd.bind(this);
         this.ffwd = ffwd.bind(this);
@@ -37,6 +41,44 @@ class RemoveLogo extends VideoEditor {
     run() {
         this.startRemoveLogo = true;
         this.parentNode.confirmAction();
+    }
+
+    paint() {
+        this.paintArea = document.createElement('div');
+        this.paintArea.id = 'paint';
+        document.body.insertBefore(this.paintArea, document.querySelector('transcoder-toast'));
+        this.imageType = IMAGE_TYPE_MASK;
+        this.updateFrameUrl();
+        this.painterro = Painterro({
+            id: 'paint',
+            activeColor: '#000000',
+            onClose: () => {
+                document.body.removeChild(this.paintArea)
+            },
+            saveHandler: this.handleSaveImage
+        }).show(this.image.src);
+    }
+
+    async handleSaveImage(image, callback) {
+        try {
+            const data = {
+                image: image.asDataURL('image/jpeg')
+            };
+            const result = await Request.post(`/removelogoCustomMask/${encodeURIComponent(this.path)}`, data);
+            const response = await result.json();
+            document.dispatchEvent(
+                new CustomEvent("toast", {
+                    detail: {
+                        message: response.message,
+                        type: 'success'
+                    },
+                })
+            );
+        } catch (error) {
+        } finally {
+            callback(true);
+            this.painterro.close();
+        }
     }
 
     initRemovelogo() {
@@ -100,6 +142,9 @@ ${EDITOR_CSS}
     .info p {
         max-width: 150px;
     }
+    .actions {
+        grid-area: right;
+    }
 </style>
 ${EDITOR_TEMPLATE}
 <div class="info">
@@ -109,7 +154,10 @@ ${EDITOR_TEMPLATE}
     </p>
 </div>
 <!-- TODO: Create logomask without running action -->
-<theme-button #ref="runButton" class="run" @click="{{ this.run }}">Start</theme-button>
+<div class="actions">
+    <theme-button #ref="runButton" class="run" @click="{{ this.run }}">Start</theme-button>
+    <theme-button #ref="paintButton" class="paint-button" @click="{{ this.paint }}">Paint</theme-button>
+</div>
 `;
 
 customElements.define("dialogue-removelogo", RemoveLogo);

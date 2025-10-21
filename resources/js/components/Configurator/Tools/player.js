@@ -10,7 +10,7 @@ export const requestPlay = async function () {
         m.dataset.closeButton = "true";
         m.dataset.noFooter = "true";
         m.header = "Player";
-        document.body.appendChild(m);
+        document.body.insertBefore(m, document.querySelector('transcoder-toast'));
         await m.open();
     } catch (error) {
         if (error) {

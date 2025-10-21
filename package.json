@@ -23,6 +23,7 @@
         "html5sortable": "^0.13.3",
         "laravel-echo": "^1.11.1",
         "media-chrome": "^4.14.0",
+        "painterro": "^1.2.92",
         "pusher-js": "^7.0.3",
         "slim-js": "^5.0.9"
     }

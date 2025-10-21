@@ -15,7 +15,7 @@ export const requestDelogo = async function (type) {
         d.type = type;
         d.chapters = this.chapters;
         m.appendChild(d);
-        document.body.appendChild(m);
+        document.body.insertBefore(m, document.querySelector('transcoder-toast'));
         await m.open();
         this.delogo = {...d.coords, ...[type]};
         console.info(

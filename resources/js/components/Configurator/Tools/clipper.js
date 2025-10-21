@@ -24,7 +24,7 @@ export const clipper = async function () {
     d.path = this.item.path;
     d.chapters = this.chapters;
     m.appendChild(d);
-    document.body.appendChild(m);
+    document.body.insertBefore(m, document.querySelector('transcoder-toast'));
     try {
         await m.open();
         this.clips.clips = [];

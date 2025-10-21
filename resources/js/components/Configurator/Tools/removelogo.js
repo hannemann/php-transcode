@@ -15,7 +15,7 @@ export const requestRemovelogo = async function (type) {
         d.type = type;
         d.chapters = this.chapters;
         m.appendChild(d);
-        document.body.appendChild(m);
+        document.body.insertBefore(m, document.querySelector('transcoder-toast'));
         await m.open();
         console.info("Removelogo video file %s. Create logomask at timestamp %s, width: %s, height: %s, type: %s",
             this.item.path,
