@@ -116,7 +116,7 @@ Class RemovelogoCPU extends Crop
             [
                 config('filesystems.disks.recordings.root'),
                 dirname($path),
-                '*.logomask.jpg'
+                '*logomask.jpg'
             ]
         );
         FileFacade::delete(FileFacade::glob($glob));
