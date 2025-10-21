@@ -50,7 +50,7 @@ class FilterGraph
         return $filters->join(',');
     }
 
-    private function getSettings(): Collection
+    public function getSettings(): Collection
     {
         if (!$this->graph) {
             $this->graph = collect(Settings::getSettings($this->path)['filterGraph'] ?? []);

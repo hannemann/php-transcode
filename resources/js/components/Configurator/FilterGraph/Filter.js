@@ -41,17 +41,33 @@ section {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: .5rem;
 }
-.icon-stack, .item {
+.item {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+    flex-grow: 1;
+
+    &:has(img) {
+        justify-content: space-between;
+    }
+
+    img {
+        max-height: 2rem;
+    }
+}
+.icon-stack {
     cursor: pointer;
 }
 </style>
 <section>
-    <div class="item">
+    <div class="item" #ref="itemNode">
         <span>{{ this.filterData.filterType }}</span>
         <span>
             {{ this.description }}
         </span>
+        <img data-type="logomask" *if="{{ this.filterData.filterType === 'removeLogo' }}" .src="{{ '/removelogo/' + this.configurator.item.path + '?' + performance.now() }}">
     </div>
     <div @click="{{ this.handleDelete }}" class="icon-stack">
         <span class="iconify" data-icon="mdi-close"></span>

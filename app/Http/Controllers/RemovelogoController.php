@@ -9,8 +9,13 @@ use App\Models\FFMpeg\Clipper\Image;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use App\Jobs\ProcessVideo;
+use App\Models\FFMpeg\Actions\RemovelogoCPU;
+use Illuminate\Contracts\Cache\Store;
 use Illuminate\Support\Facades\Storage;
+use App\Models\FFMpeg\Filters\Video\FilterGraph;
+use App\Helper\Settings;
 
 class RemovelogoController extends Controller
 {
@@ -63,7 +68,6 @@ class RemovelogoController extends Controller
             imagejpeg($image, $stream, 100);
             rewind($stream);
             $imageData = stream_get_contents($stream);
-            //throw new \Exception('Huba lala');
 
             Storage::disk('recordings')->put(dirname($path) . DIRECTORY_SEPARATOR . $imageName, $imageData);
             return response()->json([
@@ -74,5 +78,27 @@ class RemovelogoController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function logomask(string $path)
+    {
+        $customMask = RemovelogoCPU::getCustomMaskPath($path);
+
+        if (RemovelogoCPU::hasCustomMask($customMask)) {
+            $imagePath = sprintf(
+                '%s/%s',
+                config('filesystems.disks.recordings.root'),
+                $customMask
+            );
+            return response()->file($imagePath);
+        }
+
+        $filterGraph = new FilterGraph('recordings', $path);
+        $timestamp = $filterGraph->getSettings()->firstWhere('filterType', 'removeLogo')['timestamp'];
+        // force filterGraph execution
+        (string)$filterGraph;
+        $imagePath = Image::getLogoMaskFullname('recordings', $path, $timestamp);
+
+        return response()->file($imagePath);
     }
 }

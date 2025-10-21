@@ -3,6 +3,7 @@
 use App\Events\FFMpegProgress;
 use App\Events\FilePicker as FilePickerEvent;
 use App\Events\TextViewer;
+use App\Events\ImageViewer;
 use App\Events\Transcode\Config\Streams as BroadcastStreams;
 use App\Events\Transcode\Config\Clips as BroadcastClips;
 use App\Exceptions\FilePicker\DeleteNoneInternalException;
@@ -74,6 +75,7 @@ Route::post('/crop/{path}', [CropController::class, 'crop'])->where('path', '(.*
 Route::post('/delogo/{path}', [DelogoController::class, 'delogo'])->where('path', '(.*)');
 Route::post('/removelogoCustomMask/{path}', [RemovelogoController::class, 'saveCustomMask'])->where('path', '(.*)');
 Route::post('/removelogo/{path}', [RemovelogoController::class, 'removelogo'])->where('path', '(.*)');
+Route::get('/removelogo/{path}', [RemovelogoController::class, 'logomask'])->where('path', '(.*)');
 Route::get('/removelogoImage/{path}', [RemovelogoController::class, 'image'])->where('path', '(.*)');
 Route::post('/kill', fn () => KillFFMpeg::execute());
 Route::get('/image/{path}', [ClipperController::class, 'image'])->where('path', '(.*)');

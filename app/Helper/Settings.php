@@ -4,8 +4,7 @@ namespace App\Helper;
 
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
-use stdClass;
-use FFMpeg\FFProbe\DataMapping\Stream;
+use App\Models\FFMpeg\Actions\RemovelogoCPU;
 
 class Settings
 {
@@ -44,6 +43,12 @@ class Settings
                 return $clip['from'] . "\n" . $clip['to'];
             })->join("\n") . "\n",
         ];
+
+        $hasRemoveLogo = collect($data['filterGraph'])->firstWhere('filterType', 'removeLogo');
+        if (!$hasRemoveLogo) {
+            RemovelogoCPU::deleteMasks($path);
+        }
+
         $out = json_encode($data,  JSON_PRETTY_PRINT |  JSON_UNESCAPED_SLASHES);
         Storage::disk('recordings')->put(Settings::getSettingsFilename($path), $out, 'public');
     }

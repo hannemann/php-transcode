@@ -7,8 +7,9 @@ use App\Models\Video\File;
 use App\Models\FFMpeg\Actions\Helper\OutputMapper;
 use App\Models\FFMpeg\Actions\Helper\Libx264Options;
 use App\Models\FFMpeg\Clipper\Image;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File as FileFacade;
+use PhpParser\Node\Scalar\MagicConst\Dir;
 
 Class RemovelogoCPU extends Crop
 {
@@ -64,13 +65,9 @@ Class RemovelogoCPU extends Crop
 
     public static function getBitMap(string $disk, string $path, string $timestamp, string $w, string $h, ?string $withFilters = ''): string
     {
-        $customMask = sprintf(
-            '%s/%s',
-            dirname($path),
-            'logomask.jpg'
-        );        
+        $customMask = self::getCustomMaskPath($path);
 
-        if (Storage::disk($disk)->exists($customMask)) {
+        if (self::hasCustomMask($customMask)) {
             return sprintf(
                 '%s/%s',
                 config('filesystems.disks.' . $disk . '.root'),
@@ -94,5 +91,34 @@ Class RemovelogoCPU extends Crop
             self::TEMPLATE_FILTER,
             $bitmap
         );
+    }
+
+    public static function getCustomMaskPath(string $path): string
+    {
+        return sprintf(
+            '%s%s%s',
+            dirname($path),
+            DIRECTORY_SEPARATOR,
+            'logomask.jpg'
+        );   
+    }
+
+    public static function hasCustomMask(string $path): bool
+    {
+        return Storage::disk('recordings')->exists($path);
+    }
+
+    public static function deleteMasks(string $path): void
+    {
+
+        $glob = implode(
+            DIRECTORY_SEPARATOR,
+            [
+                config('filesystems.disks.recordings.root'),
+                dirname($path),
+                '*.logomask.jpg'
+            ]
+        );
+        FileFacade::delete(FileFacade::glob($glob));
     }
 }

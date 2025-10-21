@@ -64,22 +64,38 @@ class Image
         return FFMpegDriver::create(null, Arr::dot(config('laravel-ffmpeg')))->command($args);
     }
 
-    public static function createLogoMask(string $disk, string $path, string $timestamp, int $width, int $height, ?string $withFilters = ''): string
+    public static function createLogoMask(string $disk, string $path, string $timestamp, ?int $width = null, ?int $height = null, ?string $withFilters = ''): string
     {
-        $name = sha1($path . $timestamp);
-        $outputPath = sprintf(
-            '%s/%s',
-            config('filesystems.disks.' . $disk . '.root'),
-            dirname($path)
-        );
-        $fullName = $outputPath . DIRECTORY_SEPARATOR . $name . '.logomask.jpg';
+        $filename = self::getLogoMaskFilename($path, $timestamp);
+        $fullName = self::getLogoMaskFullname($disk, $path, $timestamp);
 
-        if (!Storage::disk($disk)->exists($fullName)) {
+        if (!Storage::disk($disk)->exists($filename)) {
             $args = static::getLogomaskArgs($disk, $path, $timestamp, $width, $height, $withFilters);
             $args[] = $fullName;
             FFMpegDriver::create(null, Arr::dot(config('laravel-ffmpeg')))->command($args);
         }
         return $fullName;
+    }
+
+    public static function getLogoMaskFilename(string $path, string $timestamp): string
+    {
+        return sprintf(
+            '%s%s%s%s',
+            dirname($path),
+            DIRECTORY_SEPARATOR,
+            sha1($path . $timestamp),
+            '.logomask.jpg'
+        );
+    }
+
+    public static function getLogoMaskFullname(string $disk, string $path, string $timestamp): string
+    {
+        return sprintf(
+            '%s%s%s',
+            config('filesystems.disks.' . $disk . '.root'),
+            DIRECTORY_SEPARATOR,
+            self::getLogoMaskFilename($path, $timestamp)
+        );
     }
 
     private static function getLogomaskArgs(string $disk, string $path, string $timestamp, int $width, int $height, ?string $withFilters = null): array
