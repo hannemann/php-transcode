@@ -4,6 +4,7 @@ import { TYPE_VIDEO } from "../Streams";
 export const requestRemovelogo = async function (type) {
     try {
         const m = document.createElement("modal-window");
+        m.canCancel = false;
         m.header = "Removelogo";
         m.classList.add("no-shadow");
         const d = document.createElement("dialogue-removelogo");

@@ -2,6 +2,9 @@ import { Slim, Iconify } from "@/components/lib";
 import { ICON_STACK_CSS } from "../../Icons/Stack.css";
 
 class AbstractModal extends Slim {
+
+    canCancel = true;
+
     constructor() {
         super();
         this.cancelAction = this.cancelAction.bind(this);
@@ -188,7 +191,7 @@ ${ICON_STACK_CSS}
 const MODAL_TEMPLATE_END = /*html*/ `
     </section>
     <footer>
-        <theme-button @click="{{ this.cancelAction() }}" #ref="cancelButton">Cancel</theme-button>
+        <theme-button *if="{{ this.canCancel }}" @click="{{ this.cancelAction() }}" #ref="cancelButton">Cancel</theme-button>
         <theme-button @click="{{ this.confirmAction() }}" #ref="okButton">OK</theme-button>
     </footer>
 </main>
