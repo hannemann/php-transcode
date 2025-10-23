@@ -1,12 +1,12 @@
 # For more information: https://laravel.com/docs/sail
 services:
-    transcode_php:
+    php-transcode:
         build:
-            context: ./docker/8.0
+            context: ./docker/8.3
             dockerfile: Dockerfile
             args:
               WWWGROUP: '${WWWGROUP}'
-        image: sail-8.0/app
+        image: php-transcode/sail:8.3
         ports:
             - '${APP_PORT:-8078}:80'
             - '${LARAVEL_WEBSOCKETS_PORT:-8079}:${LARAVEL_WEBSOCKETS_PORT:-8079}'
@@ -19,8 +19,8 @@ services:
             LARAVEL_WEBSOCKETS_PORT: '${LARAVEL_WEBSOCKETS_PORT:-8079}'
         volumes:
             - '.:/var/www/html'
-            - './docker/8.0/php.ini:/etc/php/8.0/cli/conf.d/99-sail.ini'
-            - './docker/8.0/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf'
+            - './docker/8.3/php.ini:/etc/php/8.3/cli/conf.d/99-sail.ini'
+            - './docker/8.3/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf'
             - '${MEDIA_PATH_HOST}:${MEDIA_PATH_CONTAINER}'
         networks:
             - sail
