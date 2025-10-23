@@ -13,8 +13,10 @@ use App\Models\FFMpeg\Format\Video\h264_vaapi;
 class ClipFromToFilter extends ClipFilter
 {
     private ?TimeCode $to = null;
+    protected ?TimeCode $start = null;
+    protected int $priority = 0;
 
-    public function __construct(TimeCode $start, TimeCode $to = null, $priority = 0)
+    public function __construct(TimeCode $start, ?TimeCode $to = null, $priority = 0)
     {
         if ($start->isAfter($to)) {
             throw new InvalidArgumentException(sprintf('Start timecode cannot be greater than end timecode'));

@@ -5,12 +5,20 @@ namespace App\Models\FFMpeg\Actions;
 use App\Models\FFMpeg\Format\Video\h264_vaapi as Format;
 use App\Models\Video\File;
 use App\Models\FFMpeg\Actions\Helper\OutputMapper;
+use App\Models\FFMpeg\Format\Video\h264_vaapi;
 
+/**
+ * @property h264_vaapi $format
+ */
 Class Scale extends AbstractAction
 {
     protected string $filenameAffix = 'scale';
     protected string $filenameSuffix = 'mkv';
     protected string $formatClass = Format::class;
+
+    protected int $width = 0;
+    protected int $height = 0;
+    protected string $aspect = '';
 
     /**
      * handle

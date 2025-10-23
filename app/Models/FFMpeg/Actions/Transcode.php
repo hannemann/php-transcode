@@ -9,10 +9,18 @@ use App\Models\FFMpeg\Format\Video\h264_vaapi;
 use App\Models\Video\File;
 use FFMpeg\Coordinate\TimeCode;
 
+/**
+ * @property h264_vaapi $format
+ */
 class Transcode extends AbstractAction
 {
     protected string $filenameAffix = 'transcode';
     protected string $filenameSuffix = 'mkv';
+
+    protected Helper\ConcatDemuxer $concatDemuxer;
+    protected ComplexConcat $complexConcat;
+    protected float $duration;
+    protected float $clipDuration;
 
     protected string $formatClass = h264_vaapi::class;
 

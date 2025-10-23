@@ -6,6 +6,9 @@ use App\Models\FFMpeg\Format\Video\h264_vaapi as Format;
 use App\Models\Video\File;
 use App\Models\FFMpeg\Actions\Helper\OutputMapper;
 
+/**
+ * @property h264_vaapi $format
+ */
 Class Crop extends AbstractAction
 {
     const TEMPLATE_FILTER_CROP = 'hwdownload,crop=%d:%d:%d:%d,pad=%d:%d:(ow-iw)/2:(oh-ih)/2,format=nv12,hwupload,scale_vaapi=%d:%d';

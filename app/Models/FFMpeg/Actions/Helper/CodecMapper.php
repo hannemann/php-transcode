@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models\FFMpeg\Actions\Helper;
+use FFMpeg\FFProbe\DataMapping\Stream;
 
 use Illuminate\Support\Collection;
 
@@ -8,11 +9,13 @@ use Illuminate\Support\Collection;
  * @property Collection $cmds
  * @property Collection $codecConfig
  * @property int[] $wantedStreams
- * @property Collection $video
- * @property Collection $audio
- * @property Collection $subtitle
+ * @property Collection<Stream> $streams
+ * @property Collection<int> $video
+ * @property Collection<int> $audio
+ * @property Collection<int> $subtitle
  * @property Collection $videoCodecs
  * @property Collection $audioCodecs
+ * @property Collection $subtitleCodecs
  */
 class CodecMapper
 {

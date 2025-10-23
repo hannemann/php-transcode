@@ -3,10 +3,12 @@
 namespace App\Models\FFMpeg\Actions\Helper;
 
 use Illuminate\Support\Collection;
+use FFMpeg\FFProbe\DataMapping\Stream;
 
 /**
  * @property Collection $cmds
  * @property Collection $codecConfig
+ * @property Collection<Stream> $streams
  * @property int[] $wantedStreams
  */
 class RemuxMapper

@@ -5,7 +5,11 @@ namespace App\Models\FFMpeg\Actions;
 use App\Models\FFMpeg\Format\Video\h264_vaapi as Format;
 use App\Models\Video\File;
 use Illuminate\Support\Collection;
+use FFMpeg\FFProbe\DataMapping\Stream;
 
+/**
+ * @property h264_vaapi $format
+ */
 class ConcatPrepare extends AbstractAction
 {
     protected string $filenameAffix = 'prepare';

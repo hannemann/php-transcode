@@ -9,27 +9,42 @@ use App\Models\FilePicker;
 use ProtoneMedia\LaravelFFMpeg\Exporters\MediaExporter;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Collection;
+use FFMpeg\FFProbe\DataMapping\Stream;
 
 use Alchemy\BinaryDriver\Listeners\DebugListener;
 use App\Events\FFMpegOut;
-use App\Http\Requests\FFMpegActionRequest;
 use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 use FFMpeg\Format\Video\DefaultVideo;
 use FFMpeg\Coordinate\TimeCode;
+use ProtoneMedia\LaravelFFMpeg\MediaOpener;
 
 /**
  * @property MediaExporter $mediaExporter
+ * @property MediaOpener $media
+ * @property string $formatClass
+ * @property Collection<Stream> $streams
+ * @property Collection<int> $video
+ * @property Collection<int> $audio
+ * @property Collection<int> $subtitle
+ * @property FFMpeg\Driver\FFMpegDriver $driver
  */
 class AbstractAction
 {
     protected string $disk;
     protected string $path;
     protected int $current_queue_id;
+    protected array $requestData;
+    protected DefaultVideo $format;
     protected ?array $codecConfig = [];
     protected ?array $clips = [];
     protected string $pathHash;
-    protected array $requestData;
-    protected DefaultVideo $format;
+    protected string $filenameAffix = '';
+    protected string $filenameSuffix = '';
+
+    protected ?Helper\CodecMapper $codecMapper;
+    protected ?Helper\OutputMapper $outputMapper;
+
     private $processOutSecond = 0;
     private $progressOutSecond = 0;
     private $outputFileExists = false;

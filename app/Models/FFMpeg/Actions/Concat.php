@@ -14,6 +14,8 @@ class Concat extends AbstractAction
     protected string $filenameAffix = 'concat';
     protected string $filenameSuffix = 'mkv';
 
+    protected string $input = '';
+
     protected string $formatClass = RemuxTS::class;
 
     public function execute(): void

@@ -6,16 +6,13 @@ use App\Http\Requests\RemovelogoRequest;
 use App\Http\Requests\RemoveLogoCustomMaskUploadRequest;
 use App\Http\Requests\Clipper\ImageRequest;
 use App\Models\FFMpeg\Clipper\Image;
-use Illuminate\Support\Facades\Response;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\Response as ResponseFacade;
+use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use App\Jobs\ProcessVideo;
 use App\Models\FFMpeg\Actions\RemovelogoCPU;
-use Illuminate\Contracts\Cache\Store;
 use Illuminate\Support\Facades\Storage;
 use App\Models\FFMpeg\Filters\Video\FilterGraph;
-use App\Helper\Settings;
 
 class RemovelogoController extends Controller
 {
@@ -38,10 +35,10 @@ class RemovelogoController extends Controller
         return null;
     }
 
-    public function image(ImageRequest $request, string $path):? StreamedResponse
+    public function image(ImageRequest $request, string $path):? Response
     {
         try {
-            return Response::stream(function () use ($path, $request) {
+            return ResponseFacade::stream(function () use ($path, $request) {
                 echo Image::getLogoMaskData('recordings', $path, $request->input('timestamp'), $request->input('width'), $request->input('height'));
             }, 200, [
                 "Content-Type" => 'image/jpeg',

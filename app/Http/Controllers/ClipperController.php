@@ -4,15 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Clipper\ImageRequest;
 use App\Models\FFMpeg\Clipper\Image;
-use Illuminate\Support\Facades\Response;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\Response as ResponseFacade;
+use Symfony\Component\HttpFoundation\Response;
 
 class ClipperController extends Controller
 {
-    public function image(ImageRequest $request, string $path):? StreamedResponse
+    public function image(ImageRequest $request, string $path):? Response
     {
         try {
-            return Response::stream(function () use ($path, $request) {
+            return ResponseFacade::stream(function () use ($path, $request) {
                 echo Image::getImageData('recordings', $path, $request->input('timestamp'), $request->input('width'), $request->input('height'), (bool)$request->input('filtered'));
             }, 200, [
                 "Content-Type" => 'image/jpeg',

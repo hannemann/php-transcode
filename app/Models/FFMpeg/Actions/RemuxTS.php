@@ -5,10 +5,15 @@ namespace App\Models\FFMpeg\Actions;
 use App\Models\FFMpeg\Format\Video\RemuxTS as Format;
 use App\Models\Video\File;
 
+/**
+ * @property Format $format
+ */
 class RemuxTS extends AbstractAction
 {
     protected string $filenameAffix = 'remux';
     protected string $filenameSuffix = 'ts';
+
+    protected Helper\RemuxMapper $remuxMapper;
 
     protected string $formatClass = Format::class;
 

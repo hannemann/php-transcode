@@ -4,6 +4,12 @@ namespace App\Models\FFMpeg\Actions\Helper;
 
 use Illuminate\Support\Collection;
 
+/**
+ * @property Collection<int> $streamIds
+ * @property Collection<int> $video
+ * @property Collection<int> $audio
+ * @property Collection<int> $subtitle
+ */
 class OutputMapper
 {
     const MAP_CMD = '-map';

@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ScaleRequest;
 use Illuminate\Http\JsonResponse;
 use App\Jobs\ProcessVideo;
-use App\Models\FFMpeg\Actions\Scale;
-use App\Models\FFMpeg\Actions\ScaleCPU;
 
 class ScaleController extends Controller
 {
