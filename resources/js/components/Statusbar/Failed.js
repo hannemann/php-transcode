@@ -19,7 +19,7 @@ ${PROGRESS_ITEM_CSS}
         <span class="iconify" data-icon="mdi-close"></span>
         <span class="iconify hover" data-icon="mdi-close"></span>
     </div>
-    <div @click="{{ this.showException(item) }}" class="path show">{{ item.type.ucfirst() }}: {{ item.path }}</div>
+    <div @click="{{ this.showException(item) }}" class="path show">{{ item.type.ucfirst() }}: {{ item.path }} - {{ this.getDuration(item) }}</div>
     <div>{{ item.percentage }}%</div>
 </div>
 `;

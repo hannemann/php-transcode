@@ -35,6 +35,18 @@ class Time {
             return acc;
         }, 0) / 1000);
     }
+
+    static duration(date) {
+        return date.toISOString()
+            .split("T")
+            .pop()
+            .split(".")
+            .shift();
+    }
+
+    static deltaDuration(from, to) {
+        return Time.duration(new Date(to - from));
+    }
 }
 
 export { Time };

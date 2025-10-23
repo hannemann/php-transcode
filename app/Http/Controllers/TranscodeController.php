@@ -63,6 +63,8 @@ class TranscodeController extends Controller
                     'percentage' => 0,
                     'rate' => 0,
                     'remaining' => 0,
+                    'start' => gmdate('Y-m-d\TH:i:s\Z'),
+                    'end' => -1
                 ]);
                 $currentQueue->save();
                 $current_queue_id = $currentQueue->getKey();
@@ -85,6 +87,8 @@ class TranscodeController extends Controller
                 'percentage' => 0,
                 'rate' => 0,
                 'remaining' => 0,
+                'start' => gmdate('Y-m-d\TH:i:s\Z'),
+                'end' => -1
             ]);
             $currentQueue->save();
             $current_queue_id = $currentQueue->getKey();

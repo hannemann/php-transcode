@@ -73,6 +73,8 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
             'percentage' => 0,
             'rate' => 0,
             'remaining' => 0,
+            'start' => 0,
+            'end' => -1
         ]);
         $currentQueue->save();
         FFMpegProgress::dispatch('queue.progress');
@@ -88,7 +90,10 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
     {
         $queue = CurrentQueue::where('id', $this->current_queue_id)->firstOrFail();
         if ($queue->state !== CurrentQueue::STATE_CANCELED) {
-            CurrentQueue::where('id', $this->current_queue_id)->update(['state' => CurrentQueue::STATE_RUNNING]);
+            CurrentQueue::where('id', $this->current_queue_id)->update([
+                'state' => CurrentQueue::STATE_RUNNING,
+                'start' => gmdate('Y-m-d\TH:i:s\Z'),
+            ]);
             FFMpegProgress::dispatch('queue.progress');
             switch($this->type) {
                 case 'concat':
@@ -140,7 +145,10 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
                     break;
             }
             (new $model($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();
-            CurrentQueue::where('id', $this->current_queue_id)->update(['state' => CurrentQueue::STATE_DONE]);
+            CurrentQueue::where('id', $this->current_queue_id)->update([
+                'state' => CurrentQueue::STATE_DONE,
+                'end' => gmdate('Y-m-d\TH:i:s\Z'),
+            ]);
         }
         FFMpegProgress::dispatch('queue.progress');
     }
@@ -162,7 +170,8 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
         CurrentQueue::where('id', $this->current_queue_id)
             ->update([
                 'state' => CurrentQueue::STATE_FAILED,
-                'exception' => $message
+                'exception' => $message,
+                'end' => gmdate('Y-m-d\TH:i:s\Z')
             ]);
         FFMpegProgress::dispatch('queue.progress');
     }

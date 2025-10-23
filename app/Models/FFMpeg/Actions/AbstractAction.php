@@ -178,7 +178,8 @@ class AbstractAction
             }
             FFMpegOut::dispatch($this->pathHash, [
                 'line' => str_replace('[ERROR] ', '', $line),
-                'clips' => $clips
+                'clips' => $clips,
+                'timestamp' => gmdate('Y-m-d\TH:i:s\Z'),
             ]);
         }
     }

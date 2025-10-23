@@ -2,6 +2,7 @@ import { Slim } from '@/components/lib';
 import Iconify from '@iconify/iconify'
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 import {Request} from '@/components/Request'
+import { Time } from '../../Helper/Time';
 
 const CSRF_TOKEN = document.head.querySelector("[name~=csrf-token][content]").content;
 
@@ -15,6 +16,13 @@ class ProgressItem extends Slim {
             new CustomEvent("show-textcontent", {
                 detail: { content: item.command },
             })
+        );
+    }
+
+    getDuration(item) {
+        return Time.deltaDuration(
+            new Date(item.start),
+            new Date(item.end !== "-1" ? item.end : item.updated_at)
         );
     }
 

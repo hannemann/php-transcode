@@ -69,17 +69,13 @@ class Statusbar extends Slim {
         this.out = line;
 
         const speed = parseFloat(this.out.split(' ').find(p => p.includes('speed'))?.split('=').pop());
-        const at = this.out.split(' ').find(p => p.includes('time'))?.split('=').pop();
-        if (speed && at) {
-            const totalDuration = Time.milliSeconds(Time.calculateClipsDuration(clips));
-            const elapsedUt = new Date(`1970-01-01T${at}`).valueOf();
-            const fromUtZero = new Date('1970-01-01T00:00:00.00').valueOf();
-            const elapsed = Math.abs(fromUtZero) + elapsedUt;
-            const remainTime = new Date((totalDuration - elapsed) / speed);
-            
+        const encodedTime = this.out.split(' ').find(p => p.includes('time'))?.split('=').pop();
+        if (speed && encodedTime) {
+            const clipsDuration = Time.milliSeconds(Time.calculateClipsDuration(clips));
+            const elapsed = new Date(`1970-01-01T${encodedTime}`) - new Date('1970-01-01T00:00:00.00');
+            const remainTime = new Date((clipsDuration - elapsed) / speed);
             if (remainTime.getDate()) {
-                this.remainTime = remainTime.toISOString().split('T').pop().split('.').shift();
-                //console.log(speed, at, totalDuration, elapsed, this.remainTime);
+                this.remainTime = Time.duration(remainTime);
             }
         }
     }
@@ -146,15 +142,10 @@ class Statusbar extends Slim {
     handleTimer(current) {
         if (current.length && !runtimeInterval) {
             currentRuntime =
-                new Date(current[0].updated_at).getTime() -
-                new Date(current[0].created_at).getTime();
+                new Date(current[0].updated_at) -
+                new Date(current[0].start);
             runtimeInterval = setInterval(() => {
-                this.runtime = new Date(currentRuntime)
-                    .toISOString()
-                    .split("T")
-                    .pop()
-                    .split(".")
-                    .shift();
+                this.runtime = Time.duration(new Date(currentRuntime));
                 currentRuntime += 1000;
             }, 1000);
         } else if (!current.length) {

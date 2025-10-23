@@ -10,6 +10,14 @@ class ProgressCurrent extends ProgressItem {
         return `width: ${this.item.percentage}%;`;
     }
 
+    get runtime() {
+        return this.offsetParent.parentNode.host.runtime;
+    }
+
+    get remainTime() {
+        return this.offsetParent.parentNode.host.remainTime;
+    }
+
     async requestKill() {
         console.info("Kill of all ffmpeg processes requested");
         Request.post("/kill");
@@ -41,8 +49,8 @@ ${PROGRESS_ITEM_CSS}
         <span class="iconify hover" data-icon="mdi-skull-crossbones-outline"></span>
     </div>
     <div @click="{{ this.showCommand(this.item) }}" class="path show">
-        <span>{{ this.item.type.ucfirst() }}: {{ this.item.path }}</span>
-        <span style="{{ this.width }}">{{ this.item.type.ucfirst() }}: {{ this.item.path }}</span>
+        <span>{{ this.item.type.ucfirst() }}: {{ this.item.path }} - {{ this.runtime }} / {{this.remainTime}}</span>
+        <span style="{{ this.width }}">{{ this.item.type.ucfirst() }}: {{ this.item.path }} - {{ this.runtime }} / {{this.remainTime}}</span>
     </div>
     <div>{{ this.item.percentage }}%</div>
 </div>
