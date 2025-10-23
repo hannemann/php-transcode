@@ -74,7 +74,7 @@ Search your recording frame by frame for unwanted material
 1. Concat
 2. Optionally scale to desired width
 3. If not scaled remux to mkv or mp4
-4. Use Clipper to mark parts to be keeped
+4. Use Clipper to mark parts to be kept
 5. Transcode
 
 ## Single file
@@ -108,14 +108,13 @@ Error while processing the decoded data for stream #0:0
 * Scale 
 
 ## Installation on Ubuntu 20.04
-* PHP 8.0, php-sqlite3
+* PHP 8.3, php-sqlite3
 * FFMpeg
 * Nginx
 * git clone
 * cp .env.example .env # adjust settings
-* touch storage/database.sqlite
+* touch database/database.sqlite
 * chown www-data database.sqlite
-* add DB_DATABASE=/path/to/database.sqlite to .env
 ## Systemd (non docker installation)
 ### Laravel Websockets
 ```
@@ -166,7 +165,6 @@ WantedBy=default.target
 
 ## TODO:
 * Inotify?
-* save commandline when job is done
 
 ## Fix
 
@@ -192,3 +190,5 @@ Stop container:
 ```shell
 vendor/bin/sail down
 ```
+Xdebug:
+- change environment variable `SAIL_XDEBUG_MODE` from `off` to `develop,debug` and restart container for step debugging.
