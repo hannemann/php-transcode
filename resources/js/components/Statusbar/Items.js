@@ -53,6 +53,10 @@ div.path {
     white-space: nowrap;
     overflow-x: hidden;
     text-overflow: ellipsis;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-grow: 1;
 }
 div.path.show {
     cursor: pointer;

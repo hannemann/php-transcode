@@ -10,7 +10,7 @@ ${PROGRESS_ITEM_CSS}
         <span class="iconify" data-icon="mdi-close"></span>
         <span class="iconify hover" data-icon="mdi-close"></span>
     </div>
-    <div @click="{{ this.showCommand(item) }}" class="path show">{{ item.type.ucfirst() }}: {{ item.path }} - {{ this.getDuration(item) }}</div>
+    <div @click="{{ this.showCommand(item) }}" class="path show"><span>{{ item.type.ucfirst() }}: {{ item.path }}</span><span>{{ this.getDuration(item) }}</span></div>
     <div>{{ item.percentage }}%</div>
 </div>
 `;
