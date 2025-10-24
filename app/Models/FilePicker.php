@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Helper\File as FileHelper;
 use App\Models\Video\File as VideoFile;
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
+use League\Flysystem\UnableToReadFile;
 use Illuminate\Filesystem\FilesystemAdapter;
 
 class FilePicker
@@ -25,13 +25,13 @@ class FilePicker
     /**
      * obtain all items of a subdirectory
      */
-    public static function getItems(string $subdir = null, bool $hidden = false): Collection
+    public static function getItems(?string $subdir = null, bool $hidden = false): Collection
     {
         if ($subdir && static::disk()->missing($subdir)) {
-            throw new FileNotFoundException(sprintf('Path "%s" not found', $subdir));
+            throw new UnableToReadFile(sprintf('Path "%s" not found', $subdir));
         }
-        $d = static::getDirectories($subdir, $hidden)->map([static::class, 'getDirectoryData']);
-        $f = static::getFiles($subdir, $hidden)->map([static::class, 'getFileData']);
+        $d = static::getDirectories($subdir, $hidden)->map([static::class, 'getDirectoryData'])->sort();
+        $f = static::getFiles($subdir, $hidden)->map([static::class, 'getFileData'])->sort();
         return $d->merge($f);
     }
 
@@ -75,7 +75,7 @@ class FilePicker
     /**
      * obtain directories
      */
-    public static function getDirectories(string $subdir = null, bool $hidden = false): Collection
+    public static function getDirectories(?string $subdir = null, bool $hidden = false): Collection
     {
         $items = collect(static::disk()->directories($subdir));
         return $hidden ? $items : static::filterHidden($items);
@@ -84,7 +84,7 @@ class FilePicker
     /**
      * obtain files
      */
-    public static function getFiles(string $subdir = null, bool $hidden = false): Collection
+    public static function getFiles(?string $subdir = null, bool $hidden = false): Collection
     {
         $items = collect(static::disk()->files($subdir));
         return $hidden ? $items : static::filterHidden($items);
@@ -104,7 +104,7 @@ class FilePicker
      */
     public static function getMimeType(string $file): string
     {
-        $fullFileName = static::disk()->getAdapter()->getPathPrefix() . $file;
+        $fullFileName = static::disk()->getConfig()['root'] . DIRECTORY_SEPARATOR . $file;
         if (($mime = VideoFile::getMimeType($fullFileName))) {
             return $mime;
         }

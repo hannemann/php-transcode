@@ -43,7 +43,7 @@ class Concat extends AbstractAction
     private function getConcatInput(array $files): string {
         /** @var Illuminate\Filesystem\FilesystemAdapter $disk */
         $disk = Storage::disk($this->disk);
-        $pathPrefix = rtrim($disk->getDriver()->getAdapter()->getPathPrefix(), DIRECTORY_SEPARATOR);
+        $pathPrefix = rtrim($disk()->getConfig()['root'], DIRECTORY_SEPARATOR);
         return 'concat:' . collect($files)->map(function($file) use ($pathPrefix) {
             return $pathPrefix . DIRECTORY_SEPARATOR . ltrim($file, DIRECTORY_SEPARATOR);
         })->implode('|');

@@ -74,7 +74,7 @@ class ConcatDemuxer
         /** @var Illuminate\Filesystem\FilesystemAdapter $disk */
         $disk = Storage::disk($this->disk);
         return rtrim(
-            $disk->getDriver()->getAdapter()->getPathPrefix(),
+            $disk()->getConfig()['root'] . DIRECTORY_SEPARATOR,
             DIRECTORY_SEPARATOR
         ) . DIRECTORY_SEPARATOR;
     }

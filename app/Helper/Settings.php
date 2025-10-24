@@ -3,7 +3,7 @@
 namespace App\Helper;
 
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
+use League\Flysystem\UnableToReadFile;
 use App\Models\FFMpeg\Actions\RemovelogoCPU;
 
 class Settings
@@ -28,9 +28,11 @@ class Settings
     public static function getSettings(string $path): array
     {
         try {
-            $settings = Storage::disk('recordings')->get(static::getSettingsFilename($path));
-            return json_decode($settings, true);
-        } catch (FileNotFoundException $e) {
+            if ($settings = Storage::disk('recordings')->get(static::getSettingsFilename($path))) {
+                return json_decode($settings, true);
+            }
+            return ['clips' => [], 'streams' => []];
+        } catch (UnableToReadFile $e) {
             return ['clips' => [], 'streams' => []];
         }
     }
