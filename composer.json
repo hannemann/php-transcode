@@ -6,11 +6,10 @@
     "license": "MIT",
     "require": {
         "php": "^7.2|^8.0",
-        "doctrine/dbal": "^3.10",
         "guzzlehttp/guzzle": "^7.0.1",
-        "laravel/framework": "^10.0",
+        "laravel/framework": "^11.0",
         "laravel/reverb": "^1.4",
-        "laravel/sanctum": "^3.2",
+        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.5",
         "pbmedia/laravel-ffmpeg": "^8.0",
         "pusher/pusher-php-server": "^7.0"
@@ -20,7 +19,7 @@
         "fakerphp/faker": "^1.9.1",
         "laravel/sail": "^1.0.1",
         "mockery/mockery": "^1.4.2",
-        "nunomaduro/collision": "^7.0",
+        "nunomaduro/collision": "^8.1",
         "phpunit/phpunit": "^10.0"
     },
     "autoload": {
