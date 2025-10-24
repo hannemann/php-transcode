@@ -3,15 +3,16 @@
  * for events that are broadcast by Laravel. Echo and event broadcasting
  * allows your team to easily build robust real-time web applications.
  */
- import Echo from "laravel-echo"
+import Echo from "laravel-echo"
 
- window.Pusher = require('pusher-js');
+import Pusher from "pusher-js";
+window.Pusher = Pusher;
 
 window.Echo = new Echo({
-    broadcaster: "pusher",
-    key: LARAVEL_WEBSOCKETS_KEY,
-    wsHost: window.location.hostname,
-    wsPort: LARAVEL_WEBSOCKETS_PORT,
+    broadcaster: 'reverb',
+    key: WEBSOCKETS_APP_KEY,
+    wsHost: location.hostname,
+    wsPort: WEBSOCKETS_PORT,
     forceTLS: false,
-    disableStats: true,
+    enabledTransports: ['ws'],
 });

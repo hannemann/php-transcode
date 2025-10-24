@@ -3,7 +3,6 @@
 use App\Events\FFMpegProgress;
 use App\Events\FilePicker as FilePickerEvent;
 use App\Events\TextViewer;
-use App\Events\ImageViewer;
 use App\Events\Transcode\Config\Streams as BroadcastStreams;
 use App\Events\Transcode\Config\Clips as BroadcastClips;
 use App\Exceptions\FilePicker\DeleteNoneInternalException;
@@ -21,12 +20,9 @@ use App\Http\Requests\FFMpegActionRequest;
 use App\Models\FilePicker;
 use App\Models\Video\File as VideoFile;
 use Illuminate\Support\Facades\Route;
-use App\Jobs\ProcessVideo;
 use App\Models\FFMpeg\Actions\KillFFMpeg;
 use App\Models\CurrentQueue;
-use App\Models\FFMpeg\Actions\ConcatPrepare;
 use Illuminate\Support\Facades\Storage;
-use App\Models\FFMpeg\Actions\Scale;
 use Illuminate\Support\Arr;
 
 /*
@@ -42,7 +38,7 @@ use Illuminate\Support\Arr;
 
 Route::get('/', fn() => view('home', ['ds' => DIRECTORY_SEPARATOR]));
 
-Route::get('/file-picker/{subdir?}', function (string $subdir = null) {
+Route::get('/file-picker/{subdir?}', function (?string $subdir = null) {
     
     try {
         $items = FilePicker::root('recordings')::getItems($subdir);
@@ -84,7 +80,7 @@ Route::get('/stream-segment/{path}', [PlayerController::class, 'segment'])->wher
 Route::post('/stream/{path}', [PlayerController::class, 'stream'])->where('path', '(.*)');
 Route::delete('/stream/{path}', [PlayerController::class, 'cleanup'])->where('path', '(.*)');
 
-Route::get('/streams/{path?}', function (string $path = null) {
+Route::get('/streams/{path?}', function (?string $path = null) {
     
     try {
         $media = VideoFile::getMedia('recordings', $path);

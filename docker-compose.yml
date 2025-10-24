@@ -16,7 +16,7 @@ services:
             LARAVEL_SAIL: 1
             XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
             XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
-            LARAVEL_WEBSOCKETS_PORT: '${LARAVEL_WEBSOCKETS_PORT:-8079}'
+            REVERB_PORT: '${REVERB_PORT:-8079}'
         volumes:
             - '.:/var/www/html'
             - './docker/8.3/php.ini:/etc/php/8.3/cli/conf.d/99-sail.ini'

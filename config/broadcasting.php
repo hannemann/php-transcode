@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('BROADCAST_DRIVER', 'pusher'),
+    'default' => env('BROADCAST_DRIVER', 'reverb'),
 
     /*
     |--------------------------------------------------------------------------
@@ -30,17 +30,33 @@ return [
 
     'connections' => [
 
+        'reverb' => [
+            'driver' => 'reverb',
+            'key' => env('REVERB_APP_KEY', 1),
+            'secret' => env('REVERB_APP_SECRET', 2),
+            'app_id' => env('REVERB_APP_ID', 3),
+            'options' => [
+                'host' => env('REVERB_HOST', '127.0.0.1'),
+                'port' => env('REVERB_PORT', 8079),
+                'scheme' => env('REVERB_SCHEME', 'http'),
+                'useTLS' => env('REVERB_SCHEME', 'http') === 'https',
+            ],
+            'client_options' => [
+                // Guzzle client options: https://docs.guzzlephp.org/en/stable/request-options.html
+            ],
+        ],
+
         'pusher' => [
             'driver' => 'pusher',
-            'key' => env('PUSHER_APP_KEY', 2),
-            'secret' => env('PUSHER_APP_SECRET', 3),
-            'app_id' => env('PUSHER_APP_ID', 1),
+            'key' => env('REVERB_APP_KEY', 1),
+            'secret' => env('REVERB_APP_SECRET', 2),
+            'app_id' => env('REVERB_APP_ID', 3),
             'options' => [
                 'cluster' => env('PUSHER_APP_CLUSTER', 'mtl'),
                 'encrypted' => false,
-                'host' => '127.0.0.1',
-                'port' => env('LARAVEL_WEBSOCKETS_PORT', 8079),
-                'scheme' => 'http'
+                'host' => env('REVERB_HOST', '127.0.0.1'),
+                'port' => env('REVERB_PORT', 8079),
+                'scheme' => env('REVERB_SCHEME', 'http')
             ],
         ],
 
