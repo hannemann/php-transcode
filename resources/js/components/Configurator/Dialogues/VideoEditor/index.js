@@ -1,8 +1,12 @@
 import { Slim, Iconify } from "@/components/lib";
+import { Time } from '../../../../Helper/Time';
 
 const THUMBNAIL_HEIGHT = 30;
 
 class VideoEditor extends Slim {
+
+    #markers = [];
+
     constructor() {
         super();
         this.bindListeners();
@@ -11,7 +15,7 @@ class VideoEditor extends Slim {
     bindListeners() {
         this.toggleAspect = this.toggleAspect.bind(this);
         this.handleIndicatorClick = this.handleIndicatorClick.bind(this);
-        this.setCurrentPosByChapter = this.setCurrentPosByChapter.bind(this);
+        this.setCurrentPosByMarker = this.setCurrentPosByMarker.bind(this);
     }
 
     onAdded() {
@@ -111,16 +115,30 @@ class VideoEditor extends Slim {
         this.updateImages();
     }
 
-    getChapterLeft(item) {
+    getMarkerLeft(item) {
         const percentage = (100 / this.duration) * (item.start / 1000000);
         return `left: min(${percentage}%, 100% - 1px`;
     }
 
-    setCurrentPosByChapter(e) {
+    setCurrentPosByMarker(e) {
         e.stopPropagation();
         this.current = e.currentTarget.dataset.start / 1000000;
         this.updateIndicatorPos();
         this.updateImages();
+    }
+
+    markersFromClips(clips) {
+        const multiplier = 1000 * 1000
+
+        const markers = [...clips].reduce((acc, cur) => {
+            if (cur.from && cur.to) {
+                acc.push({start: Time.milliSeconds(cur.from) * multiplier});
+                acc.push({start: Time.milliSeconds(cur.to) * multiplier});
+            }
+            return acc;
+        }, []);
+
+        return markers
     }
 
     get baseUrl() {
@@ -144,6 +162,16 @@ class VideoEditor extends Slim {
                 this.updateImages();
             }
         }
+    }
+
+    set markers(value) {
+        const fromClips = 'undefined' !== typeof value.clips;
+        const markers = fromClips ? this.markersFromClips(value.clips) : value;
+        this.#markers = markers;
+    }
+
+    get markers() {
+        return this.#markers;
     }
 }
 
@@ -217,7 +245,7 @@ export const EDITOR_CSS = /*html*/ `
         font-size: .75rem;
         padding: .5rem;
     }
-    .chapter {
+    .markers {
         position: absolute;
         bottom: -15px;
         height: 15px;
@@ -244,7 +272,7 @@ export const EDITOR_TEMPLATE = /*html*/ `
 </div>
 <div class="indicator" #ref="indicator" @click="{{ this.handleIndicatorClick }}">
     <div class="current" #ref="indicatorCurrent" style="{{ this.indicatorPos }}"></div>
-    <div class="chapter" *foreach="{{ this.chapters }}" data-start="{{ item.start }}" @click="{{ this.setCurrentPosByChapter }}" style="{{ this.getChapterLeft(item) }}"></div>
+    <div class="markers" *foreach="{{ this.markers }}" data-start="{{ item.start }}" @click="{{ this.setCurrentPosByMarker }}" style="{{ this.getMarkerLeft(item) }}"></div>
 </div>`;
 
 export { VideoEditor };

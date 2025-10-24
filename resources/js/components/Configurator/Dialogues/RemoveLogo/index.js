@@ -6,6 +6,7 @@ import { Request } from "../../../Request";
 const IMAGE_TYPE_ORIGINAL = "Original";
 const IMAGE_TYPE_MASK = "Mask";
 class RemoveLogo extends VideoEditor {
+
     constructor() {
         super();
         this.raw = [-1];

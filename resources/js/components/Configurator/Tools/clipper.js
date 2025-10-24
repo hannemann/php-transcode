@@ -22,7 +22,7 @@ export const clipper = async function () {
         duration: parseFloat(this.format.duration),
     };
     d.path = this.item.path;
-    d.chapters = this.chapters;
+    d.markers = this.chapters;
     m.appendChild(d);
     document.body.insertBefore(m, document.querySelector('transcoder-toast'));
     try {

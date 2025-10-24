@@ -13,7 +13,7 @@ export const requestDelogo = async function (type) {
         };
         d.path = this.item.path;
         d.type = type;
-        d.chapters = this.chapters;
+        d.markers = this.clips;
         m.appendChild(d);
         document.body.insertBefore(m, document.querySelector('transcoder-toast'));
         await m.open();
