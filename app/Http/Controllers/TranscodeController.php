@@ -29,10 +29,14 @@ class TranscodeController extends Controller
                     Transcode::getFromToFilter($data['clips'][0]['from'], $data['clips'][0]['to']);
                 } elseif (count($data['clips']) > 1) {
                     // prepare
+                    // TODO: ? Maybe we want to cancel Transcode process if prepare process fails
+                    // How? Store prepare queue id in transcode job and check state before running
+                    // there is a getter for the queue id in the job ;)
                     $pre = new ConcatPrepare('recordings', $path, 0, $request->input());
                     $pathCopy = $pre->getOutputFilename();
+                    $queueId = -1;
                     if (!Storage::disk('recordings')->exists($pathCopy)) {
-                        ProcessVideo::dispatch('prepare', 'recordings', $path, $request);
+                        $queueId = ProcessVideo::dispatch('prepare', 'recordings', $path, $request)->getJob()->getQueueId();
                     }
                     $path = $pathCopy;
                     Settings::save($path, $data);

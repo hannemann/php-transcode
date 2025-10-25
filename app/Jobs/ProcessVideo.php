@@ -83,6 +83,10 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
         $this->current_queue_id = $currentQueue->getKey();
     }
 
+    public function getQueueId() {
+        return $this->current_queue_id;
+    }
+
     /**
      * Execute the job.
      *
