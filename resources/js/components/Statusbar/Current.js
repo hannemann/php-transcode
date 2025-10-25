@@ -56,8 +56,8 @@ ${PROGRESS_ITEM_CSS}
         <span class="iconify hover" data-icon="mdi-skull-crossbones-outline"></span>
     </div>
     <div @click="{{ this.showCommand(this.item) }}" class="path show">
-        <span><span>{{ this.item.type.ucfirst() }}: {{ this.item.path }}</span><span>{{ this.runtime }} / {{this.remainTime}}</span></span>
-        <span style="{{ this.width }}"><span>{{ this.item.type.ucfirst() }}: {{ this.item.path }}</span><span>{{ this.runtime }} / {{this.remainTime}}</span></span>
+        <span><span>{{ this.item.type.ucfirst() }}: {{ this.item.path }}</span></span>
+        <span style="{{ this.width }}"><span>{{ this.item.type.ucfirst() }}: {{ this.item.path }}</span></span>
     </div>
     <div>{{ this.item.percentage }}%</div>
 </div>
