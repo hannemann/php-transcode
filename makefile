@@ -19,6 +19,9 @@ build::
 run-dev::
 	./vendor/bin/sail npm run watch
 
+ps:
+	./vendor/bin/sail exec php-transcode ps -aux
+
 restart-queue::
 	./vendor/bin/sail exec php-transcode supervisorctl restart queue
 
