@@ -4,6 +4,7 @@ namespace App\Models\FFMpeg\Actions;
 
 use App\Models\FFMpeg\Format\Video\RemuxTS as Format;
 use App\Models\Video\File;
+use App\Jobs\ProcessVideo;
 
 /**
  * @property Format $format
@@ -20,8 +21,9 @@ class RemuxTS extends AbstractAction
     /**
      * handle
      */
-    public function execute()
+    public function execute(?ProcessVideo $job = null)
     {
+        $this->job = $job;
         $this->media = File::getMedia($this->disk, $this->path);
         $this->initStreams();
         $this->remuxMapper = new Helper\RemuxMapper($this->codecConfig, $this->streams);

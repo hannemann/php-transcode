@@ -6,6 +6,7 @@ use FFMpeg\Format\Video\X264 as Format;
 use App\Models\Video\File;
 use App\Models\FFMpeg\Actions\Helper\OutputMapper;
 use App\Models\FFMpeg\Actions\Helper\Libx264Options;
+use App\Jobs\ProcessVideo;
 
 Class DelogoCPU extends Crop
 {
@@ -18,8 +19,9 @@ Class DelogoCPU extends Crop
     /**
      * handle
      */
-    public function execute()
+    public function execute(?ProcessVideo $job = null)
     {
+        $this->job = $job;
         $this->format->setAudioCodec('copy')->setPasses(1);
         $this->media = File::getMedia($this->disk, $this->path);
         $this->initStreams();

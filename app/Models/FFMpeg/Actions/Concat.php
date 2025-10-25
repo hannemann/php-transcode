@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\FFMpeg\Format\Video\RemuxTS;
 use FFMpeg\Coordinate\TimeCode;
 use App\Models\FFMpeg\Filters\Video\ConcatDurationDummy;
+use App\Jobs\ProcessVideo;
 
 class Concat extends AbstractAction
 {
@@ -18,8 +19,9 @@ class Concat extends AbstractAction
 
     protected string $formatClass = RemuxTS::class;
 
-    public function execute(): void
+    public function execute(?ProcessVideo $job = null)
     {
+        $this->job = $job;
         $files = $this->getVideoFiles();
         $this->input = $this->getConcatInput($files);
         $this->mediaExporter = FFMpeg::fromDisk($this->disk)

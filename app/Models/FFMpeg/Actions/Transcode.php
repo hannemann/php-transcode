@@ -8,6 +8,7 @@ use App\Models\FFMpeg\Filters\Video\FilterGraph;
 use App\Models\FFMpeg\Format\Video\h264_vaapi;
 use App\Models\Video\File;
 use FFMpeg\Coordinate\TimeCode;
+use App\Jobs\ProcessVideo;
 
 /**
  * @property h264_vaapi $format
@@ -27,8 +28,9 @@ class Transcode extends AbstractAction
     /**
      * handle
      */
-    public function execute()
+    public function execute(?ProcessVideo $job = null)
     {
+        $this->job = $job;
         $this->format->setConstantQuantizationParameter()
             ->setAudioCodec('copy');
 

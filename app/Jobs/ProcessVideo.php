@@ -48,6 +48,8 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
     //TODO: should be config option
     public int $timeout = 3600;
 
+    private bool $hasFailed = false;
+
     /**
      * Create a new job instance.
      *
@@ -144,11 +146,13 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
                     }
                     break;
             }
-            (new $model($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute();
-            CurrentQueue::where('id', $this->current_queue_id)->update([
-                'state' => CurrentQueue::STATE_DONE,
-                'end' => gmdate('Y-m-d\TH:i:s\Z'),
-            ]);
+            (new $model($this->disk, $this->path, $this->current_queue_id, $this->requestData))->execute($this);
+            if (!$this->hasFailed) {
+                CurrentQueue::where('id', $this->current_queue_id)->update([
+                    'state' => CurrentQueue::STATE_DONE,
+                    'end' => gmdate('Y-m-d\TH:i:s\Z'),
+                ]);
+            }
         }
         FFMpegProgress::dispatch('queue.progress');
     }
@@ -161,6 +165,7 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
      */
     public function failed(Throwable $exception)
     {
+        $this->hasFailed = true;
         $message = $exception->getMessage();
         if ($exception instanceOf EncodingException) {
             $command = $exception->getCommand();

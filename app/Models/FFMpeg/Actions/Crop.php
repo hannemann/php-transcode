@@ -5,6 +5,7 @@ namespace App\Models\FFMpeg\Actions;
 use App\Models\FFMpeg\Format\Video\h264_vaapi as Format;
 use App\Models\Video\File;
 use App\Models\FFMpeg\Actions\Helper\OutputMapper;
+use App\Jobs\ProcessVideo;
 
 /**
  * @property h264_vaapi $format
@@ -20,8 +21,9 @@ Class Crop extends AbstractAction
     /**
      * handle
      */
-    public function execute()
+    public function execute(?ProcessVideo $job = null)
     {
+        $this->job = $job;
         $this->format->setConstantQuantizationParameter(Format::HIGH_QUALITY_QP)
             ->setAudioCodec('copy');
         $this->media = File::getMedia($this->disk, $this->path);

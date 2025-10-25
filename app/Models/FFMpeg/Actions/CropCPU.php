@@ -7,6 +7,7 @@ use App\Models\Video\File;
 use App\Models\FFMpeg\Actions\Helper\OutputMapper;
 use App\Models\FFMpeg\Actions\Helper\Libx264Options;
 use App\Models\FFMpeg\Actions\Crop;
+use App\Jobs\ProcessVideo;
 
 Class CropCPU extends Crop
 {
@@ -20,8 +21,9 @@ Class CropCPU extends Crop
     /**
      * handle
      */
-    public function execute()
+    public function execute(?ProcessVideo $job = null)
     {
+        $this->job = $job;
         $this->format->setAudioCodec('copy')->setPasses(1);
         $this->media = File::getMedia($this->disk, $this->path);
         $this->initStreams();

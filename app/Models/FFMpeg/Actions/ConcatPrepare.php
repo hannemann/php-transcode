@@ -5,7 +5,7 @@ namespace App\Models\FFMpeg\Actions;
 use App\Models\FFMpeg\Format\Video\h264_vaapi as Format;
 use App\Models\Video\File;
 use Illuminate\Support\Collection;
-use FFMpeg\FFProbe\DataMapping\Stream;
+use App\Jobs\ProcessVideo;
 
 /**
  * @property h264_vaapi $format
@@ -22,8 +22,9 @@ class ConcatPrepare extends AbstractAction
     /**
      * handle
      */
-    public function execute()
+    public function execute(?ProcessVideo $job = null)
     {
+        $this->job = $job;
         $this->media = File::getMedia($this->disk, $this->path);
         $this->initStreams();
         $this->configureAudio();

@@ -14,6 +14,7 @@ use FFMpeg\FFProbe\DataMapping\Stream;
 
 use Alchemy\BinaryDriver\Listeners\DebugListener;
 use App\Events\FFMpegOut;
+use App\Jobs\ProcessVideo;
 use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 use FFMpeg\Format\Video\DefaultVideo;
 use FFMpeg\Coordinate\TimeCode;
@@ -44,6 +45,8 @@ class AbstractAction
 
     protected ?Helper\CodecMapper $codecMapper;
     protected ?Helper\OutputMapper $outputMapper;
+
+    protected ?ProcessVideo $job = null;
 
     private $processOutSecond = 0;
     private $progressOutSecond = 0;
@@ -78,8 +81,11 @@ class AbstractAction
                 ->beforeSaving(\Closure::fromCallable([$this, 'saveCommand']))
                 ->save($this->getOutputFilename());
         } catch (EncodingException $e) {
-            if (!Str::contains($e->getErrorOutput(), 'Exiting normally')) {
+            if (!Str::contains($e->getErrorOutput(), ['Exiting normally', 'Conversion failed'])) {
                 throw $e;
+            }
+            if ($this->job) {
+                $this->job->failed($e);
             }
         } finally {
             Log::info('Removing listener');

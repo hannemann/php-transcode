@@ -9,7 +9,7 @@ use App\Models\FFMpeg\Actions\Helper\Libx264Options;
 use App\Models\FFMpeg\Clipper\Image;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File as FileFacade;
-use PhpParser\Node\Scalar\MagicConst\Dir;
+use App\Jobs\ProcessVideo;
 
 Class RemovelogoCPU extends Crop
 {
@@ -24,8 +24,9 @@ Class RemovelogoCPU extends Crop
     /**
      * handle
      */
-    public function execute()
+    public function execute(?ProcessVideo $job = null)
     {
+        $this->job = $job;
         $this->bitmap = self::getBitmap(
             $this->disk,
             $this->path,
