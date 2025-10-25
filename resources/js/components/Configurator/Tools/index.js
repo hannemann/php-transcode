@@ -6,6 +6,7 @@ import { clipper } from "./clipper.js";
 import { requestDelogo } from "./delogo.js";
 import { requestRemovelogo } from "./removelogo.js";
 import { requestPlay } from "./player.js";
+import { requestDeinterlace } from "./deinterlace.js";
 
 export const toolProxy = function (e) {
     const args = e.target.value.split(":");
@@ -33,6 +34,9 @@ export const toolProxy = function (e) {
             break;
         case "play":
             requestPlay.apply(this, args);
+            break;
+        case "deinterlace":
+            requestDeinterlace.apply(this, args);
             break;
     }
 };

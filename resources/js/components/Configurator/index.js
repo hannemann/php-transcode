@@ -162,7 +162,7 @@ class TranscodeConfigurator extends Slim {
             stream.transcodeConfig.codec = typeof stream.transcodeConfig?.codec !== "undefined" ? stream.transcodeConfig.codec : codecs.find(c => c.default).v
             switch (type) {
                 case 'video':
-                    stream.transcodeConfig.qp = typeof stream.transcodeConfig?.qp !== "undefined" ? stream.transcodeConfig.qp : codecs.find(c => c.default).qp
+                    stream.transcodeConfig.qp = typeof stream.transcodeConfig?.qp !== "undefined" ? stream.transcodeConfig.qp : codecs.find(c => c.default).qp;
                     stream.transcodeConfig.aspectRatio = stream.transcodeConfig.aspectRatio || '16:9';
                     break;
                 case 'audio':
@@ -406,6 +406,7 @@ ${CSS}
                 <option value="remux:mkv">Remux MKV</option>
                 <option value="remux:mp4">Remux MP4</option>
                 <option value="remux:ts">Remux TS</option>
+                <option value="deinterlace">Deinterlace</option>
                 <option value="delogo:cpu">DeLogo (CPU)</option>
                 <option value="removelogo:cpu">RemoveLogo (CPU)</option>
             </combo-button>

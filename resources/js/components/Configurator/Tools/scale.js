@@ -13,20 +13,23 @@ export const requestScale = async function (type) {
     document.body.appendChild(m);
     try {
         await m.open();
-        console.info(
-            "Scale video file %s to %dx%d with an aspect-ratio of %s",
-            this.item.path,
-            d.scale.width,
-            d.scale.height,
-            d.scale.aspectRatio,
-            type
-        );
-        await Request.post(`/scale/${encodeURIComponent(this.item.path)}`, {
+        const filterSettings = {
+            filterType: 'scale',
             width: d.scale.width,
             height: d.scale.height,
             aspect: d.scale.aspectRatio,
             type: type,
-        });
+        };
+        console.info(
+            "Scale video file %s to %dx%d with an aspect-ratio of %s",
+            this.item.path,
+            filterSettings.width,
+            filterSettings.height,
+            filterSettings.aspectRatio,
+            type
+        );
+        this.filterGraph.push(filterSettings);
+        this.saveSettings();
     } catch (error) {
         if (error) {
             console.error(error);

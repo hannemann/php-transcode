@@ -7,9 +7,13 @@ export const requestCrop = async function (type) {
         m.header = "Cropper";
         m.classList.add("no-shadow");
         const d = document.createElement("dialogue-cropper");
+        const video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);
+        const scaleFilter = this.filterGraph.find(f => f.filterType === 'scale');
         d.video = {
-            ...this.streams.filter((s) => s.codec_type === TYPE_VIDEO)?.[0],
+            ...video,
             duration: parseFloat(this.format.duration),
+            width: scaleFilter?.width || video.width,
+            height: scaleFilter?.height || video.height
         };
         d.crop = this.crop;
         d.path = this.item.path;
