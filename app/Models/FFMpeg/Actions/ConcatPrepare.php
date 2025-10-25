@@ -12,6 +12,8 @@ use FFMpeg\FFProbe\DataMapping\Stream;
  */
 class ConcatPrepare extends AbstractAction
 {
+    const PREPARE_QP = 18;
+
     protected string $filenameAffix = 'prepare';
     protected string $filenameSuffix = 'mkv';
 
@@ -36,13 +38,13 @@ class ConcatPrepare extends AbstractAction
         
         if (strpos($this->codecMapper->currentVideoCodec, 'nvenc') !== false) {
             $this->codecMapper->forceCodec('hevc_nvenc', 'flac');
-            $this->codecMapper->forceQp(10);
+            $this->codecMapper->forceQp(self::PREPARE_QP);
             $this->format->setAccelerationFramework(Format::ACCEL_CUDA);
         }
         
         if (strpos($this->codecMapper->currentVideoCodec, 'vaapi') !== false) {
             $this->codecMapper->forceCodec('hevc_vaapi', 'flac');
-            $this->codecMapper->forceQp(10);
+            $this->codecMapper->forceQp(self::PREPARE_QP);
             $this->format->setAccelerationFramework(Format::ACCEL_VAAPI);
         }
 
