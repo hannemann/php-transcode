@@ -57,4 +57,10 @@ RUN chmod +x /usr/local/bin/start-container
 
 EXPOSE 8000
 
+RUN mkdir -p /root/.cache
+RUN chgrp sail /root
+RUN chgrp sail /root/.cache
+RUN chmod g+x /root/
+RUN chmod g+w /root/.cache
+
 ENTRYPOINT ["start-container"]
