@@ -89,10 +89,13 @@ class VideoEditor extends Slim {
 
     updateFrameUrl() {
         if (this.aspectDecimal) {
-            const width = this.video.height * this.aspectDecimal;
+            const filterGraph = document.querySelector('ffmpeg-transcoder').shadowRoot.querySelector('transcode-configurator').filterGraph;
+            const scaleFilter = filterGraph.find((f) => f.filterType === 'scale');
+            const height = scaleFilter ? parseInt(scaleFilter.height) : this.video.height;
+            const width = height * this.aspectDecimal;
             this.frameUrl = `${
                 this.baseUrl
-            }${this.timestamp()}&width=${width}&height=${this.video.height}&filtered=1`;
+            }${this.timestamp()}&width=${width}&height=${height}&filtered=1`;
         } else {
             this.frameUrl = `${this.baseUrl}${this.timestamp()}&filtered=1`;
         }

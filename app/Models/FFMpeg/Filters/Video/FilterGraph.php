@@ -24,6 +24,10 @@ class FilterGraph
 
     private ?Collection $filters = null;
 
+    private int $width = 0;
+
+    private int $height = 0;
+
     public function __construct(string $disk, string $path)
     {
         $this->disk = $disk;
@@ -39,6 +43,8 @@ class FilterGraph
             switch ($setting['filterType']) {
                 case self::FILTER_TYPE_SCALE:
                     $this->filters->push($this->getScaleFilter($setting));
+                    $this->width = $setting['width'];
+                    $this->height = $setting['height'];
                     break;
                 case self::FILTER_TYPE_DEINTERLACE:
                     $this->filters->push($this->getDeinterlaceFilter($setting));
@@ -89,8 +95,11 @@ class FilterGraph
 
     private function getRemoveLogoFilter(array $settings): string
     {
+        $width = $this->width ? $this->width : $settings['w'];
+        $height = $this->height ? $this->height : $settings['h'];
+
         return RemovelogoCPU::getFilterString(
-            RemovelogoCPU::getBitMap($this->disk, $this->path, $settings['timestamp'], $settings['w'], $settings['h'], $this->filters->join(','))
+            RemovelogoCPU::getBitMap($this->disk, $this->path, $settings['timestamp'], $width, $height, $this->filters->join(','))
         );
     }
 }
