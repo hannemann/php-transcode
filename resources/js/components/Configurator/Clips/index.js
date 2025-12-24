@@ -13,7 +13,6 @@ class Clips extends Slim {
     constructor() {
         super();
         this.clips = [this.newClip()];
-        //this.clips = [this.newClip(), this.newClip(), this.newClip(), this.newClip()]
         this.valid = true;
         this.bindListener();
         this.mode = "clips";
@@ -22,16 +21,11 @@ class Clips extends Slim {
 
     connectedCallback() {
         this.initWebsocket();
-        requestAnimationFrame(() => {
-            this.removeAllClips();
-            sortable(this.clipsContainer);
-            Iconify.scan(this.shadowRoot);
-        });
+        requestAnimationFrame(() => sortable(this.clipsContainer));            
     }
 
     disconnectedCallback() {
         this.leaveWebsocket();
-        this.removeAllClips();
     }
 
     removeAllClips() {
@@ -85,8 +79,10 @@ class Clips extends Slim {
 
     handleClipsEvent(ws) {
         if (ws.clips.length) {
+            this.removeAllClips();
             this.clips = [];
             ws.clips.forEach((c) => this.createClip(c.from, c.to));
+            Iconify.scan(this.shadowRoot);
             this.update();
         }
     }
@@ -289,7 +285,7 @@ class Clips extends Slim {
     }
 
     get clipsContainer() {
-        return this.shadowRoot.querySelector('div.clips')
+        return this.shadowRoot?.querySelector('div.clips')
     }
 }
 

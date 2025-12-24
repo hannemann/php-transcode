@@ -24,6 +24,9 @@ class Filter extends Slim {
                 return `replace borders${this.filterData.mirror ? ' (mirrored)' : ''}`;
             }
         }
+        if (this.filterData.filterType === 'scale') {
+            return `${this.filterData.width} x ${this.filterData.height}`
+        }
         return '';
     }
 }
