@@ -6,10 +6,6 @@ class Filter extends Slim {
 
     constructor() {
         super();
-        this.bindListener();
-    }
-
-    bindListener() {
         this.handleDelete = this.handleDelete.bind(this);
     }
 
@@ -17,10 +13,9 @@ class Filter extends Slim {
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot));
     }
 
-    handleDelete(e) {
+    async handleDelete(e) {
         this.configurator.filterGraph.splice(parseInt(this.dataset.id), 1);
-        this.configurator.saveSettings();
-        Utils.forceUpdate(this.configurator);
+        await this.configurator.saveSettings();
     }
 
     get description() {

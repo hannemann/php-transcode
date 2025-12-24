@@ -11,13 +11,18 @@ main h2 {
     font-size: 1rem;
     user-select: none;
 }
-section {
+section, .sortable-placeholder {
     background-color: var(--clr-bg-150);
     border-radius: .5rem;
     padding: .5rem;
     margin: .35rem 0;
     font-size: --var(--font-size-50);
     flex-grow: 1;
+
+    &.sortable-placeholder {
+        opacity: .5;
+        min-height: 1.2rem;
+    }
 }
 section:last-child {
     margin-bottom: 0;

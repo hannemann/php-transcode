@@ -247,8 +247,11 @@ class TranscodeConfigurator extends Slim {
         console.info("Stream configured: ", e.detail.item.transcodeConfig);
     }
 
-    saveSettings() {
-        Request.post(
+    async saveSettings() {
+
+        const config = this.config;
+
+        await Request.post(
             `/settings/${encodeURIComponent(this.item.path)}`,
             this.config
         );
@@ -385,7 +388,7 @@ ${CSS}
             <section>
                 <transcode-configurator-format *if="{{ this.format }}" .format="{{ this.format }}" #ref="formatNode"></transcode-configurator-format>
                 <transcode-configurator-streams *if="{{ this.streams }}" .items="{{ this.streams }}"></transcode-configurator-streams>
-                <transcode-configurator-filter-graph *if="{{ this.filterGraph.length }}" .filters="{{ this.filterGraph }}" .configurator="{{ this }}"></transcode-configurator-filter-graph>
+                <transcode-configurator-filter-graph *if="{{ this.filterGraph.length }}" .configurator="{{ this }}"></transcode-configurator-filter-graph>
             </section>
             <transcode-configurator-clips *if="{{ this.format }}" .path="{{ this.item.path }}" .video-duration="{{ this.format.duration }}"></transcode-configurator-clips>
         </div>

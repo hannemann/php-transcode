@@ -16,6 +16,7 @@ class Scale extends Slim {
         };
         this.handleWidth = this.handleWidth.bind(this);
         this.handleHeight = this.handleHeight.bind(this);
+        this.handleSize = this.handleSize.bind(this);
         this.handleAspectRatio = this.handleAspectRatio.bind(this);
     }
 
@@ -38,8 +39,8 @@ class Scale extends Slim {
     }
 
     calculateWidth() {
-        const ratio = this.scale.aspectRatio.split(":");
-        this.scale.width = (this.scale.height / ratio[1]) * ratio[0];
+        const [rWidth, rHeight] = this.scale.aspectRatio.split(':');
+        this.scale.width = this.scale.height / rHeight * rWidth;
         requestAnimationFrame(() => Utils.forceUpdate(this, "scale"));
     }
 
@@ -49,6 +50,12 @@ class Scale extends Slim {
 
     handleHeight(e) {
         this.setHeight(e.currentTarget.value);
+    }
+
+    handleSize(e) {
+        const [rWidth, rHeight] = this.scale.aspectRatio.split(':');
+        this.scale.height = parseInt(e.currentTarget.dataset.height);
+        this.scale.width = this.scale.height / rHeight * rWidth;
     }
 
     handleAspectRatio(e) {
@@ -71,6 +78,11 @@ Scale.template = /*html*/ `
         flex-direction: column;
         gap: .5rem;
         border-radius: 0.25rem;
+
+        div.flex-h {
+            display: flex;
+            gap: .5rem;
+        }
     }
     legend {
         background: var(--clr-bg-0);
@@ -90,7 +102,16 @@ Scale.template = /*html*/ `
     }
 </style>
 <fieldset>
-    <legend>Dimensions:</legend>
+    <legend>Standard:</legend>
+    <div class="flex-h">
+        <theme-button data-height="1080" @click="{{ this.handleSize }}">1080p</theme-button>
+        <theme-button data-height="720" @click="{{ this.handleSize }}">720p</theme-button>
+        <theme-button data-height="576" @click="{{ this.handleSize }}">576p</theme-button>
+        <theme-button data-height="480" @click="{{ this.handleSize }}">480p</theme-button>
+    </div>
+</fieldset>
+<fieldset>
+    <legend>Custom:</legend>
     <label>
         <span>Width:</span><input type="number" value="{{ this.scale.width }}" placeholder="Width" @input="{{ this.handleWidth }}">
     </label>

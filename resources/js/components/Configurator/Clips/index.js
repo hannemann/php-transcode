@@ -6,16 +6,6 @@ import sortable from "html5sortable/dist/html5sortable.es";
 import { Request } from "@/components/Request";
 import { Time } from "../../../Helper/Time";
 
-const dataFactory = function* () {
-    let id = 0;
-    while (true) {
-        // yield {from: `0:0:${id}.0`, to: null, id: id++}
-        yield { from: null, to: null, id: id++ };
-    }
-};
-
-const getClipInitData = (factory) => factory.next().value;
-
 const WS_CHANNEL = "Transcode.Clips";
 
 class Clips extends Slim {
@@ -30,16 +20,31 @@ class Clips extends Slim {
         this.totalDuration = Time.fromSeconds(this.videoDuration);
     }
 
-    onAdded() {
+    connectedCallback() {
         this.initWebsocket();
         requestAnimationFrame(() => {
-            sortable(this.sortable);
+            this.removeAllClips();
+            sortable(this.clipsContainer);
             Iconify.scan(this.shadowRoot);
         });
     }
 
-    onRemoved() {
+    disconnectedCallback() {
         this.leaveWebsocket();
+        this.removeAllClips();
+    }
+
+    removeAllClips() {
+        [...this.clipsContainer.childNodes].forEach(this.removeClip);
+    }
+
+    removeClip(clip) {
+        clip.removeEventListener('updateclip', this);
+        clip.removeEventListener('clipinsert', this);
+        clip.removeEventListener('clipremove', this);
+        clip.removeEventListener('clipfocus', this);
+        clip.removeEventListener('clipblur', this);
+        clip.remove();
     }
 
     initWebsocket() {
@@ -75,18 +80,57 @@ class Clips extends Slim {
     }
 
     newClip() {
-        if (!this.dataFactory) {
-            this.dataFactory = dataFactory();
-        }
-        return getClipInitData(this.dataFactory);
+        return { from: null, to: null, id: (this.clips?.length || 0) + 1 };
     }
 
     handleClipsEvent(ws) {
         if (ws.clips.length) {
             this.clips = [];
-            ws.clips.forEach((c) => this.addClip(c.from, c.to));
+            ws.clips.forEach((c) => this.createClip(c.from, c.to));
             this.update();
         }
+    }
+
+    handleEvent(e) {
+        switch (e.type) {
+            case 'updateclip':
+                this.handleUpdate(e);
+                break;
+            case 'clipinsert':
+                this.handleAdd(e);
+                break;
+            case 'clipremove':
+                this.handleRemove(e);
+                break;
+            case 'clipfocus':
+                this.handleFocus(e);
+                break;
+            case 'clipblur':
+                this.handleBlur(e);
+                break;
+        }
+    }
+
+    createClip(from, to) {
+        const clipData = this.newClip();
+        clipData.from = from;
+        clipData.to = to;
+        const clip = document.createElement('transcode-configurator-clip');
+        clip.dataset.id = clipData.id;
+        clip.canRemove = this.clips.length > 1
+        // clip.isLast = this.clips.indexOf(clipData) === this.clips.length - 1;
+        clip.clipData = {...clipData};
+        clip.from = clipData.from;
+        clip.to = clipData.to;
+        this.clips.push(clipData);
+        clip.cutpoint = this.getCutpoint(clipData);
+        this.clipsContainer.append(clip);
+        clip.addEventListener('updateclip', this);
+        clip.addEventListener('clipinsert', this);
+        clip.addEventListener('clipremove', this);
+        clip.addEventListener('clipfocus', this);
+        clip.addEventListener('clipblur', this);
+        return clip;
     }
 
     addClip(from, to) {
@@ -107,22 +151,24 @@ class Clips extends Slim {
 
     async handleAdd(e) {
         const idx = this.clips.findIndex((c) => c.id === e.detail.id);
-        let clip = this.newClip();
-        this.clips.splice(idx + 1, 0, clip);
+        const clip = this.createClip('0:0:0.0', '0:0:0.0');
+        this.clips.pop();
+        this.clipsContainer.insertBefore(clip, this.clipsContainer.childNodes[idx + 1]);
+        this.clips.splice(idx + 1, 0, clip.clipData);
         await this.update();
-        this.sortable
-            .querySelector(`[data-clip="${clip.id}"]`)
-            .inputFrom.focus();
+        clip.inputFrom.focus();
     }
 
     async handleRemove(e) {
         if (this.clips.length > 1) {
+            const clip = this.clipsContainer.querySelector(`[data-id="${e.detail.id}"]`);
+            clip.remove();
             const idx = this.clips.findIndex((c) => c.id === e.detail.id);
             const focus = Math.max(0, idx - 1);
             this.clips.splice(idx, 1);
             await this.update();
-            this.sortable
-                .querySelector(`[data-clip="${this.clips[focus].id}"]`)
+            this.clipsContainer
+                .querySelector(`[data-id="${this.clips[focus].id}"]`)
                 .inputFrom.focus();
         }
     }
@@ -138,27 +184,30 @@ class Clips extends Slim {
         return new Promise((resolve) => {
             Utils.forceUpdate(this, "clips");
             requestAnimationFrame(() => {
-                sortable(this.sortable, "reload");
+                sortable(this.clipsContainer, "reload");
                 this.shadowRoot
                     .querySelectorAll("transcode-configurator-clip")
                     .forEach((c, i) => (c.clipData = this.clips[i]));
                 this.calculateTotalDuration();
                 document.dispatchEvent(new CustomEvent("clips-updated"));
+                const children = [...this.clipsContainer.childNodes];
+                children.forEach(c => c.isLast = false);
+                children.pop().isLast = true;
                 resolve();
             });
         });
     }
 
     handleFocus() {
-        sortable(this.sortable, "disable");
+        sortable(this.clipsContainer, "disable");
     }
 
     handleBlur() {
-        sortable(this.sortable, "enable");
+        sortable(this.clipsContainer, "enable");
     }
 
     getCutpoint(clip) {
-        if (this.clips.length > 1) {
+        if (this.clips.length > 0) {
             const cutpoint = this.clips
                 .filter((c) => c.id <= clip.id)
                 .reverse()
@@ -238,6 +287,10 @@ class Clips extends Slim {
             }, [])
             .join("\n");
     }
+
+    get clipsContainer() {
+        return this.shadowRoot.querySelector('div.clips')
+    }
 }
 
 Clips.template = /*html*/ `
@@ -283,19 +336,6 @@ ${CARD_CSS}
         <textarea #ref="copyarea"></textarea>
     </div>
     <div class="clips" #ref="sortable" @sortupdate="{{ this.handleSortupdate }}">
-        <transcode-configurator-clip
-            data-clip="{{ item.id }}"
-            *foreach="{{ this.clips }}"
-            .can-remove="{{ this.clips.length > 1 }}"
-            .is-last="{{ this.clips.indexOf(item) === this.clips.length - 1 }}"
-            @updateclip="{{ this.handleUpdate }}"
-            @clipinsert="{{ this.handleAdd }}"
-            @clipremove="{{ this.handleRemove }}"
-            @clipfocus="{{ this.handleFocus }}"
-            @clipblur="{{ this.handleBlur }}"
-            .clip-data="{{ item }}"
-            .cutpoint="{{ this.getCutpoint(item) }}">
-        </transcode-configurator-clip>
     </div>
     <div class="duration">
         <h2>Duration:</h2> <span>{{ this.totalDuration }}</span>
