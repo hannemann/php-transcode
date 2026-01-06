@@ -1,5 +1,6 @@
 import { Slim, Iconify } from "@/components/lib";
 import { Time } from '../../../../Helper/Time';
+import { handleKeyDown, handleKeyUp } from "./mixins/handleKey";
 
 const THUMBNAIL_HEIGHT = 30;
 
@@ -9,10 +10,13 @@ class VideoEditor extends Slim {
 
     constructor() {
         super();
+        this.raw = [];
         this.bindListeners();
     }
 
     bindListeners() {
+        this.handleKeyDown = handleKeyDown.bind(this);
+        this.handleKeyUp = handleKeyUp.bind(this);
         this.toggleAspect = this.toggleAspect.bind(this);
         this.handleIndicatorClick = this.handleIndicatorClick.bind(this);
         this.setCurrentPosByMarker = this.setCurrentPosByMarker.bind(this);
@@ -144,6 +148,17 @@ class VideoEditor extends Slim {
         return markers
     }
 
+    handleNavDown(e) {
+        this.pInterval = setInterval(() => this.handleKeyDown(e), 50);
+    }
+
+    handleNavUp() {
+        this.handleKeyUp();
+        if (!this.pInterval) return;
+        clearInterval(this.pInterval);
+        delete this.pInterval;
+    }
+
     get baseUrl() {
         return `/image/${encodeURIComponent(this.path)}?timestamp=`;
     }
@@ -201,7 +216,30 @@ export const EDITOR_CSS = /*html*/ `
     }
     .status {
         grid-area: status;
-        text-align: center;
+        display: grid;
+        grid-auto-flow: column;
+        grid-template-columns: repeat(3, 1fr);
+        width: 100%;
+        max-width: 100rem;
+        justify-self: center;
+
+        div {
+            justify-self: start;
+
+            &.time {
+                justify-self: center;
+            }
+        }
+
+        div:has(.nav) {
+            justify-self: end;
+            display: flex;
+            gap: .5rem;
+            .nav {
+                cursor: pointer;
+                user-select: none;
+            }
+        }
     }
     .indicator {
         grid-area: thumbnails;
@@ -271,7 +309,22 @@ export const EDITOR_TEMPLATE = /*html*/ `
 <img class="frame" src="{{ this.frameUrl }}" #ref="image">
 <theme-button class="toggle-aspect" @click="{{ this.toggleAspect }}">{{ this.aspect }}</theme-button>
 <div class="status">
-    {{ this.currentTimestamp }} / {{ this.displayDuration }}
+    <div></div>
+    <div class="time">{{ this.currentTimestamp }} / {{ this.displayDuration }}</div>
+    <div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowLeft'}) }}" @pointerup="{{ this.handleNavUp() }}"">-1f</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowRight'}) }}" @pointerup="{{ this.handleNavUp() }}"" @pointerup="{{ this.handleNavUp() }}">+1f</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', shiftKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}"">-2s</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowRight', shiftKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}"">+2s</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', ctrlKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}"">-5s</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowRight', ctrlKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}"">+5s</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowDown'}) }}" @pointerup="{{ this.handleNavUp() }}"">-1m</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowUp'}) }}" @pointerup="{{ this.handleNavUp() }}"">+1m</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowDown', shiftKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}"">-5m</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowUp', shiftKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}"">+5m</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowDown', ctrlKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}"">-10m</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowUp', ctrlKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}"">+10m</div>
+    </div>
 </div>
 <div class="indicator" #ref="indicator" @click="{{ this.handleIndicatorClick }}">
     <div class="current" #ref="indicatorCurrent" style="{{ this.indicatorPos }}"></div>

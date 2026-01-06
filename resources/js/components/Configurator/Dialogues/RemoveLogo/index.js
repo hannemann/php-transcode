@@ -1,5 +1,5 @@
 import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
-import { handleKeyDown, handleKeyUp, rwd, ffwd } from "../VideoEditor/mixins/handleKey";
+import { handleKeyDown, handleKeyUp } from "../VideoEditor/mixins/handleKey";
 import Painterro from 'painterro';
 import { Request } from "../../../Request";
 
@@ -19,8 +19,6 @@ class RemoveLogo extends VideoEditor {
         this.paint = this.paint.bind(this);
         this.handleSaveImage = this.handleSaveImage.bind(this);
         this.initRemovelogo = this.initRemovelogo.bind(this);
-        this.rwd = rwd.bind(this);
-        this.ffwd = ffwd.bind(this);
         this.handleKeyDown = handleKeyDown.bind(this);
         this.handleKeyUp = handleKeyUp.bind(this);
     }

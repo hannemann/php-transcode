@@ -52,17 +52,17 @@ class DeLogo extends VideoEditor {
             ),
         });
     }
-
-    handleIndicatorClick(e) {
+    
+    updateFrameUrl() {
         this.image.addEventListener(
             "load",
             () => {
-                console.log(this.image.src);
+                if (!this.zoomImage) return;
                 this.zoomImage.src = this.image.src;
             },
             { once: true }
         );
-        super.handleIndicatorClick(e);
+        super.updateFrameUrl();
     }
 
     addDelogoBox(e) {
@@ -78,7 +78,7 @@ class DeLogo extends VideoEditor {
                 this.delogoBox.style.width = `20px`;
                 this.delogoBox.style.height = `20px`;
             }
-            console.log(e, e.offsetX, e.offsetY);
+            //console.log(e, e.offsetX, e.offsetY);
             this.delogoOffsetTop =
                 e.offsetY - Math.round(this.delogoBox.offsetHeight / 2);
             this.delogoOffsetLeft =
@@ -295,7 +295,6 @@ ${EDITOR_TEMPLATE}
         <dd>Adjust position</dd>
     </dl>
 </div>
-<theme-button #ref="runButton" class="run" @click="{{ this.run }}">Start</theme-button>
 `;
 
 customElements.define("dialogue-delogo", DeLogo);

@@ -21,13 +21,13 @@ const arrow = function (e, back) {
     }
     
     if (e.ctrlKey != e.shiftKey) {
-        //console.log('2s/3s', e);
-        this[back ? "rwd" : "ffwd"](e.shiftKey ? 2000 : 5000);
+        //console.log('2s/5s', e);
+        (back ? rwd : ffwd).call(this, e.shiftKey ? 2000 : 5000);
         return;
     }
      
     //console.log('1 Frame', 1000 / this.fps, e);
-    this[back ? "rwd" : "ffwd"](1000 / this.fps);
+    (back ? rwd : ffwd).call(this, 1000 / this.fps);
 };
 
 const jump = function (idx) {
@@ -87,10 +87,7 @@ export const handleKeyUp = function() {
 }
 
 export const handleKey = function (e) {
-    // console.log(this);
-   // if (this.updateTimeout) {
-        clearTimeout(this.updateTimeout);
-   // }
+    clearTimeout(this.updateTimeout);
     let action = false;
     const updateIndex = e.altKey ? this.raw.indexOf(this.current) : -1;
     switch (e.key) {
@@ -103,11 +100,11 @@ export const handleKey = function (e) {
             action = true;
             break;
         case "ArrowUp":
-            this.ffwd(e.shiftKey ? 300000 : e.ctrlKey ? 600000 : 60000);
+            ffwd.call(this, e.shiftKey ? 300000 : e.ctrlKey ? 600000 : 60000);
             action = true;
             break;
         case "ArrowDown":
-            this.rwd(e.shiftKey ? 300000 : e.ctrlKey ? 600000 : 60000);
+            rwd.call(this, e.shiftKey ? 300000 : e.ctrlKey ? 600000 : 60000);
             action = true;
             break;
         case "+":
@@ -121,18 +118,19 @@ export const handleKey = function (e) {
         }
     }
     if (action) {
-        e.preventDefault();
-        e.stopPropagation();
-        //this.updateTimeout = setTimeout(update.bind(this, updateIndex), 150);
+        if (e instanceof KeyboardEvent) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         update.call(this, updateIndex);
     }
 };
 
-export const rwd = function (seconds) {
+const rwd = function (seconds) {
     this.current = Math.max(this.start * 1000, this.current - seconds);
 };
 
-export const ffwd = function (seconds) {
+const ffwd = function (seconds) {
     this.current = Math.min(
         this.duration - 1000 / this.fps,
         this.current + seconds
