@@ -10,13 +10,11 @@ class Cropper extends VideoEditor {
         this.video = null;
         this.aspectDecimal = 0;
         this.zoomed = 0;
-        this.startCrop = false;
         this.valid = true;
     }
 
     bindListeners() {
         super.bindListeners();
-        this.run = this.run.bind(this);
         this.initCrop = this.initCrop.bind(this);
         this.handleKey = this.handleKey.bind(this);
         this.handleClick = this.handleClick.bind(this);
@@ -30,7 +28,6 @@ class Cropper extends VideoEditor {
             this.image.addEventListener("load", this.initCrop, {
                 once: true,
             });
-            this.runButton.disabled = true;
             this.current = parseInt(this.duration / 2, 10) ?? 0;
             this.initImages();
             this.width = parseInt(this.video.width, 10);
@@ -72,6 +69,7 @@ class Cropper extends VideoEditor {
             (this.cropOffsetBottom - this.cropOffsetTop) % 16 !== 0
         );
         this.validateDimensions();
+        this.dispatchEvent(new CustomEvent('cropper-updated'));
     }
 
     validateDimensions() {
@@ -83,7 +81,6 @@ class Cropper extends VideoEditor {
             this.replaceBlackBorders ||
             this.aspectRatio === "custom" ||
             (croppedHeight <= this.height && croppedWidth <= padWidth);
-        this.runButton.disabled = !this.valid;
         if (this.aspectRatio === "custom") {
             this.inputHeight.value = this.cropOffsetBottom - this.cropOffsetTop;
         }
@@ -256,7 +253,6 @@ class Cropper extends VideoEditor {
     }
 
     handleClick(e) {
-        console.log(e);
         requestAnimationFrame(() => {
             const imageRect = this.cropImage.getBoundingClientRect();
             if (this.zoomed === 1) {
@@ -268,11 +264,6 @@ class Cropper extends VideoEditor {
             }
             this.updateCropBox();
         });
-    }
-
-    run() {
-        this.startCrop = true;
-        this.parentNode.confirmAction();
     }
 
     get aspectRatio() {
@@ -292,6 +283,22 @@ class Cropper extends VideoEditor {
                 `[name="input-aspect"][value="custom"]`
             ).checked = true;
         }
+    }
+
+    get mirror() {
+        return this.inputMirror.checked;
+    }
+
+    set mirror(value) {
+        this.inputMirror.checked = !!value;
+    }
+
+    get replaceBlackBorders() {
+        return this.inputReplaceBlackBorders.checked;
+    }
+
+    set replaceBlackBorders(value) {
+        this.inputReplaceBlackBorders.checked = !!value;
     }
 
     get width() {
@@ -355,6 +362,11 @@ class Cropper extends VideoEditor {
         if (typeof crop.cx !== "undefined" && typeof crop.cw !== "undefined") {
             this.cropOffsetRight = crop.cx + crop.cw;
         }
+    }
+
+    applyFilterData(data) {
+        this.crop = data;
+        this.updateCropBox();
     }
 }
 
@@ -521,7 +533,6 @@ ${EDITOR_TEMPLATE}
         <span class="iconify" data-icon="mdi-alert-outline"></span>
     </div>
 </div>
-<theme-button #ref="runButton" class="run" @click="{{ this.run }}">Start</theme-button>
 `;
 
 customElements.define("dialogue-cropper", Cropper);

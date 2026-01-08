@@ -1,4 +1,3 @@
-import { Request } from "@/components/Request";
 import { TYPE_VIDEO } from "../Streams";
 
 export const requestRemovelogo = async function (type) {
@@ -26,32 +25,25 @@ export const requestRemovelogo = async function (type) {
             d.removeLogo.type
         );
         this.removeLogo = d.removeLogo;
-        if (this.startRemoveLogo) {
-            await Request.post(
-                `/removelogo/${encodeURIComponent(this.item.path)}`,
-                d.removeLogo
-            );
-        } else {
-            const filterData = {...this.removeLogo, ...{filterType: 'removeLogo'}};
-            const idx = this.filterGraph.findIndex(f => f.filterType === 'removeLogo');
-            if (idx > -1) {
-                const m = document.createElement("modal-confirm");
-                m.header = "Replace existing filter?";
-                m.content = "RemoveLogo filter can only be applied once.";
-                document.body.appendChild(m);
-                try {
-                    await m.confirm();
-                    this.filterGraph[idx] = filterData;
-                    console.log("Replace removeLogo filter confirmed");
-                } catch (error) {
-                    console.log("Replace removeLogo filter canceled");
-                    return;
-                }
-            } else {
-                this.filterGraph.push(filterData);
+        const filterData = {...this.removeLogo, ...{filterType: 'removeLogo'}};
+        const idx = this.filterGraph.findIndex(f => f.filterType === 'removeLogo');
+        if (idx > -1) {
+            const m = document.createElement("modal-confirm");
+            m.header = "Replace existing filter?";
+            m.content = "RemoveLogo filter can only be applied once.";
+            document.body.appendChild(m);
+            try {
+                await m.confirm();
+                this.filterGraph[idx] = filterData;
+                console.log("Replace removeLogo filter confirmed");
+            } catch (error) {
+                console.log("Replace removeLogo filter canceled");
+                return;
             }
-            this.saveSettings();
+        } else {
+            this.filterGraph.push(filterData);
         }
+        this.saveSettings();
     } catch (error) {
         if (error) {
             console.error(error);

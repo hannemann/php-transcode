@@ -2,7 +2,6 @@ import { Slim, Utils } from '@/components/lib';
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css'
 import CARD_CSS from '../CardCss';
 import { requestScale } from "../Tools/scale.js";
-import { requestConcat } from "../Tools/concat.js";
 import { requestCrop } from "../Tools/crop.js";
 import { requestDelogo } from "../Tools/delogo.js";
 import { requestRemovelogo } from "../Tools/removelogo.js";
@@ -24,6 +23,10 @@ class Filter extends Slim {
             case 'delogo':
                 requestDelogo.call(this.configurator, 'cpu', parseInt(this.dataset.id), this.filterData);
                 break;
+            case 'crop':
+                requestCrop.call(this.configurator, 'cpu', parseInt(this.dataset.id), this.filterData);
+                break;
+
         }
     }
 

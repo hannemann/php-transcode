@@ -15,7 +15,6 @@ class RemoveLogo extends VideoEditor {
 
     bindListeners() {
         super.bindListeners();
-        this.run = this.run.bind(this);
         this.paint = this.paint.bind(this);
         this.handleSaveImage = this.handleSaveImage.bind(this);
         this.initRemovelogo = this.initRemovelogo.bind(this);
@@ -39,11 +38,6 @@ class RemoveLogo extends VideoEditor {
     onRemoved() {
         document.removeEventListener("keydown", this.handleKeyDown);
         document.removeEventListener("keyup", this.handleKeyUp);
-    }
-
-    run() {
-        this.startRemoveLogo = true;
-        this.parentNode.confirmAction();
     }
 
     paint() {
@@ -160,9 +154,7 @@ ${EDITOR_TEMPLATE}
         Find a black frame containing only the logo
     </p>
 </div>
-<!-- TODO: Create logomask without running action -->
 <div class="actions">
-    <theme-button #ref="runButton" class="run" @click="{{ this.run }}">Start</theme-button>
     <theme-button #ref="paintButton" class="paint-button" @click="{{ this.paint }}">Paint</theme-button>
 </div>
 `;

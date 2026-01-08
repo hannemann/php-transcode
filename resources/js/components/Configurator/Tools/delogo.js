@@ -1,4 +1,3 @@
-import { Request } from "@/components/Request";
 import { TYPE_VIDEO } from "../Streams";
 
 export const requestDelogo = async function (type, id = null, data = null) {
@@ -34,20 +33,16 @@ export const requestDelogo = async function (type, id = null, data = null) {
             this.delogo.between.to?.toString() || 'n/a',
             type
         );
-        if (this.startDelogo) {
-            await Request.post(`/delogo/${encodeURIComponent(this.item.path)}`, this.delogo);
+        const filterData = {
+            filterType: 'delogo',
+            ...this.delogo
+        };
+        if (id !== null && data) {
+            this.filterGraph[id] = filterData;
         } else {
-            const filterData = {
-                filterType: 'delogo',
-                ...this.delogo
-            };
-            if (id !== null && data) {
-                this.filterGraph[id] = filterData;
-            } else {
-                this.filterGraph.push(filterData);
-            }
-            this.saveSettings();
+            this.filterGraph.push(filterData);
         }
+        this.saveSettings();
     } catch (error) {
         if (error) {
             console.error(error);

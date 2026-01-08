@@ -1,7 +1,6 @@
-import { Request } from "@/components/Request";
 import { TYPE_VIDEO } from "../Streams";
 
-export const requestCrop = async function (type) {
+export const requestCrop = async function (type, id = null, data = null) {
     try {
         const m = document.createElement("modal-window");
         m.header = "Cropper";
@@ -20,6 +19,18 @@ export const requestCrop = async function (type) {
         d.type = type;
         d.markers = this.clips;
         m.appendChild(d);
+        requestAnimationFrame(() => {
+            d.mirror = false;
+            d.replaceBlackBorders = true;
+            if (id !== null && data) {
+                d.mirror = data.mirror;
+                d.replaceBlackBorders = data.replaceBlackBorders;
+                d.mirror = data.mirror;
+                d.addEventListener('cropper-updated', () => {
+                    d.applyFilterData(data);
+                }, {once: true});
+            }
+        });
         document.body.insertBefore(m, document.querySelector('transcoder-toast'));
         await m.open();
         console.info(
@@ -33,16 +44,13 @@ export const requestCrop = async function (type) {
             d.crop.aspect
         );
         this.crop = d.crop;
-        if (d.startCrop) {
-            await Request.post(
-                `/crop/${encodeURIComponent(this.item.path)}`,
-                d.crop
-            );
+        const filterData = {...d.crop, ...{filterType: 'crop'}};
+        if (id !== null && data) {
+            this.filterGraph[id] = filterData;
         } else {
-            const filterData = {...d.crop, ...{filterType: 'crop'}};
             this.filterGraph.push(filterData);
-            this.saveSettings();
         }
+        this.saveSettings();
     } catch (error) {
         if (error) {
             console.error(error);
