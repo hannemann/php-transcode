@@ -1,7 +1,7 @@
 import { Request } from "@/components/Request";
 import { TYPE_VIDEO } from "../Streams";
 
-export const requestDelogo = async function (type) {
+export const requestDelogo = async function (type, id = null, data = null) {
     try {
         const m = document.createElement("modal-window");
         m.header = "Delogo";
@@ -15,36 +15,34 @@ export const requestDelogo = async function (type) {
         d.type = type;
         d.markers = this.clips;
         m.appendChild(d);
+        if (id !== null && data) {
+            d.addEventListener('delogo-updated', () => {
+                d.applyFilterData(data);
+            }, {once: true});
+        }
         document.body.insertBefore(m, document.querySelector('transcoder-toast'));
         await m.open();
-        this.delogo = {...d.coords, ...[type]};
+        this.delogo = {...d.coords, ...[type], between: d.between};
         console.info(
-            "Delogo video file %s. x: %d, x: %d, w: %d, h: %d, type: %s",
+            "Delogo video file %s. x: %d, x: %d, w: %d, h: %d, from: %s, to: %s, type: %s",
             this.item.path,
             this.delogo.x,
             this.delogo.y,
             this.delogo.w,
             this.delogo.h,
+            this.delogo.between.from?.toString() || 'n/a',
+            this.delogo.between.to?.toString() || 'n/a',
             type
         );
         if (this.startDelogo) {
             await Request.post(`/delogo/${encodeURIComponent(this.item.path)}`, this.delogo);
         } else {
-            const filterData = {...this.delogo, ...{filterType: 'delogo'}}
-            const idx = this.filterGraph.findIndex(f => f.filterType === 'delogo');
-            if (idx > -1) {
-                const m = document.createElement("modal-confirm");
-                m.header = "Replace existing filter?";
-                m.content = "Delogo filter can only be applied once.";
-                document.body.appendChild(m);
-                try {
-                    await m.confirm();
-                    this.filterGraph[idx] = filterData;
-                    console.log("Replace delogo filter confirmed");
-                } catch (error) {
-                    console.log("Replace delogo filter canceled");
-                    return;
-                }
+            const filterData = {
+                filterType: 'delogo',
+                ...this.delogo
+            };
+            if (id !== null && data) {
+                this.filterGraph[id] = filterData;
             } else {
                 this.filterGraph.push(filterData);
             }

@@ -23,7 +23,7 @@ class Image
         $filters = collect([]);
 
         if ($filtered) {
-            $filterGraph = (string)new FilterGraph($disk, $path);
+            $filterGraph = (string)new FilterGraph($disk, $path, $timestamp);
             if ($filterGraph) {
                 $filters->push((string)$filterGraph);
             }

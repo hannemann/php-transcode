@@ -19,6 +19,7 @@ class FilterGraph
 
     private string $disk;
     private string $path;
+    private ?string $timestamp;
 
     private ?Collection $graph = null;
 
@@ -28,10 +29,11 @@ class FilterGraph
 
     private int $height = 0;
 
-    public function __construct(string $disk, string $path)
+    public function __construct(string $disk, string $path, ?string $timestamp = null)
     {
         $this->disk = $disk;
         $this->path = $path;
+        $this->timestamp = $timestamp;
         $this->filters = collect([]);
     }
 
@@ -90,7 +92,7 @@ class FilterGraph
 
     private function getDelogoFilter(array $settings): string
     {
-        return DelogoCPU::getFilterString($settings);
+        return DelogoCPU::getFilterString($settings, $this->timestamp);
     }
 
     private function getRemoveLogoFilter(array $settings): string

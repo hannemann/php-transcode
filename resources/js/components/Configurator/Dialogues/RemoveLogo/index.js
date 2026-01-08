@@ -55,6 +55,10 @@ class RemoveLogo extends VideoEditor {
         this.painterro = Painterro({
             id: 'paint',
             activeColor: '#000000',
+            activeFillColor: '#000000',
+            defaultLineWidth: 150,
+            defaultTool: 'brush',
+            language: 'de',
             onClose: () => {
                 document.body.removeChild(this.paintArea)
             },

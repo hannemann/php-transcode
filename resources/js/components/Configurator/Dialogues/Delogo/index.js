@@ -1,4 +1,6 @@
 import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
+import { Utils } from "@/components/lib";
+import { Time } from "../../../../Helper/Time";
 
 class DeLogo extends VideoEditor {
     constructor() {
@@ -11,10 +13,12 @@ class DeLogo extends VideoEditor {
 
     bindListeners() {
         super.bindListeners();
-        this.run = this.run.bind(this);
         this.initDelogo = this.initDelogo.bind(this);
         this.addDelogoBox = this.addDelogoBox.bind(this);
         this.handleKey = this.handleKey.bind(this);
+        this.setBetweenFrom = this.setBetweenFrom.bind(this);
+        this.setBetweenTo = this.setBetweenTo.bind(this);
+        this.resetBetween = this.resetBetween.bind(this);
     }
 
     onAdded() {
@@ -32,15 +36,11 @@ class DeLogo extends VideoEditor {
         document.removeEventListener("keydown", this.handleKey);
     }
 
-    run() {
-        this.startDelogo = true;
-        this.parentNode.confirmAction();
-    }
-
     initDelogo() {
         console.info("Initialize Delogo");
         this.image.addEventListener("click", this.addDelogoBox);
         document.addEventListener("keydown", this.handleKey);
+        this.resetBetween();
         this.zoomImage = this.zoom.appendChild(document.createElement("img"));
         this.zoomImage.src = this.image.src;
         this.addDelogoBox({
@@ -106,9 +106,11 @@ class DeLogo extends VideoEditor {
     }
 
     updateZoom() {
+        const image = this.image.getBoundingClientRect();
+        const ratio = this.video.width / image.width;
         const tr = `translate(
             ${
-                (this.coords.x -
+                (this.coords.x - 
                     this.zoom.offsetWidth / 2 +
                     this.coords.w / 2) *
                 -1
@@ -130,6 +132,7 @@ class DeLogo extends VideoEditor {
         this.displayTop.innerText = `${this.coords.y}px`;
         this.displayWidth.innerText = `${this.coords.w}px`;
         this.displayHeight.innerText = `${this.coords.h}px`;
+        this.dispatchEvent(new CustomEvent('delogo-updated'));
     }
 
     handleKey(e) {
@@ -199,24 +202,54 @@ class DeLogo extends VideoEditor {
         }
     }
 
+    applyFilterData(data) {
+        this.coords = data;
+        this.setBetween(data.between);
+        this.updateZoom();
+        this.current = data.between.from * 1000;
+        this.updateIndicatorPos();
+        this.updateImages();
+    }
+
+    setBetween(between) {
+        this.between = between;
+        Utils.forceUpdate(this);
+    }
+
+    setBetweenFrom() {
+        this.between.from = Time.toSeconds(this.timestamp());
+        Utils.forceUpdate(this);
+    }
+
+    setBetweenTo() {
+        this.between.to = Time.toSeconds(this.timestamp());
+        Utils.forceUpdate(this);
+    }
+    
+    resetBetween() {
+        this.between = {from: null, to: null};
+        Utils.forceUpdate(this);
+    }
+
+    set coords(coord) {
+        const image = this.image.getBoundingClientRect();
+        const ratio = this.video.width / image.width;
+        this.delogoBox.style.top = `${Math.round(coord.y / ratio)}px`;
+        this.delogoBox.style.left = `${Math.round(coord.x / ratio + (Math.round(image.left) - this.offsetLeft))}px`;
+        this.delogoBox.style.height = `${Math.round(coord.h / ratio)}px`;
+        this.delogoBox.style.width = `${Math.round(coord.w / ratio)}px`;
+    }
+
     get coords() {
         if (this.delogoBox) {
             const box = this.delogoBox.getBoundingClientRect();
             const image = this.image.getBoundingClientRect();
+            const ratio = this.video.width / image.width;
             return {
-                x: parseInt(
-                    ((box.left - image.left) * this.video.width) / image.width,
-                    10
-                ),
-                y: parseInt(
-                    ((box.top - image.top) * this.video.height) / image.height,
-                    10
-                ),
-                w: parseInt((box.width * this.video.width) / image.width, 10),
-                h: parseInt(
-                    (box.height * this.video.height) / image.height,
-                    10
-                ),
+                x: Math.round((box.left - Math.round(image.left)) * ratio),
+                y: Math.round((box.top - image.top) * ratio),
+                w: Math.round(box.width * ratio),
+                h: Math.round(box.height * ratio),
             };
         } else {
             return null;
@@ -265,6 +298,17 @@ ${EDITOR_CSS}
         max-width: 250px;
         margin: 0;
     }
+    .between {
+        & > span {
+            display: flex;
+            justify-content: space-between;
+        }
+        div {
+            display: flex;
+            justify-content: end;
+            gap: .5rem;
+        }
+    }
 </style>
 ${EDITOR_TEMPLATE}
 <div class="info">
@@ -294,6 +338,20 @@ ${EDITOR_TEMPLATE}
         </dt>
         <dd>Adjust position</dd>
     </dl>
+    <fieldset class="between">
+        <legend>Between</legend>
+        <span>
+            <span>From:</span><span>{{ this.between.from || 'n/a' }}</span>
+        </span>
+        <span>
+            <span>To:</span><span>{{ this.between.to || 'n/a' }}</span>
+        </span>
+        <div>
+            <theme-button @click="{{ this.setBetweenFrom }}">Start</theme-button>
+            <theme-button @click="{{ this.setBetweenTo }}">End</theme-button>
+            <theme-button @click="{{ this.resetBetween }}">Reset</theme-button>
+        </div>
+    </fieldset>
 </div>
 `;
 
