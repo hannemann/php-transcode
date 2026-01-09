@@ -20,6 +20,7 @@ class FilterGraph
     private string $disk;
     private string $path;
     private ?string $timestamp;
+    private ?int $currentFilter;
 
     private ?Collection $graph = null;
 
@@ -29,11 +30,12 @@ class FilterGraph
 
     private int $height = 0;
 
-    public function __construct(string $disk, string $path, ?string $timestamp = null)
+    public function __construct(string $disk, string $path, ?string $timestamp = null, ?int $currentFilter = null)
     {
         $this->disk = $disk;
         $this->path = $path;
         $this->timestamp = $timestamp;
+        $this->currentFilter = $currentFilter;
         $this->filters = collect([]);
     }
 
@@ -41,7 +43,13 @@ class FilterGraph
     {
 
         $settings = $this->getSettings();
-        $filters = $settings->map(function($setting) {
+        $filters = $settings->filter(function($setting, int $key) {
+            if ($this->currentFilter !== null && $key > $this->currentFilter - 1) {
+                return false;
+            }
+            return true;
+        })->map(function($setting) {
+
             switch ($setting['filterType']) {
                 case self::FILTER_TYPE_SCALE:
                     $this->filters->push($this->getScaleFilter($setting));

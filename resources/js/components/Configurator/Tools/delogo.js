@@ -13,6 +13,7 @@ export const requestDelogo = async function (type, id = null, data = null) {
         d.path = this.item.path;
         d.type = type;
         d.markers = this.clips;
+        d.filterIndex = id;
         m.appendChild(d);
         if (id !== null && data) {
             d.addEventListener('delogo-updated', () => {

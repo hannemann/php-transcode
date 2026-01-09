@@ -18,6 +18,7 @@ export const requestCrop = async function (type, id = null, data = null) {
         d.path = this.item.path;
         d.type = type;
         d.markers = this.clips;
+        d.filterIndex = id;
         m.appendChild(d);
         requestAnimationFrame(() => {
             d.mirror = false;

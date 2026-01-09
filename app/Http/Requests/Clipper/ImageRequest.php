@@ -17,7 +17,8 @@ class ImageRequest extends FormRequest
             'timestamp' => ['required', 'regex:/^([0-9]+:)?[0-9]+:[0-9]+:[0-9]+\.[0-9]+$/'],
             'width' => 'nullable|integer',
             'height' => 'nullable|integer',
-            'filtered' => 'nullable|boolean'
+            'filtered' => 'nullable|boolean',
+            'current_filter' => 'nullable|integer',
         ];
     }
 }

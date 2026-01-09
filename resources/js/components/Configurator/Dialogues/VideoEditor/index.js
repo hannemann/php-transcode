@@ -92,6 +92,10 @@ class VideoEditor extends Slim {
     }
 
     updateFrameUrl() {
+        let currentFilter = ''
+        if ("undefined" !== typeof this.filterIndex && this.filterIndex !== null) {
+            currentFilter = `&current_filter=${this.filterIndex}`
+        }
         if (this.aspectDecimal) {
             const filterGraph = document.querySelector('ffmpeg-transcoder').shadowRoot.querySelector('transcode-configurator').filterGraph;
             const scaleFilter = filterGraph.find((f) => f.filterType === 'scale');
@@ -99,9 +103,9 @@ class VideoEditor extends Slim {
             const width = height * this.aspectDecimal;
             this.frameUrl = `${
                 this.baseUrl
-            }${this.timestamp()}&width=${width}&height=${height}&filtered=1`;
+            }${this.timestamp()}&width=${width}&height=${height}&filtered=1${currentFilter}`;
         } else {
-            this.frameUrl = `${this.baseUrl}${this.timestamp()}&filtered=1`;
+            this.frameUrl = `${this.baseUrl}${this.timestamp()}&filtered=1${currentFilter}`;
         }
     }
 

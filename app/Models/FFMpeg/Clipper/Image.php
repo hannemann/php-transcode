@@ -13,7 +13,7 @@ class Image
     /**
      * create image from timestamp
      */
-    public static function getImageData(string $disk, string $path, string $timestamp, ?int $width = null, ?int $height = null, bool $filtered, string $out = 'pipe:1')
+    public static function getImageData(string $disk, string $path, string $timestamp, ?int $width = null, ?int $height = null, bool $filtered, ?int $currentFilter, string $out = 'pipe:1')
     {
         $file = static::getInputFilename($disk, $path);
         $args = [
@@ -23,7 +23,7 @@ class Image
         $filters = collect([]);
 
         if ($filtered) {
-            $filterGraph = (string)new FilterGraph($disk, $path, $timestamp);
+            $filterGraph = (string)new FilterGraph($disk, $path, $timestamp, $currentFilter);
             if ($filterGraph) {
                 $filters->push((string)$filterGraph);
             }
