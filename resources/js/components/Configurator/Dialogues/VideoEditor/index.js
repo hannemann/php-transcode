@@ -92,21 +92,25 @@ class VideoEditor extends Slim {
     }
 
     updateFrameUrl() {
-        let currentFilter = ''
-        if ("undefined" !== typeof this.filterIndex && this.filterIndex !== null) {
-            currentFilter = `&current_filter=${this.filterIndex}`
+        const filterIndex = parseInt(this.filterIndex);
+        const params = [
+            'filtered=1'
+        ]
+        if (!isNaN(filterIndex)) {
+            params.push(`current_filter=${this.filterIndex}`);
         }
         if (this.aspectDecimal) {
             const filterGraph = document.querySelector('ffmpeg-transcoder').shadowRoot.querySelector('transcode-configurator').filterGraph;
-            const scaleFilter = filterGraph.find((f) => f.filterType === 'scale');
-            const height = scaleFilter ? parseInt(scaleFilter.height) : this.video.height;
+            const scaleFilter = filterGraph.find((f, idx) => {
+                if (!isNaN(filterIndex) && idx > filterIndex) return false;
+                return f.filterType === 'scale';
+            });
+            const height = scaleFilter ? parseInt(scaleFilter.height) : this.video.coded_height;
             const width = height * this.aspectDecimal;
-            this.frameUrl = `${
-                this.baseUrl
-            }${this.timestamp()}&width=${width}&height=${height}&filtered=1${currentFilter}`;
-        } else {
-            this.frameUrl = `${this.baseUrl}${this.timestamp()}&filtered=1${currentFilter}`;
+            params.push(`height=${height}`);
+            params.push(`width=${width}`);
         }
+        this.frameUrl = `${this.baseUrl}${this.timestamp()}&${params.join('&')}`;
     }
 
     toggleAspect() {

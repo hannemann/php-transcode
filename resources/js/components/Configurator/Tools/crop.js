@@ -1,18 +1,22 @@
 import { TYPE_VIDEO } from "../Streams";
 
-export const requestCrop = async function (type, id = null, data = null) {
+export const requestCrop = async function (type, id = NaN, data = null) {
     try {
         const m = document.createElement("modal-window");
         m.header = "Cropper";
         m.classList.add("no-shadow");
         const d = document.createElement("dialogue-cropper");
         const video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);
-        const scaleFilter = this.filterGraph.find(f => f.filterType === 'scale');
+        // const scaleFilter = this.filterGraph.find(f => f.filterType === 'scale');
+        const scaleFilter = this.filterGraph.find((f, idx) => {
+            if (!isNaN(id) && idx > id) return false;
+            return f.filterType === 'scale';
+        });
         d.video = {
             ...video,
             duration: parseFloat(this.format.duration),
-            width: scaleFilter?.width || video.width,
-            height: scaleFilter?.height || video.height
+            width: scaleFilter?.width || video.coded_width,
+            height: scaleFilter?.height || video.coded_height
         };
         d.crop = this.crop;
         d.path = this.item.path;
@@ -22,6 +26,8 @@ export const requestCrop = async function (type, id = null, data = null) {
         m.appendChild(d);
         requestAnimationFrame(() => {
             d.mirror = false;
+            d.width = d.video.width;
+            d.height = d.video.height;
             d.replaceBlackBorders = true;
             if (id !== null && data) {
                 d.mirror = data.mirror;

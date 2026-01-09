@@ -19,6 +19,8 @@ class DeLogo extends VideoEditor {
         this.setBetweenFrom = this.setBetweenFrom.bind(this);
         this.setBetweenTo = this.setBetweenTo.bind(this);
         this.resetBetween = this.resetBetween.bind(this);
+        this.gotoBetweenFrom = this.gotoBetweenFrom.bind(this);
+        this.gotoBetweenTo = this.gotoBetweenTo.bind(this);
     }
 
     onAdded() {
@@ -231,6 +233,20 @@ class DeLogo extends VideoEditor {
         Utils.forceUpdate(this);
     }
 
+    gotoBetweenFrom() {
+        if (!this.between.from) return;
+        this.current = this.between.from * 1000;
+        this.updateIndicatorPos();
+        this.updateImages();
+    }
+
+    gotoBetweenTo() {
+        if (!this.between.to) return;
+        this.current = this.between.to * 1000;
+        this.updateIndicatorPos();
+        this.updateImages();
+    }
+
     set coords(coord) {
         const image = this.image.getBoundingClientRect();
         const ratio = this.video.width / image.width;
@@ -302,6 +318,7 @@ ${EDITOR_CSS}
         & > span {
             display: flex;
             justify-content: space-between;
+            cursor: pointer;
         }
         div {
             display: flex;
@@ -340,10 +357,10 @@ ${EDITOR_TEMPLATE}
     </dl>
     <fieldset class="between">
         <legend>Between</legend>
-        <span>
+        <span @click="{{ this.gotoBetweenFrom }}">
             <span>From:</span><span>{{ this.between.from || 'n/a' }}</span>
         </span>
-        <span>
+        <span @click="{{ this.gotoBetweenTo }}">
             <span>To:</span><span>{{ this.between.to || 'n/a' }}</span>
         </span>
         <div>
