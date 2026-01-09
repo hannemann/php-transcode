@@ -78,13 +78,14 @@ class Clips extends Slim {
     }
 
     handleClipsEvent(ws) {
+        this.removeAllClips();
         if (ws.clips.length) {
-            this.removeAllClips();
             this.clips = [];
             ws.clips.forEach((c) => this.createClip(c.from, c.to));
-            Iconify.scan(this.shadowRoot);
             this.update();
         }
+        Iconify.scan(this.shadowRoot);
+
     }
 
     handleEvent(e) {
@@ -113,7 +114,7 @@ class Clips extends Slim {
         clipData.to = to;
         const clip = document.createElement('transcode-configurator-clip');
         clip.dataset.id = clipData.id;
-        clip.canRemove = this.clips.length > 1
+        clip.canRemove = this.clips.length > 0
         // clip.isLast = this.clips.indexOf(clipData) === this.clips.length - 1;
         clip.clipData = {...clipData};
         clip.from = clipData.from;
@@ -250,7 +251,7 @@ class Clips extends Slim {
             this.copyarea.value = this.getCopyClips();
             this.copyarea.select();
         } else {
-            const raw = this.copyarea.value.split("\n");
+            const raw = this.copyarea.value.trim().split("\n");
             const clips = [];
             for (let i = 0; i < raw.length; i += 2) {
                 if (raw[i]) {
@@ -261,12 +262,12 @@ class Clips extends Slim {
                     clips.push(clip);
                 }
             }
-            if (clips.length === 0) {
-                clips.push({ from: null, to: null });
-            }
             this.clips = [];
+            this.removeAllClips();
             clips.forEach((c) => this.addClip(c.from, c.to));
-            this.update();
+            if (this.clips.length) {
+                this.update();
+            }
         }
     }
 

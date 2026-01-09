@@ -34,7 +34,6 @@ export const clipper = async function () {
                 d.clips[i]?.timestamps.end ?? null
             );
         }
-        this.clips.update();
         this.saveSettings();
     } catch (error) {
         if (error) {
