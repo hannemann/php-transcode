@@ -46,6 +46,7 @@ class RemoveLogo extends VideoEditor {
         document.body.insertBefore(this.paintArea, document.querySelector('transcoder-toast'));
         this.imageType = IMAGE_TYPE_MASK;
         this.updateFrameUrl();
+        // https://github.com/devforth/painterro?tab=readme-ov-file#ui-color-scheme
         this.painterro = Painterro({
             id: 'paint',
             activeColor: '#000000',
