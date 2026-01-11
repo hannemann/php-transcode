@@ -24,6 +24,7 @@ class DeLogo extends VideoEditor {
         this.gotoBetweenTo = this.gotoBetweenTo.bind(this);
         this.save = this.save.bind(this);
         this.addNext = this.addNext.bind(this);
+        this.editItem = this.editItem.bind(this);
     }
 
     onAdded() {
@@ -37,6 +38,7 @@ class DeLogo extends VideoEditor {
             this.initImages();
             this.saveButton.disabled = false;
             this.addButton.disabled = true;
+            this.initFilters();
         });
     }
 
@@ -259,6 +261,8 @@ class DeLogo extends VideoEditor {
         saveDelogo.call(this.configurator, this.type, this, this.isEdit);
         this.saveButton.disabled = this.saved;
         this.addButton.disabled = !this.saved;
+        this.initFilters();
+        Utils.forceUpdate(this);
     }
 
     addNext() {
@@ -268,6 +272,25 @@ class DeLogo extends VideoEditor {
         this.resetBetween();
         this.saveButton.disabled = this.saved;
         this.addButton.disabled = !this.saved;
+    }
+
+    editItem(e) {
+        const data = JSON.parse(e.currentTarget.dataset.delogo);
+        this.saved = false;
+        this.saveButton.disabled = this.saved;
+        this.addButton.disabled = !this.saved;
+        this.applyFilterData(data);
+        this.filterIndex = e.currentTarget.dataset.index;
+    }
+
+    initFilters() {
+        this.filters = [...this.configurator.filterGraph].map((f, k) => {
+            if (f.filterType !== 'delogo') {
+                return null;
+            }
+            f.index = k;
+            return f;
+        });
     }
 
     set coords(coord) {
@@ -354,6 +377,9 @@ ${EDITOR_CSS}
         gap: .5rem;
         padding-block: .5rem;
     }
+    .filters > div:not([data-delogo]) {
+        display: none;
+    }
 </style>
 ${EDITOR_TEMPLATE}
 <div class="info">
@@ -402,6 +428,11 @@ ${EDITOR_TEMPLATE}
     <div class="actions">
         <theme-button #ref="saveButton" @click="{{ this.save }}">Save</theme-button>
         <theme-button #ref="addButton" @click="{{ this.addNext }}">Add Next</theme-button>
+    </div>
+    <div class="filters">
+        <div *foreach="{{ this.filters }}" data-index="{{ item.index }}" data-delogo="{{ JSON.stringify(item) }}" @click="{{ this.editItem }}">
+            Delogo
+        </div>
     </div>
 </div>
 `;
