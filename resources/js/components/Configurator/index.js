@@ -27,6 +27,7 @@ class TranscodeConfigurator extends Slim {
         this.handleClipsUpdated = this.handleClipsUpdated.bind(this);
         this.saveSettings = this.saveSettings.bind(this);
         this.toolProxy = toolProxy.bind(this);
+        this.saveProxy = this.saveProxy.bind(this);
         this.hide = this.hide.bind(this);
     }
 
@@ -246,14 +247,17 @@ class TranscodeConfigurator extends Slim {
     handleStreamConfig(e) {
         console.info("Stream configured: ", e.detail.item.transcodeConfig);
     }
+    
+    saveProxy(e) {
+        const args = e.target.value.split(":");
+        this.saveSettings(args[1] === 'template')
+    }
 
-    async saveSettings() {
-
-        const config = this.config;
+    async saveSettings(asTemplate = false) {
 
         await Request.post(
             `/settings/${encodeURIComponent(this.item.path)}`,
-            this.config
+            {...this.config, asTemplate}
         );
         Utils.forceUpdate(this);
     }
@@ -393,14 +397,14 @@ ${CSS}
             <transcode-configurator-clips *if="{{ this.format }}" .path="{{ this.item.path }}" .video-duration="{{ this.format.duration }}"></transcode-configurator-clips>
         </div>
         <footer>
-            <button @click="this.saveSettings()" class="icon-stack" title="Save Settings">
-                <span class="iconify" data-icon="mdi-content-save-outline"></span>
-                <span class="iconify hover" data-icon="mdi-content-save-outline"></span>
-            </button>
             <button @click="this.toolProxy({target:{value:'play:cpu'}})" class="icon-stack" title="Play">
                 <span class="iconify" data-icon="mdi-play"></span>
                 <span class="iconify hover" data-icon="mdi-play"></span>
             </button>
+            <combo-button @click="{{ this.saveProxy }}">
+                <option value="save:normal">Save</option>
+                <option value="save:template">Save as Template</option>
+            </combo-button>
             <combo-button @click="{{ this.toolProxy }}">
                 <option *if="{{ this.canConcat }}" value="concat:mkv">Concat MKV</option>
                 <option *if="{{ this.canConcat }}" value="concat:mp4">Concat MP4</option>

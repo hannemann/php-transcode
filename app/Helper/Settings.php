@@ -48,6 +48,8 @@ class Settings
 
     public static function save(string $path, array $data): void
     {
+        $asTemplate = $data['asTemplate'];
+        unset($data['asTemplate']);
         $data['file'] = $path;
         $data['copy'] = [
             'clips' => "\n" . collect($data['clips'])->map(function ($clip) {
@@ -61,7 +63,11 @@ class Settings
         }
 
         $out = json_encode($data,  JSON_PRETTY_PRINT |  JSON_UNESCAPED_SLASHES);
-        Storage::disk('recordings')->put(Settings::getSettingsFilename($path), $out, 'public');
+        $filename = Settings::getSettingsFilename($path);
+        if ($asTemplate) {
+            $filename = static::getSettingsFilename(dirname($path) . '/template');
+        }
+        Storage::disk('recordings')->put($filename, $out, 'public');
     }
 
     public static function getSettingsFilename(string $path): string
