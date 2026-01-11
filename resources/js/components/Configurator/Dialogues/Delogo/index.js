@@ -2,6 +2,7 @@ import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
 import { Utils } from "@/components/lib";
 import { Time } from "../../../../Helper/Time";
 import { saveDelogo } from "../../Tools/delogo";
+import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 
 class DeLogo extends VideoEditor {
     constructor() {
@@ -25,6 +26,7 @@ class DeLogo extends VideoEditor {
         this.save = this.save.bind(this);
         this.addNext = this.addNext.bind(this);
         this.editItem = this.editItem.bind(this);
+        this.deleteItem = this.deleteItem.bind(this);
     }
 
     onAdded() {
@@ -36,9 +38,9 @@ class DeLogo extends VideoEditor {
                 once: true,
             });
             this.initImages();
-            this.saveButton.disabled = false;
-            this.addButton.disabled = true;
+            this.isSaved = this.saved;
             this.initFilters();
+            Iconify.scan(this.shadowRoot);
         });
     }
 
@@ -221,6 +223,7 @@ class DeLogo extends VideoEditor {
         this.current = data.between.from * 1000;
         this.updateIndicatorPos();
         this.updateImages();
+        this.activeDelogoFilter = this.shadowRoot.querySelector(`.filters [data-index="${this.filterIndex}"]`);
     }
 
     setBetween(between) {
@@ -259,28 +262,39 @@ class DeLogo extends VideoEditor {
 
     save() {
         saveDelogo.call(this.configurator, this.type, this, this.isEdit);
-        this.saveButton.disabled = this.saved;
-        this.addButton.disabled = !this.saved;
+        this.isSaved = this.saved;
         this.initFilters();
+        this.activeDelogoFilter = null;
         Utils.forceUpdate(this);
+        Iconify.scan(this.shadowRoot);
     }
 
     addNext() {
         this.filterIndex = null;
         this.isEdit = false;
-        this.saved = false;
+        this.isSaved = false;
         this.resetBetween();
-        this.saveButton.disabled = this.saved;
-        this.addButton.disabled = !this.saved;
     }
 
     editItem(e) {
+        if ("undefined" !== typeof e.currentTarget.dataset.active) {
+            this.filterIndex = null;
+            this.activeDelogoFilter = null;
+            this.resetBetween();
+            this.isSaved = true;
+            return;
+        }
         const data = JSON.parse(e.currentTarget.dataset.delogo);
-        this.saved = false;
-        this.saveButton.disabled = this.saved;
-        this.addButton.disabled = !this.saved;
+        this.isSaved = false;
         this.applyFilterData(data);
         this.filterIndex = e.currentTarget.dataset.index;
+        this.activeDelogoFilter = e.currentTarget;
+    }
+
+    async deleteItem(e) {
+        this.configurator.filterGraph.splice(parseInt(e.currentTarget.closest('[data-delogo]').dataset.index), 1);
+        await this.configurator.saveSettings();
+        this.initFilters();
     }
 
     initFilters() {
@@ -291,6 +305,19 @@ class DeLogo extends VideoEditor {
             f.index = k;
             return f;
         });
+    }
+
+    set isSaved(value) {
+        this.saved = !!value;
+        this.saveButton.disabled = this.saved;
+        this.addButton.disabled = !this.saved;
+    }
+
+    set activeDelogoFilter(item) {
+        this.shadowRoot.querySelectorAll('.filters [data-delogo]').forEach(f => delete f.dataset.active);
+        if (item) {
+            item.dataset.active = '';
+        }
     }
 
     set coords(coord) {
@@ -321,6 +348,7 @@ class DeLogo extends VideoEditor {
 
 DeLogo.template = /*html*/ `
 ${EDITOR_CSS}
+${ICON_STACK_CSS}
 <style>
     :host {
         position: relative;
@@ -360,6 +388,10 @@ ${EDITOR_CSS}
         max-width: 250px;
         margin: 0;
     }
+    .sidebar {
+        display: grid;
+        grid-template-rows: min-content min-content auto;
+    }
     .between {
         & > span {
             display: flex;
@@ -377,8 +409,36 @@ ${EDITOR_CSS}
         gap: .5rem;
         padding-block: .5rem;
     }
-    .filters > div:not([data-delogo]) {
-        display: none;
+    .filters {
+        display: grid;
+        gap: .5rem;
+        overflow-y: auto;
+        grid-auto-rows: min-content;
+
+        & > div {
+            &[data-delogo] {
+                background: var(--clr-bg-100);
+                color: var(--clr-text-100);
+                border: 2px solid var(--clr-bg-200);
+                padding-inline: .5rem;
+                transition-property: text-shadow, box-shadow, border-color, background-color;
+                transition-timing-function: ease-out;
+                transition-duration: var(--transition-medium);
+                display: flex;
+                justify-content: space-between;
+
+                &[data-active] {
+                    background:var(--clr-bg-200);
+                    color: var(--clr-enlightened);
+                    text-shadow: 0 0 5px var(--clr-enlightened-glow), 0 0 10px var(--clr-enlightened-glow);
+                    border-color: var(--clr-enlightened);
+                    box-shadow: 0 0 20px 0 var(--clr-enlightened-glow), 0 0 10px 0 inset var(--clr-enlightened-glow);
+                }
+            }
+            &:not([data-delogo]) {
+                display: none;
+            }
+        }
     }
 </style>
 ${EDITOR_TEMPLATE}
@@ -410,7 +470,7 @@ ${EDITOR_TEMPLATE}
         <dd>Adjust position</dd>
     </dl>
 </div>
-<div>
+<div class="sidebar">
     <fieldset class="between">
         <legend>Between</legend>
         <span @click="{{ this.gotoBetweenFrom }}">
@@ -432,6 +492,10 @@ ${EDITOR_TEMPLATE}
     <div class="filters">
         <div *foreach="{{ this.filters }}" data-index="{{ item.index }}" data-delogo="{{ JSON.stringify(item) }}" @click="{{ this.editItem }}">
             Delogo
+            <div @click="{{ this.deleteItem }}" class="icon-stack">
+                <span class="iconify" data-icon="mdi-close"></span>
+                <span class="iconify hover" data-icon="mdi-close"></span>
+            </div>
         </div>
     </div>
 </div>

@@ -1,5 +1,5 @@
 import { Slim, Utils } from '@/components/lib';
-import { ICON_STACK_CSS } from '@/components/Icons/Stack.css'
+import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 import CARD_CSS from '../CardCss';
 import { requestScale } from "../Tools/scale.js";
 import { requestCrop } from "../Tools/crop.js";
