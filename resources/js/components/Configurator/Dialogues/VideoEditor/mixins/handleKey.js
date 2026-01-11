@@ -96,7 +96,7 @@ export const handleKeyUp = function() {
 export const handleKey = function (e) {
     clearTimeout(this.updateTimeout);
     let action = false;
-    const updateIndex = e.altKey ? this.raw.indexOf(this.current) : -1;
+    const updateIndex = (e.altKey || this.modeMove) ? this.raw.indexOf(this.current) : -1;
     switch (e.key) {
         case "ArrowRight":
             arrow.call(this, e);

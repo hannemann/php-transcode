@@ -20,6 +20,7 @@ class VideoEditor extends Slim {
         this.toggleAspect = this.toggleAspect.bind(this);
         this.handleIndicatorClick = this.handleIndicatorClick.bind(this);
         this.setCurrentPosByMarker = this.setCurrentPosByMarker.bind(this);
+        this.toggleMoveMode = this.toggleMoveMode.bind(this);
     }
 
     onAdded() {
@@ -30,6 +31,7 @@ class VideoEditor extends Slim {
         this.current = parseInt(this.start * 1000, 10) ?? 0;
         this.duration = this.video.duration * 1000;
         this.displayDuration = this.timestamp(this.duration);
+        this.modeMove = false;
         requestAnimationFrame(() => {
             this.aspectRatio = this.video.display_aspect_ratio;
             Iconify.scan(this.shadowRoot);
@@ -167,6 +169,15 @@ class VideoEditor extends Slim {
         delete this.pInterval;
     }
 
+    toggleMoveMode() {
+        this.modeMove = !this.modeMove;
+        if (this.modeMove) {
+            this.move.dataset.active = ''
+        } else {
+            delete this.move.dataset.active;
+        }
+    }
+
     get baseUrl() {
         return `/image/${encodeURIComponent(this.path)}?timestamp=`;
     }
@@ -222,6 +233,16 @@ export const EDITOR_CSS = /*html*/ `
         max-height: 100%;
         justify-self: center;
     }
+    .move {
+        color: var(--clr-text-100);
+        transition-property: text-shadow, color;
+        transition-timing-function: ease-out;
+        transition-duration: var(--transition-medium);
+    }
+    .move[data-active] {
+        color: var(--clr-enlightened);
+        text-shadow: 0 0 5px var(--clr-enlightened-glow), 0 0 10px var(--clr-enlightened-glow);
+    }
     .status {
         grid-area: status;
         display: grid;
@@ -230,6 +251,16 @@ export const EDITOR_CSS = /*html*/ `
         width: 100%;
         max-width: 100rem;
         justify-self: center;
+
+        .time {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+
+            div {
+                cursor: pointer;
+            }
+        }
 
         div {
             justify-self: start;
@@ -321,6 +352,7 @@ export const EDITOR_TEMPLATE = /*html*/ `
 <theme-button class="toggle-aspect" @click="{{ this.toggleAspect }}">{{ this.aspect }}</theme-button>
 <div class="status">
     <div>
+        <div *if="{{ this.tagName === 'DIALOGUE-CLIPPER' }}" #ref="move" class="nav move" @click="{{ this.toggleMoveMode }}">Move Marker</div>
         <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowLeft'}) }}" @pointerup="{{ this.handleNavUp() }}">-1f</div>
         <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowRight'}) }}" @pointerup="{{ this.handleNavUp() }}">+1f</div>
         <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', duration: 500}) }}" @pointerup="{{ this.handleNavUp() }}">-0.5s</div>
@@ -332,7 +364,11 @@ export const EDITOR_TEMPLATE = /*html*/ `
         <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', ctrlKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}">-5s</div>
         <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowRight', ctrlKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}">+5s</div>
     </div>
-    <div class="time">{{ this.currentTimestamp }} / {{ this.displayDuration }}</div>
+    <div class="time">
+        <div *if="{{ this.tagName === 'DIALOGUE-CLIPPER' }}" @pointerup="{{ this.add }}">+</div>
+        <span>{{ this.currentTimestamp }} / {{ this.displayDuration }}</span>
+        <div *if="{{ this.tagName === 'DIALOGUE-CLIPPER' }}" @pointerup="{{ this.remove }}">-</div>
+    </div>
     <div>
         <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowDown'}) }}" @pointerup="{{ this.handleNavUp() }}">-1m</div>
         <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowUp'}) }}" @pointerup="{{ this.handleNavUp() }}">+1m</div>
