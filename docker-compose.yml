@@ -9,7 +9,7 @@ services:
         image: php-transcode/sail:8.3
         ports:
             - '${APP_PORT:-8078}:80'
-            - '${LARAVEL_WEBSOCKETS_PORT:-8079}:${LARAVEL_WEBSOCKETS_PORT:-8079}'
+            - '${REVERB_PORT:-8079}:${REVERB_PORT:-8079}'
         environment:
             WWWUSER: '${WWWUSER}'
             GROUP_ID_RENDER: '${GROUP_ID_RENDER:-144}'

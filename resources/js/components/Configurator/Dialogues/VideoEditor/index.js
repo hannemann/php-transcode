@@ -240,12 +240,15 @@ export const EDITOR_CSS = /*html*/ `
         }
 
         div:has(.nav) {
-            justify-self: end;
             display: flex;
             gap: .5rem;
             .nav {
                 cursor: pointer;
                 user-select: none;
+            }
+
+            &:not(:first-child) {
+                justify-self: end;
             }
         }
     }
@@ -317,21 +320,26 @@ export const EDITOR_TEMPLATE = /*html*/ `
 <img class="frame" src="{{ this.frameUrl }}" #ref="image">
 <theme-button class="toggle-aspect" @click="{{ this.toggleAspect }}">{{ this.aspect }}</theme-button>
 <div class="status">
-    <div></div>
+    <div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowLeft'}) }}" @pointerup="{{ this.handleNavUp() }}">-1f</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowRight'}) }}" @pointerup="{{ this.handleNavUp() }}">+1f</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', duration: 500}) }}" @pointerup="{{ this.handleNavUp() }}">-0.5s</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowRight', duration: 500}) }}" @pointerup="{{ this.handleNavUp() }}">+0.5s</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', duration: 1000}) }}" @pointerup="{{ this.handleNavUp() }}">-1s</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowRight', duration: 1000}) }}" @pointerup="{{ this.handleNavUp() }}">+1s</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', shiftKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}">-2s</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowRight', shiftKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}">+2s</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', ctrlKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}">-5s</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowRight', ctrlKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}">+5s</div>
+    </div>
     <div class="time">{{ this.currentTimestamp }} / {{ this.displayDuration }}</div>
     <div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowLeft'}) }}" @pointerup="{{ this.handleNavUp() }}"">-1f</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowRight'}) }}" @pointerup="{{ this.handleNavUp() }}"" @pointerup="{{ this.handleNavUp() }}">+1f</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', shiftKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}"">-2s</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowRight', shiftKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}"">+2s</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', ctrlKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}"">-5s</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowRight', ctrlKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}"">+5s</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowDown'}) }}" @pointerup="{{ this.handleNavUp() }}"">-1m</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowUp'}) }}" @pointerup="{{ this.handleNavUp() }}"">+1m</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowDown', shiftKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}"">-5m</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowUp', shiftKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}"">+5m</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowDown', ctrlKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}"">-10m</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowUp', ctrlKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}"">+10m</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowDown'}) }}" @pointerup="{{ this.handleNavUp() }}">-1m</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowUp'}) }}" @pointerup="{{ this.handleNavUp() }}">+1m</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowDown', shiftKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}">-5m</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowUp', shiftKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}">+5m</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowDown', ctrlKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}">-10m</div>
+        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowUp', ctrlKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}">+10m</div>
     </div>
 </div>
 <div class="indicator" #ref="indicator" @click="{{ this.handleIndicatorClick }}">

@@ -25,6 +25,13 @@ const arrow = function (e, back) {
         (back ? rwd : ffwd).call(this, e.shiftKey ? 2000 : 5000);
         return;
     }
+
+    // custom duration
+    if (e.duration) {
+        // console.log(`${e.duration / 1000}`, e);
+        (back ? rwd : ffwd).call(this, e.duration);
+        return;
+    }
      
     //console.log('1 Frame', 1000 / this.fps, e);
     (back ? rwd : ffwd).call(this, 1000 / this.fps);
