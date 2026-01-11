@@ -48,8 +48,11 @@ class Settings
 
     public static function save(string $path, array $data): void
     {
-        $asTemplate = $data['asTemplate'];
-        unset($data['asTemplate']);
+        $asTemplate = false;
+        if (isset($data['asTemplate'])) {
+            $asTemplate = $data['asTemplate'];
+            unset($data['asTemplate']);
+        }
         $data['file'] = $path;
         $data['copy'] = [
             'clips' => "\n" . collect($data['clips'])->map(function ($clip) {
