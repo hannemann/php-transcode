@@ -355,6 +355,8 @@ ${EDITOR_TEMPLATE}
         </dt>
         <dd>Adjust position</dd>
     </dl>
+</div>
+<div>
     <fieldset class="between">
         <legend>Between</legend>
         <span @click="{{ this.gotoBetweenFrom }}">

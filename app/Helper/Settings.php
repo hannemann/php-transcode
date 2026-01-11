@@ -28,10 +28,19 @@ class Settings
     public static function getSettings(string $path): array
     {
         try {
-            if ($settings = Storage::disk('recordings')->get(static::getSettingsFilename($path))) {
-                return json_decode($settings, true);
+            $filename = static::getSettingsFilename($path);
+            if (Storage::disk('recordings')->exists($filename)) {
+                return json_decode(Storage::disk('recordings')->get($filename), true);
+            }
+
+            $filename = static::getSettingsFilename(dirname($path) . '/template');
+            if (Storage::disk('recordings')->exists($filename)) {
+                $settings = json_decode(Storage::disk('recordings')->get($filename), true);
+                $settings['isTemplate'] = true;
+                return $settings;
             }
             return ['clips' => [], 'streams' => []];
+            
         } catch (UnableToReadFile $e) {
             return ['clips' => [], 'streams' => []];
         }
