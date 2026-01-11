@@ -31,7 +31,7 @@ class ThemeButton extends Slim {
         if (this.button) {
             this.button.disabled = !!value;
         } else {
-            this.deferredDisable = true;
+            this.deferredDisable = !!value;
         }
     }
     get disabled() {

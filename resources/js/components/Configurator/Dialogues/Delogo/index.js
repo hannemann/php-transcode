@@ -1,6 +1,7 @@
 import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
 import { Utils } from "@/components/lib";
 import { Time } from "../../../../Helper/Time";
+import { saveDelogo } from "../../Tools/delogo";
 
 class DeLogo extends VideoEditor {
     constructor() {
@@ -21,15 +22,21 @@ class DeLogo extends VideoEditor {
         this.resetBetween = this.resetBetween.bind(this);
         this.gotoBetweenFrom = this.gotoBetweenFrom.bind(this);
         this.gotoBetweenTo = this.gotoBetweenTo.bind(this);
+        this.save = this.save.bind(this);
+        this.addNext = this.addNext.bind(this);
     }
 
     onAdded() {
         super.onAdded();
+        this.isEdit = false;
+        this.saved = false;
         requestAnimationFrame(() => {
             this.image.addEventListener("load", this.initDelogo, {
                 once: true,
             });
             this.initImages();
+            this.saveButton.disabled = false;
+            this.addButton.disabled = true;
         });
     }
 
@@ -205,6 +212,7 @@ class DeLogo extends VideoEditor {
     }
 
     applyFilterData(data) {
+        this.isEdit = true;
         this.coords = data;
         this.setBetween(data.between);
         this.updateZoom();
@@ -245,6 +253,21 @@ class DeLogo extends VideoEditor {
         this.current = this.between.to * 1000;
         this.updateIndicatorPos();
         this.updateImages();
+    }
+
+    save() {
+        saveDelogo.call(this.configurator, this.type, this, this.isEdit);
+        this.saveButton.disabled = this.saved;
+        this.addButton.disabled = !this.saved;
+    }
+
+    addNext() {
+        this.filterIndex = null;
+        this.isEdit = false;
+        this.saved = false;
+        this.resetBetween();
+        this.saveButton.disabled = this.saved;
+        this.addButton.disabled = !this.saved;
     }
 
     set coords(coord) {
@@ -326,6 +349,11 @@ ${EDITOR_CSS}
             gap: .5rem;
         }
     }
+    .actions {
+        display: flex;
+        gap: .5rem;
+        padding-block: .5rem;
+    }
 </style>
 ${EDITOR_TEMPLATE}
 <div class="info">
@@ -371,6 +399,10 @@ ${EDITOR_TEMPLATE}
             <theme-button @click="{{ this.resetBetween }}">Reset</theme-button>
         </div>
     </fieldset>
+    <div class="actions">
+        <theme-button #ref="saveButton" @click="{{ this.save }}">Save</theme-button>
+        <theme-button #ref="addButton" @click="{{ this.addNext }}">Add Next</theme-button>
+    </div>
 </div>
 `;
 
