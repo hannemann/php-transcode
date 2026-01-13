@@ -204,21 +204,8 @@ class Clips extends Slim {
     }
 
     getCutpoint(clip) {
-        if (this.clips.length > 0) {
-            const cutpoint = this.clips
-                .filter((c) => c.id <= clip.id)
-                .reverse()
-                .reduce(
-                    (acc, cur) =>
-                        acc + Time.toSeconds(cur.to) - Time.toSeconds(cur.from),
-                    0
-                );
-            if (isNaN(cutpoint)) {
-                return "";
-            }
-            return Time.fromSeconds(cutpoint);
-        }
-        return "";
+        if (this.clips.length <= 0) return ""
+        return Time.calculateCutTimestamp(this.clips, clip.from);
     }
 
     getTimestamps() {

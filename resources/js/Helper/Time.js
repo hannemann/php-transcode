@@ -35,6 +35,19 @@ class Time {
         }, 0) / 1000);
     }
 
+    static calculateCutTimestamp(clips, current) {
+        const cut = clips.reduce((acc, cur) => {
+            const from = cur.raw ? (cur.raw.start || 0) : (cur.from ? Time.milliSeconds(cur.from) : 0);
+            const to = cur.raw ? (cur.raw.end || current) : (cur.to ? Time.milliSeconds(cur.to) : current);
+            if (from > current) return acc;
+            if (to > current) {
+                return acc + current - from;
+            }
+            return acc + to - from;
+        }, 0);
+        return Time.fromMilliSeconds(cut);
+    }
+
     static duration(date) {
         return date.toISOString()
             .split("T")

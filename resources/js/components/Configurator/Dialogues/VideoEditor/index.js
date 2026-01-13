@@ -86,16 +86,7 @@ class VideoEditor extends Slim {
 
     timestampCut() {
         const clips = this.clips || this.clipsConfig;
-        const cut = clips.reduce((acc, cur) => {
-            const from = cur.raw ? (cur.raw.start || 0) : (cur.from ? Time.milliSeconds(cur.from) : 0);
-            const to = cur.raw ? (cur.raw.end || this.current) : (cur.to ? Time.milliSeconds(cur.to) : this.current);
-            if (from > this.current) return acc;
-            if (to > this.current) {
-                return acc + this.current - from;
-            }
-            return acc + to - from;
-        }, 0);
-        return Time.fromMilliSeconds(cut);
+        return Time.calculateCutTimestamp(clips, this.current);
     }
 
     updateFrameUrl() {

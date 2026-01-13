@@ -236,9 +236,19 @@ class DeLogo extends VideoEditor {
         Utils.forceUpdate(this);
     }
 
+    getBetweenFrom() {
+        if (!this.between?.from) return 'n/a';
+        return Time.calculateCutTimestamp(this.configurator.clips.clips, this.between.from * 1000);
+    }
+
     setBetweenTo() {
         this.between.to = Time.toSeconds(this.timestamp());
         Utils.forceUpdate(this);
+    }
+
+    getBetweenTo() {
+        if (!this.between?.to) return 'n/a';
+        return Time.calculateCutTimestamp(this.configurator.clips.clips, this.between.to * 1000);
     }
     
     resetBetween() {
@@ -474,10 +484,10 @@ ${EDITOR_TEMPLATE}
     <fieldset class="between">
         <legend>Between</legend>
         <span @click="{{ this.gotoBetweenFrom }}">
-            <span>From:</span><span>{{ this.between.from || 'n/a' }}</span>
+            <span>From:</span><span>{{ this.getBetweenFrom() || 'n/a' }}</span>
         </span>
         <span @click="{{ this.gotoBetweenTo }}">
-            <span>To:</span><span>{{ this.between.to || 'n/a' }}</span>
+            <span>To:</span><span>{{ this.getBetweenTo() }}</span>
         </span>
         <div>
             <theme-button @click="{{ this.setBetweenFrom }}">Start</theme-button>

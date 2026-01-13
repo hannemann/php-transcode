@@ -1,10 +1,9 @@
 import { Slim, Utils } from '@/components/lib';
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 import CARD_CSS from '../CardCss';
-import { requestScale } from "../Tools/scale.js";
 import { requestCrop } from "../Tools/crop.js";
 import { requestDelogo } from "../Tools/delogo.js";
-import { requestRemovelogo } from "../Tools/removelogo.js";
+import { Time } from '../../../Helper/Time.js';
 
 class Filter extends Slim {
 
@@ -12,10 +11,17 @@ class Filter extends Slim {
         super();
         this.handleDelete = this.handleDelete.bind(this);
         this.handleModify = this.handleModify.bind(this);
+        this.handleClipsLoaded = this.handleClipsLoaded.bind(this);
+        this.description = '';
     }
 
     onAdded() {
+        document.addEventListener("clips-updated", this.handleClipsLoaded);
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot));
+    }
+
+    onRemoved() {
+        document.removeEventListener("clips-updated", this.handleClipsLoaded);
     }
 
     handleModify(e) {
@@ -30,12 +36,17 @@ class Filter extends Slim {
         }
     }
 
+    handleClipsLoaded() {
+        this.description = this.updateDescription();
+        Utils.forceUpdate(this);
+    }
+
     async handleDelete(e) {
         this.configurator.filterGraph.splice(parseInt(this.dataset.id), 1);
         await this.configurator.saveSettings();
     }
 
-    get description() {
+    updateDescription() {
         if (this.filterData.filterType === 'crop') {
             if (this.filterData.replaceBlackBorders) {
                 return `replace borders${this.filterData.mirror ? ' (mirrored)' : ''}`;
@@ -45,7 +56,16 @@ class Filter extends Slim {
             return `${this.filterData.width} x ${this.filterData.height}`
         }
         if (this.filterData.filterType === 'delogo') {
-            return `Top: ${this.filterData.y}px, Left: ${this.filterData.x}px, ${this.filterData.w}px x ${this.filterData.h}px, From: ${this.filterData.between?.from || 'n/a'}, To: ${this.filterData.between?.to || 'n/a'}`
+            let from = this.filterData.between?.from || 'n/a';
+            let to = this.filterData.between?.to || 'n/a';
+            if (!isNaN(from)) {
+                from = Time.calculateCutTimestamp(this.configurator.clips.clips, this.filterData.between.from * 1000)
+            }
+            if (!isNaN(to)) {
+                to = Time.calculateCutTimestamp(this.configurator.clips.clips, this.filterData.between.to * 1000);
+            }
+
+            return `${from} - ${to}, Top: ${this.filterData.y}px, Left: ${this.filterData.x}px, ${this.filterData.w}px x ${this.filterData.h}px`
         }
         return '';
     }
