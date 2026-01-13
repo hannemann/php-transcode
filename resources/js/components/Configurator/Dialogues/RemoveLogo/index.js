@@ -56,6 +56,7 @@ class RemoveLogo extends VideoEditor {
                 main: 'var(--clr-bg-150)',
                 control: 'var(--clr-bg-140)',
                 activeControl: 'var(--clr-bg-400)',
+                activeControlContent: 'var(--clr-bg-0)',
                 controlContent: 'var(--clr-text-0)',
                 controlShadow: '0px 0px 3px 1px var(--clr-bg-200)',
                 inputBackground: 'var(--clr-bg-140)',
