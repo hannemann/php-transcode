@@ -1,6 +1,7 @@
 import { Slim, Iconify } from "@/components/lib";
 import { Time } from '../../../../Helper/Time';
 import { handleKeyDown, handleKeyUp } from "./mixins/handleKey";
+import ConfiguratorHelper from '../../../../Helper/Configurator';
 
 const THUMBNAIL_HEIGHT = 30;
 
@@ -11,6 +12,7 @@ class VideoEditor extends Slim {
     constructor() {
         super();
         this.raw = [];
+        this.clipsConfig = ConfiguratorHelper.clips.clips;
         this.bindListeners();
     }
 
@@ -47,6 +49,7 @@ class VideoEditor extends Slim {
         this.updateFrameUrl();
         this.updateIndicatorPos();
         this.currentTimestamp = this.timestamp();
+        this.currentTimestampCut = this.timestampCut();
     }
 
     updateIndicatorPos() {
@@ -78,19 +81,21 @@ class VideoEditor extends Slim {
     }
 
     timestamp(current) {
-        return new Date(current ?? this.current)
-            .toISOString()
-            .replace(/^[0-9-]+T/, "")
-            .replace(/z$/i, "");
+        return Time.fromMilliSeconds(current ?? this.current);
     }
 
-    toMilliSeconds(timestamp) {
-        const parts = timestamp.split(":");
-        const t = new Date(0);
-        t.setUTCHours(parts[0]);
-        t.setMinutes(parts[1]);
-        t.setMilliseconds(parts[2] * 1000);
-        return t.getTime();
+    timestampCut() {
+        const clips = this.clips || this.clipsConfig;
+        const cut = clips.reduce((acc, cur) => {
+            const from = cur.raw ? (cur.raw.start || 0) : (cur.from ? Time.milliSeconds(cur.from) : 0);
+            const to = cur.raw ? (cur.raw.end || this.current) : (cur.to ? Time.milliSeconds(cur.to) : this.current);
+            if (from > this.current) return acc;
+            if (to > this.current) {
+                return acc + this.current - from;
+            }
+            return acc + to - from;
+        }, 0);
+        return Time.fromMilliSeconds(cut);
     }
 
     updateFrameUrl() {
@@ -366,7 +371,7 @@ export const EDITOR_TEMPLATE = /*html*/ `
     </div>
     <div class="time">
         <div *if="{{ this.tagName === 'DIALOGUE-CLIPPER' }}" @pointerup="{{ this.add }}">+</div>
-        <span>{{ this.currentTimestamp }} / {{ this.displayDuration }}</span>
+        <span>{{ this.currentTimestamp }} ({{ this.currentTimestampCut }}) / {{ this.displayDuration }}</span>
         <div *if="{{ this.tagName === 'DIALOGUE-CLIPPER' }}" @pointerup="{{ this.remove }}">-</div>
     </div>
     <div>

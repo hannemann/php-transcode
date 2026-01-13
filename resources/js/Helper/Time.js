@@ -9,20 +9,19 @@ class Time {
         );
     }
 
-    static fromSeconds(coord) {
-        const d = new Date(null);
-        d.setMilliseconds(coord * 1000);
-        return `${d.getUTCHours().toString().padStart(2, "0")}:${d
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, "0")}:${d
-            .getUTCSeconds()
-            .toString()
-            .padStart(2, "0")}.${d.getUTCMilliseconds()}`;
-    }
-
     static milliSeconds(coord) {
         return Time.toSeconds(coord) * 1000;
+    }
+
+    static fromMilliSeconds(millis) {
+        return new Date(millis)
+            .toISOString()
+            .replace(/^[0-9-]+T/, "")
+            .replace(/z$/i, "");
+    }
+
+    static fromSeconds(seconds) {
+        return Time.fromMilliSeconds(seconds * 1000);
     }
 
     static calculateClipsDuration(clips) {
