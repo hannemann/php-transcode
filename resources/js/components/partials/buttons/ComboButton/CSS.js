@@ -23,6 +23,7 @@ combo-button::part(icon-hover) {
 }
 combo-button::part(label) {
     padding: .5rem;
+    text-align: left;
 }
 combo-button::part(toggle) {
     position: relative;

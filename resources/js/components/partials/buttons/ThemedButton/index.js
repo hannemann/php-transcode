@@ -45,7 +45,10 @@ button {
     background: var(--clr-bg-100);
     color: var(--clr-text-100);
     font-size: 1rem;
-    padding: .5rem;
+    padding-inline: .5rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
     border: 2px solid var(--clr-bg-200);
     transition-property: text-shadow, box-shadow, border-color, background-color;
     transition-timing-function: ease-out;
@@ -73,9 +76,16 @@ button:disabled {
     text-shadow: none;
     box-shadow: none;
 }
+.label {
+    display: inline-block;
+    padding-block: .5rem;
+}
 </style>
 <button part="button" #ref="button">
-    <slot></slot>
+    <slot name="icon"></slot>
+    <span class="label">
+        <slot></slot>
+    </span>
 </button>
 `;
 

@@ -402,23 +402,42 @@ ${CSS}
                 <span class="iconify hover" data-icon="mdi-play"></span>
             </button>
             <combo-button @click="{{ this.saveProxy }}">
-                <option value="save:normal">Save</option>
+                <span class="icon-stack" slot="icon">
+                    <span class="iconify" data-icon="mdi-content-save-outline"></span>
+                    <span class="iconify hover" data-icon="mdi-content-save-outline"></span>
+                </span>
                 <option value="save:template">Save as Template</option>
+                <option value="save:normal">Save</option>
             </combo-button>
-            <combo-button @click="{{ this.toolProxy }}">
+            <combo-button @click="{{ this.toolProxy }}" @change="{{ this.toolProxy }}">
+                <span class="icon-stack" slot="icon">
+                    <span class="iconify" data-icon="mdi-tools"></span>
+                    <span class="iconify hover" data-icon="mdi-tools"></span>
+                </span>
                 <option *if="{{ this.canConcat }}" value="concat:mkv">Concat MKV</option>
                 <option *if="{{ this.canConcat }}" value="concat:mp4">Concat MP4</option>
-                <option value="crop:cpu">Crop (CPU)</option>
-                <option value="scale:cpu">Scale (CPU)</option>
                 <option value="remux:mkv">Remux MKV</option>
                 <option value="remux:mp4">Remux MP4</option>
                 <option value="remux:ts">Remux TS</option>
-                <option value="deinterlace">Deinterlace</option>
-                <option value="delogo:cpu">DeLogo (CPU)</option>
-                <option value="removelogo:cpu">RemoveLogo (CPU)</option>
+                <option value="deinterlace:cpu:instantOpen">Deinterlace</option>
+                <option value="crop:cpu:instantOpen">Crop (CPU)</option>
+                <option value="scale:cpu:instantOpen">Scale (CPU)</option>
+                <option value="delogo:cpu:instantOpen">DeLogo</option>
+                <option value="removelogo:cpu:instantOpen">RemoveLogo</option>
             </combo-button>
-            <theme-button @click="this.toolProxy({target:{value:'clip'}})">Clipper</theme-button>
-            <theme-button @click="this.transcode()">Transcode</theme-button>
+            <theme-button @click="this.toolProxy({target:{value:'clip'}})">
+                <span class="icon-stack" slot="icon">
+                    <span class="iconify" data-icon="mdi-scissors"></span>
+                    <span class="iconify hover" data-icon="mdi-scissors"></span>
+                </span>
+                Clipper
+            </theme-button>
+            <theme-button @click="this.transcode()">
+                <span class="icon-stack" slot="icon">
+                    <span class="iconify" data-icon="mdi-motion-play-outline"></span>
+                    <span class="iconify hover" data-icon="mdi-motion-play-outline"></span>
+                </span>
+                Transcode</theme-button>
         </footer>
     </div>
     <transcode-configurator-stream-config #ref="streamConfig"></transcode-configurator-stream-config>

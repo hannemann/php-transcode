@@ -10,6 +10,8 @@ import { requestDeinterlace } from "./deinterlace.js";
 
 export const toolProxy = function (e) {
     const args = e.target.value.split(":");
+    if (e.type === "change" && args[2] !== 'instantOpen') return;
+    
     switch (args.shift()) {
         case "concat":
             requestConcat.apply(this, args);

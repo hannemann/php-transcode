@@ -8,9 +8,9 @@ class ComboButton extends Slim {
         this.toggle = this.toggle.bind(this);
         this.setValue = this.setValue.bind(this);
         this.options = this.querySelectorAll("option");
-        this.selectedIndex = 0;
-        this.value = this.options[0].value;
-        this.label = this.options[0].textContent;
+        this.selectedIndex = this.options.length - 1;
+        this.value = this.options[this.selectedIndex].value;
+        this.label = this.options[this.selectedIndex].textContent;
     }
 
     onAdded() {
@@ -106,6 +106,7 @@ ComboButton.template = /*html*/ `
         display: flex;
         width: 100%;
         justify-content: space-between;
+        align-items: center;
     }
     button:hover svg:not(.hover),
     button svg.hover {
@@ -116,6 +117,7 @@ ComboButton.template = /*html*/ `
     }
     .label {
         display: inline-block;
+        flex-grow: 1;
     }
     .toggle {
         display: flex;
@@ -129,18 +131,22 @@ ComboButton.template = /*html*/ `
         position: absolute;
         background: white;
     }
-    ::slotted(*) {
+    ::slotted(option) {
         display: none;
+    }
+    ::slotted(.icon-stack) {
+        margin-inline-start: .5rem;
     }
 </style>
 <button #ref="button" part="button">
+    <slot name="icon"></slot>
     <span class="label" part="label">{{ this.label }}</span>
     <div class="toggle" @click="this.toggle" part="toggle">
         <span class="iconify" data-icon="mdi-menu-down-outline"></span>
         <span class="iconify hover" data-icon="mdi-menu-down-outline"></span>
     </div>
 </button>
-<slot></slot>
+<slot name="options"></slot>
 <div class="dropdown" #ref="dropdown" part="dropdown">
     <option part="option" #ref="dummyOption"/>
     <option part="option-hover" #ref="dummyOptionHover"/>
