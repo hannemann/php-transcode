@@ -3,15 +3,18 @@ import "./FilePickerItem";
 import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 import Iconify from "@iconify/iconify";
 
-import ITEM_TEMPLATE from "./FilePickerItem";
-
 class FilePicker extends FilePickerBase {
-    onAdded() {
-        super.onAdded();
+    connectedCallback() {
+        super.connectedCallback();
         this.path = "root";
         this.initWebsocket();
         this.reload = this.reload.bind(this);
+        this.shadowRoot.querySelector('.tool-button[data-type="reload"]').addEventListener('click', this.reload);
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot));
+    }
+
+    disconnectedCallback() {
+        this.shadowRoot.querySelector('.tool-button[data-type="reload"]').removeEventListener('click', this.reload);
     }
 
     reload(e) {
@@ -50,7 +53,7 @@ main {
 }
 </style>
 <div class="toolbar">
-    <div class="tool-button" @click="{{ this.reload }}">
+    <div class="tool-button" data-type="reload">
         <div class="icon-stack">
             <span class="iconify inactive" data-icon="mdi-reload"></span>
             <span class="iconify active" data-icon="mdi-reload"></span>
@@ -59,9 +62,7 @@ main {
     </div>
 </div>
 <main>
-    <div>
-        ${ITEM_TEMPLATE}
-    </div>
+    <div class="items"></div>
 </main>
 `;
 customElements.define("filepicker-root", FilePicker);

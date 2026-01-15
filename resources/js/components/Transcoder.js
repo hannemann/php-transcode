@@ -1,4 +1,3 @@
-import { Slim } from "@/components/lib";
 import "./FilePicker";
 import "./Configurator";
 import "./TextViewer";
@@ -6,20 +5,48 @@ import "./Request";
 import "./Toast";
 import "./Statusbar";
 
-class Transcoder extends Slim {
-    constructor() {
-        super();
-        this.backgroundRequests = 0;
+class Transcoder extends HTMLElement {
+
+    backgroundRequests = 0;
+
+    connectedCallback() {
+        this.initDom();
+        this.addListeners();
     }
 
-    onAdded() {
-        let backgroundHandler = this.toggleBackground.bind(this);
+    disconnectedCallback() {
+        this.removeListeners();
+    }
+
+    initDom() {
+        const template = document.createElement('template');
+        template.innerHTML = this.constructor.template;
+        const shadowRoot = this.attachShadow({ mode: "open" });
+        const importedNode = document.importNode(template.content, true);
+        this.filePicker = importedNode.querySelector('filepicker-root');
         this.filePicker.channelHash = this.dataset.channel;
-        document.addEventListener("loading", backgroundHandler);
-        document.addEventListener("configurator-show", backgroundHandler);
-        document.addEventListener("textviewer-show", backgroundHandler);
-        document.addEventListener("modal-show", backgroundHandler);
+        this.configurator = importedNode.querySelector('transcode-configurator');
+        importedNode.querySelector('status-bar').configurator = this.configurator;
+        shadowRoot.appendChild(importedNode);
         document.body.appendChild(document.createElement('transcoder-toast'));
+    }
+
+    addListeners() {
+        document.addEventListener("loading", this);
+        document.addEventListener("configurator-show", this);
+        document.addEventListener("textviewer-show", this);
+        document.addEventListener("modal-show", this);
+    }
+
+    removeListeners() {
+        document.removeEventListener("loading", this);
+        document.removeEventListener("configurator-show", this);
+        document.removeEventListener("textviewer-show", this);
+        document.removeEventListener("modal-show", this);
+    }
+
+    handleEvent(e) {
+        this.toggleBackground(e);
     }
 
     toggleBackground(e) {
@@ -82,11 +109,11 @@ Transcoder.template = /*html*/ `
 </style>
 <h1>PVR Toolbox</h1>
 <main>
-    <filepicker-root #ref="filePicker"></filepicker-root>
+    <filepicker-root></filepicker-root>
 </main>
-<transcode-configurator #ref="configurator"></transcode-configurator>
+<transcode-configurator></transcode-configurator>
 <text-viewer></text-viewer>
-<status-bar .configurator="{{ this.configurator }}"></status-bar>
+<status-bar></status-bar>
 <transcoder-loading></transcoder-loading>
 `;
 

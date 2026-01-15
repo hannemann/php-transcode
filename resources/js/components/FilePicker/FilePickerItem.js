@@ -4,17 +4,53 @@ import { ICON_STACK_CSS } from '@/components/Icons/Stack.css'
 import { Request } from "@/components/Request";
 
 class FilePickerItem extends FilePickerBase {
-    constructor() {
-        super();
-        this.wsUrl.push(encodeURIComponent(this.path));
+
+    connectedCallback() {
         this.isDirectory = this.type === TYPE_DIRECTORY;
         this.isFile = this.type === TYPE_FILE;
+        super.connectedCallback();
+        this.wsUrl.push(encodeURIComponent(this.path));
+        this.handleClick = this.handleClick.bind(this);
         this.delete = this.delete.bind(this);
+        this.addListeners();
+        requestAnimationFrame(() => this.update());
     }
 
-    onAdded() {
-        super.onAdded();
-        requestAnimationFrame(() => this.update());
+    disconnectedCallback() {
+        this.removeListeners();
+    }
+
+    initDom() {
+        super.initDom();
+        this.itemsContainer = this.shadowRoot.querySelector('.items');
+        this.itemsContainer.classList.toggle('file', this.isFile);
+        this.itemsContainer.classList.toggle('dir', !this.isFile);
+        this.itemsContainer.classList.toggle('internal', this.internal);
+
+        this.shadowRoot.querySelectorAll('.icon-stack:not(.delete) .iconify').forEach(i => i.dataset.icon = this.icon);
+
+        if (this.isFile) {
+            this.shadowRoot.querySelector('.info[data-info="size"]').innerText = this.size;
+            this.shadowRoot.querySelector('.info[data-info="date"]').innerText = this.getLocalDate();
+        } else {
+            this.shadowRoot.querySelectorAll('.info').forEach(i => i.remove());
+        }
+
+        if (this.internal) {
+            this.shadowRoot.querySelector('.dummy-button').remove();
+        } else {
+            this.shadowRoot.querySelector('.icon-stack.delete').remove();
+        }
+    }
+
+    addListeners() {
+        this.shadowRoot.querySelector('.label').addEventListener('click', this.handleClick);
+        this.shadowRoot.querySelector('.icon-stack.delete')?.addEventListener('click', this.delete);
+    }
+
+    removeListeners() {
+        this.shadowRoot.querySelector('.label').removeEventListener('click', this.handleClick);
+        this.shadowRoot.querySelector('.icon-stack.delete')?.removeEventListener('click', this.delete);
     }
 
     update() {
@@ -38,6 +74,7 @@ class FilePickerItem extends FilePickerBase {
         } else {
             this.items = [];
             this.iconActive = false;
+            this.removeItems();
             this.leaveWebsocket();
         }
     }
@@ -121,8 +158,12 @@ class FilePickerItem extends FilePickerBase {
         }
     }
 
+    set title(value) {
+        this.shadowRoot.querySelector('.label').title = value;
+    }
+
     get title() {
-        return this.buildTitle();
+        return this.shadowRoot.querySelector('.label').title;
     }
 
     get fileType() {
@@ -218,49 +259,29 @@ ${ICON_STACK_CSS}
 
 const ICON_TEMPLATE = /*html*/ `
 <div class="icon-stack">
-    <span class="iconify inactive" data-icon="{{ this.icon }}"></span>
-    <span class="iconify active" data-icon="{{ this.icon }}"></span>
-    <span class="iconify hover" data-icon="{{ this.icon }}"></span>
+    <span class="iconify inactive"></span>
+    <span class="iconify active"></span>
+    <span class="iconify hover"></span>
 </div>
-`;
-
-/** preserve whitespaces! */
-const ITEM_TEMPLATE = /*html*/ `
-<filepicker-item
-    *foreach="{{ this.items }}"
-    .type="{{ item.type }}"
-    .path="{{ item.path }}"
-    .channel-hash="{{ item.channel }}"
-    .mime="{{ item.mime }}"
-    .size="{{ item.size }}"
-    .last-modified="{{ item.lastModified }}"
-    .internal="{{ item.internal }}"
-    .name="{{ item.name }}"
->
-        {{ item.name }}
-</filepicker-item>
 `;
 
 FilePickerItem.template = /*html*/ `
 ${CSS}
-<div class="{{ (this.isFile ? 'file' : 'dir') + (this.internal ? ' internal' : '') }}">
+<div class="items">
     <div class="item">
         ${ICON_TEMPLATE}
-        <span @click="this.handleClick()" title="{{ this.title }}" class="label">
+        <span class="label">
             <slot></slot>
         </span>
-        <span *if="{{ this.type === 'f' }}" class="info">{{ this.size }}</span>
-        <span *if="{{ this.type === 'f' }}" class="info">{{ this.getLocalDate() }}</span>
-        <button *if="{{ this.internal }}" class="icon-stack delete" @click="{{ this.delete }}">
+        <span class="info" data-info="size"></span>
+        <span class="info" data-info="date"></span>
+        <button class="icon-stack delete">
             <span class="iconify" data-icon="mdi-trash-can-outline"></span>
             <span class="iconify hover" data-icon="mdi-trash-can-outline"></span>
         </button>
-        <div class="dummy-button" *if="{{ !this.internal }}"></div>
+        <div class="dummy-button"></div>
     </div>
-    ${ITEM_TEMPLATE}
 </div>
 `;
 
 customElements.define("filepicker-item", FilePickerItem);
-
-export default ITEM_TEMPLATE;

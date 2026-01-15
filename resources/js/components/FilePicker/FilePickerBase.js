@@ -1,26 +1,32 @@
-import { Slim, Utils } from '@/components/lib';
 import {Request} from '@/components/Request'
 
 const TYPE_DIRECTORY = 'd'
 const TYPE_FILE = 'f'
-class FilePickerBase extends Slim {
+class FilePickerBase extends HTMLElement {
 
-    constructor() {
-        super()
+    connectedCallback() {
         this.items = []
         this.wsUrl = [this.wsBaseUrl]
-        this.wsChannel = `${this.wsEvent}.${this.channelHash}`
         this.requestItems = this.requestItems.bind(this)
         this.onWsEvent = this.onWsEvent.bind(this)
-    }
 
-    onAdded() {
+        this.initDom();
+
+        this.wsChannel = `${this.wsEvent}.${this.channelHash}`
         this.addEventListener('child-deleted', this.requestItems)
     }
 
-    onRemoved() {
+    disconnectedCallback() {
         this.leaveWebsocket()
         this.removeEventListener('child-deleted', this.requestItems)
+    }
+
+    initDom() {
+        const template = document.createElement('template');
+        template.innerHTML = this.constructor.template;
+        const shadowRoot = this.attachShadow({ mode: "open" });
+        const importedNode = document.importNode(template.content, true);
+        shadowRoot.appendChild(importedNode);
     }
 
     initWebsocket() {
@@ -42,6 +48,8 @@ class FilePickerBase extends Slim {
             Request.loading = false
             console.info('Received %d items in %s', this.items.length, this.path)
         }
+        this.removeItems();
+        this.renderItems();
         requestAnimationFrame(() => {
             this.shadowRoot.querySelectorAll('filepicker-item').forEach(i => i.update())
         })
@@ -61,6 +69,27 @@ class FilePickerBase extends Slim {
         } finally {
             this.classList.remove(this.loadingClass)
         }
+    }
+
+    renderItems() {
+        const container = this.shadowRoot.querySelector('.items');
+        this.items.forEach(i => {
+            const item = document.createElement('filepicker-item');
+            item.type = i.type;
+            item.path = i.path;
+            item.channelHash = i.channel;
+            item.mime = i.mime;
+            item.size = i.size;
+            item.lastModified = i.lastModified;
+            item.internal = i.internal;
+            item.name = i.name;
+            item.innerText = i.name;
+            container.append(item);
+        });
+    }
+
+    removeItems() {
+        this.shadowRoot.querySelectorAll('filepicker-item').forEach(i => i.remove());
     }
 
     set iconActive(value) {
