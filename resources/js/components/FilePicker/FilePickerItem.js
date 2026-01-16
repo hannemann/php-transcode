@@ -6,8 +6,6 @@ import { Request } from "@/components/Request";
 class FilePickerItem extends FilePickerBase {
 
     connectedCallback() {
-        this.isDirectory = this.type === TYPE_DIRECTORY;
-        this.isFile = this.type === TYPE_FILE;
         super.connectedCallback();
         this.wsUrl.push(encodeURIComponent(this.path));
         this.handleClick = this.handleClick.bind(this);
@@ -22,25 +20,34 @@ class FilePickerItem extends FilePickerBase {
 
     initDom() {
         super.initDom();
-        this.itemsContainer = this.shadowRoot.querySelector('.items');
-        this.itemsContainer.classList.toggle('file', this.isFile);
-        this.itemsContainer.classList.toggle('dir', !this.isFile);
+
+        this.initType();
+        this.initIcon();
+
         this.itemsContainer.classList.toggle('internal', this.internal);
+        if (this.internal) {
+            this.shadowRoot.querySelector('.dummy-button').remove();
+        } else {
+            this.shadowRoot.querySelector('.icon-stack.delete').remove();
+        }
+    }
 
-        this.shadowRoot.querySelectorAll('.icon-stack:not(.delete) .iconify').forEach(i => i.dataset.icon = this.icon);
-
+    initType() {
+        this.isDirectory = this.type === TYPE_DIRECTORY;
+        this.isFile = this.type === TYPE_FILE;
+        this.itemsContainer.classList.toggle('file', this.type === TYPE_FILE);
+        this.itemsContainer.classList.toggle('dir', this.type === TYPE_DIRECTORY);
         if (this.isFile) {
             this.shadowRoot.querySelector('.info[data-info="size"]').innerText = this.size;
             this.shadowRoot.querySelector('.info[data-info="date"]').innerText = this.getLocalDate();
         } else {
             this.shadowRoot.querySelectorAll('.info').forEach(i => i.remove());
         }
+    }
 
-        if (this.internal) {
-            this.shadowRoot.querySelector('.dummy-button').remove();
-        } else {
-            this.shadowRoot.querySelector('.icon-stack.delete').remove();
-        }
+    initIcon() {
+        this.shadowRoot.querySelectorAll('.icon-stack:not(.delete) .iconify')
+            .forEach(i => i.dataset.icon = this.icon);
     }
 
     addListeners() {
@@ -140,6 +147,10 @@ class FilePickerItem extends FilePickerBase {
                 new CustomEvent("child-deleted")
             );
         } catch (error) {}
+    }
+
+    get itemsContainer() {
+        return this.shadowRoot.querySelector('.items');
     }
 
     get icon() {

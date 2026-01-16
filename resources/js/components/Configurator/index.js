@@ -17,7 +17,7 @@ import { toolProxy } from "./Tools";
 const WS_CHANNEL = "Transcode.Config";
 class TranscodeConfigurator extends Slim {
 
-    onAdded() {
+    connectedCallback() {
         this.canConcat = false;
         document.addEventListener("file-clicked", this.init.bind(this));
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot));

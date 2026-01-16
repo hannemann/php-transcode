@@ -5,6 +5,8 @@ import "./Request";
 import "./Toast";
 import "./Statusbar";
 
+import {DomHelper} from "../Helper/Dom";
+
 class Transcoder extends HTMLElement {
 
     backgroundRequests = 0;
@@ -19,16 +21,13 @@ class Transcoder extends HTMLElement {
     }
 
     initDom() {
-        const template = document.createElement('template');
-        template.innerHTML = this.constructor.template;
-        const shadowRoot = this.attachShadow({ mode: "open" });
-        const importedNode = document.importNode(template.content, true);
+        const importedNode = DomHelper.fromTemplate.call(this);
         this.filePicker = importedNode.querySelector('filepicker-root');
         this.filePicker.channelHash = this.dataset.channel;
         this.configurator = importedNode.querySelector('transcode-configurator');
         importedNode.querySelector('status-bar').configurator = this.configurator;
-        shadowRoot.appendChild(importedNode);
         document.body.appendChild(document.createElement('transcoder-toast'));
+        DomHelper.appendShadow.call(this, importedNode);
     }
 
     addListeners() {

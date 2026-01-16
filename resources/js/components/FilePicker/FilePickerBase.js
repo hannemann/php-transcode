@@ -1,4 +1,5 @@
-import {Request} from '@/components/Request'
+import {Request} from '@/components/Request';
+import {DomHelper} from '../../Helper/Dom';
 
 const TYPE_DIRECTORY = 'd'
 const TYPE_FILE = 'f'
@@ -22,11 +23,7 @@ class FilePickerBase extends HTMLElement {
     }
 
     initDom() {
-        const template = document.createElement('template');
-        template.innerHTML = this.constructor.template;
-        const shadowRoot = this.attachShadow({ mode: "open" });
-        const importedNode = document.importNode(template.content, true);
-        shadowRoot.appendChild(importedNode);
+        DomHelper.initDom.call(this);
     }
 
     initWebsocket() {
@@ -75,15 +72,15 @@ class FilePickerBase extends HTMLElement {
         const container = this.shadowRoot.querySelector('.items');
         this.items.forEach(i => {
             const item = document.createElement('filepicker-item');
-            item.type = i.type;
             item.path = i.path;
             item.channelHash = i.channel;
-            item.mime = i.mime;
             item.size = i.size;
             item.lastModified = i.lastModified;
             item.internal = i.internal;
             item.name = i.name;
             item.innerText = i.name;
+            item.type = i.type;
+            item.mime = i.mime;
             container.append(item);
         });
     }
