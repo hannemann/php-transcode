@@ -1,4 +1,4 @@
-import { Slim, Utils, Iconify } from '@/components/lib';
+import { Iconify } from '@/components/lib';
 import {Request} from '@/components/Request'
 import { COMBO_BUTTON_CSS } from '@/components/partials';
 import './Streams'
@@ -13,15 +13,35 @@ import "./Dialogues/Cropper";
 import "./Dialogues/Delogo";
 import "./Dialogues/RemoveLogo";
 import { toolProxy } from "./Tools";
+import { DomHelper } from '../../Helper/Dom';
 
 const WS_CHANNEL = "Transcode.Config";
-class TranscodeConfigurator extends Slim {
+class TranscodeConfigurator extends HTMLElement {
+
+    #format;
+    #streams;
+    #filterGraph;
+
+    canConcat = false;
+    remuxContainer = "MP4";
 
     connectedCallback() {
-        this.canConcat = false;
-        document.addEventListener("file-clicked", this.init.bind(this));
+        this.initDom().initListeners().addListeners();
+    }
+
+    initDom() {
+        const importNode = DomHelper.fromTemplate.call(this);
+        this.main = importNode.querySelector('main');
+        this.infoNode = importNode.querySelector('.info');
+        this.streamsSection = this.infoNode.querySelector('section');
+        this.streamConfig = importNode.querySelector('transcode-configurator-stream-config');
+        DomHelper.appendShadow.call(this, importNode);
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot));
-        this.remuxContainer = "MP4";
+        return this;
+    }
+
+    initListeners() {
+        document.addEventListener("file-clicked", this.init.bind(this));
         this.handleConfigureStream = this.handleConfigureStream.bind(this);
         this.handleConfigureStreamReady = this.handleStreamConfig.bind(this);
         this.handleClipsUpdated = this.handleClipsUpdated.bind(this);
@@ -29,6 +49,21 @@ class TranscodeConfigurator extends Slim {
         this.toolProxy = toolProxy.bind(this);
         this.saveProxy = this.saveProxy.bind(this);
         this.hide = this.hide.bind(this);
+        this.transcode = this.transcode.bind(this);
+        return this;
+    }
+
+    addListeners() {
+        this.shadowRoot.querySelector('.btn-hide').addEventListener('click', this.hide);
+        this.shadowRoot.querySelector('.btn-save').addEventListener('click', this.saveProxy);
+        this.shadowRoot.querySelector('.btn-tools').addEventListener('click', this.toolProxy);
+        this.shadowRoot.querySelector('.btn-tools').addEventListener('change', this.toolProxy);
+        this.shadowRoot.querySelector('.btn-transcode').addEventListener('click', this.transcode);
+        this.shadowRoot.querySelector('.btn-play')
+            .addEventListener('click', this.toolProxy.bind(this, {target:{value:'play:cpu'}}));
+        this.shadowRoot.querySelector('.btn-clipper')
+            .addEventListener('click', this.toolProxy.bind(this, {target:{value:'clip'}}));
+        return this;
     }
 
     init(e) {
@@ -214,6 +249,11 @@ class TranscodeConfigurator extends Slim {
             !this.item.parent.videoFiles.find(
                 (i) => i.name === `${this.item.parent.channelHash}-concat.ts`
             );
+            
+        this.shadowRoot.querySelectorAll('.btn-tools option[value^="concat"]')
+            .forEach(o => {
+                o.style.display = this.canConcat ? '' : 'none'
+            });
     }
 
     handleConfigureStream(e) {
@@ -259,7 +299,65 @@ class TranscodeConfigurator extends Slim {
             `/settings/${encodeURIComponent(this.item.path)}`,
             {...this.config, asTemplate}
         );
-        Utils.forceUpdate(this);
+
+        this.format = this.format;
+        this.filterGraph = this.filterGraph;
+        this.streams = this.streams;
+    }
+
+    get format() {
+        return this.#format;
+    }
+
+    set format(value) {
+        this.#format = value;
+        const tagFormat = 'transcode-configurator-format';
+        const tagClips = 'transcode-configurator-clips';
+        this.streamsSection.querySelector(tagFormat)?.remove();
+        this.infoNode.querySelector(tagClips)?.remove();
+
+        if (this.format) {
+            const formatNode = document.createElement(tagFormat);
+            formatNode.format = this.format;
+            this.streamsSection.append(formatNode);
+
+            const clipsNode = document.createElement(tagClips);
+            clipsNode.path = this.item.path;
+            clipsNode.videoDuration = this.format.duration;
+            this.infoNode.append(clipsNode);
+        }
+    }
+
+    get streams() {
+        return this.#streams;
+    }
+
+    set streams(value) {
+        this.#streams = value;
+        const tag = 'transcode-configurator-streams';
+        this.streamsSection.querySelector(tag)?.remove();
+
+        if (this.streams) {
+            const node = document.createElement(tag);
+            node.items = this.streams;
+            this.streamsSection.append(node);
+        }
+    }
+
+    get filterGraph() {
+        return this.#filterGraph;
+    }
+
+    set filterGraph(value) {
+        this.#filterGraph = value;
+        const tag = 'transcode-configurator-filter-graph';
+        this.streamsSection.querySelector(tag)?.remove();
+
+        if (this.filterGraph.length) {
+            const node = document.createElement(tag);
+            node.configurator = this;
+            this.streamsSection.append(node);
+        }
     }
 
     get config() {
@@ -349,6 +447,18 @@ main > div {
     display: grid;
     gap: 1rem;
     grid-auto-rows: min-content;
+
+    transcode-configurator-format {
+        order: 1;
+    }
+
+    transcode-configurator-streams {
+        order: 2;
+    }
+
+    transcode-configurator-filter-graph {
+        order: 3;
+    }
 }
 .info transcode-configurator-clips {
     grid-area: clips;
@@ -376,7 +486,7 @@ ${COMBO_BUTTON_CSS}
 const HEADING = /*html*/ `
 <h1>
     Transcode
-    <div @click="{{ this.hide }}" class="icon-stack">
+    <div class="icon-stack btn-hide">
         <span class="iconify" data-icon="mdi-close"></span>
         <span class="iconify hover" data-icon="mdi-close"></span>
     </div>
@@ -385,23 +495,18 @@ const HEADING = /*html*/ `
 
 TranscodeConfigurator.template = /*html*/ `
 ${CSS}
-<main #ref="main">
+<main>
     ${HEADING}
     <div>
         <div class="info">
-            <section>
-                <transcode-configurator-format *if="{{ this.format }}" .format="{{ this.format }}" #ref="formatNode"></transcode-configurator-format>
-                <transcode-configurator-streams *if="{{ this.streams }}" .items="{{ this.streams }}"></transcode-configurator-streams>
-                <transcode-configurator-filter-graph *if="{{ this.filterGraph.length }}" .configurator="{{ this }}"></transcode-configurator-filter-graph>
-            </section>
-            <transcode-configurator-clips *if="{{ this.format }}" .path="{{ this.item.path }}" .video-duration="{{ this.format.duration }}"></transcode-configurator-clips>
+            <section></section>
         </div>
         <footer>
-            <button @click="this.toolProxy({target:{value:'play:cpu'}})" class="icon-stack" title="Play">
+            <button class="icon-stack btn-play" title="Play">
                 <span class="iconify" data-icon="mdi-play"></span>
                 <span class="iconify hover" data-icon="mdi-play"></span>
             </button>
-            <combo-button @click="{{ this.saveProxy }}">
+            <combo-button class="btn-save">
                 <span class="icon-stack" slot="icon">
                     <span class="iconify" data-icon="mdi-content-save-outline"></span>
                     <span class="iconify hover" data-icon="mdi-content-save-outline"></span>
@@ -409,13 +514,13 @@ ${CSS}
                 <option value="save:template">Save as Template</option>
                 <option value="save:normal">Save</option>
             </combo-button>
-            <combo-button @click="{{ this.toolProxy }}" @change="{{ this.toolProxy }}">
+            <combo-button class="btn-tools">
                 <span class="icon-stack" slot="icon">
                     <span class="iconify" data-icon="mdi-tools"></span>
                     <span class="iconify hover" data-icon="mdi-tools"></span>
                 </span>
-                <option *if="{{ this.canConcat }}" value="concat:mkv">Concat MKV</option>
-                <option *if="{{ this.canConcat }}" value="concat:mp4">Concat MP4</option>
+                <option value="concat:mkv">Concat MKV</option>
+                <option value="concat:mp4">Concat MP4</option>
                 <option value="remux:mkv">Remux MKV</option>
                 <option value="remux:mp4">Remux MP4</option>
                 <option value="remux:ts">Remux TS</option>
@@ -425,14 +530,14 @@ ${CSS}
                 <option value="delogo:cpu:instantOpen">DeLogo</option>
                 <option value="removelogo:cpu:instantOpen">RemoveLogo</option>
             </combo-button>
-            <theme-button @click="this.toolProxy({target:{value:'clip'}})">
+            <theme-button class="btn-clipper">
                 <span class="icon-stack" slot="icon">
                     <span class="iconify" data-icon="mdi-scissors"></span>
                     <span class="iconify hover" data-icon="mdi-scissors"></span>
                 </span>
                 Clipper
             </theme-button>
-            <theme-button @click="this.transcode()">
+            <theme-button class="btn-transcode">
                 <span class="icon-stack" slot="icon">
                     <span class="iconify" data-icon="mdi-motion-play-outline"></span>
                     <span class="iconify hover" data-icon="mdi-motion-play-outline"></span>
@@ -440,7 +545,7 @@ ${CSS}
                 Transcode</theme-button>
         </footer>
     </div>
-    <transcode-configurator-stream-config #ref="streamConfig"></transcode-configurator-stream-config>
+    <transcode-configurator-stream-config></transcode-configurator-stream-config>
 </main>
 `;
 

@@ -12,14 +12,14 @@ class Clips extends Slim {
 
     constructor() {
         super();
+    }
+
+    connectedCallback() {
         this.clips = [this.newClip()];
         this.valid = true;
         this.bindListener();
         this.mode = "clips";
         this.totalDuration = Time.fromSeconds(this.videoDuration);
-    }
-
-    connectedCallback() {
         this.initWebsocket();
         requestAnimationFrame(() => sortable(this.clipsContainer));            
     }
