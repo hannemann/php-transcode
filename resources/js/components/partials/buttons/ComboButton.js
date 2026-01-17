@@ -1,19 +1,12 @@
-import { Slim, Iconify } from "@/components/lib";
+import { Iconify } from "@/components/lib";
 import COMBO_BUTTON_DROPDOWN_CSS from './ComboButton/DropdownCSS';
+import { DomHelper } from "../../../Helper/Dom";
 
-class ComboButton extends Slim {
-    constructor() {
-        super();
-        this.click = this.click.bind(this);
-        this.toggle = this.toggle.bind(this);
-        this.setValue = this.setValue.bind(this);
-        this.options = this.querySelectorAll("option");
-        this.selectedIndex = this.options.length - 1;
-        this.value = this.options[this.selectedIndex].value;
-        this.label = this.options[this.selectedIndex].textContent;
-    }
+class ComboButton extends HTMLElement {
 
-    onAdded() {
+    connectedCallback() {
+        this.initListeners().initDom().addListeners();
+
         requestAnimationFrame(() => {
             Iconify.scan(this.shadowRoot);
             requestAnimationFrame(() => {
@@ -25,6 +18,43 @@ class ComboButton extends Slim {
                     .setAttribute("part", "icon icon-hover");
             });
         });
+    }
+
+    disconnecteCallback() {
+        this.removeListeners();
+    }
+
+    initListeners() {
+        this.click = this.click.bind(this);
+        this.toggle = this.toggle.bind(this);
+        this.setValue = this.setValue.bind(this);
+
+        return this;
+    }
+
+    initDom() {
+        const importNode = DomHelper.fromTemplate.call(this);
+        this.button = importNode.querySelector('button');
+        this.dropdown = importNode.querySelector('.dropdown');
+        this.label = importNode.querySelector('.label');
+        this.options = this.querySelectorAll("option");
+        this.dummyOption = importNode.querySelector('[part="option"]');
+        this.dummyOptionHover = importNode.querySelector('[part="option-hover"]');
+        this.btnToggle = importNode.querySelector('.toggle');
+        this.selectedIndex = this.options.length - 1;
+        this.value = this.options[this.selectedIndex].value;
+        this.label.innerText = this.options[this.selectedIndex].textContent;
+
+        DomHelper.appendShadow.call(this, importNode);
+        return this;
+    }
+
+    addListeners() {
+        this.btnToggle.addEventListener('click', this.toggle);
+    }
+
+    removeListeners() {
+        this.btnToggle.removeEventListener('click', this.toggle);
     }
 
     /**
@@ -89,7 +119,7 @@ class ComboButton extends Slim {
      */
     setValue(e) {
         this.value = e.target.value;
-        this.label = e.target.textContent;
+        this.label.innerText = e.target.textContent;
         this.selectedIndex = Array.from(this.options).indexOf(
             e.explicitOriginalTarget
         );
@@ -138,18 +168,18 @@ ComboButton.template = /*html*/ `
         margin-inline-start: .5rem;
     }
 </style>
-<button #ref="button" part="button">
+<button part="button">
     <slot name="icon"></slot>
-    <span class="label" part="label">{{ this.label }}</span>
-    <div class="toggle" @click="this.toggle" part="toggle">
+    <span class="label" part="label"></span>
+    <div class="toggle" part="toggle">
         <span class="iconify" data-icon="mdi-menu-down-outline"></span>
         <span class="iconify hover" data-icon="mdi-menu-down-outline"></span>
     </div>
 </button>
 <slot name="options"></slot>
-<div class="dropdown" #ref="dropdown" part="dropdown">
-    <option part="option" #ref="dummyOption"/>
-    <option part="option-hover" #ref="dummyOptionHover"/>
+<div class="dropdown" part="dropdown">
+    <option part="option" />
+    <option part="option-hover" />
 </div>
 `;
 

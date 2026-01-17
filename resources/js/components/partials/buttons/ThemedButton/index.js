@@ -1,10 +1,11 @@
-import { Slim, Iconify } from "@/components/lib";
+import { DomHelper } from "../../../../Helper/Dom";
 
-class ThemeButton extends Slim {
-    constructor() {
-        super();
-    }
-    onAdded() {
+class ThemeButton extends HTMLElement {
+    
+    connectedCallback() {
+        DomHelper.initDom.call(this);
+        this.button = this.shadowRoot.querySelector('button');
+
         requestAnimationFrame(() => {
             this.disabled =
                 this.hasAttribute("disabled") || this.deferredDisable;
@@ -81,7 +82,7 @@ button:disabled {
     padding-block: .5rem;
 }
 </style>
-<button part="button" #ref="button">
+<button part="button">
     <slot name="icon"></slot>
     <span class="label">
         <slot></slot>
