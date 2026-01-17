@@ -1,25 +1,48 @@
-import { Slim } from '@/components/lib';
+import { DomHelper } from '../../Helper/Dom';
+import { Time } from '../../Helper/Time';
+import FileHelper from '../../Helper/File';
 import CARD_CSS from './CardCss';
-import FileHelper from '@/Helper/File';
 
-class Format extends Slim {
+class Format extends HTMLElement {
+    connectedCallback() {
+        DomHelper.initDom.call(this);
+        this.filename = this.format.filename;
+        this.formatName = `Container: ${ this.format.format_long_name } / ${ this.format.format_name }`;
+        this.duration = this.format.duration ? Time.fromSeconds(this.format.duration) : 'N/A';
+        this.size = FileHelper.fileSizeH(this.format.size);
+        this.bitRate = `${Math.round(this.format.bit_rate / 1000)} kb/s`;
+    }
+
+    set filename(value) {
+        this.shadowRoot.querySelector('.filename').innerText = String(value);
+    }
+
+    set formatName(value) {
+        this.shadowRoot.querySelector('.format-name').innerText = String(value);
+    }
+
+    set duration(value) {
+        this.shadowRoot.querySelector('.duration').innerText = String(value);
+    }
 
     get duration() {
-        if (!this.format.duration) {
-            return 'N/A';
-        }
-        return new Date(this.format.duration * 1000).toISOString().replace(/^[0-9-]+T/, '').replace(/z$/i, '')
+        return this.shadowRoot.querySelector('.duration').innerText;
+    }
+
+    set size(value) {
+        this.shadowRoot.querySelector('.size').innerText = String(value);
     }
 
     get size() {
-        return FileHelper.fileSizeH(this.format.size)
+        return this.shadowRoot.querySelector('.size').innerText;
+    }
+
+    set bitRate(value) {
+        this.shadowRoot.querySelector('.bitrate').innerText = String(value);
     }
 
     get bitRate() {
-        if (!this.format.bit_rate) {
-            return 'N/A';
-        }
-        return `${Math.round(this.format.bit_rate / 1000)} kb/s`
+        return this.shadowRoot.querySelector('.bitrate').innerText;
     }
 }
 
@@ -36,9 +59,13 @@ ${CARD_CSS}
 <main>
     <h2>Format</h2>
     <section>
-        <div class="filename select-all">{{ this.format.filename }}</div>
-        <div>Container: {{ this.format.format_long_name }} / {{ this.format.format_name }}
-        <div>Duration:&nbsp;<span class="select-all">{{ this.duration }}</span>, Size: {{ this.size }}, Bitrate: {{ this.bitRate }}</div>
+        <div class="filename select-all"></div>
+        <div class="format-name"></div>
+        <div>
+            Duration: <span class="select-all duration"></span>,
+            Size: <span class="size"></span>,
+            Bitrate: <span class="bitrate"></span>
+        </div>
     </section>
 </main>
 `;
