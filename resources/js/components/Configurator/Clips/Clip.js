@@ -1,11 +1,13 @@
-import { Slim, Utils } from '@/components/lib';
+import { DomHelper } from '../../../Helper/Dom';
+import { Iconify } from "@/components/lib";
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css'
 import CARD_CSS from '../CardCss';
 
-class Clip extends Slim {
+class Clip extends HTMLElement {
 
     constructor() {
         super()
+        DomHelper.initDom.call(this);
         this.setTimecode = this.setTimecode.bind(this)
         this.handleKey = this.handleKey.bind(this)
         this.bindListener()
@@ -19,14 +21,33 @@ class Clip extends Slim {
         this.handleBlur = this.handleBlur.bind(this)
     }
 
-    onAdded() {
+    connectedCallback() {
+        this.inputFrom.value = this.clipData.from;
+        this.inputTo.value = this.clipData.to;
+        this.btnAdd.addEventListener('click', this.handleAdd);
+        this.btnRemove.addEventListener('click', this.handleRemove);
         requestAnimationFrame(() => {
-            Iconify.scan(this.shadowRoot)
-            this.shadowRoot.querySelectorAll('input').forEach(i => {
-                i.setCustomValidity("Timecode invalid: 00:00:00.000")
-                requestAnimationFrame(() => i.setCustomValidity(""))
-            })
+            Iconify.scan(this.shadowRoot);
+            [this.inputFrom, this.inputTo].forEach(i => {
+                i.setCustomValidity("Timecode invalid: 00:00:00.000");
+                requestAnimationFrame(() => i.setCustomValidity(""));
+                i.addEventListener('focus', this.handleFocus);
+                i.addEventListener('blur', this.handleBlur);
+                i.addEventListener('keydown', this.handleKey);
+                i.addEventListener('input', this.setTimecode);
+            });
         })
+    }
+
+    disconnectedCallback() {
+        this.btnAdd.removeEventListener('click', this.handleAdd);
+        this.btnRemove.removeEventListener('click', this.handleRemove);
+        [this.inputFrom, this.inputTo].forEach(i => {
+            i.removeEventListener('focus', this.handleFocus);
+            i.removeEventListener('blur', this.handleBlur);
+            i.removeEventListener('keydown', this.handleKey);
+            i.removeEventListener('input', this.setTimecode);
+        });
     }
 
     setTimecode(e) {
@@ -79,11 +100,32 @@ class Clip extends Slim {
         prevent && e.preventDefault()
     }
 
-    getCutpoint() {
-        if (this.cutpoint !== '') {
-            return `(Cutpoint: ${this.cutpoint})`
-        }
-        return ''
+    set cutpoint(value) {
+        this.labelCutPoint.innerText = value;
+    }
+
+    get inputFrom() {
+        return this.shadowRoot.querySelector('input[name="from"]');
+    }
+
+    get inputTo() {
+        return this.shadowRoot.querySelector('input[name="to"]');
+    }
+
+    get labelCutPoint() {
+        return this.shadowRoot.querySelector('.cutpoint');
+    }
+
+    get btnAdd() {
+        return this.shadowRoot.querySelector('.icon-stack.plus');
+    }
+
+    get btnRemove() {
+        return this.shadowRoot.querySelector('.icon-stack.minus')
+    }
+
+    set canRemove(value) {
+        this.btnRemove.disabled = !value;
     }
 }
 
@@ -139,18 +181,18 @@ input:invalid {
     <div class="input">
         <div>
             <span>From:</span>
-            <input #ref="inputFrom" @focus="{{ this.handleFocus }}" @blur="{{ this.handleBlur }}" placeholder="0:0:0.0" @input="{{ this.setTimecode }}" @keydown="{{ this.handleKey }}" name="from" pattern="{{ this.pattern }}" .value="{{ this.clipData.from }}">
+            <input placeholder="0:0:0.0" name="from" pattern="${ Clip.prototype.pattern }">
         </div>
         <div>
-            <span>To:<span class="cutpoint">{{ this.cutpoint }}</span></span>
-            <input #ref="inputTo" @focus="{{ this.handleFocus }}" @blur="{{ this.handleBlur }}" placeholder="0:0:0.0" @input="{{ this.setTimecode }}" @keydown="{{ this.handleKey }}" name="to" pattern="{{ this.pattern }}" .value="{{ this.clipData.to }}">
+            <span>To:<span class="cutpoint"></span></span>
+            <input placeholder="0:0:0.0" name="to" pattern="${ Clip.prototype.pattern }">
         </div>
     </div>
-    <div class="icon-stack plus" @click="{{ this.handleAdd }}">
+    <div class="icon-stack plus">
         <span class="iconify" data-icon="mdi-plus-outline"></span>
         <span class="iconify hover" data-icon="mdi-plus-outline"></span>
     </div>
-    <button disabled="{{ !this.canRemove }}" class="icon-stack minus" @click="{{ this.handleRemove }}" tabindex="-1">
+    <button class="icon-stack minus" tabindex="-1">
         <span class="iconify" data-icon="mdi-minus"></span>
         <span class="iconify hover" data-icon="mdi-minus"></span>
     </button>

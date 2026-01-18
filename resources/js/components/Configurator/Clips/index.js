@@ -95,7 +95,6 @@ class Clips extends HTMLElement {
     }
 
     handleEvent(e) {
-        console.log(e);
         switch (e.type) {
             case 'updateclip':
                 this.handleUpdate(e);
@@ -133,8 +132,8 @@ class Clips extends HTMLElement {
         clip.from = clipData.from;
         clip.to = clipData.to;
         this.clips.push(clipData);
-        clip.cutpoint = this.getCutpoint(clipData);
         this.clipsContainer.append(clip);
+        clip.cutpoint = this.getCutpoint(clipData);
         clip.addEventListener('updateclip', this);
         clip.addEventListener('clipinsert', this);
         clip.addEventListener('clipremove', this);
