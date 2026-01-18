@@ -117,3 +117,17 @@ Transcoder.template = /*html*/ `
 `;
 
 customElements.define("ffmpeg-transcoder", Transcoder);
+
+/*
+
+TODO:
+
+- remove slim from stream config and buttons
+    - Configurator/Streams/Buttons
+    - Configurator/Streams/Config/index
+- remove slim from dialogues
+- remove slim from toast
+- remove slim from statusbar
+- remove slim from textviewer
+
+*/
