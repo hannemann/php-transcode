@@ -1,10 +1,10 @@
-import { Slim, Utils } from '@/components/lib';
+import { DomHelper } from '../../Helper/Dom'
 import Iconify from '@iconify/iconify'
 
 const STATES = ['success', 'info', 'warning', 'error']
 const DEFAULT_STATE = 'info'
 
-class Toast extends Slim {
+class Toast extends HTMLElement {
 
     constructor() {
         super()
@@ -12,14 +12,36 @@ class Toast extends Slim {
         document.addEventListener('toast', this.show.bind(this))
     }
 
+    connectedCallback() {
+
+        const importNode = DomHelper.fromTemplate.call(this);
+        this.main = importNode.querySelector('main');
+        
+        const itemTemplate = importNode.querySelector('template[data-type="item"]');
+        this.itemTemplate = itemTemplate.content;
+        itemTemplate.remove();
+
+        DomHelper.appendShadow.call(this, importNode);
+    }
+
     show(e) {
         e.detail.type = STATES.indexOf(e.detail.type) > -1 ? e.detail.type : DEFAULT_STATE
         e.detail.id = `${performance.now()}-${this.items.length}`
         this.items.unshift(e.detail)
-        Utils.forceUpdate(this, 'items')
-
-        requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
+        this.renderItems();
         this.animateIn()
+    }
+
+    renderItems() {
+        this.main.replaceChildren();
+        this.items.forEach(item => {
+            const node = document.importNode(this.itemTemplate, true).querySelector('div');
+            node.classList.add(item.type);
+            node.addEventListener('click', this.hide.bind(this, item), {once: true});
+            node.querySelector('section').append(document.createTextNode(item.message));
+            this.main.append(node);
+        });
+        requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
     }
 
     animateIn() {
@@ -52,7 +74,7 @@ class Toast extends Slim {
                         node.style.height = ''
                         delete node.dataset.transition
                         delete node.dataset.transitionOut
-                        Utils.forceUpdate(this, 'items')
+                        this.renderItems();
                     }, {once: true})
                     node.dataset.transitionOut = 'before'
                 })
@@ -137,16 +159,17 @@ svg[data-icon="mdi-close"] {
     display: block;
 }
 </style>
-<main #ref="main">
-    <div *foreach="{{ this.items }}" class="{{ item.type }}" @click="{{ this.hide(item) }}">
-        <section>
-            <span class="iconify" data-icon="mdi-thumb-up-outline"></span>
-            <span class="iconify" data-icon="mdi-alert-box-outline"></span>
-            <span class="iconify" data-icon="mdi-alert-outline"></span>
-            <span class="iconify" data-icon="mdi-alert-circle-outline"></span>
-            {{ item.message }}
-        </section>
-    </div>
+<main>
+    <template data-type="item">
+        <div>
+            <section>
+                <span class="iconify" data-icon="mdi-thumb-up-outline"></span>
+                <span class="iconify" data-icon="mdi-alert-box-outline"></span>
+                <span class="iconify" data-icon="mdi-alert-outline"></span>
+                <span class="iconify" data-icon="mdi-alert-circle-outline"></span>
+            </section>
+        </div>
+    </template>
 </main>
 `;
 
