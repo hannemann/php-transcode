@@ -1,14 +1,20 @@
-import { Slim } from '@/components/lib';
+import { DomHelper } from '../../Helper/Dom';
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 import {Request} from '@/components/Request'
 
 const WS_CHANNEL = 'TextViewer'
 
-class TextViewer extends Slim {
+class TextViewer extends HTMLElement {
 
-    onAdded() {
+    connectedCallback() {
         document.addEventListener('file-clicked', this.init.bind(this))
         document.addEventListener('show-textcontent', this.showTextContent.bind(this))
+
+        DomHelper.initDom.call(this);
+
+        this.btnClose = this.shadowRoot.querySelector('h1 div');
+        this.btnClose.addEventListener('click', this.hide.bind(this));
+
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
     }
 
@@ -79,7 +85,7 @@ class TextViewer extends Slim {
 
     handleTextViewerEvent(ws) {
         console.info(ws)
-        this.content = ws.content
+        this.shadowRoot.querySelector('pre').textContent = ws.content
         this.show()
         Request.loading = false
     }
@@ -136,7 +142,7 @@ ${ICON_STACK_CSS}
 const HEADING = /*html*/`
 <h1>
     Textviewer
-    <div @click="this.hide()" class="icon-stack">
+    <div class="icon-stack">
         <span class="iconify" data-icon="mdi-close"></span>
         <span class="iconify hover" data-icon="mdi-close"></span>
     </div>
