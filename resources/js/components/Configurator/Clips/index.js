@@ -1,4 +1,5 @@
-import { Slim, Utils, Iconify } from "@/components/lib";
+import { Iconify } from "@/components/lib";
+import { DomHelper } from "../../../Helper/Dom";
 import CARD_CSS from "../CardCss";
 import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 import "./Clip";
@@ -8,16 +9,19 @@ import { Time } from "../../../Helper/Time";
 
 const WS_CHANNEL = "Transcode.Clips";
 
-class Clips extends Slim {
+class Clips extends HTMLElement {
 
     constructor() {
         super();
     }
 
     connectedCallback() {
+        DomHelper.initDom.call(this);
         this.clips = [this.newClip()];
         this.valid = true;
         this.bindListener();
+        this.btnCopy.addEventListener('click', this);
+        this.clipsContainer.addEventListener('sortupdate', this);
         this.mode = "clips";
         this.totalDuration = Time.fromSeconds(this.videoDuration);
         this.initWebsocket();
@@ -26,10 +30,12 @@ class Clips extends Slim {
 
     disconnectedCallback() {
         this.leaveWebsocket();
+        this.btnCopy.removeEventListener('click', this);
+        this.clipsContainer.removeEventListener('sortupdate', this);
     }
 
     removeAllClips() {
-        [...this.clipsContainer.childNodes].forEach(this.removeClip);
+        this.clipsContainer.replaceChildren();
     }
 
     removeClip(clip) {
@@ -89,6 +95,7 @@ class Clips extends Slim {
     }
 
     handleEvent(e) {
+        console.log(e);
         switch (e.type) {
             case 'updateclip':
                 this.handleUpdate(e);
@@ -104,6 +111,12 @@ class Clips extends Slim {
                 break;
             case 'clipblur':
                 this.handleBlur(e);
+                break;
+            case 'click':
+                this.handleCopy(e);
+                break;
+            case 'sortupdate':
+                this.handleSortupdate(e);
                 break;
         }
     }
@@ -178,8 +191,10 @@ class Clips extends Slim {
     }
 
     update() {
+        const clips = [...this.clips];
+        this.clips = []
+        this.clipsContainer.replaceChildren(...clips.map(c => this.createClip(c.from, c.to)));
         return new Promise((resolve) => {
-            Utils.forceUpdate(this, "clips");
             requestAnimationFrame(() => {
                 sortable(this.clipsContainer, "reload");
                 this.shadowRoot
@@ -272,8 +287,34 @@ class Clips extends Slim {
             .join("\n");
     }
 
+    set mode(value) {
+        const main = this.shadowRoot.querySelector('main');
+        main.classList.remove('copy', 'clips');
+        main.classList.add(value);
+    }
+
+    get mode() {
+        return this.shadowRoot.querySelector('main').className;
+    }
+
     get clipsContainer() {
         return this.shadowRoot?.querySelector('div.clips')
+    }
+
+    get copyarea() {
+        return this.shadowRoot?.querySelector('.copy textarea')
+    }
+
+    get btnCopy() {
+        return this.shadowRoot?.querySelector('.btn-copy')
+    }
+
+    set totalDuration(value) {
+        this.shadowRoot.querySelector('.duration span').innerText = value;
+    }
+
+    get totalDuration() {
+        return this.shadowRoot.querySelector('.duration span').innerText;
     }
 }
 
@@ -308,21 +349,21 @@ ${CARD_CSS}
         gap: .5rem;
     }
 </style>
-<main class="{{ this.mode }}">
+<main>
     <h2>
         Clips
-        <div class="icon-stack" @click="{{ this.handleCopy }}">
+        <div class="btn-copy icon-stack">
             <span class="iconify" data-icon="mdi-content-copy"></span>
             <span class="iconify hover" data-icon="mdi-content-copy"></span>
         </div>
     </h2>
     <div class="copy">
-        <textarea #ref="copyarea"></textarea>
+        <textarea></textarea>
     </div>
-    <div class="clips" #ref="sortable" @sortupdate="{{ this.handleSortupdate }}">
+    <div class="clips">
     </div>
     <div class="duration">
-        <h2>Duration:</h2> <span>{{ this.totalDuration }}</span>
+        <h2>Duration:</h2> <span></span>
     </div>
 </main>
 `;
