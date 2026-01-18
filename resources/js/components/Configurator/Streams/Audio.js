@@ -17,7 +17,7 @@ class Audio extends Stream {
         const layout = item.channel_layout && item.channel_layout + ',' || '';
         const bitrate = (item.bit_rate && Math.round(item.bit_rate / 1000) + ' kb/s') || '';
         const lang = (item.tags?.language || '').wrap('(', ')');
-        const targetCodec = Object.values(AUDIO_CODECS).find(c => c.v === item.transcodeConfig.codec).l ;
+        const targetCodec = Object.values(AUDIO_CODECS).find(c => c.v === item.transcodeConfig.codec)?.l || '';
         const channels = `Channels: ${ item.transcodeConfig.channels }`;
         return `Stream #0:${item.index} ${item.codec_name} ${layout}`
             + `${bitrate}${lang} -> ${targetCodec}, ${channels}`

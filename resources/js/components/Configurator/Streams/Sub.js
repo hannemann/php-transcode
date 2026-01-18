@@ -16,7 +16,7 @@ class Sub extends Stream {
     getShortDescription(item) {
         const lang = (item.tags?.language || '').wrap('(', ')');
         const disp = Object.keys(item.disposition).filter(k => item.disposition[k] > 0).join(', ').wrap('(', ')');
-        const targetCodec = Object.values(SUBTITLE_CODECS).find(c => c.v === item.transcodeConfig.codec).l ;
+        const targetCodec = Object.values(SUBTITLE_CODECS).find(c => c.v === item.transcodeConfig.codec)?.l || '' ;
         return `Stream #0:${item.index} ${item.codec_name} ${lang}, ${disp} -> ${targetCodec}`
     }
 

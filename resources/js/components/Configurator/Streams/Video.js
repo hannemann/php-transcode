@@ -19,7 +19,7 @@ class Video extends Stream {
 
     getShortDescription(stream) {
         const dim = [stream.width, stream.height].filter(i => i).join('x');
-        const targetCodec = Object.values(VIDEO_CODECS).find(c => c.v === stream.transcodeConfig.codec).l;
+        const targetCodec = Object.values(VIDEO_CODECS).find(c => c.v === stream.transcodeConfig.codec)?.l || '';
         const qp = this.getQp(stream);
         const aspect = `DAR: ${ stream.transcodeConfig.aspectRatio }`;
         return `Stream #0:${stream.index} ${stream.codec_name} ${dim}`
@@ -55,7 +55,7 @@ class Video extends Stream {
     }
 
     getDefaultQp(item) {
-        const qp = Object.values(VIDEO_CODECS).find(c => c.v === item.transcodeConfig.codec).qp;
+        const qp = Object.values(VIDEO_CODECS).find(c => c.v === item.transcodeConfig.codec)?.qp || '';
         if (qp === item.transcodeConfig.qp) return '';
         return ` (Default: ${qp})`;
     }
