@@ -1,8 +1,14 @@
-import { Slim, Utils } from '@/components/lib';
+import { DomHelper } from "../../../../Helper/Dom";
 
-class StreamConfig extends Slim {
+class StreamConfig extends HTMLElement {
 
     #manual = false;
+    codecContainer;
+    codecTemplate;
+    channelsContainer;
+    channelTemplate;
+    aspectContainer;
+    aspectTemplate;
 
     constructor() {
         super()
@@ -19,6 +25,31 @@ class StreamConfig extends Slim {
         this.handleDocumentClick = this.handleDocumentClick.bind(this)
         this.handleChannelsChange = this.handleChannelsChange.bind(this)
         this.handleAspectRatioChange = this.handleAspectRatioChange.bind(this)
+    }
+
+    connectedCallback() {
+
+        const importNode = DomHelper.fromTemplate.call(this);
+        this.qpDisplay = importNode.querySelector('#qpslider span span');
+        this.qpSlider = importNode.querySelector('#qpslider input');
+        this.qpSlider.addEventListener('input', this.handleQpRange);
+        
+        const codecTemplate = importNode.querySelector('template[data-type="codec"]');
+        this.codecContainer = codecTemplate.parentNode;
+        this.codecTemplate = codecTemplate.content;
+        codecTemplate.remove();
+        
+        const channelTemplate = importNode.querySelector('template[data-type="channel"]');
+        this.channelsContainer = channelTemplate.parentNode;
+        this.channelTemplate = channelTemplate.content;
+        channelTemplate.remove();
+        
+        const aspectTemplate = importNode.querySelector('template[data-type="aspect"]');
+        this.aspectContainer = aspectTemplate.parentNode;
+        this.aspectTemplate = aspectTemplate.content;
+        aspectTemplate.remove();
+
+        DomHelper.appendShadow.call(this, importNode);
     }
 
     toggle(item, offset) {
@@ -65,17 +96,66 @@ class StreamConfig extends Slim {
     }
 
     initSettings() {
-        const codec = this.item.transcodeConfig?.codec
-        const channels = this.item.transcodeConfig?.channels
-        const qp = this.item.transcodeConfig?.qp
-        this.aspectRatio = this.item.transcodeConfig?.aspectRatio ?? '16:9'
-        this.codecs = this[`${this.item.codec_type}Codecs`].sort((a,b) => a.id > b.id)
-        this.codec = typeof codec !== 'undefined' ? codec : this.codecs.find(c => c.default).v
-        this.qp = typeof qp !== 'undefined' ? qp : this.codecs.find(c => c.default).qp
-        this.channels = typeof channels !== 'undefined' ? channels : this.codecs.find(c => c.default).channels
-        this.qpSlider.value = this.qp
-        this.copyCodec = this.codecs.find(c => c.l === 'Copy').v
-        Utils.forceUpdate(this)
+        const codec = this.item.transcodeConfig?.codec;
+        const channels = this.item.transcodeConfig?.channels;
+        const qp = this.item.transcodeConfig?.qp;
+        this.aspectRatio = this.item.transcodeConfig?.aspectRatio ?? '16:9';
+        this.codecs = this[`${this.item.codec_type}Codecs`].sort((a,b) => a.id > b.id);
+        this.codec = typeof codec !== 'undefined' ? codec : this.codecs.find(c => c.default).v;
+        this.qp = typeof qp !== 'undefined' ? qp : this.codecs.find(c => c.default).qp;
+        this.channels = typeof channels !== 'undefined' ? channels : this.codecs.find(c => c.default).channels;
+        this.qpSlider.value = this.qp;
+        this.copyCodec = this.codecs.find(c => c.l === 'Copy').v;
+        this.update();
+    }
+
+    update() {
+        this.renderCodecs().renderChannels().renderAspect();
+        this.qpSlider.disabled = this.codec === this.copyCodec;
+        this.qpSlider.dispatchEvent(new Event('input'));
+    }
+
+    renderCodecs() {
+        this.codecContainer.replaceChildren();
+        this.codecs.forEach(item => {
+            const node = document.importNode(this.codecTemplate, true);
+            node.querySelector('span').innerText = item.l;
+            const input = node.querySelector('input');
+            input.value = item.v;
+            input.checked = this.isCodecChecked(item);
+            input.addEventListener('change', this.handleCodecChange);
+            this.codecContainer.append(node);
+        });
+        return this;
+    }
+
+    renderChannels() {
+        this.channelsContainer.replaceChildren();
+        this.channelOptions.forEach(item => {
+            const node = document.importNode(this.channelTemplate, true);
+            node.querySelector('span').innerText = item;
+            const input = node.querySelector('input');
+            input.value = item;
+            input.checked = this.isCHannelsChecked(item);
+            input.disabled = this.codec === this.copyCodec;
+            input.addEventListener('change', this.handleChannelsChange);
+            this.channelsContainer.append(node);
+        });
+        return this;
+    }
+
+    renderAspect() {
+        this.aspectContainer.replaceChildren();
+        this.aspectRatioOptions.forEach(item => {
+            const node = document.importNode(this.aspectTemplate, true);
+            node.querySelector('span').innerText = item;
+            const input = node.querySelector('input');
+            input.value = item;
+            input.checked = this.isAspectRatio(item);
+            input.addEventListener('change', this.handleAspectRatioChange);
+            this.aspectContainer.append(node);
+        });
+        return this;
     }
 
     handleDocumentClick(e) {
@@ -86,6 +166,7 @@ class StreamConfig extends Slim {
 
     handleQpRange(e) {
         this.qp = parseInt(this.qpSlider.value)
+        this.qpDisplay.innerText = String(this.qp);
         this.#manual = true;
     }
 
@@ -99,7 +180,7 @@ class StreamConfig extends Slim {
             this.qpSlider.value = this.qp
         }
         this.#manual = true;
-        Utils.forceUpdate(this)
+        this.update();
     }
 
     handleChannelsChange(e) {
@@ -191,27 +272,35 @@ StreamConfig.template = /*html*/`
     }
 </style>
 <main>
-    <label *foreach="{{ this.codecs }}">
-        <span>{{ item.l }}</span>
-        <input type="radio" value="{{ item.v }}" name="codec" .checked="{{ this.isCodecChecked(item) }}" @change="{{ this.handleCodecChange }}">
-    </label>
+    <div id="codecs">
+        <template data-type="codec">
+            <label>
+                <span></span>
+                <input type="radio" name="codec">
+            </label>
+        </template>
+    </div>
     <div id="audiochannels">
         <span>Channels</span>
-        <label *foreach="{{ this.channelOptions }}">
-            <span>{{ item }}</span>
-            <input type="radio" value="{{ item }}" .disabled="{{ this.codec === this.copyCodec }}" name="channels" .checked="{{ this.isCHannelsChecked(item) }}" @change="{{ this.handleChannelsChange }}">
-        </label>
+        <template data-type="channel">
+            <label>
+                <span></span>
+                <input type="radio" name="channels">
+            </label>
+        </template>
     </div>
     <label id="qpslider">
-        <span>QP (<span #ref="qpDisplay">{{ this.qp }}</span>)</span>
-        <input #ref="qpSlider" list="tickmarks" .disabled="{{ this.codec === this.copyCodec }}" type="range" min="18" max="51" step="1" value="{{ this.qp }}" @input="{{ this.handleQpRange }}">
+        <span>QP (<span></span>)</span>
+        <input list="tickmarks" type="range" min="18" max="51" step="1">
     </label>
     <div id="aspect-ratio">
         <span>Aspect Ratio</span>
-        <label *foreach="{{ this.aspectRatioOptions }}">
-            <span>{{ item }}</span>
-            <input type="radio" value="{{ item }}" name="aspect-ratio" .checked="{{ this.isAspectRatio(item) }}" @change="{{ this.handleAspectRatioChange }}">
-        </label>
+        <template data-type="aspect">
+            <label>
+                <span></span>
+                <input type="radio" name="aspect-ratio">
+            </label>
+        </template>
     </div>
 </main>
 `
