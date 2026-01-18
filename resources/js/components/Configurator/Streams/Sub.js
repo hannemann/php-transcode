@@ -1,7 +1,37 @@
 import {Stream, MAINSTART, MAINEND} from "./Stream";
 import CARD_CSS from "../CardCss";
 
-class Sub extends Stream {}
+class Sub extends Stream {
+
+    initItem(stream, node) {
+        node.querySelector('.short-description')
+            .append(document.createTextNode(this.getShortDescription(stream)));
+        node.querySelector('.long-description[data-desc="index"]')
+            .append(document.createTextNode(this.getIndexDescription(stream)));
+        node.querySelector('.long-description[data-desc="codec"]')
+            .append(document.createTextNode(this.getCodecDescription(stream)));
+        return node;
+    }
+
+    getShortDescription(item) {
+        const lang = (item.tags?.language || '').wrap('(', ')');
+        const disp = Object.keys(item.disposition).filter(k => item.disposition[k] > 0).join(', ').wrap('(', ')');
+        const targetCodec = Object.values(SUBTITLE_CODECS).find(c => c.v === item.transcodeConfig.codec).l ;
+        return `Stream #0:${item.index} ${item.codec_name} ${lang}, ${disp} -> ${targetCodec}`
+    }
+
+    getIndexDescription(item) {
+        const index = `Stream #0:${ item.index }${ (item.id?.wrap('[', ']') || '') }:`;
+        const lang = (item.tags?.language || '').wrap('(', ')');
+        return `${index} ${lang}`;
+    }
+
+    getCodecDescription(item) {
+        const codec = [item.codec_tag_string, item.codec_tag].filter(i => i).join(' / ')?.wrap('(', ')') || '';
+        const disp = Object.keys(item.disposition).filter(k => item.disposition[k] > 0).join(', ').wrap('(', ')');
+        return `Subtitle: ${ item.codec_name } ${ codec } ${ disp }`;
+    }
+}
 
 Sub.prototype.header = 'Subtitle'
 
@@ -9,25 +39,13 @@ Sub.template = /*html*/`
 ${CARD_CSS}
 ${MAINSTART}
 <section class="toggle">
-    <div class="{{ item.shortView && 'visible' }}" @click="{{ this.toggleView(item) }}" data-toggle="true">
+    <div class="short-description visible" data-toggle="true">
         <span class="iconify" data-icon="mdi-chevron-right"></span>
-        Stream #0:{{ item.index }}
-        {{ item.codec_name }}
-        {{ (item.tags?.language || '').wrap('(', ')') }}
-        {{ Object.keys(item.disposition).filter(k => item.disposition[k] > 0).join(', ').wrap('(', ')') }}
-        &nbsp;->&nbsp;
-        {{ Object.values(SUBTITLE_CODECS).find(c => c.v === item.transcodeConfig.codec).l }}
     </div>
-    <div class="{{ (!item.shortView && 'visible') }}" @click="{{ this.toggleView(item) }}" data-toggle="true">
+    <div class="long-description" data-desc="index" data-toggle="true">
         <span class="iconify" data-icon="mdi-chevron-down"></span>
-        Stream #0:{{ item.index }}{{ (item.id?.wrap('[', ']') || '') }}:
-        {{ (item.tags?.language || '').wrap('(', ')') }}
     </div>
-    <div class="{{ (!item.shortView && 'visible') }}">
-        Subtitle: {{ item.codec_name }}
-        {{ [item.codec_tag_string, item.codec_tag].filter(i => i).join(' / ')?.wrap('(', ')') }}
-        {{ Object.keys(item.disposition).filter(k => item.disposition[k] > 0).join(', ').wrap('(', ')') }}
-    </div>
+    <div class="long-description" data-desc="codec"></div>
 </section>
 ${MAINEND}
 `

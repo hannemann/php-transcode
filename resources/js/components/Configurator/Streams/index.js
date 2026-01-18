@@ -1,4 +1,4 @@
-import { Slim, Utils } from '@/components/lib';
+import { DomHelper } from '../../../Helper/Dom'
 import './Video'
 import './Audio'
 import './Sub'
@@ -12,22 +12,56 @@ const TYPE_DATA = 'data'
 
 export { TYPE_AUDIO, TYPE_VIDEO, TYPE_SUB, TYPE_DATA };
 
-class Streams extends Slim {
+class Streams extends HTMLElement {
 
-    onAdded() {
+    container;
+
+    connectedCallback() {
+        DomHelper.initDom.call(this);
+        this.container = this.shadowRoot.querySelector('div');
         this.updateHandler = this.handleUpdates.bind(this);
         this.video?.find(v => v.active) || this.video?.forEach((v, k) => v.active = k === 0)
         this.audio?.find(a => a.active) || this.audio?.forEach((v, k) => v.active = PREFERRED_LANGUAGES.includes(v.tags?.language));
         this.audio?.find(a => a.active) || this.audio?.forEach((v, k) => v.active = k === 0)
         document.addEventListener('stream-config', this.updateHandler);
+        this.handleUpdates();
     }
 
-    onRemoved() {
+    disconnectedCallback() {
         document.removeEventListener('stream-config', this.updateHandler);
     }
 
     handleUpdates() {
-        Utils.forceUpdate(this);
+        const streams = [];
+        this.video.length && streams.push(this.getVideoStreams());
+        this.audio.length && streams.push(this.getAudioStreams());
+        this.subs.length && streams.push(this.getSubtitleStreams());
+        this.data.length && streams.push(this.getDataStreams());
+        this.container.replaceChildren(...streams);
+    }
+
+    getVideoStreams() {
+        const node = document.createElement('transcode-configurator-stream-video');
+        node.streams = this.video;
+        return node;
+    }
+
+    getAudioStreams() {
+        const node = document.createElement('transcode-configurator-stream-audio');
+        node.streams = this.audio;
+        return node;
+    }
+
+    getSubtitleStreams() {
+        const node = document.createElement('transcode-configurator-stream-sub');
+        node.streams = this.subs;
+        return node;
+    }
+
+    getDataStreams() {
+        const node = document.createElement('transcode-configurator-stream-data');
+        node.streams = this.data;
+        return node;
     }
 
     get video() {
@@ -55,12 +89,7 @@ div {
     gap: 1rem;
 }
 </style>
-<div>
-    <transcode-configurator-stream-video *if="{{ this.video.length }}" .streams="{{ this.video }}"></transcode-configurator-stream-video>
-    <transcode-configurator-stream-audio *if="{{ this.audio.length }}" .streams="{{ this.audio }}"></transcode-configurator-stream-audio>
-    <transcode-configurator-stream-sub *if="{{ this.subs.length }}" .streams="{{ this.subs }}"></transcode-configurator-stream-sub>
-    <transcode-configurator-stream-data *if="{{ this.data.length }}" .streams="{{ this.data }}"></transcode-configurator-stream-data>
-</div>
+<div></div>
 `
 
 customElements.define('transcode-configurator-streams', Streams);
