@@ -6,7 +6,6 @@ const TYPE_FILE = 'f'
 class FilePickerBase extends HTMLElement {
 
     connectedCallback() {
-        this.items = []
         this.wsUrl = [this.wsBaseUrl]
         this.requestItems = this.requestItems.bind(this)
         this.onWsEvent = this.onWsEvent.bind(this)
@@ -45,14 +44,9 @@ class FilePickerBase extends HTMLElement {
             Request.loading = false
             console.info('Received %d items in %s', this.items.length, this.path)
         }
-        this.removeItems();
-        this.renderItems();
         requestAnimationFrame(() => {
             this.shadowRoot.querySelectorAll('filepicker-item').forEach(i => i.update())
         })
-    }
-
-    handleClick() {
     }
 
     requestItems() {
@@ -68,9 +62,14 @@ class FilePickerBase extends HTMLElement {
         }
     }
 
-    renderItems() {
-        const container = this.shadowRoot.querySelector('.items');
-        this.items.forEach(i => {
+    get items() {
+        return [...this.itemsContainer.querySelectorAll('filepicker-item')].map(i => {
+            return JSON.parse(i.dataset.origData)
+        });
+    }
+
+    set items(items) {
+        items = items.map(i => {
             const item = document.createElement('filepicker-item');
             item.path = i.path;
             item.channelHash = i.channel;
@@ -81,12 +80,14 @@ class FilePickerBase extends HTMLElement {
             item.innerText = i.name;
             item.type = i.type;
             item.mime = i.mime;
-            container.append(item);
+            item.dataset.origData = JSON.stringify(i);
+            return item;
         });
+        this.itemsContainer.replaceChildren(...items);
     }
 
-    removeItems() {
-        this.shadowRoot.querySelectorAll('filepicker-item').forEach(i => i.remove());
+    get itemsContainer() {
+        return this.shadowRoot.querySelector('.items');
     }
 
     set iconActive(value) {

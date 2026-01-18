@@ -15,6 +15,7 @@ class FilePickerItem extends FilePickerBase {
     }
 
     disconnectedCallback() {
+        super.disconnectedCallback();
         this.removeListeners();
     }
 
@@ -81,7 +82,6 @@ class FilePickerItem extends FilePickerBase {
         } else {
             this.items = [];
             this.iconActive = false;
-            this.removeItems();
             this.leaveWebsocket();
         }
     }
@@ -147,10 +147,6 @@ class FilePickerItem extends FilePickerBase {
                 new CustomEvent("child-deleted")
             );
         } catch (error) {}
-    }
-
-    get itemsContainer() {
-        return this.shadowRoot.querySelector('.items');
     }
 
     get icon() {
@@ -227,8 +223,12 @@ const CSS = /*css*/ `
     :host(:hover) .icon-stack:not(:disabled):not(.active):not(button) svg.hover {
         opacity: 1;
     }
-    filepicker-item {
+    .items {
         margin-left: var(--gutter-base);
+
+        &:empty {
+            display: none;
+        }
     }
     @keyframes pulse {
         0% {
@@ -278,7 +278,7 @@ const ICON_TEMPLATE = /*html*/ `
 
 FilePickerItem.template = /*html*/ `
 ${CSS}
-<div class="items">
+<main>
     <div class="item">
         ${ICON_TEMPLATE}
         <span class="label">
@@ -292,7 +292,8 @@ ${CSS}
         </button>
         <div class="dummy-button"></div>
     </div>
-</div>
+    <div class="items"></div>
+</main>
 `;
 
 customElements.define("filepicker-item", FilePickerItem);
