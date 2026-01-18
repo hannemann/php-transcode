@@ -1,10 +1,15 @@
-import { Slim, Utils, Iconify } from "@/components/lib";
+import { DomHelper } from "../../../Helper/Dom";
 import CARD_CSS from "../CardCss";
 import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 import sortable from "html5sortable/dist/html5sortable.es";
 import "./Filter";
 
-class FilterGraph extends Slim {
+class FilterGraph extends HTMLElement {
+
+    constructor() {
+        super();
+        DomHelper.initDom.call(this);
+    }
 
     connectedCallback() {
         requestAnimationFrame(() => {
@@ -12,8 +17,8 @@ class FilterGraph extends Slim {
             this.configurator.filterGraph.forEach((v, k) => {
                 const filter = document.createElement('transcode-configurator-filter');
                 filter.dataset.id = k;
-                filter.filterData = v;
                 filter.configurator = this.configurator;
+                filter.filterData = v;
                 this.filters.appendChild(filter);
             });
             sortable(this.filters);

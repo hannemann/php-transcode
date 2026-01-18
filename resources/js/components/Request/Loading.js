@@ -1,9 +1,10 @@
-import { Slim } from '@/components/lib';
+import { DomHelper } from '../../Helper/Dom'
 import Iconify from '@iconify/iconify'
 
-class Loading extends Slim {
+class Loading extends HTMLElement {
 
-    onAdded() {
+    connectedCallback() {
+        DomHelper.initDom.call(this);
         document.addEventListener('loading', e => this.classList.toggle('active', !!e.detail))
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
     }

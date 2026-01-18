@@ -47,7 +47,7 @@ ${ICON_STACK_CSS}
     place-items: center;
     border-radius: .125rem;
 }
-div:not(.toolbar) {
+main {
     overflow: auto;
     padding: 0 1rem;
 }

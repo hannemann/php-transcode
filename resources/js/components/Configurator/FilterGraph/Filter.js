@@ -1,27 +1,32 @@
-import { Slim, Utils } from '@/components/lib';
+import { DomHelper } from '../../../Helper/Dom.js';
 import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
 import CARD_CSS from '../CardCss';
 import { requestCrop } from "../Tools/crop.js";
 import { requestDelogo } from "../Tools/delogo.js";
 import { Time } from '../../../Helper/Time.js';
 
-class Filter extends Slim {
+class Filter extends HTMLElement {
 
     constructor() {
         super();
+        DomHelper.initDom.call(this);
         this.handleDelete = this.handleDelete.bind(this);
         this.handleModify = this.handleModify.bind(this);
         this.handleClipsLoaded = this.handleClipsLoaded.bind(this);
         this.description = '';
     }
 
-    onAdded() {
+    connectedCallback() {
         document.addEventListener("clips-updated", this.handleClipsLoaded);
+        this.btnDelete.addEventListener('click', this.handleDelete);
+        this.labelFilterType.addEventListener('click', this.handleModify);
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot));
     }
 
-    onRemoved() {
+    disconnectedCallback() {
         document.removeEventListener("clips-updated", this.handleClipsLoaded);
+        this.btnDelete.removeEventListener('click', this.handleDelete);
+        this.labelFilterType.removeEventListener('click', this.handleModify);
     }
 
     handleModify(e) {
@@ -38,7 +43,6 @@ class Filter extends Slim {
 
     handleClipsLoaded() {
         this.description = this.updateDescription();
-        Utils.forceUpdate(this);
     }
 
     async handleDelete(e) {
@@ -69,6 +73,45 @@ class Filter extends Slim {
         }
         return '';
     }
+
+    get itemNode() {
+        return this.shadowRoot.querySelector('.item');
+    }
+
+    get labelFilterType() {
+        return this.shadowRoot.querySelector('.filterType');
+    }
+
+    get labelDescription() {
+        return this.shadowRoot.querySelector('.description');
+    }
+
+    get btnDelete() {
+        return this.shadowRoot.querySelector('.btn-delete');
+    }
+
+    get logoMaskImage() {
+        return this.shadowRoot.querySelector('[data-type="logomask"]');
+    }
+
+    set filterData(filterData) {
+        this.itemNode.dataset.filterData = JSON.stringify(filterData);
+        this.labelFilterType.setAttribute('value', filterData.filterType);
+        this.labelFilterType.innerText = `${ this.dataset.id }. ${ filterData.filterType }`;
+        if (filterData.filterType === 'removeLogo') {
+            this.logoMaskImage.src = `/removelogo/${ this.configurator.item.path }?${ performance.now() }`;
+        } else {
+            this.logoMaskImage.remove();
+        }
+    }
+
+    get filterData() {
+        return JSON.parse(this.itemNode.dataset.filterData);
+    }
+
+    set description(value) {
+        this.labelDescription.innerText = value;
+    }
 }
 
 Filter.template = /*html*/ `
@@ -87,12 +130,16 @@ section {
     align-items: center;
     flex-grow: 1;
 
-    &:has(img) {
+    &:has(img[src]) {
         justify-content: space-between;
     }
 
-    img {
+    img[src] {
         max-height: 2rem;
+    }
+
+    img:not([src]) {
+        display: none;
     }
 }
 .icon-stack, .filterType {
@@ -100,14 +147,12 @@ section {
 }
 </style>
 <section>
-    <div class="item" #ref="itemNode">
-        <span class="filterType" value="{{ this.filterData.filterType }}" @click="{{ this.handleModify }}">{{ this.dataset.id }}. {{ this.filterData.filterType }}</span>
-        <span>
-            {{ this.description }}
-        </span>
-        <img data-type="logomask" *if="{{ this.filterData.filterType === 'removeLogo' }}" .src="{{ '/removelogo/' + this.configurator.item.path + '?' + performance.now() }}">
+    <div class="item">
+        <span class="filterType"></span>
+        <span class="description"></span>
+        <img data-type="logomask">
     </div>
-    <div @click="{{ this.handleDelete }}" class="icon-stack">
+    <div class="icon-stack btn-delete">
         <span class="iconify" data-icon="mdi-close"></span>
         <span class="iconify hover" data-icon="mdi-close"></span>
     </div>

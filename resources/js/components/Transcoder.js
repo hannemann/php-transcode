@@ -128,11 +128,11 @@ TODO:
 - [x] remove slim from textviewer
 - [x] remove slim from toast
 - [x] remove slim from clips
-- [ ] remove slim from clips/clip
+- [x] remove slim from clips/clip
+- [x] remove slim from filter graph
+- [x] remove slim from request loading
 - [ ] remove slim from dialogues
-- [ ] remove slim from filter graph
-- [ ] remove slim from filter modals
-- [ ] remove slim from filter request loading
+- [ ] remove slim from modals
 - [ ] remove slim from statusbar
 
 */
