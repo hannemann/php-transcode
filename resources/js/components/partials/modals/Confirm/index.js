@@ -22,15 +22,19 @@ import {
     }
  */
 class Confirm extends AbstractModal {
+
     confirm() {
         return this.promise;
+    }
+
+    set content(value) {
+        this.contentNode.innerText = value;
     }
 }
 
 Confirm.template = /*html*/ `
 ${MODAL_BASE_CSS}
 ${MODAL_TEMPLATE_BEGIN}
-    {{ this.content }}
 ${MODAL_TEMPLATE_END}
 `;
 

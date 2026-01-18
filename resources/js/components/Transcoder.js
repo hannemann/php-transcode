@@ -131,8 +131,8 @@ TODO:
 - [x] remove slim from clips/clip
 - [x] remove slim from filter graph
 - [x] remove slim from request loading
+- [x] remove slim from modals
 - [ ] remove slim from dialogues
-- [ ] remove slim from modals
 - [ ] remove slim from statusbar
 
 */

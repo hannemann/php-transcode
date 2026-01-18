@@ -1,12 +1,14 @@
-import { Slim, Iconify } from "@/components/lib";
+import { DomHelper } from "../../../Helper/Dom";
 import { ICON_STACK_CSS } from "../../Icons/Stack.css";
 
-class AbstractModal extends Slim {
+class AbstractModal extends HTMLElement {
 
-    canCancel = true;
+    static cancelable = true;
 
     constructor() {
         super();
+        DomHelper.initDom.call(this);
+        this.canCancel = this.constructor.cancelable;
         this.cancelAction = this.cancelAction.bind(this);
         this.confirmAction = this.confirmAction.bind(this);
         this.handleKey = this.handleKey.bind(this);
@@ -16,8 +18,7 @@ class AbstractModal extends Slim {
         });
     }
 
-    async onAdded() {
-        document.body.style.overflow = "hidden";
+    async connectedCallback() {
         requestAnimationFrame(this.show.bind(this));
         try {
             const p = () => this.promise;
@@ -37,12 +38,17 @@ class AbstractModal extends Slim {
 
     show() {
         Iconify.scan(this.shadowRoot);
-        if (this.cancelButton) {
-            this.cancelButton.focus();
-        }
+        this.cancelButton.addEventListener('click', this.cancelAction);
+        this.okButton.addEventListener('click', this.confirmAction);
+        this.closeButton.addEventListener('click', this.closeAction);
         this.addEventListener(
             "transitionend",
             () => {
+                if (this.canCancel) {
+                    this.cancelButton.focus();
+                } else {
+                    this.okButton.focus();
+                }
                 document.dispatchEvent(
                     new CustomEvent("modal-show", { detail: true })
                 );
@@ -57,6 +63,9 @@ class AbstractModal extends Slim {
 
     hide() {
         document.removeEventListener("keyup", this.handleKey);
+        this.cancelButton.removeEventListener('click', this.cancelAction);
+        this.okButton.removeEventListener('click', this.confirmAction);
+        this.closeButton.removeEventListener('click', this.closeAction);
         this.addEventListener(
             "transitionend",
             () => {
@@ -107,6 +116,38 @@ class AbstractModal extends Slim {
 
     canClose() {
         return this.dataset.closeButton;
+    }
+
+    get headerNode() {
+        return this.shadowRoot.querySelector('header');
+    }
+
+    get closeButton() {
+        return this.shadowRoot.querySelector('.icon-stack.close-button');
+    }
+
+    get cancelButton() {
+        return this.shadowRoot.querySelector('theme-button[data-type="cancel"]');
+    }
+
+    get okButton() {
+        return this.shadowRoot.querySelector('theme-button[data-type="ok"]');
+    }
+
+    set canCancel(value) {
+        this.cancelButton.dataset.active = (!!value).toString();
+    }
+
+    get canCancel() {
+        return this.cancelButton.dataset.active === Boolean(1).toString();
+    }
+
+    set header(value) {
+        this.headerNode.insertBefore(document.createTextNode(value), this.closeButton);
+    }
+
+    get contentNode() {
+        return this.shadowRoot.querySelector('section');
     }
 }
 
@@ -172,6 +213,10 @@ button {
 :host([data-no-footer]) footer {
     display: none;
 }
+theme-button[data-type="cancel"][data-active="false"] {
+    display: none;
+    pointer-events: none;
+}
 </style>
 `;
 
@@ -179,8 +224,7 @@ const MODAL_TEMPLATE_BEGIN = /*html*/ `
 ${ICON_STACK_CSS}
 <main>
     <header>
-        {{ this.header }}
-        <div @click="{{ this.closeAction() }}" class="icon-stack close-button">
+        <div class="icon-stack close-button">
             <span class="iconify" data-icon="mdi-close"></span>
             <span class="iconify hover" data-icon="mdi-close"></span>
         </div>
@@ -191,8 +235,8 @@ ${ICON_STACK_CSS}
 const MODAL_TEMPLATE_END = /*html*/ `
     </section>
     <footer>
-        <theme-button *if="{{ this.canCancel }}" @click="{{ this.cancelAction() }}" #ref="cancelButton">Cancel</theme-button>
-        <theme-button @click="{{ this.confirmAction() }}" #ref="okButton">OK</theme-button>
+        <theme-button data-type="cancel">Cancel</theme-button>
+        <theme-button data-type="ok">OK</theme-button>
     </footer>
 </main>
 `;

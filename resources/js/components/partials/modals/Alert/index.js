@@ -22,6 +22,9 @@ import {
     }
  */
 class Alert extends AbstractModal {
+
+    static cancelable = false;
+
     alert() {
         return this.promise;
     }
@@ -31,11 +34,7 @@ Alert.template = /*html*/ `
 ${MODAL_BASE_CSS}
 ${MODAL_TEMPLATE_BEGIN}
     <slot></slot>
-    </section>
-    <footer>
-        <theme-button @click="{{ this.confirmAction() }}" #ref="okButton">OK</theme-button>
-    </footer>
-</main>
+${MODAL_TEMPLATE_END}
 `;
 
 export { Alert };
