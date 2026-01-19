@@ -5,10 +5,9 @@ import "./Request";
 import "./Toast";
 import "./Statusbar";
 
-import {DomHelper} from "../Helper/Dom";
+import { DomHelper } from "../Helper/Dom";
 
 class Transcoder extends HTMLElement {
-
     backgroundRequests = 0;
 
     connectedCallback() {
@@ -22,11 +21,14 @@ class Transcoder extends HTMLElement {
 
     initDom() {
         const importedNode = DomHelper.fromTemplate.call(this);
-        this.filePicker = importedNode.querySelector('filepicker-root');
+        this.filePicker = importedNode.querySelector("filepicker-root");
         this.filePicker.channelHash = this.dataset.channel;
-        this.configurator = importedNode.querySelector('transcode-configurator');
-        importedNode.querySelector('status-bar').configurator = this.configurator;
-        document.body.appendChild(document.createElement('transcoder-toast'));
+        this.configurator = importedNode.querySelector(
+            "transcode-configurator",
+        );
+        importedNode.querySelector("status-bar").configurator =
+            this.configurator;
+        document.body.appendChild(document.createElement("transcoder-toast"));
         DomHelper.appendShadow.call(this, importedNode);
     }
 
@@ -73,47 +75,48 @@ class Transcoder extends HTMLElement {
     }
 }
 
-Transcoder.template = /*html*/ `
-<style>
-    :host {
-        height: 100%;
-        display: grid;
-        grid-template-rows: 5rem calc(100vh - 7rem) var(--statusbar-height);
-        grid-template-areas: "header" "filepicker" "status";
-    }
-    :host(.background) h1,
-    :host(.background) main {
-        filter: blur(3px);
-    }
-    main, h1 {
-        filter: blur(0);
-        transition: var(--loading-transition);
-    }
-    h1 {
-        user-select: none;
-        grid-area: header;
-    }
-    main {
-        padding: .2rem;
-        grid-area: filepicker;
-        overflow: hidden;
-        align-self: stretch;
-    }
-    filepicker-root {
-        height: 100%;
-    }
-    status-bar {
-        grid-area: status;
-    }
-</style>
-<h1>PVR Toolbox</h1>
-<main>
-    <filepicker-root></filepicker-root>
-</main>
-<transcode-configurator></transcode-configurator>
-<text-viewer></text-viewer>
-<status-bar></status-bar>
-<transcoder-loading></transcoder-loading>
+Transcoder.template = html`
+    <style>
+        :host {
+            height: 100%;
+            display: grid;
+            grid-template-rows: 5rem calc(100vh - 7rem) var(--statusbar-height);
+            grid-template-areas: "header" "filepicker" "status";
+        }
+        :host(.background) h1,
+        :host(.background) main {
+            filter: blur(3px);
+        }
+        main,
+        h1 {
+            filter: blur(0);
+            transition: var(--loading-transition);
+        }
+        h1 {
+            user-select: none;
+            grid-area: header;
+        }
+        main {
+            padding: 0.2rem;
+            grid-area: filepicker;
+            overflow: hidden;
+            align-self: stretch;
+        }
+        filepicker-root {
+            height: 100%;
+        }
+        status-bar {
+            grid-area: status;
+        }
+    </style>
+    <h1>PVR Toolbox</h1>
+    <main>
+        <filepicker-root></filepicker-root>
+    </main>
+    <transcode-configurator></transcode-configurator>
+    <text-viewer></text-viewer>
+    <status-bar></status-bar>
+    <transcoder-loading></transcoder-loading>
 `;
 
 customElements.define("ffmpeg-transcoder", Transcoder);
@@ -133,6 +136,15 @@ TODO:
 - [x] remove slim from request loading
 - [x] remove slim from modals
 - [ ] remove slim from dialogues
+        - [x] Scale
+        - [ ] Player
+        - [ ] Concat
+        - [ ] VideoEditor
+            - [ ] Clipper
+            - [ ] Cropper
+            - [ ] Delogo
+            - [ ] RemoveLogo
 - [ ] remove slim from statusbar
+    - [ ] Item
 
 */

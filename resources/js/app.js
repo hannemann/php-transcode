@@ -1,5 +1,5 @@
-import './bootstrap'
+import "./bootstrap";
 
-import './Helper/String'
-import '@/components/partials'
-import './components/Transcoder'
+import "./Helper/String";
+import "@/components/partials";
+import "./components/Transcoder";
