@@ -144,7 +144,12 @@ TODO:
             - [ ] Cropper
             - [ ] Delogo
             - [ ] RemoveLogo
-- [ ] remove slim from statusbar
-    - [ ] Item
+- [x] remove slim from statusbar
+    - [x] index
+    - [x] Items
+        - [x] Current
+        - [x] Done
+        - [x] Failed
+        - [x] Pending
 
 */
