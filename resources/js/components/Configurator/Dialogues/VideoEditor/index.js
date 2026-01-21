@@ -1,12 +1,11 @@
 import { Slim, Iconify } from "@/components/lib";
-import { Time } from '../../../../Helper/Time';
+import { Time } from "../../../../Helper/Time";
 import { handleKeyDown, handleKeyUp } from "./mixins/handleKey";
-import ConfiguratorHelper from '../../../../Helper/Configurator';
+import ConfiguratorHelper from "../../../../Helper/Configurator";
 
 const THUMBNAIL_HEIGHT = 30;
 
 class VideoEditor extends Slim {
-
     #markers = [];
 
     constructor() {
@@ -60,7 +59,7 @@ class VideoEditor extends Slim {
     addThumbnails() {
         let i = 1;
         const count = Math.floor(
-            this.indicator.offsetWidth / (THUMBNAIL_HEIGHT * (4 / 3))
+            this.indicator.offsetWidth / (THUMBNAIL_HEIGHT * (4 / 3)),
         );
         const fr = this.duration / (count + 2);
         do {
@@ -73,9 +72,12 @@ class VideoEditor extends Slim {
 
     handleIndicatorClick(e) {
         if (!e.composedPath().find((p) => p.classList?.contains("clip"))) {
-        const indicatorClickPos = parseInt(e.pageX - this.indicator.getBoundingClientRect().left);
+            const indicatorClickPos = parseInt(
+                e.pageX - this.indicator.getBoundingClientRect().left,
+            );
             this.current =
-                (this.duration * indicatorClickPos) / this.indicator.offsetWidth;
+                (this.duration * indicatorClickPos) /
+                this.indicator.offsetWidth;
             this.updateImages();
         }
     }
@@ -91,24 +93,26 @@ class VideoEditor extends Slim {
 
     updateFrameUrl() {
         const filterIndex = parseInt(this.filterIndex);
-        const params = [
-            'filtered=1'
-        ]
+        const params = ["filtered=1"];
         if (!isNaN(filterIndex)) {
             params.push(`current_filter=${this.filterIndex}`);
         }
         if (this.aspectDecimal) {
-            const filterGraph = document.querySelector('ffmpeg-transcoder').shadowRoot.querySelector('transcode-configurator').filterGraph;
+            const filterGraph = document
+                .querySelector("ffmpeg-transcoder")
+                .shadowRoot.querySelector("transcode-configurator").filterGraph;
             const scaleFilter = filterGraph.find((f, idx) => {
                 if (!isNaN(filterIndex) && idx > filterIndex) return false;
-                return f.filterType === 'scale';
+                return f.filterType === "scale";
             });
-            const height = scaleFilter ? parseInt(scaleFilter.height) : this.video.coded_height;
+            const height = scaleFilter
+                ? parseInt(scaleFilter.height)
+                : this.video.coded_height;
             const width = height * this.aspectDecimal;
             params.push(`height=${height}`);
             params.push(`width=${width}`);
         }
-        this.frameUrl = `${this.baseUrl}${this.timestamp()}&${params.join('&')}`;
+        this.frameUrl = `${this.baseUrl}${this.timestamp()}&${params.join("&")}`;
     }
 
     toggleAspect() {
@@ -141,17 +145,17 @@ class VideoEditor extends Slim {
     }
 
     markersFromClips(clips) {
-        const multiplier = 1000 * 1000
+        const multiplier = 1000 * 1000;
 
         const markers = [...clips].reduce((acc, cur) => {
             if (cur.from && cur.to) {
-                acc.push({start: Time.milliSeconds(cur.from) * multiplier});
-                acc.push({start: Time.milliSeconds(cur.to) * multiplier});
+                acc.push({ start: Time.milliSeconds(cur.from) * multiplier });
+                acc.push({ start: Time.milliSeconds(cur.to) * multiplier });
             }
             return acc;
         }, []);
 
-        return markers
+        return markers;
     }
 
     handleNavDown(e) {
@@ -168,7 +172,7 @@ class VideoEditor extends Slim {
     toggleMoveMode() {
         this.modeMove = !this.modeMove;
         if (this.modeMove) {
-            this.move.dataset.active = ''
+            this.move.dataset.active = "";
         } else {
             delete this.move.dataset.active;
         }
@@ -198,7 +202,7 @@ class VideoEditor extends Slim {
     }
 
     set markers(value) {
-        const fromClips = 'undefined' !== typeof value.clips;
+        const fromClips = "undefined" !== typeof value.clips;
         const markers = fromClips ? this.markersFromClips(value.clips) : value;
         this.#markers = markers;
     }
@@ -208,18 +212,22 @@ class VideoEditor extends Slim {
     }
 }
 
-export const EDITOR_CSS = /*html*/ `
-<style>
-:host {
+export const EDITOR_CSS = html`<style>
+    :host {
         --thumbnail-height: ${THUMBNAIL_HEIGHT + 16}px;
         display: grid;
         grid-template-columns: 1fr auto 1fr;
-        grid-template-rows: calc(100% - var(--thumbnail-height) - var(--font-size-100) * var(--line-height-100)) min-content max-content;
+        grid-template-rows:
+            calc(
+                100% - var(--thumbnail-height) - var(--font-size-100) *
+                    var(--line-height-100)
+            )
+            min-content max-content;
         grid-template-areas:
             "left frame right"
             "status status status"
             "thumbnails thumbnails thumbnails";
-        grid-column-gap: .5rem;
+        grid-column-gap: 0.5rem;
         height: 100%;
     }
 
@@ -237,7 +245,9 @@ export const EDITOR_CSS = /*html*/ `
     }
     .move[data-active] {
         color: var(--clr-enlightened);
-        text-shadow: 0 0 5px var(--clr-enlightened-glow), 0 0 10px var(--clr-enlightened-glow);
+        text-shadow:
+            0 0 5px var(--clr-enlightened-glow),
+            0 0 10px var(--clr-enlightened-glow);
     }
     .status {
         grid-area: status;
@@ -268,7 +278,7 @@ export const EDITOR_CSS = /*html*/ `
 
         div:has(.nav) {
             display: flex;
-            gap: .5rem;
+            gap: 0.5rem;
             .nav {
                 cursor: pointer;
                 user-select: none;
@@ -289,14 +299,44 @@ export const EDITOR_CSS = /*html*/ `
         --background: var(--clr-bg-200);
         --size: 3px;
         background-image:
-            linear-gradient(to right, var(--background) var(--size), transparent var(--size)),
-            linear-gradient(to bottom, var(--background) var(--size), transparent var(--size)),
-            linear-gradient(to right, var(--background) var(--size), transparent var(--size)),
-            linear-gradient(to bottom, var(--background) var(--size), transparent var(--size)),
-            linear-gradient(to bottom, transparent var(--size), var(--background) var(--size));
-        background-size: calc(var(--size) * 2) var(--size), calc(var(--size) * 2) var(--size), calc(var(--size) * 2) var(--size), calc(var(--size) * 2) var(--size), 100% calc(100% - var(--size) * 3);
+            linear-gradient(
+                to right,
+                var(--background) var(--size),
+                transparent var(--size)
+            ),
+            linear-gradient(
+                to bottom,
+                var(--background) var(--size),
+                transparent var(--size)
+            ),
+            linear-gradient(
+                to right,
+                var(--background) var(--size),
+                transparent var(--size)
+            ),
+            linear-gradient(
+                to bottom,
+                var(--background) var(--size),
+                transparent var(--size)
+            ),
+            linear-gradient(
+                to bottom,
+                transparent var(--size),
+                var(--background) var(--size)
+            );
+        background-size:
+            calc(var(--size) * 2) var(--size),
+            calc(var(--size) * 2) var(--size),
+            calc(var(--size) * 2) var(--size),
+            calc(var(--size) * 2) var(--size),
+            100% calc(100% - var(--size) * 3);
         background-repeat: repeat-x;
-        background-position: 0 var(--size), top left, 0 calc(100% - var(--size)), bottom left, 0 var(--size);
+        background-position:
+            0 var(--size),
+            top left,
+            0 calc(100% - var(--size)),
+            bottom left,
+            0 var(--size);
         display: grid;
         grid-auto-flow: column;
         align-content: center;
@@ -321,8 +361,8 @@ export const EDITOR_CSS = /*html*/ `
         align-self: start;
     }
     .toggle-aspect::part(button) {
-        font-size: .75rem;
-        padding: .5rem;
+        font-size: 0.75rem;
+        padding: 0.5rem;
     }
     .markers {
         position: absolute;
@@ -343,40 +383,175 @@ export const EDITOR_CSS = /*html*/ `
     }
 </style>`;
 
-export const EDITOR_TEMPLATE = /*html*/ `
-<img class="frame" src="{{ this.frameUrl }}" #ref="image">
-<theme-button class="toggle-aspect" @click="{{ this.toggleAspect }}">{{ this.aspect }}</theme-button>
-<div class="status">
-    <div>
-        <div *if="{{ this.tagName === 'DIALOGUE-CLIPPER' }}" #ref="move" class="nav move" @click="{{ this.toggleMoveMode }}">Move Marker</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowLeft'}) }}" @pointerup="{{ this.handleNavUp() }}">-1f</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowRight'}) }}" @pointerup="{{ this.handleNavUp() }}">+1f</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', duration: 500}) }}" @pointerup="{{ this.handleNavUp() }}">-0.5s</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowRight', duration: 500}) }}" @pointerup="{{ this.handleNavUp() }}">+0.5s</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', duration: 1000}) }}" @pointerup="{{ this.handleNavUp() }}">-1s</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowRight', duration: 1000}) }}" @pointerup="{{ this.handleNavUp() }}">+1s</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', shiftKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}">-2s</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowRight', shiftKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}">+2s</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', ctrlKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}">-5s</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowRight', ctrlKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}">+5s</div>
+export const EDITOR_TEMPLATE = html` <img
+        class="frame"
+        src="{{ this.frameUrl }}"
+        #ref="image"
+    />
+    <theme-button class="toggle-aspect" @click="{{ this.toggleAspect }}"
+        >{{ this.aspect }}</theme-button
+    >
+    <div class="status">
+        <div>
+            <div
+                *if="{{ this.tagName === 'DIALOGUE-CLIPPER' }}"
+                #ref="move"
+                class="nav move"
+                @click="{{ this.toggleMoveMode }}"
+            >
+                Move Marker
+            </div>
+            <div
+                class="nav"
+                @pointerdown="{{ this.handleNavDown({key:'ArrowLeft'}) }}"
+                @pointerup="{{ this.handleNavUp() }}"
+            >
+                -1f
+            </div>
+            <div
+                class="nav"
+                @pointerdown="{{ this.handleNavDown({key:'ArrowRight'}) }}"
+                @pointerup="{{ this.handleNavUp() }}"
+            >
+                +1f
+            </div>
+            <div
+                class="nav"
+                @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', duration: 500}) }}"
+                @pointerup="{{ this.handleNavUp() }}"
+            >
+                -0.5s
+            </div>
+            <div
+                class="nav"
+                @pointerdown="{{ this.handleNavDown({key:'ArrowRight', duration: 500}) }}"
+                @pointerup="{{ this.handleNavUp() }}"
+            >
+                +0.5s
+            </div>
+            <div
+                class="nav"
+                @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', duration: 1000}) }}"
+                @pointerup="{{ this.handleNavUp() }}"
+            >
+                -1s
+            </div>
+            <div
+                class="nav"
+                @pointerdown="{{ this.handleNavDown({key:'ArrowRight', duration: 1000}) }}"
+                @pointerup="{{ this.handleNavUp() }}"
+            >
+                +1s
+            </div>
+            <div
+                class="nav"
+                @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', shiftKey: 1}) }}"
+                @pointerup="{{ this.handleNavUp() }}"
+            >
+                -2s
+            </div>
+            <div
+                class="nav"
+                @pointerdown="{{ this.handleNavDown({key:'ArrowRight', shiftKey: 1}) }}"
+                @pointerup="{{ this.handleNavUp() }}"
+            >
+                +2s
+            </div>
+            <div
+                class="nav"
+                @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', ctrlKey: 1}) }}"
+                @pointerup="{{ this.handleNavUp() }}"
+            >
+                -5s
+            </div>
+            <div
+                class="nav"
+                @pointerdown="{{ this.handleNavDown({key:'ArrowRight', ctrlKey: 1}) }}"
+                @pointerup="{{ this.handleNavUp() }}"
+            >
+                +5s
+            </div>
+        </div>
+        <div class="time">
+            <div
+                *if="{{ this.tagName === 'DIALOGUE-CLIPPER' }}"
+                @pointerup="{{ this.add }}"
+            >
+                +
+            </div>
+            <span
+                >{{ this.currentTimestamp }} ({{ this.currentTimestampCut }}) /
+                {{ this.displayDuration }}</span
+            >
+            <div
+                *if="{{ this.tagName === 'DIALOGUE-CLIPPER' }}"
+                @pointerup="{{ this.remove }}"
+            >
+                -
+            </div>
+        </div>
+        <div>
+            <div
+                class="nav"
+                @pointerdown="{{ this.handleNavDown({key:'ArrowDown'}) }}"
+                @pointerup="{{ this.handleNavUp() }}"
+            >
+                -1m
+            </div>
+            <div
+                class="nav"
+                @pointerdown="{{ this.handleNavDown({key:'ArrowUp'}) }}"
+                @pointerup="{{ this.handleNavUp() }}"
+            >
+                +1m
+            </div>
+            <div
+                class="nav"
+                @pointerdown="{{ this.handleNavDown({key:'ArrowDown', shiftKey: 1}) }}"
+                @pointerup="{{ this.handleNavUp() }}"
+            >
+                -5m
+            </div>
+            <div
+                class="nav"
+                @pointerdown="{{ this.handleNavDown({key:'ArrowUp', shiftKey: 1}) }}"
+                @pointerup="{{ this.handleNavUp() }}"
+            >
+                +5m
+            </div>
+            <div
+                class="nav"
+                @pointerdown="{{ this.handleNavDown({key:'ArrowDown', ctrlKey: 1}) }}"
+                @pointerup="{{ this.handleNavUp() }}"
+            >
+                -10m
+            </div>
+            <div
+                class="nav"
+                @pointerdown="{{ this.handleNavDown({key:'ArrowUp', ctrlKey: 1}) }}"
+                @pointerup="{{ this.handleNavUp() }}"
+            >
+                +10m
+            </div>
+        </div>
     </div>
-    <div class="time">
-        <div *if="{{ this.tagName === 'DIALOGUE-CLIPPER' }}" @pointerup="{{ this.add }}">+</div>
-        <span>{{ this.currentTimestamp }} ({{ this.currentTimestampCut }}) / {{ this.displayDuration }}</span>
-        <div *if="{{ this.tagName === 'DIALOGUE-CLIPPER' }}" @pointerup="{{ this.remove }}">-</div>
-    </div>
-    <div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowDown'}) }}" @pointerup="{{ this.handleNavUp() }}">-1m</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowUp'}) }}" @pointerup="{{ this.handleNavUp() }}">+1m</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowDown', shiftKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}">-5m</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowUp', shiftKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}">+5m</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowDown', ctrlKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}">-10m</div>
-        <div class="nav" @pointerdown="{{ this.handleNavDown({key:'ArrowUp', ctrlKey: 1}) }}" @pointerup="{{ this.handleNavUp() }}">+10m</div>
-    </div>
-</div>
-<div class="indicator" #ref="indicator" @click="{{ this.handleIndicatorClick }}">
-    <div class="current" #ref="indicatorCurrent" style="{{ this.indicatorPos }}"></div>
-    <div class="markers" *foreach="{{ this.markers }}" data-start="{{ item.start }}" @click="{{ this.setCurrentPosByMarker }}" style="{{ this.getMarkerLeft(item) }}"></div>
-</div>`;
+    <div
+        class="indicator"
+        #ref="indicator"
+        @click="{{ this.handleIndicatorClick }}"
+    >
+        <div
+            class="current"
+            #ref="indicatorCurrent"
+            style="{{ this.indicatorPos }}"
+        ></div>
+        <div
+            class="markers"
+            *foreach="{{ this.markers }}"
+            data-start="{{ item.start }}"
+            @click="{{ this.setCurrentPosByMarker }}"
+            style="{{ this.getMarkerLeft(item) }}"
+        ></div>
+    </div>`;
 
 export { VideoEditor };
