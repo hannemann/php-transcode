@@ -1,25 +1,11 @@
 import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
 import { Utils } from "@/components/lib";
-import { handleKeyDown, handleKeyUp } from "../VideoEditor/mixins/handleKey";
 class Clipper extends VideoEditor {
-    constructor() {
-        super();
-        this.clips = [];
-        this.raw = [];
-    }
+    clips = [];
+    raw = [];
 
-    bindListeners() {
-        super.bindListeners();
-        this.handleKeyDown = handleKeyDown.bind(this);
-        this.handleKeyUp = handleKeyUp.bind(this);
-        this.add = this.add.bind(this);
-        this.remove = this.remove.bind(this);
-        this.getClipPos = this.getClipPos.bind(this);
-        this.activateClip = this.activateClip.bind(this);
-    }
-
-    onAdded() {
-        super.onAdded();
+    connectedCallback() {
+        super.connectedCallback();
         document.addEventListener("keydown", this.handleKeyDown);
         document.addEventListener("keyup", this.handleKeyUp);
         requestAnimationFrame(() => {
@@ -28,7 +14,15 @@ class Clipper extends VideoEditor {
         });
     }
 
-    onRemoved() {
+    bindListeners() {
+        super.bindListeners();
+        this.add = this.add.bind(this);
+        this.remove = this.remove.bind(this);
+        this.getClipPos = this.getClipPos.bind(this);
+        this.activateClip = this.activateClip.bind(this);
+    }
+
+    disconnectedCallback() {
         document.removeEventListener("keydown", this.handleKeyDown);
         document.removeEventListener("keyup", this.handleKeyUp);
     }
@@ -39,7 +33,7 @@ class Clipper extends VideoEditor {
         this.calculateClips();
         Utils.forceUpdate(this, "clips,raw");
         this.dispatchEvent(
-            new CustomEvent("clipper", { detail: this.timestamp() })
+            new CustomEvent("clipper", { detail: this.timestamp() }),
         );
     }
 

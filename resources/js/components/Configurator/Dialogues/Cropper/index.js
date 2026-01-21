@@ -1,28 +1,17 @@
 import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
 
 class Cropper extends VideoEditor {
-    constructor() {
-        super();
-        this.cropOffsetTop = 0;
-        this.cropOffsetLeft = 0;
-        this.cropOffsetBottom = null;
-        this.cropOffsetRight = null;
-        this.video = null;
-        this.aspectDecimal = 0;
-        this.zoomed = 0;
-        this.valid = true;
-    }
+    cropOffsetTop = 0;
+    cropOffsetLeft = 0;
+    cropOffsetBottom = null;
+    cropOffsetRight = null;
+    video = null;
+    aspectDecimal = 0;
+    zoomed = 0;
+    valid = true;
 
-    bindListeners() {
-        super.bindListeners();
-        this.initCrop = this.initCrop.bind(this);
-        this.handleKey = this.handleKey.bind(this);
-        this.handleClick = this.handleClick.bind(this);
-        this.updateCropBox = this.updateCropBox.bind(this);
-    }
-
-    onAdded() {
-        super.onAdded();
+    connectedCallback() {
+        super.connectedCallback();
         this.aspectDecimal = this.video.width / this.video.height;
         requestAnimationFrame(() => {
             this.image.addEventListener("load", this.initCrop, {
@@ -35,10 +24,18 @@ class Cropper extends VideoEditor {
         });
     }
 
-    onRemoved() {
+    disconnectedCallback() {
         this.image.removeEventListener("load", this.updateCropBox);
         document.removeEventListener("keydown", this.handleKey);
         document.removeEventListener("keyup", this.handleKey);
+    }
+
+    bindListeners() {
+        super.bindListeners();
+        this.initCrop = this.initCrop.bind(this);
+        this.handleKey = this.handleKey.bind(this);
+        this.handleClick = this.handleClick.bind(this);
+        this.updateCropBox = this.updateCropBox.bind(this);
     }
 
     initCrop() {
@@ -66,10 +63,10 @@ class Cropper extends VideoEditor {
         this.image.style.display = "none";
         this.info.classList.toggle(
             "height-error",
-            (this.cropOffsetBottom - this.cropOffsetTop) % 16 !== 0
+            (this.cropOffsetBottom - this.cropOffsetTop) % 16 !== 0,
         );
         this.validateDimensions();
-        this.dispatchEvent(new CustomEvent('cropper-updated'));
+        this.dispatchEvent(new CustomEvent("cropper-updated"));
     }
 
     validateDimensions() {
@@ -118,7 +115,7 @@ class Cropper extends VideoEditor {
                     () => {
                         this.zoomed = e.key === "Control" ? 1 : 2;
                     },
-                    { once: true }
+                    { once: true },
                 );
                 this.cropImage.style.width = `${this.image.naturalWidth}px`;
                 this.cropImage.style.height = `${this.image.naturalHeight}px`;
@@ -132,7 +129,7 @@ class Cropper extends VideoEditor {
                         this.cropImage.style.inset = "";
                         this.zoomed = 0;
                     },
-                    { once: true }
+                    { once: true },
                 );
                 this.cropImage.style.width = "";
                 this.cropImage.style.height = "";
@@ -143,12 +140,12 @@ class Cropper extends VideoEditor {
                 e.preventDefault();
                 this.cropOffsetLeft = Math.min(
                     Math.floor(this.image.naturalWidth / 2),
-                    this.cropOffsetLeft + 1
+                    this.cropOffsetLeft + 1,
                 );
                 if (this.equal) {
                     this.cropOffsetRight = Math.max(
                         Math.floor(this.image.naturalWidth / 2),
-                        this.image.naturalWidth - this.cropOffsetLeft
+                        this.image.naturalWidth - this.cropOffsetLeft,
                     );
                 }
                 this.updateCropBox();
@@ -159,7 +156,7 @@ class Cropper extends VideoEditor {
                 if (this.equal) {
                     this.cropOffsetRight = Math.max(
                         Math.floor(this.image.naturalWidth / 2),
-                        this.image.naturalWidth - this.cropOffsetLeft
+                        this.image.naturalWidth - this.cropOffsetLeft,
                     );
                 }
                 this.updateCropBox();
@@ -168,12 +165,12 @@ class Cropper extends VideoEditor {
                 e.preventDefault();
                 this.cropOffsetTop = Math.min(
                     Math.floor(this.image.naturalHeight / 2),
-                    this.cropOffsetTop + 1
+                    this.cropOffsetTop + 1,
                 );
                 if (this.equal) {
                     this.cropOffsetBottom = Math.max(
                         Math.floor(this.image.naturalHeight / 2),
-                        this.image.naturalHeight - this.cropOffsetTop
+                        this.image.naturalHeight - this.cropOffsetTop,
                     );
                 }
                 this.updateCropBox();
@@ -184,7 +181,7 @@ class Cropper extends VideoEditor {
                 if (this.equal) {
                     this.cropOffsetBottom = Math.min(
                         this.image.naturalHeight,
-                        this.image.naturalHeight - this.cropOffsetTop
+                        this.image.naturalHeight - this.cropOffsetTop,
                     );
                 }
                 this.updateCropBox();
@@ -195,12 +192,12 @@ class Cropper extends VideoEditor {
                 e.preventDefault();
                 this.cropOffsetRight = Math.min(
                     this.image.naturalWidth,
-                    this.cropOffsetRight + 1
+                    this.cropOffsetRight + 1,
                 );
                 if (this.equal) {
                     this.cropOffsetLeft = Math.max(
                         0,
-                        this.image.naturalWidth - this.cropOffsetRight
+                        this.image.naturalWidth - this.cropOffsetRight,
                     );
                 }
                 this.updateCropBox();
@@ -209,15 +206,15 @@ class Cropper extends VideoEditor {
                 e.preventDefault();
                 this.cropOffsetRight = Math.max(
                     Math.floor(this.image.naturalWidth / 2),
-                    this.cropOffsetRight - 1
+                    this.cropOffsetRight - 1,
                 );
                 if (this.equal) {
-                if (this.equal) {
-                    this.cropOffsetLeft = Math.min(
-                        Math.floor(this.image.naturalWidth / 2),
-                        this.image.naturalWidth - this.cropOffsetRight
-                    );
-                }
+                    if (this.equal) {
+                        this.cropOffsetLeft = Math.min(
+                            Math.floor(this.image.naturalWidth / 2),
+                            this.image.naturalWidth - this.cropOffsetRight,
+                        );
+                    }
                 }
                 this.updateCropBox();
             }
@@ -225,12 +222,12 @@ class Cropper extends VideoEditor {
                 e.preventDefault();
                 this.cropOffsetBottom = Math.min(
                     this.image.naturalHeight,
-                    this.cropOffsetBottom + 1
+                    this.cropOffsetBottom + 1,
                 );
                 if (this.equal) {
                     this.cropOffsetTop = Math.max(
                         0,
-                        this.image.naturalHeight - this.cropOffsetBottom
+                        this.image.naturalHeight - this.cropOffsetBottom,
                     );
                 }
                 this.updateCropBox();
@@ -239,12 +236,12 @@ class Cropper extends VideoEditor {
                 e.preventDefault();
                 this.cropOffsetBottom = Math.max(
                     Math.floor(this.image.naturalHeight / 2),
-                    this.cropOffsetBottom - 1
+                    this.cropOffsetBottom - 1,
                 );
                 if (this.equal) {
                     this.cropOffsetTop = Math.min(
                         Math.floor(this.image.naturalHeight / 2),
-                        this.image.naturalHeight - this.cropOffsetBottom
+                        this.image.naturalHeight - this.cropOffsetBottom,
                     );
                 }
                 this.updateCropBox();
@@ -276,11 +273,11 @@ class Cropper extends VideoEditor {
     set aspectRatio(value) {
         if (["4:3", "16:9"].indexOf(value) > -1) {
             this.shadowRoot.querySelector(
-                `[name="input-aspect"][value="${value}"]`
+                `[name="input-aspect"][value="${value}"]`,
             ).checked = true;
         } else if (value.match(/([0-9]+):([0-9]+)/)) {
             this.shadowRoot.querySelector(
-                `[name="input-aspect"][value="custom"]`
+                `[name="input-aspect"][value="custom"]`,
             ).checked = true;
         }
     }
@@ -370,7 +367,7 @@ class Cropper extends VideoEditor {
     }
 }
 
-Cropper.template = /*html*/ `
+Cropper.template = html`
 ${EDITOR_CSS}
 <style>
     .toggle-aspect {

@@ -7,24 +7,11 @@ const THUMBNAIL_HEIGHT = 30;
 
 class VideoEditor extends Slim {
     #markers = [];
+    raw = [];
+    clipsConfig = ConfiguratorHelper.clips.clips;
 
-    constructor() {
-        super();
-        this.raw = [];
-        this.clipsConfig = ConfiguratorHelper.clips.clips;
+    connectedCallback() {
         this.bindListeners();
-    }
-
-    bindListeners() {
-        this.handleKeyDown = handleKeyDown.bind(this);
-        this.handleKeyUp = handleKeyUp.bind(this);
-        this.toggleAspect = this.toggleAspect.bind(this);
-        this.handleIndicatorClick = this.handleIndicatorClick.bind(this);
-        this.setCurrentPosByMarker = this.setCurrentPosByMarker.bind(this);
-        this.toggleMoveMode = this.toggleMoveMode.bind(this);
-    }
-
-    onAdded() {
         this.fps =
             this.video.avg_frame_rate.split("/")[0] /
             this.video.avg_frame_rate.split("/")[1];
@@ -37,6 +24,15 @@ class VideoEditor extends Slim {
             this.aspectRatio = this.video.display_aspect_ratio;
             Iconify.scan(this.shadowRoot);
         });
+    }
+
+    bindListeners() {
+        this.handleKeyDown = handleKeyDown.bind(this);
+        this.handleKeyUp = handleKeyUp.bind(this);
+        this.toggleAspect = this.toggleAspect.bind(this);
+        this.handleIndicatorClick = this.handleIndicatorClick.bind(this);
+        this.setCurrentPosByMarker = this.setCurrentPosByMarker.bind(this);
+        this.toggleMoveMode = this.toggleMoveMode.bind(this);
     }
 
     initImages() {
