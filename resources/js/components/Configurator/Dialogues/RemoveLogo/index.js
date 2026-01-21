@@ -8,29 +8,21 @@ class RemoveLogo extends VideoEditor {
     raw = [-1];
     imageType = IMAGE_TYPE_ORIGINAL;
 
-    connectedCallback() {
-        super.connectedCallback();
-        document.addEventListener("keydown", this.handleKeyDown);
-        document.addEventListener("keyup", this.handleKeyUp);
-
-        requestAnimationFrame(() => {
-            this.image.addEventListener("load", this.initRemovelogo, {
-                once: true,
-            });
-            this.initImages();
-        });
-    }
-
-    disconnectedCallback() {
-        document.removeEventListener("keydown", this.handleKeyDown);
-        document.removeEventListener("keyup", this.handleKeyUp);
-    }
-
     bindListeners() {
         super.bindListeners();
         this.paint = this.paint.bind(this);
         this.handleSaveImage = this.handleSaveImage.bind(this);
-        this.initRemovelogo = this.initRemovelogo.bind(this);
+    }
+
+    addListeners() {
+        super.addListeners();
+        document.addEventListener("keydown", this.handleKeyDown);
+        document.addEventListener("keyup", this.handleKeyUp);
+    }
+    removeListeners() {
+        super.removeListeners();
+        document.removeEventListener("keydown", this.handleKeyDown);
+        document.removeEventListener("keyup", this.handleKeyUp);
     }
 
     paint() {
@@ -93,10 +85,6 @@ class RemoveLogo extends VideoEditor {
             callback(true);
             this.painterro.close();
         }
-    }
-
-    initRemovelogo() {
-        console.info("Initialize Removelogo");
     }
 
     toggleType() {

@@ -14,20 +14,14 @@ class Cropper extends VideoEditor {
         super.connectedCallback();
         this.aspectDecimal = this.video.width / this.video.height;
         requestAnimationFrame(() => {
+            this.current = parseInt(this.duration / 2) ?? 0;
+            this.width = parseInt(this.video.width);
+            this.height = parseInt(this.video.height);
+            this.updateImages();
             this.image.addEventListener("load", this.initCrop, {
                 once: true,
             });
-            this.current = parseInt(this.duration / 2, 10) ?? 0;
-            this.initImages();
-            this.width = parseInt(this.video.width, 10);
-            this.height = parseInt(this.video.height, 10);
         });
-    }
-
-    disconnectedCallback() {
-        this.image.removeEventListener("load", this.updateCropBox);
-        document.removeEventListener("keydown", this.handleKey);
-        document.removeEventListener("keyup", this.handleKey);
     }
 
     bindListeners() {
@@ -39,11 +33,6 @@ class Cropper extends VideoEditor {
     }
 
     initCrop() {
-        this.image.removeEventListener("load", this.initCrop);
-        this.image.addEventListener("load", this.updateCropBox);
-        document.addEventListener("keydown", this.handleKey);
-        document.addEventListener("keyup", this.handleKey);
-        this.cropImage.addEventListener("click", this.handleClick);
         if (this.cropOffsetBottom === null) {
             this.cropOffsetBottom = this.image.naturalHeight;
         }
@@ -51,6 +40,21 @@ class Cropper extends VideoEditor {
             this.cropOffsetRight = this.image.naturalWidth;
         }
         this.updateCropBox();
+    }
+
+    addListeners() {
+        super.addListeners();
+        this.image.addEventListener("load", this.updateCropBox);
+        document.addEventListener("keydown", this.handleKey);
+        document.addEventListener("keyup", this.handleKey);
+        this.cropImage.addEventListener("click", this.handleClick);
+    }
+    removeListeners() {
+        super.removeListeners();
+        this.image.removeEventListener("load", this.updateCropBox);
+        document.removeEventListener("keydown", this.handleKey);
+        document.removeEventListener("keyup", this.handleKey);
+        this.cropImage.removeEventListener("click", this.handleClick);
     }
 
     updateCropBox() {

@@ -6,11 +6,8 @@ class Clipper extends VideoEditor {
 
     connectedCallback() {
         super.connectedCallback();
-        document.addEventListener("keydown", this.handleKeyDown);
-        document.addEventListener("keyup", this.handleKeyUp);
         requestAnimationFrame(() => {
             this.calculateClips();
-            this.initImages();
         });
     }
 
@@ -22,7 +19,14 @@ class Clipper extends VideoEditor {
         this.activateClip = this.activateClip.bind(this);
     }
 
-    disconnectedCallback() {
+    addListeners() {
+        super.addListeners();
+        document.addEventListener("keydown", this.handleKeyDown);
+        document.addEventListener("keyup", this.handleKeyUp);
+    }
+
+    removeListeners() {
+        super.removeListeners();
         document.removeEventListener("keydown", this.handleKeyDown);
         document.removeEventListener("keyup", this.handleKeyUp);
     }
@@ -113,92 +117,154 @@ class Clipper extends VideoEditor {
     }
 }
 
-Clipper.template = /*html*/ `
-${EDITOR_CSS}
-<style>
-    .indicator .clip {
-        position: absolute;
-        inset-block: 0;
-        background: hsla(var(--hue-success) var(--sat-alert) var(--lit-alert) / .5);
-        z-index: 1;
-    }
-    .help, .clips {
-        font-size: .75rem;
-        white-space: nowrap;
-    }
-    .help {
-        grid-area: left;
-    }
-    .help dl {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        grid-column-gap: .5rem;
-    }
-    .help dd {
-        margin: 0;
-    }
-    .clips {
-        grid-area: right;
-        display: grid;
-        grid-template-columns: 1fr;
-        grid-auto-rows: min-content;
-        overflow-y: auto;
-        grid-row-gap: .25rem;
-        justify-self: end;
-    }
-    .clips .clip:nth-child(odd) {
-        background: var(--clr-bg-100);
-    }
-    .clips .clip .timestamp {
-        cursor: pointer;
-        padding: .125rem;
-    }
-    .clips .clip .timestamp.active {
-        background: var(--clr-bg-200);
-    }
-</style>
-${EDITOR_TEMPLATE}
-<div class="help">
-    <dl>
-        <dt><span class="iconify" data-icon="mdi-swap-horizontal-bold"></span></dt><dd>+/-1 Frame</dd>
-        <dt><span class="iconify" data-icon="mdi-swap-horizontal-bold"></span> + Shift</dt><dd>+/-2 Seconds</dd>
-        <dt><span class="iconify" data-icon="mdi-swap-horizontal-bold"></span> + Ctrl</dt><dd>+/-5 Seconds</dd>
-    </dl>
-    <dl>
-        <dt><span class="iconify" data-icon="mdi-swap-vertical-bold"></span></dt><dd>+/-1 Minute</dd>
-        <dt><span class="iconify" data-icon="mdi-swap-vertical-bold"></span> + Shift</dt><dd>+/-5 Minutes</dd>
-        <dt><span class="iconify" data-icon="mdi-swap-vertical-bold"></span> + Ctrl</dt><dd>+/-10 Minutes</dd>
-    </dl>
-    <dl>
-        <dt>+</dt><dd>Add</dd>
-        <dt>-</dt><dd>Remove</dd>
-    </dl>
-    <dl>
-        <dt>
-            <span class="iconify" data-icon="mdi-swap-horizontal-bold"></span>
-            <span class="iconify" data-icon="mdi-swap-vertical-bold"></span> + Alt
-        </dt>
-        <dd>Move</dd>
-        <dt>
-            <span class="iconify" data-icon="mdi-swap-horizontal-bold"></span> + Ctrl/Shift
-        </dt>
-        <dd>Skip</dd>
-    </dl>
-</div>
-<div class="clips">
-    <div class="clip" *foreach="{{ this.clips }}">
-        <div data-index="{{ item.index }}" @click="{{ this.activateClip }}"
-            class="{{ item.raw.start === this.current ? 'timestamp active' : 'timestamp' }}"
-        >
-            {{ this.timestamp(item.raw.start) }}
-        </div>
-        <div data-index="{{ item.index }}" @click="{{ this.activateClip }}"
-            class="{{ item.raw.end === this.current ? 'timestamp active' : 'timestamp' }}"
-        >
-            {{ this.clipEndTimestamp(item.raw.end) }}
+Clipper.template = html`
+    ${EDITOR_CSS}
+    <style>
+        .status {
+            div:has(.nav) {
+                .nav.move {
+                    display: revert;
+                }
+            }
+
+            .time div {
+                &.btn-add,
+                &.btn-remove {
+                    display: revert;
+                }
+            }
+        }
+        .indicator .clip {
+            position: absolute;
+            inset-block: 0;
+            background: hsla(
+                var(--hue-success) var(--sat-alert) var(--lit-alert) / 0.5
+            );
+            z-index: 1;
+        }
+        .help,
+        .clips {
+            font-size: 0.75rem;
+            white-space: nowrap;
+        }
+        .help {
+            grid-area: left;
+        }
+        .help dl {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            grid-column-gap: 0.5rem;
+        }
+        .help dd {
+            margin: 0;
+        }
+        .clips {
+            grid-area: right;
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-auto-rows: min-content;
+            overflow-y: auto;
+            grid-row-gap: 0.25rem;
+            justify-self: end;
+        }
+        .clips .clip:nth-child(odd) {
+            background: var(--clr-bg-100);
+        }
+        .clips .clip .timestamp {
+            cursor: pointer;
+            padding: 0.125rem;
+        }
+        .clips .clip .timestamp.active {
+            background: var(--clr-bg-200);
+        }
+    </style>
+    ${EDITOR_TEMPLATE}
+    <div class="help">
+        <dl>
+            <dt>
+                <span
+                    class="iconify"
+                    data-icon="mdi-swap-horizontal-bold"
+                ></span>
+            </dt>
+            <dd>+/-1 Frame</dd>
+            <dt>
+                <span
+                    class="iconify"
+                    data-icon="mdi-swap-horizontal-bold"
+                ></span>
+                + Shift
+            </dt>
+            <dd>+/-2 Seconds</dd>
+            <dt>
+                <span
+                    class="iconify"
+                    data-icon="mdi-swap-horizontal-bold"
+                ></span>
+                + Ctrl
+            </dt>
+            <dd>+/-5 Seconds</dd>
+        </dl>
+        <dl>
+            <dt>
+                <span class="iconify" data-icon="mdi-swap-vertical-bold"></span>
+            </dt>
+            <dd>+/-1 Minute</dd>
+            <dt>
+                <span class="iconify" data-icon="mdi-swap-vertical-bold"></span>
+                + Shift
+            </dt>
+            <dd>+/-5 Minutes</dd>
+            <dt>
+                <span class="iconify" data-icon="mdi-swap-vertical-bold"></span>
+                + Ctrl
+            </dt>
+            <dd>+/-10 Minutes</dd>
+        </dl>
+        <dl>
+            <dt>+</dt>
+            <dd>Add</dd>
+            <dt>-</dt>
+            <dd>Remove</dd>
+        </dl>
+        <dl>
+            <dt>
+                <span
+                    class="iconify"
+                    data-icon="mdi-swap-horizontal-bold"
+                ></span>
+                <span class="iconify" data-icon="mdi-swap-vertical-bold"></span>
+                + Alt
+            </dt>
+            <dd>Move</dd>
+            <dt>
+                <span
+                    class="iconify"
+                    data-icon="mdi-swap-horizontal-bold"
+                ></span>
+                + Ctrl/Shift
+            </dt>
+            <dd>Skip</dd>
+        </dl>
+    </div>
+    <div class="clips">
+        <div class="clip" *foreach="{{ this.clips }}">
+            <div
+                data-index="{{ item.index }}"
+                @click="{{ this.activateClip }}"
+                class="{{ item.raw.start === this.current ? 'timestamp active' : 'timestamp' }}"
+            >
+                {{ this.timestamp(item.raw.start) }}
+            </div>
+            <div
+                data-index="{{ item.index }}"
+                @click="{{ this.activateClip }}"
+                class="{{ item.raw.end === this.current ? 'timestamp active' : 'timestamp' }}"
+            >
+                {{ this.clipEndTimestamp(item.raw.end) }}
+            </div>
         </div>
     </div>
-</div>
 `;
 
 customElements.define("dialogue-clipper", Clipper);

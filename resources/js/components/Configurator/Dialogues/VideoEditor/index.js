@@ -21,9 +21,15 @@ class VideoEditor extends Slim {
         this.displayDuration = this.timestamp(this.duration);
         this.modeMove = false;
         requestAnimationFrame(() => {
+            this.addListeners();
+            this.initImages();
             this.aspectRatio = this.video.display_aspect_ratio;
             Iconify.scan(this.shadowRoot);
         });
+    }
+
+    disconnectedCallback() {
+        this.removeListeners();
     }
 
     bindListeners() {
@@ -33,6 +39,14 @@ class VideoEditor extends Slim {
         this.handleIndicatorClick = this.handleIndicatorClick.bind(this);
         this.setCurrentPosByMarker = this.setCurrentPosByMarker.bind(this);
         this.toggleMoveMode = this.toggleMoveMode.bind(this);
+    }
+
+    addListeners() {
+        this.indicator.addEventListener("click", this.handleIndicatorClick);
+    }
+
+    removeListeners() {
+        this.indicator.removeEventListener("click", this.handleIndicatorClick);
     }
 
     initImages() {
@@ -206,6 +220,22 @@ class VideoEditor extends Slim {
     get markers() {
         return this.#markers;
     }
+
+    get image() {
+        return this.shadowRoot.querySelector("img.frame");
+    }
+
+    get indicator() {
+        return this.shadowRoot.querySelector(".indicator");
+    }
+
+    get indicatorCurrent() {
+        return this.indicator.querySelector(".current");
+    }
+
+    get move() {
+        return this.shadowRoot.querySelector(".status .nav.move");
+    }
 }
 
 export const EDITOR_CSS = html`<style>
@@ -261,6 +291,11 @@ export const EDITOR_CSS = html`<style>
 
             div {
                 cursor: pointer;
+
+                &.btn-add,
+                &.btn-remove {
+                    display: none;
+                }
             }
         }
 
@@ -278,6 +313,10 @@ export const EDITOR_CSS = html`<style>
             .nav {
                 cursor: pointer;
                 user-select: none;
+
+                &.move {
+                    display: none;
+                }
             }
 
             &:not(:first-child) {
@@ -382,19 +421,13 @@ export const EDITOR_CSS = html`<style>
 export const EDITOR_TEMPLATE = html` <img
         class="frame"
         src="{{ this.frameUrl }}"
-        #ref="image"
     />
     <theme-button class="toggle-aspect" @click="{{ this.toggleAspect }}"
         >{{ this.aspect }}</theme-button
     >
     <div class="status">
         <div>
-            <div
-                *if="{{ this.tagName === 'DIALOGUE-CLIPPER' }}"
-                #ref="move"
-                class="nav move"
-                @click="{{ this.toggleMoveMode }}"
-            >
+            <div class="nav move" @click="{{ this.toggleMoveMode }}">
                 Move Marker
             </div>
             <div
@@ -469,22 +502,12 @@ export const EDITOR_TEMPLATE = html` <img
             </div>
         </div>
         <div class="time">
-            <div
-                *if="{{ this.tagName === 'DIALOGUE-CLIPPER' }}"
-                @pointerup="{{ this.add }}"
-            >
-                +
-            </div>
+            <div class="btn-add" @pointerup="{{ this.add }}">+</div>
             <span
                 >{{ this.currentTimestamp }} ({{ this.currentTimestampCut }}) /
                 {{ this.displayDuration }}</span
             >
-            <div
-                *if="{{ this.tagName === 'DIALOGUE-CLIPPER' }}"
-                @pointerup="{{ this.remove }}"
-            >
-                -
-            </div>
+            <div class="btn-remove" @pointerup="{{ this.remove }}">-</div>
         </div>
         <div>
             <div
@@ -531,16 +554,8 @@ export const EDITOR_TEMPLATE = html` <img
             </div>
         </div>
     </div>
-    <div
-        class="indicator"
-        #ref="indicator"
-        @click="{{ this.handleIndicatorClick }}"
-    >
-        <div
-            class="current"
-            #ref="indicatorCurrent"
-            style="{{ this.indicatorPos }}"
-        ></div>
+    <div class="indicator">
+        <div class="current" style="{{ this.indicatorPos }}"></div>
         <div
             class="markers"
             *foreach="{{ this.markers }}"

@@ -18,16 +18,26 @@ class DeLogo extends VideoEditor {
             this.image.addEventListener("load", this.initDelogo, {
                 once: true,
             });
-            this.initImages();
             this.isSaved = this.saved;
             this.initFilters();
             Iconify.scan(this.shadowRoot);
         });
     }
 
-    disconnectedCallback() {
-        this.image.removeEventListener("click", this.addDelogoBox);
-        document.removeEventListener("keydown", this.handleKey);
+    initDelogo() {
+        console.info("Initialize Delogo");
+        this.addListeners();
+        this.resetBetween();
+        this.zoomImage = this.zoom.appendChild(document.createElement("img"));
+        this.zoomImage.src = this.image.src;
+        this.addDelogoBox({
+            offsetX: Math.round(
+                this.image.offsetLeft + this.image.width / 2 - 10,
+            ),
+            offsetY: Math.round(
+                this.image.offsetTop + this.image.height / 2 - 10,
+            ),
+        });
     }
 
     bindListeners() {
@@ -46,21 +56,16 @@ class DeLogo extends VideoEditor {
         this.deleteItem = this.deleteItem.bind(this);
     }
 
-    initDelogo() {
-        console.info("Initialize Delogo");
+    addListeners() {
+        super.addListeners();
         this.image.addEventListener("click", this.addDelogoBox);
         document.addEventListener("keydown", this.handleKey);
-        this.resetBetween();
-        this.zoomImage = this.zoom.appendChild(document.createElement("img"));
-        this.zoomImage.src = this.image.src;
-        this.addDelogoBox({
-            offsetX: Math.round(
-                this.image.offsetLeft + this.image.width / 2 - 10,
-            ),
-            offsetY: Math.round(
-                this.image.offsetTop + this.image.height / 2 - 10,
-            ),
-        });
+    }
+
+    removeListeners() {
+        super.removeListeners();
+        this.image.removeEventListener("click", this.addDelogoBox);
+        document.removeEventListener("keydown", this.handleKey);
     }
 
     updateFrameUrl() {
