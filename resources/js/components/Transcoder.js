@@ -137,8 +137,8 @@ TODO:
 - [x] remove slim from modals
 - [ ] remove slim from dialogues
         - [x] Scale
+        - [x] Concat
         - [ ] Player
-        - [ ] Concat
         - [ ] VideoEditor
             - [ ] Clipper
             - [ ] Cropper
