@@ -35,18 +35,161 @@ class VideoEditor extends Slim {
     bindListeners() {
         this.handleKeyDown = handleKeyDown.bind(this);
         this.handleKeyUp = handleKeyUp.bind(this);
+        this.handleNavDown = this.handleNavDown.bind(this);
+        this.handleNavUp = this.handleNavUp.bind(this);
         this.toggleAspect = this.toggleAspect.bind(this);
         this.handleIndicatorClick = this.handleIndicatorClick.bind(this);
         this.setCurrentPosByMarker = this.setCurrentPosByMarker.bind(this);
         this.toggleMoveMode = this.toggleMoveMode.bind(this);
+
+        this.prevFrame = this.handleNavDown.bind(this, { key: "ArrowLeft" });
+        this.nextFrame = this.handleNavDown.bind(this, { key: "ArrowRight" });
+        this.rew500 = this.handleNavDown.bind(this, {
+            key: "ArrowLeft",
+            duration: 500,
+        });
+        this.ffw500 = this.handleNavDown.bind(this, {
+            key: "ArrowRight",
+            duration: 500,
+        });
+        this.rew1000 = this.handleNavDown.bind(this, {
+            key: "ArrowLeft",
+            duration: 1000,
+        });
+        this.ffw1000 = this.handleNavDown.bind(this, {
+            key: "ArrowRight",
+            duration: 1000,
+        });
+        this.rew2000 = this.handleNavDown.bind(this, {
+            key: "ArrowLeft",
+            shiftKey: 1,
+        });
+        this.ffw2000 = this.handleNavDown.bind(this, {
+            key: "ArrowRight",
+            shiftKey: 1,
+        });
+        this.rew5000 = this.handleNavDown.bind(this, {
+            key: "ArrowLeft",
+            ctrlKey: 1,
+        });
+        this.ffw5000 = this.handleNavDown.bind(this, {
+            key: "ArrowRight",
+            ctrlKey: 1,
+        });
+        this.rew1m = this.handleNavDown.bind(this, {
+            key: "ArrowDown",
+        });
+        this.ffw1m = this.handleNavDown.bind(this, {
+            key: "ArrowUp",
+        });
+        this.rew5m = this.handleNavDown.bind(this, {
+            key: "ArrowDown",
+            shiftKey: 1,
+        });
+        this.ffw5m = this.handleNavDown.bind(this, {
+            key: "ArrowUp",
+            shiftKey: 1,
+        });
+        this.rew10m = this.handleNavDown.bind(this, {
+            key: "ArrowDown",
+            ctrlKey: 1,
+        });
+        this.ffw10m = this.handleNavDown.bind(this, {
+            key: "ArrowUp",
+            ctrlKey: 1,
+        });
     }
 
     addListeners() {
         this.indicator.addEventListener("click", this.handleIndicatorClick);
+        this.btnAspect.addEventListener("click", this.toggleAspect);
+        this.btnMove.addEventListener("click", this.toggleMoveMode);
+
+        this.btnPrevFrame.addEventListener("pointerdown", this.prevFrame);
+        this.btnPrevFrame.addEventListener("pointerup", this.handleNavUp);
+        this.btnNextFrame.addEventListener("pointerdown", this.nextFrame);
+        this.btnNextFrame.addEventListener("pointerup", this.handleNavUp);
+
+        this.btnRew500.addEventListener("pointerdown", this.rew500);
+        this.btnRew500.addEventListener("pointerup", this.handleNavUp);
+        this.btnFfw500.addEventListener("pointerdown", this.ffw500);
+        this.btnFfw500.addEventListener("pointerup", this.handleNavUp);
+
+        this.btnRew1000.addEventListener("pointerdown", this.rew1000);
+        this.btnRew1000.addEventListener("pointerup", this.handleNavUp);
+        this.btnFfw1000.addEventListener("pointerdown", this.ffw1000);
+        this.btnFfw1000.addEventListener("pointerup", this.handleNavUp);
+
+        this.btnRew2000.addEventListener("pointerdown", this.rew2000);
+        this.btnRew2000.addEventListener("pointerup", this.handleNavUp);
+        this.btnFfw2000.addEventListener("pointerdown", this.ffw2000);
+        this.btnFfw2000.addEventListener("pointerup", this.handleNavUp);
+
+        this.btnRew5000.addEventListener("pointerdown", this.rew5000);
+        this.btnRew5000.addEventListener("pointerup", this.handleNavUp);
+        this.btnFfw5000.addEventListener("pointerdown", this.ffw5000);
+        this.btnFfw5000.addEventListener("pointerup", this.handleNavUp);
+
+        this.btnRew1m.addEventListener("pointerdown", this.rew1m);
+        this.btnRew1m.addEventListener("pointerup", this.handleNavUp);
+        this.btnFfw1m.addEventListener("pointerdown", this.ffw1m);
+        this.btnFfw1m.addEventListener("pointerup", this.handleNavUp);
+
+        this.btnRew5m.addEventListener("pointerdown", this.rew5m);
+        this.btnRew5m.addEventListener("pointerup", this.handleNavUp);
+        this.btnFfw5m.addEventListener("pointerdown", this.ffw5m);
+        this.btnFfw5m.addEventListener("pointerup", this.handleNavUp);
+
+        this.btnRew10m.addEventListener("pointerdown", this.rew10m);
+        this.btnRew10m.addEventListener("pointerup", this.handleNavUp);
+        this.btnFfw10m.addEventListener("pointerdown", this.ffw10m);
+        this.btnFfw10m.addEventListener("pointerup", this.handleNavUp);
     }
 
     removeListeners() {
         this.indicator.removeEventListener("click", this.handleIndicatorClick);
+        this.btnAspect.removeEventListener("click", this.toggleAspect);
+        this.btnMove.removeEventListener("click", this.toggleMoveMode);
+
+        this.btnPrevFrame.removeEventListener("pointerdown", this.prevFrame);
+        this.btnPrevFrame.removeEventListener("pointerup", this.handleNavUp);
+        this.btnNextFrame.removeEventListener("pointerdown", this.nextFrame);
+        this.btnNextFrame.removeEventListener("pointerup", this.handleNavUp);
+
+        this.btnRew500.removeEventListener("pointerdown", this.rew500);
+        this.btnRew500.removeEventListener("pointerup", this.handleNavUp);
+        this.btnFfw500.removeEventListener("pointerdown", this.ffw500);
+        this.btnFfw500.removeEventListener("pointerup", this.handleNavUp);
+
+        this.btnRew1000.removeEventListener("pointerdown", this.rew1000);
+        this.btnRew1000.removeEventListener("pointerup", this.handleNavUp);
+        this.btnFfw1000.removeEventListener("pointerdown", this.ffw1000);
+        this.btnFfw1000.removeEventListener("pointerup", this.handleNavUp);
+
+        this.btnRew2000.removeEventListener("pointerdown", this.rew2000);
+        this.btnRew2000.removeEventListener("pointerup", this.handleNavUp);
+        this.btnFfw2000.removeEventListener("pointerdown", this.ffw2000);
+        this.btnFfw2000.removeEventListener("pointerup", this.handleNavUp);
+
+        this.btnRew5000.removeEventListener("pointerdown", this.rew5000);
+        this.btnRew5000.removeEventListener("pointerup", this.handleNavUp);
+        this.btnFfw5000.removeEventListener("pointerdown", this.ffw5000);
+        this.btnFfw5000.removeEventListener("pointerup", this.handleNavUp);
+
+        this.btnRew1m.removeEventListener("pointerdown", this.rew1m);
+        this.btnRew1m.removeEventListener("pointerup", this.handleNavUp);
+        this.btnFfw1m.removeEventListener("pointerdown", this.ffw1m);
+        this.btnFfw1m.removeEventListener("pointerup", this.handleNavUp);
+
+        this.btnRew5m.removeEventListener("pointerdown", this.rew5m);
+        this.btnRew5m.removeEventListener("pointerup", this.handleNavUp);
+        this.btnFfw5m.removeEventListener("pointerdown", this.ffw5m);
+        this.btnFfw5m.removeEventListener("pointerup", this.handleNavUp);
+
+        this.btnRew10m.removeEventListener("pointerdown", this.rew10m);
+        this.btnRew10m.removeEventListener("pointerup", this.handleNavUp);
+        this.btnFfw10m.removeEventListener("pointerdown", this.ffw10m);
+        this.btnFfw10m.removeEventListener("pointerup", this.handleNavUp);
     }
 
     initImages() {
@@ -182,9 +325,9 @@ class VideoEditor extends Slim {
     toggleMoveMode() {
         this.modeMove = !this.modeMove;
         if (this.modeMove) {
-            this.move.dataset.active = "";
+            this.btnMove.dataset.active = "";
         } else {
-            delete this.move.dataset.active;
+            delete this.btnMove.dataset.active;
         }
     }
 
@@ -221,6 +364,10 @@ class VideoEditor extends Slim {
         return this.#markers;
     }
 
+    set frameUrl(value) {
+        this.image.src = value;
+    }
+
     get image() {
         return this.shadowRoot.querySelector("img.frame");
     }
@@ -233,8 +380,92 @@ class VideoEditor extends Slim {
         return this.indicator.querySelector(".current");
     }
 
-    get move() {
+    get btnMove() {
         return this.shadowRoot.querySelector(".status .nav.move");
+    }
+
+    get btnAspect() {
+        return this.shadowRoot.querySelector("theme-button.toggle-aspect");
+    }
+
+    set aspect(value) {
+        this.btnAspect.innerText = value;
+    }
+
+    get aspect() {
+        return this.btnAspect.innerText;
+    }
+
+    get btnPrevFrame() {
+        return this.shadowRoot.querySelector(".prev-frame");
+    }
+
+    get btnNextFrame() {
+        return this.shadowRoot.querySelector(".next-frame");
+    }
+
+    get btnRew500() {
+        return this.shadowRoot.querySelector(".rew-500");
+    }
+
+    get btnFfw500() {
+        return this.shadowRoot.querySelector(".ffw-500");
+    }
+
+    get btnRew1000() {
+        return this.shadowRoot.querySelector(".rew-1000");
+    }
+
+    get btnFfw1000() {
+        return this.shadowRoot.querySelector(".ffw-1000");
+    }
+
+    get btnRew2000() {
+        return this.shadowRoot.querySelector(".rew-2000");
+    }
+
+    get btnFfw2000() {
+        return this.shadowRoot.querySelector(".ffw-2000");
+    }
+
+    get btnRew5000() {
+        return this.shadowRoot.querySelector(".rew-5000");
+    }
+
+    get btnFfw5000() {
+        return this.shadowRoot.querySelector(".ffw-5000");
+    }
+
+    get btnAdd() {
+        return this.shadowRoot.querySelector(".btn-add");
+    }
+
+    get btnRemove() {
+        return this.shadowRoot.querySelector(".btn-remove");
+    }
+
+    get btnRew1m() {
+        return this.shadowRoot.querySelector(".rew-1m");
+    }
+
+    get btnFfw1m() {
+        return this.shadowRoot.querySelector(".ffw-1m");
+    }
+
+    get btnRew5m() {
+        return this.shadowRoot.querySelector(".rew-5m");
+    }
+
+    get btnFfw5m() {
+        return this.shadowRoot.querySelector(".ffw-5m");
+    }
+
+    get btnRew10m() {
+        return this.shadowRoot.querySelector(".rew-10m");
+    }
+
+    get btnFfw10m() {
+        return this.shadowRoot.querySelector(".ffw-10m");
     }
 }
 
@@ -418,140 +649,37 @@ export const EDITOR_CSS = html`<style>
     }
 </style>`;
 
-export const EDITOR_TEMPLATE = html` <img
-        class="frame"
-        src="{{ this.frameUrl }}"
-    />
-    <theme-button class="toggle-aspect" @click="{{ this.toggleAspect }}"
-        >{{ this.aspect }}</theme-button
-    >
+export const EDITOR_TEMPLATE = html` <img class="frame" />
+    <theme-button class="toggle-aspect"></theme-button>
     <div class="status">
         <div>
-            <div class="nav move" @click="{{ this.toggleMoveMode }}">
-                Move Marker
-            </div>
-            <div
-                class="nav"
-                @pointerdown="{{ this.handleNavDown({key:'ArrowLeft'}) }}"
-                @pointerup="{{ this.handleNavUp() }}"
-            >
-                -1f
-            </div>
-            <div
-                class="nav"
-                @pointerdown="{{ this.handleNavDown({key:'ArrowRight'}) }}"
-                @pointerup="{{ this.handleNavUp() }}"
-            >
-                +1f
-            </div>
-            <div
-                class="nav"
-                @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', duration: 500}) }}"
-                @pointerup="{{ this.handleNavUp() }}"
-            >
-                -0.5s
-            </div>
-            <div
-                class="nav"
-                @pointerdown="{{ this.handleNavDown({key:'ArrowRight', duration: 500}) }}"
-                @pointerup="{{ this.handleNavUp() }}"
-            >
-                +0.5s
-            </div>
-            <div
-                class="nav"
-                @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', duration: 1000}) }}"
-                @pointerup="{{ this.handleNavUp() }}"
-            >
-                -1s
-            </div>
-            <div
-                class="nav"
-                @pointerdown="{{ this.handleNavDown({key:'ArrowRight', duration: 1000}) }}"
-                @pointerup="{{ this.handleNavUp() }}"
-            >
-                +1s
-            </div>
-            <div
-                class="nav"
-                @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', shiftKey: 1}) }}"
-                @pointerup="{{ this.handleNavUp() }}"
-            >
-                -2s
-            </div>
-            <div
-                class="nav"
-                @pointerdown="{{ this.handleNavDown({key:'ArrowRight', shiftKey: 1}) }}"
-                @pointerup="{{ this.handleNavUp() }}"
-            >
-                +2s
-            </div>
-            <div
-                class="nav"
-                @pointerdown="{{ this.handleNavDown({key:'ArrowLeft', ctrlKey: 1}) }}"
-                @pointerup="{{ this.handleNavUp() }}"
-            >
-                -5s
-            </div>
-            <div
-                class="nav"
-                @pointerdown="{{ this.handleNavDown({key:'ArrowRight', ctrlKey: 1}) }}"
-                @pointerup="{{ this.handleNavUp() }}"
-            >
-                +5s
-            </div>
+            <div class="nav move">Move Marker</div>
+            <div class="nav prev-frame">-1f</div>
+            <div class="nav next-frame">+1f</div>
+            <div class="nav rew-500">-0.5s</div>
+            <div class="nav ffw-500">+0.5s</div>
+            <div class="nav rew-1000">-1s</div>
+            <div class="nav ffw-1000">+1s</div>
+            <div class="nav rew-2000">-2s</div>
+            <div class="nav ffw-2000">+2s</div>
+            <div class="nav rew-5000">-5s</div>
+            <div class="nav ffw-5000">+5s</div>
         </div>
         <div class="time">
-            <div class="btn-add" @pointerup="{{ this.add }}">+</div>
+            <div class="btn-add">+</div>
             <span
                 >{{ this.currentTimestamp }} ({{ this.currentTimestampCut }}) /
                 {{ this.displayDuration }}</span
             >
-            <div class="btn-remove" @pointerup="{{ this.remove }}">-</div>
+            <div class="btn-remove">-</div>
         </div>
         <div>
-            <div
-                class="nav"
-                @pointerdown="{{ this.handleNavDown({key:'ArrowDown'}) }}"
-                @pointerup="{{ this.handleNavUp() }}"
-            >
-                -1m
-            </div>
-            <div
-                class="nav"
-                @pointerdown="{{ this.handleNavDown({key:'ArrowUp'}) }}"
-                @pointerup="{{ this.handleNavUp() }}"
-            >
-                +1m
-            </div>
-            <div
-                class="nav"
-                @pointerdown="{{ this.handleNavDown({key:'ArrowDown', shiftKey: 1}) }}"
-                @pointerup="{{ this.handleNavUp() }}"
-            >
-                -5m
-            </div>
-            <div
-                class="nav"
-                @pointerdown="{{ this.handleNavDown({key:'ArrowUp', shiftKey: 1}) }}"
-                @pointerup="{{ this.handleNavUp() }}"
-            >
-                +5m
-            </div>
-            <div
-                class="nav"
-                @pointerdown="{{ this.handleNavDown({key:'ArrowDown', ctrlKey: 1}) }}"
-                @pointerup="{{ this.handleNavUp() }}"
-            >
-                -10m
-            </div>
-            <div
-                class="nav"
-                @pointerdown="{{ this.handleNavDown({key:'ArrowUp', ctrlKey: 1}) }}"
-                @pointerup="{{ this.handleNavUp() }}"
-            >
-                +10m
-            </div>
+            <div class="nav rew-1m">-1m</div>
+            <div class="nav ffw-1m">+1m</div>
+            <div class="nav rew-5m">-5m</div>
+            <div class="nav ffw-5m">+5m</div>
+            <div class="nav rew-10m">-10m</div>
+            <div class="nav ffw-10m">+10m</div>
         </div>
     </div>
     <div class="indicator">

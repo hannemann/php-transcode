@@ -23,12 +23,18 @@ class Clipper extends VideoEditor {
         super.addListeners();
         document.addEventListener("keydown", this.handleKeyDown);
         document.addEventListener("keyup", this.handleKeyUp);
+
+        this.btnAdd.addEventListener("pointerup", this.add);
+        this.btnRemove.addEventListener("pointerup", this.remove);
     }
 
     removeListeners() {
         super.removeListeners();
         document.removeEventListener("keydown", this.handleKeyDown);
         document.removeEventListener("keyup", this.handleKeyUp);
+
+        this.btnAdd.removeEventListener("pointerup", this.add);
+        this.btnRemove.removeEventListener("pointerup", this.remove);
     }
 
     add() {
