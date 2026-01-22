@@ -18,7 +18,6 @@ class VideoEditor extends Slim {
         this.start = parseFloat(this.video.start_time);
         this.current = parseInt(this.start * 1000, 10) ?? 0;
         this.duration = this.video.duration * 1000;
-        this.displayDuration = this.timestamp(this.duration);
         this.modeMove = false;
         requestAnimationFrame(() => {
             this.addListeners();
@@ -190,6 +189,10 @@ class VideoEditor extends Slim {
         this.btnRew10m.removeEventListener("pointerup", this.handleNavUp);
         this.btnFfw10m.removeEventListener("pointerdown", this.ffw10m);
         this.btnFfw10m.removeEventListener("pointerup", this.handleNavUp);
+
+        this.indicator.querySelectorAll("markers").forEach((m) => {
+            m.removeEventListener("click", this.setCurrentPosByMarker);
+        });
     }
 
     initImages() {
@@ -202,11 +205,13 @@ class VideoEditor extends Slim {
         this.updateIndicatorPos();
         this.currentTimestamp = this.timestamp();
         this.currentTimestampCut = this.timestampCut();
+
+        this.timeDisplay.innerText = `${this.timestamp()} (${this.currentTimestampCut}) / ${this.timestamp(this.duration)}`;
     }
 
     updateIndicatorPos() {
         const percentage = (100 / this.duration) * this.current;
-        this.indicatorPos = `left: min(${percentage}%, 100% - 1px`;
+        this.indicatorCurrent.style.left = `min(${percentage}%, 100% - 1px`;
     }
 
     addThumbnails() {
@@ -287,7 +292,7 @@ class VideoEditor extends Slim {
 
     getMarkerLeft(item) {
         const percentage = (100 / this.duration) * (item.start / 1000000);
-        return `left: min(${percentage}%, 100% - 1px`;
+        return `min(${percentage}%, 100% - 1px`;
     }
 
     setCurrentPosByMarker(e) {
@@ -358,6 +363,15 @@ class VideoEditor extends Slim {
         const fromClips = "undefined" !== typeof value.clips;
         const markers = fromClips ? this.markersFromClips(value.clips) : value;
         this.#markers = markers;
+        const nodes = markers.map((m) => {
+            const node = document.createElement("div");
+            node.classList.add("markers");
+            node.addEventListener("click", this.setCurrentPosByMarker);
+            node.style.left = this.getMarkerLeft(m);
+            node.dataset.start = m.start;
+            return node;
+        });
+        this.indicator.append(...nodes);
     }
 
     get markers() {
@@ -466,6 +480,10 @@ class VideoEditor extends Slim {
 
     get btnFfw10m() {
         return this.shadowRoot.querySelector(".ffw-10m");
+    }
+
+    get timeDisplay() {
+        return this.shadowRoot.querySelector(".time span");
     }
 }
 
@@ -667,10 +685,7 @@ export const EDITOR_TEMPLATE = html` <img class="frame" />
         </div>
         <div class="time">
             <div class="btn-add">+</div>
-            <span
-                >{{ this.currentTimestamp }} ({{ this.currentTimestampCut }}) /
-                {{ this.displayDuration }}</span
-            >
+            <span></span>
             <div class="btn-remove">-</div>
         </div>
         <div>
@@ -683,14 +698,7 @@ export const EDITOR_TEMPLATE = html` <img class="frame" />
         </div>
     </div>
     <div class="indicator">
-        <div class="current" style="{{ this.indicatorPos }}"></div>
-        <div
-            class="markers"
-            *foreach="{{ this.markers }}"
-            data-start="{{ item.start }}"
-            @click="{{ this.setCurrentPosByMarker }}"
-            style="{{ this.getMarkerLeft(item) }}"
-        ></div>
+        <div class="current"></div>
     </div>`;
 
 export { VideoEditor };

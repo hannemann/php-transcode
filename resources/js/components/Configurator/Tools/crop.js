@@ -10,21 +10,21 @@ export const requestCrop = async function (type, id = NaN, data = null) {
         // const scaleFilter = this.filterGraph.find(f => f.filterType === 'scale');
         const scaleFilter = this.filterGraph.find((f, idx) => {
             if (!isNaN(id) && idx > id) return false;
-            return f.filterType === 'scale';
+            return f.filterType === "scale";
         });
         d.video = {
             ...video,
             duration: parseFloat(this.format.duration),
             width: scaleFilter?.width || video.coded_width,
-            height: scaleFilter?.height || video.coded_height
+            height: scaleFilter?.height || video.coded_height,
         };
         d.crop = this.crop;
         d.path = this.item.path;
         d.type = type;
-        d.markers = this.clips;
         d.filterIndex = id;
         m.appendChild(d);
         requestAnimationFrame(() => {
+            d.markers = this.clips;
             d.mirror = false;
             d.width = d.video.width;
             d.height = d.video.height;
@@ -33,12 +33,19 @@ export const requestCrop = async function (type, id = NaN, data = null) {
                 d.mirror = data.mirror;
                 d.replaceBlackBorders = data.replaceBlackBorders;
                 d.mirror = data.mirror;
-                d.addEventListener('cropper-updated', () => {
-                    d.applyFilterData(data);
-                }, {once: true});
+                d.addEventListener(
+                    "cropper-updated",
+                    () => {
+                        d.applyFilterData(data);
+                    },
+                    { once: true },
+                );
             }
         });
-        document.body.insertBefore(m, document.querySelector('transcoder-toast'));
+        document.body.insertBefore(
+            m,
+            document.querySelector("transcoder-toast"),
+        );
         await m.open();
         console.info(
             "Crop video file %s to %dx%d at %d/%d and scale to %d pixel height with an aspect-ratio of %s",
@@ -48,10 +55,10 @@ export const requestCrop = async function (type, id = NaN, data = null) {
             d.crop.cx,
             d.crop.cy,
             d.crop.height,
-            d.crop.aspect
+            d.crop.aspect,
         );
         this.crop = d.crop;
-        const filterData = {...d.crop, ...{filterType: 'crop'}};
+        const filterData = { ...d.crop, ...{ filterType: "crop" } };
         if (id !== null && data) {
             this.filterGraph[id] = filterData;
         } else {

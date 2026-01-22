@@ -5,8 +5,8 @@ export const clipper = async function () {
         const m = document.createElement("modal-alert");
         m.appendChild(
             document.createTextNode(
-                "Clipper does not work with mpegts Files. Remux first."
-            )
+                "Clipper does not work with mpegts Files. Remux first.",
+            ),
         );
         document.body.appendChild(m);
         await m.alert();
@@ -22,16 +22,16 @@ export const clipper = async function () {
         duration: parseFloat(this.format.duration),
     };
     d.path = this.item.path;
-    d.markers = this.chapters;
+    requestAnimationFrame(() => (d.markers = this.chapters));
     m.appendChild(d);
-    document.body.insertBefore(m, document.querySelector('transcoder-toast'));
+    document.body.insertBefore(m, document.querySelector("transcoder-toast"));
     try {
         await m.open();
         this.clips.clips = [];
         for (let i = 0; i < d.clips.length; i++) {
             this.clips.addClip(
                 d.clips[i]?.timestamps.start ?? null,
-                d.clips[i]?.timestamps.end ?? null
+                d.clips[i]?.timestamps.end ?? null,
             );
         }
         this.saveSettings();

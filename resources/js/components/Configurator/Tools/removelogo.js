@@ -13,20 +13,29 @@ export const requestRemovelogo = async function (type) {
         };
         d.path = this.item.path;
         d.type = type;
-        d.markers = this.clips;
+        requestAnimationFrame(() => (d.markers = this.clips));
         m.appendChild(d);
-        document.body.insertBefore(m, document.querySelector('transcoder-toast'));
+        document.body.insertBefore(
+            m,
+            document.querySelector("transcoder-toast"),
+        );
         await m.open();
-        console.info("Removelogo video file %s. Create logomask at timestamp %s, width: %s, height: %s, type: %s",
+        console.info(
+            "Removelogo video file %s. Create logomask at timestamp %s, width: %s, height: %s, type: %s",
             this.item.path,
             d.removeLogo.timestamp,
             d.removeLogo.w,
             d.removeLogo.h,
-            d.removeLogo.type
+            d.removeLogo.type,
         );
         this.removeLogo = d.removeLogo;
-        const filterData = {...this.removeLogo, ...{filterType: 'removeLogo'}};
-        const idx = this.filterGraph.findIndex(f => f.filterType === 'removeLogo');
+        const filterData = {
+            ...this.removeLogo,
+            ...{ filterType: "removeLogo" },
+        };
+        const idx = this.filterGraph.findIndex(
+            (f) => f.filterType === "removeLogo",
+        );
         if (idx > -1) {
             const m = document.createElement("modal-confirm");
             m.header = "Replace existing filter?";
