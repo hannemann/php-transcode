@@ -138,7 +138,7 @@ TODO:
 - [ ] remove slim from dialogues
         - [x] Scale
         - [x] Concat
-        - [ ] Player
+        - [x] Player
         - [ ] VideoEditor
             - [x] Clipper
             - [ ] Cropper
@@ -151,5 +151,7 @@ TODO:
         - [x] Done
         - [x] Failed
         - [x] Pending
+
+- fix error on close player
 
 */

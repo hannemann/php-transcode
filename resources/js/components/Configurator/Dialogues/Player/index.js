@@ -1,24 +1,26 @@
-import { Slim, Iconify } from "@/components/lib";
+import { DomHelper } from "../../../../Helper/Dom";
 import { Request } from "@/components/Request";
 import Hls from "hls.js";
-import 'media-chrome';
+import "media-chrome";
 
-class Player extends Slim {
-    async onAdded() {
-        let response = await Request.post(
+class Player extends HTMLElement {
+    async connectedCallback() {
+        DomHelper.initDom.call(this);
+        await Request.post(
             `/stream/${encodeURIComponent(this.path)}`,
-            this.config
+            this.config,
         );
         requestAnimationFrame(() => {
+            const video = this.shadowRoot.querySelector("video");
             this.hls = new Hls();
             this.hls.loadSource(
-                `/stream-playlist/${encodeURIComponent(this.path)}.m3u8`
+                `/stream-playlist/${encodeURIComponent(this.path)}.m3u8`,
             );
-            this.hls.attachMedia(this.video);
+            this.hls.attachMedia(video);
         });
     }
 
-    onRemoved() {
+    disconnectedCallback() {
         this.hls.detachMedia();
         this.hls.destroy();
         Request.delete(`/stream/${encodeURIComponent(this.path)}`);
@@ -41,7 +43,7 @@ Player.template = /*html*/ `
     }
 </style>
 <media-controller defaultduration="600">
-    <video #ref="video" slot="media"></video>
+    <video slot="media"></video>
     <media-loading-indicator slot="centered-chrome"></media-loading-indicator>
     <media-control-bar>
         <media-play-button></media-play-button>
