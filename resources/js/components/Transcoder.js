@@ -140,7 +140,7 @@ TODO:
         - [x] Concat
         - [ ] Player
         - [ ] VideoEditor
-            - [ ] Clipper
+            - [x] Clipper
             - [ ] Cropper
             - [ ] Delogo
             - [ ] RemoveLogo

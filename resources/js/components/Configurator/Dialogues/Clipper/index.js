@@ -1,5 +1,5 @@
 import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
-import { Utils } from "@/components/lib";
+
 class Clipper extends VideoEditor {
     clips = [];
     raw = [];
@@ -35,13 +35,23 @@ class Clipper extends VideoEditor {
 
         this.btnAdd.removeEventListener("pointerup", this.add);
         this.btnRemove.removeEventListener("pointerup", this.remove);
+
+        this.removeClipListeners();
+    }
+
+    removeClipListeners() {
+        this.indicator.querySelectorAll(".clip").forEach((c) => {
+            c.removeEventListener("click", this.activateClip);
+        });
+        this.clipsContainer
+            .querySelectorAll("clip")
+            .forEach((c) => c.removeEventListener("click", this.activateClip));
     }
 
     add() {
         this.raw.push(this.current);
         this.raw.sort((a, b) => a > b);
         this.calculateClips();
-        Utils.forceUpdate(this, "clips,raw");
         this.dispatchEvent(
             new CustomEvent("clipper", { detail: this.timestamp() }),
         );
@@ -52,23 +62,29 @@ class Clipper extends VideoEditor {
         if (idx > -1) {
             this.raw.splice(idx, 1);
             this.calculateClips();
-            Utils.forceUpdate(this, "clips,raw");
         }
     }
 
     setClips(clips) {
         this.raw = clips;
-        if (this.parentNode) {
-            Utils.forceUpdate(this);
-        }
     }
 
     activateClip(e) {
-        const item = this.clips[e.target.dataset.index];
+        const idx = e.currentTarget.dataset.index;
+        const item = this.clips[idx];
+        this.clipsContainer
+            .querySelectorAll(".active")
+            .forEach((a) => a.classList.remove("active"));
         if (this.current === item.raw.start && item.raw.end) {
             this.current = item.raw.end;
+            this.clipsContainer
+                .querySelector(`[data-index="${idx}"] div:last-of-type`)
+                .classList.add("active");
         } else {
             this.current = item.raw.start;
+            this.clipsContainer
+                .querySelector(`[data-index="${idx}"] div:first-of-type`)
+                .classList.add("active");
         }
         this.updateImages();
     }
@@ -78,11 +94,11 @@ class Clipper extends VideoEditor {
     }
 
     calculateClips() {
-        this.clips.forEach((c) => {
-            c.node.removeEventListener("click", this.activateClip);
-            c.node.remove();
-        });
+        this.removeClipListeners();
+        this.indicator.querySelectorAll(".clip").forEach((c) => c.remove());
         this.clips = [];
+        const indicatorClips = [];
+        const clipTimestamps = [];
         for (let i = 0; i < this.raw.length; i += 2) {
             const start = this.raw[i] ? this.timestamp(this.raw[i]) : null;
             const end = this.raw[i + 1]
@@ -103,16 +119,41 @@ class Clipper extends VideoEditor {
                         : null,
                 },
             };
-            clip.node = document.createElement("div");
-            clip.node.style.left = `${clip.percentage.start}%`;
-            clip.node.style.width = end ? `${clip.percentage.length}%` : "1px";
-            clip.node.dataset.index = clip.index;
-            clip.node.classList.add("clip");
-            clip.node.addEventListener("click", this.activateClip);
-            this.indicator.appendChild(clip.node);
             this.clips.push(clip);
+            indicatorClips.push(this.creatClipIndicator(clip, end));
+            clipTimestamps.push(this.createClipTimestamp(clip));
         }
-        Utils.forceUpdate(this);
+        this.indicator.append(...indicatorClips);
+        this.clipsContainer.replaceChildren(...clipTimestamps);
+    }
+
+    creatClipIndicator(item, end) {
+        const node = document.createElement("div");
+        node.style.left = `${item.percentage.start}%`;
+        node.style.width = end ? `${item.percentage.length}%` : "1px";
+        node.dataset.index = item.index;
+        node.classList.add("clip");
+        node.addEventListener("click", this.activateClip);
+        return node;
+    }
+
+    createClipTimestamp(item) {
+        const clip = document.createElement("div");
+        const start = document.createElement("div");
+        const end = document.createElement("div");
+
+        clip.dataset.index = item.index;
+        clip.addEventListener("click", this.activateClip);
+
+        clip.classList.add("clip");
+        start.classList.add("timestamp");
+        end.classList.add("timestamp");
+
+        start.innerText = item.raw.start ? this.timestamp(item.raw.start) : "";
+        end.innerText = item.raw.end ? this.timestamp(item.raw.end) : "";
+
+        clip.append(start, end);
+        return clip;
     }
 
     getClipPos(item) {
@@ -120,6 +161,10 @@ class Clipper extends VideoEditor {
             return `left: ${item.percentage.start}%;width:${item.percentage.length}%`;
         }
         return `left: ${item.percentage.start}%;width:1px`;
+    }
+
+    get clipsContainer() {
+        return this.shadowRoot.querySelector(".clips");
     }
 }
 
@@ -182,6 +227,7 @@ Clipper.template = html`
         }
         .clips .clip .timestamp.active {
             background: var(--clr-bg-200);
+            color: var(--clr-enlightened);
         }
     </style>
     ${EDITOR_TEMPLATE}
@@ -253,24 +299,7 @@ Clipper.template = html`
             <dd>Skip</dd>
         </dl>
     </div>
-    <div class="clips">
-        <div class="clip" *foreach="{{ this.clips }}">
-            <div
-                data-index="{{ item.index }}"
-                @click="{{ this.activateClip }}"
-                class="{{ item.raw.start === this.current ? 'timestamp active' : 'timestamp' }}"
-            >
-                {{ this.timestamp(item.raw.start) }}
-            </div>
-            <div
-                data-index="{{ item.index }}"
-                @click="{{ this.activateClip }}"
-                class="{{ item.raw.end === this.current ? 'timestamp active' : 'timestamp' }}"
-            >
-                {{ this.clipEndTimestamp(item.raw.end) }}
-            </div>
-        </div>
-    </div>
+    <div class="clips"></div>
 `;
 
 customElements.define("dialogue-clipper", Clipper);
