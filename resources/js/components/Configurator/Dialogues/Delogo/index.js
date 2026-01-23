@@ -1,8 +1,8 @@
 import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
-import { Utils } from "@/components/lib";
 import { Time } from "../../../../Helper/Time";
 import { saveDelogo } from "../../Tools/delogo";
 import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
+import Iconify from "@iconify/iconify/dist/iconify.js";
 
 class DeLogo extends VideoEditor {
     delogoOffsetTop = 0;
@@ -60,12 +60,59 @@ class DeLogo extends VideoEditor {
         super.addListeners();
         this.image.addEventListener("click", this.addDelogoBox);
         document.addEventListener("keydown", this.handleKey);
+
+        this.addButton.addEventListener("click", this.addNext);
+        this.saveButton.addEventListener("click", this.save);
+
+        this.btnBetweenFrom.addEventListener("click", this.setBetweenFrom);
+        this.btnBetweenTo.addEventListener("click", this.setBetweenTo);
+        this.btnBetweenReset.addEventListener("click", this.resetBetween);
+
+        this.displayBetweenFrom.addEventListener("click", this.gotoBetweenFrom);
+        this.displayBetweenTo.addEventListener("click", this.gotoBetweenTo);
+
+        this.addItemListeners();
+    }
+
+    addItemListeners() {
+        this.filtersContainer.querySelectorAll(":scope > div")?.forEach((e) => {
+            e.addEventListener("click", this.editItem);
+            e.querySelector(".icon-stack").addEventListener(
+                "click",
+                this.deleteItem,
+            );
+        });
     }
 
     removeListeners() {
         super.removeListeners();
         this.image.removeEventListener("click", this.addDelogoBox);
         document.removeEventListener("keydown", this.handleKey);
+
+        this.addButton.removeEventListener("click", this.addNext);
+        this.saveButton.removeEventListener("click", this.save);
+
+        this.btnBetweenFrom.removeEventListener("click", this.setBetweenFrom);
+        this.btnBetweenTo.removeEventListener("click", this.setBetweenTo);
+        this.btnBetweenReset.removeEventListener("click", this.resetBetween);
+
+        this.displayBetweenFrom.removeEventListener(
+            "click",
+            this.gotoBetweenFrom,
+        );
+        this.displayBetweenTo.removeEventListener("click", this.gotoBetweenTo);
+
+        this.removeItemListeners();
+    }
+
+    removeItemListeners() {
+        this.filtersContainer.querySelectorAll(":scope > div")?.forEach((e) => {
+            e.removeEventListener("click", this.editItem);
+            e.querySelector(".icon-stack").removeEventListener(
+                "click",
+                this.deleteItem,
+            );
+        });
     }
 
     updateFrameUrl() {
@@ -153,10 +200,11 @@ class DeLogo extends VideoEditor {
     handleKey(e) {
         if (this.delogoBox) {
             e.preventDefault();
+            const delta = e.shiftKey ? 10 : 1;
             if (e.ctrlKey) {
                 if (e.key === "ArrowRight") {
                     this.delogoBox.style.left = `${Math.min(
-                        this.delogoBox.offsetLeft + 1,
+                        this.delogoBox.offsetLeft + delta,
                         this.image.offsetLeft +
                             this.image.width -
                             this.delogoBox.offsetWidth,
@@ -164,13 +212,13 @@ class DeLogo extends VideoEditor {
                 }
                 if (e.key === "ArrowLeft") {
                     this.delogoBox.style.left = `${Math.max(
-                        this.delogoBox.offsetLeft - 1,
+                        this.delogoBox.offsetLeft - delta,
                         this.image.offsetLeft,
                     )}px`;
                 }
                 if (e.key === "ArrowDown") {
                     this.delogoBox.style.top = `${Math.min(
-                        this.delogoBox.offsetTop + 1,
+                        this.delogoBox.offsetTop + delta,
                         this.image.offsetTop +
                             this.image.height -
                             this.delogoBox.offsetHeight,
@@ -178,7 +226,7 @@ class DeLogo extends VideoEditor {
                 }
                 if (e.key === "ArrowUp") {
                     this.delogoBox.style.top = `${Math.max(
-                        this.delogoBox.offsetTop - 1,
+                        this.delogoBox.offsetTop - delta,
                         this.image.offsetTop,
                     )}px`;
                 }
@@ -186,7 +234,7 @@ class DeLogo extends VideoEditor {
                 const box = this.delogoBox.getBoundingClientRect();
                 if (e.key === "ArrowRight") {
                     this.delogoBox.style.width = `${Math.min(
-                        this.delogoBox.offsetWidth + 1,
+                        this.delogoBox.offsetWidth + delta,
                         this.image.offsetLeft +
                             this.image.offsetWidth -
                             this.delogoBox.offsetLeft,
@@ -194,13 +242,13 @@ class DeLogo extends VideoEditor {
                 }
                 if (e.key === "ArrowLeft") {
                     this.delogoBox.style.width = `${Math.max(
-                        this.delogoBox.offsetWidth - 1,
+                        this.delogoBox.offsetWidth - delta,
                         5,
                     )}px`;
                 }
                 if (e.key === "ArrowDown") {
                     this.delogoBox.style.height = `${Math.min(
-                        this.delogoBox.offsetHeight + 1,
+                        this.delogoBox.offsetHeight + delta,
                         this.image.offsetTop +
                             this.image.offsetHeight -
                             this.delogoBox.offsetTop,
@@ -208,7 +256,7 @@ class DeLogo extends VideoEditor {
                 }
                 if (e.key === "ArrowUp") {
                     this.delogoBox.style.height = `${Math.max(
-                        this.delogoBox.offsetHeight - 1,
+                        this.delogoBox.offsetHeight - delta,
                         5,
                     )}px`;
                 }
@@ -232,38 +280,32 @@ class DeLogo extends VideoEditor {
 
     setBetween(between) {
         this.between = between;
-        Utils.forceUpdate(this);
+        this.betweenFrom = this.between.from;
+        this.betweenTo = this.between.to;
     }
 
     setBetweenFrom() {
         this.between.from = Time.toSeconds(this.timestamp());
-        Utils.forceUpdate(this);
-    }
-
-    getBetweenFrom() {
-        if (!this.between?.from) return "n/a";
-        return Time.calculateCutTimestamp(
-            this.configurator.clips.clips,
-            this.between.from * 1000,
-        );
+        this.betweenFrom = this.getCutTimeStamp(this.between.from);
     }
 
     setBetweenTo() {
         this.between.to = Time.toSeconds(this.timestamp());
-        Utils.forceUpdate(this);
+        this.betweenTo = this.getCutTimeStamp();
     }
 
-    getBetweenTo() {
-        if (!this.between?.to) return "n/a";
+    getCutTimeStamp(timestamp) {
+        if (!timestamp) return "n/a";
         return Time.calculateCutTimestamp(
             this.configurator.clips.clips,
-            this.between.to * 1000,
+            timestamp * 1000,
         );
     }
 
     resetBetween() {
         this.between = { from: null, to: null };
-        Utils.forceUpdate(this);
+        this.betweenFrom = "n/a";
+        this.betweenTo = "n/a";
     }
 
     gotoBetweenFrom() {
@@ -285,7 +327,6 @@ class DeLogo extends VideoEditor {
         this.isSaved = this.saved;
         this.initFilters();
         this.activeDelogoFilter = null;
-        Utils.forceUpdate(this);
         Iconify.scan(this.shadowRoot);
     }
 
@@ -312,6 +353,7 @@ class DeLogo extends VideoEditor {
     }
 
     async deleteItem(e) {
+        e.stopPropagation();
         this.configurator.filterGraph.splice(
             parseInt(e.currentTarget.closest("[data-delogo]").dataset.index),
             1,
@@ -321,13 +363,40 @@ class DeLogo extends VideoEditor {
     }
 
     initFilters() {
+        this.removeItemListeners();
+        const items = [];
         this.filters = [...this.configurator.filterGraph].map((f, k) => {
             if (f.filterType !== "delogo") {
                 return null;
             }
             f.index = k;
+            items.push(this.createItem(f));
             return f;
         });
+        this.filtersContainer.replaceChildren(...items);
+        Iconify.scan(this.shadowRoot);
+        this.addItemListeners();
+    }
+
+    createItem(item) {
+        const node = document.createElement("div");
+        node.dataset.index = item.index;
+        node.dataset.delogo = JSON.stringify(item);
+        node.innerText =
+            `${this.getCutTimeStamp(item.between.from)} - ` +
+            `${this.getCutTimeStamp(item.between.to)}`;
+        const iconWrap = document.createElement("div");
+        iconWrap.classList.add("icon-stack");
+        const icon = document.createElement("span");
+        icon.classList.add("iconify");
+        icon.dataset.icon = "mdi-close";
+        const iconHover = document.createElement("span");
+        iconHover.classList.add("iconify", "hover");
+        iconHover.dataset.icon = "mdi-close";
+        iconWrap.append(icon, iconHover);
+        node.append(iconWrap);
+
+        return node;
     }
 
     set isSaved(value) {
@@ -368,6 +437,84 @@ class DeLogo extends VideoEditor {
         } else {
             return null;
         }
+    }
+
+    get betweenFrom() {
+        return this.displayBetweenFrom.querySelector("span:last-of-type")
+            .innerText;
+    }
+
+    set betweenFrom(value) {
+        this.displayBetweenFrom.querySelector("span:last-of-type").innerText =
+            value;
+    }
+
+    get displayBetweenFrom() {
+        return this.shadowRoot.querySelector("span.between-from");
+    }
+
+    get betweenTo() {
+        return this.displayBetweenTo.querySelector("span:last-of-type")
+            .innerText;
+    }
+
+    set betweenTo(value) {
+        this.displayBetweenTo.querySelector("span:last-of-type").innerText =
+            value;
+    }
+
+    get displayBetweenTo() {
+        return this.shadowRoot.querySelector("span.between-to");
+    }
+
+    get btnBetweenFrom() {
+        return this.shadowRoot.querySelector(
+            'theme-button[data-type="between-from"]',
+        );
+    }
+
+    get btnBetweenTo() {
+        return this.shadowRoot.querySelector(
+            'theme-button[data-type="between-to"]',
+        );
+    }
+
+    get btnBetweenReset() {
+        return this.shadowRoot.querySelector(
+            'theme-button[data-type="between-reset"]',
+        );
+    }
+
+    get saveButton() {
+        return this.shadowRoot.querySelector('theme-button[data-type="save"]');
+    }
+
+    get addButton() {
+        return this.shadowRoot.querySelector('theme-button[data-type="add"]');
+    }
+
+    get filtersContainer() {
+        return this.shadowRoot.querySelector(".filters");
+    }
+
+    get displayLeft() {
+        return this.shadowRoot.querySelector(".displayLeft");
+    }
+
+    get displayTop() {
+        return this.shadowRoot.querySelector(".displayTop");
+    }
+
+    get displayWidth() {
+        return this.shadowRoot.querySelector(".displayWidth");
+    }
+
+    get displayHeight() {
+        return this.shadowRoot.querySelector(".displayHeight");
+    }
+
+    get zoom() {
+        return this.shadowRoot.querySelector(".zoom");
     }
 }
 
@@ -451,6 +598,7 @@ DeLogo.template = html`
                     transition-duration: var(--transition-medium);
                     display: flex;
                     justify-content: space-between;
+                    align-items: center;
 
                     &[data-active] {
                         background: var(--clr-bg-200);
@@ -472,24 +620,20 @@ DeLogo.template = html`
     </style>
     ${EDITOR_TEMPLATE}
     <div class="info">
-        <div class="zoom" #ref="zoom"></div>
+        <div class="zoom"></div>
         <p>Click on image to set delogo rectangle</p>
         <dl>
             <dt>x/y</dt>
             <dd>
-                <span #ref="displayLeft">0px</span>&nbsp;/&nbsp;<span
-                    #ref="displayTop"
-                    >0px</span
-                >
+                <span class="displayLeft">0px</span>&nbsp;/&nbsp;
+                <span class="displayTop">0px</span>
             </dd>
         </dl>
         <dl>
             <dt>w/h</dt>
             <dd>
-                <span #ref="displayWidth">0px</span>&nbsp;/&nbsp;<span
-                    #ref="displayHeight"
-                    >0px</span
-                >
+                <span class="displayWidth">0px</span>&nbsp;/&nbsp;
+                <span class="displayHeight">0px</span>
             </dd>
         </dl>
         <dl>
@@ -513,51 +657,40 @@ DeLogo.template = html`
             </dt>
             <dd>Adjust position</dd>
         </dl>
+        <dl>
+            <dt>
+                <span class="iconify" data-icon="mdi-swap-vertical-bold"></span>
+                <span
+                    class="iconify"
+                    data-icon="mdi-swap-horizontal-bold"
+                ></span>
+                + Shift
+            </dt>
+            <dd>Faster movement</dd>
+        </dl>
     </div>
     <div class="sidebar">
         <fieldset class="between">
             <legend>Between</legend>
-            <span @click="{{ this.gotoBetweenFrom }}">
-                <span>From:</span
-                ><span>{{ this.getBetweenFrom() || 'n/a' }}</span>
+            <span class="between-from">
+                <span>From:</span>
+                <span></span>
             </span>
-            <span @click="{{ this.gotoBetweenTo }}">
-                <span>To:</span><span>{{ this.getBetweenTo() }}</span>
+            <span class="between-to">
+                <span>To:</span>
+                <span></span>
             </span>
             <div>
-                <theme-button @click="{{ this.setBetweenFrom }}"
-                    >Start</theme-button
-                >
-                <theme-button @click="{{ this.setBetweenTo }}"
-                    >End</theme-button
-                >
-                <theme-button @click="{{ this.resetBetween }}"
-                    >Reset</theme-button
-                >
+                <theme-button data-type="between-from">Start</theme-button>
+                <theme-button data-type="between-to">End</theme-button>
+                <theme-button data-type="between-reset">Reset</theme-button>
             </div>
         </fieldset>
         <div class="actions">
-            <theme-button #ref="saveButton" @click="{{ this.save }}"
-                >Save</theme-button
-            >
-            <theme-button #ref="addButton" @click="{{ this.addNext }}"
-                >Add Next</theme-button
-            >
+            <theme-button data-type="save">Save</theme-button>
+            <theme-button data-type="add">Add Next</theme-button>
         </div>
-        <div class="filters">
-            <div
-                *foreach="{{ this.filters }}"
-                data-index="{{ item.index }}"
-                data-delogo="{{ JSON.stringify(item) }}"
-                @click="{{ this.editItem }}"
-            >
-                Delogo
-                <div @click="{{ this.deleteItem }}" class="icon-stack">
-                    <span class="iconify" data-icon="mdi-close"></span>
-                    <span class="iconify hover" data-icon="mdi-close"></span>
-                </div>
-            </div>
-        </div>
+        <div class="filters"></div>
     </div>
 `;
 

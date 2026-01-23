@@ -18,3 +18,4 @@ window.Echo = new Echo({
 });
 
 window.html = String.raw;
+window.css = String.raw;
