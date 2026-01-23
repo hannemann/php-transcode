@@ -6,10 +6,10 @@ const IMAGE_TYPE_ORIGINAL = "Original";
 const IMAGE_TYPE_MASK = "Mask";
 class RemoveLogo extends VideoEditor {
     raw = [-1];
-    imageType = IMAGE_TYPE_ORIGINAL;
 
     bindListeners() {
         super.bindListeners();
+        this.toggleType = this.toggleType.bind(this);
         this.paint = this.paint.bind(this);
         this.handleSaveImage = this.handleSaveImage.bind(this);
     }
@@ -18,11 +18,16 @@ class RemoveLogo extends VideoEditor {
         super.addListeners();
         document.addEventListener("keydown", this.handleKeyDown);
         document.addEventListener("keyup", this.handleKeyUp);
+        this.paintButton.addEventListener("click", this.paint);
+        this.typeButton.addEventListener("click", this.toggleType);
     }
+
     removeListeners() {
         super.removeListeners();
         document.removeEventListener("keydown", this.handleKeyDown);
         document.removeEventListener("keyup", this.handleKeyUp);
+        this.paintButton.removeEventListener("click", this.paint);
+        this.typeButton.removeEventListener("click", this.toggleType);
     }
 
     paint() {
@@ -115,7 +120,21 @@ class RemoveLogo extends VideoEditor {
         };
     }
 
-    add() {}
+    get paintButton() {
+        return this.shadowRoot.querySelector(".paint-button");
+    }
+
+    get typeButton() {
+        return this.shadowRoot.querySelector(".toggle-type");
+    }
+
+    get imageType() {
+        return this.typeButton.innerText;
+    }
+
+    set imageType(value) {
+        this.typeButton.innerText = value;
+    }
 }
 
 RemoveLogo.template = html`
@@ -150,18 +169,11 @@ RemoveLogo.template = html`
     </style>
     ${EDITOR_TEMPLATE}
     <div class="info">
-        <theme-button class="toggle-type" @click="{{ this.toggleType() }}"
-            >{{ this.imageType }}</theme-button
-        >
+        <theme-button class="toggle-type">${IMAGE_TYPE_ORIGINAL}</theme-button>
         <p>Find a black frame containing only the logo</p>
     </div>
     <div class="actions">
-        <theme-button
-            #ref="paintButton"
-            class="paint-button"
-            @click="{{ this.paint }}"
-            >Paint</theme-button
-        >
+        <theme-button class="paint-button">Paint</theme-button>
     </div>
 `;
 
