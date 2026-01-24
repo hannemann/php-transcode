@@ -24,7 +24,6 @@
         "laravel-echo": "^2.2.4",
         "media-chrome": "^4.14.0",
         "painterro": "^1.2.92",
-        "pusher-js": "^8.4.0",
-        "slim-js": "^5.0.9"
+        "pusher-js": "^8.4.0"
     }
 }
