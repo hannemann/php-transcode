@@ -1,10 +1,6 @@
 import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
 
 class Cropper extends VideoEditor {
-    cropOffsetTop = 0;
-    cropOffsetLeft = 0;
-    cropOffsetBottom = null;
-    cropOffsetRight = null;
     video = null;
     aspectDecimal = 0;
     zoomed = 0;
@@ -30,6 +26,7 @@ class Cropper extends VideoEditor {
         this.handleKey = this.handleKey.bind(this);
         this.handleClick = this.handleClick.bind(this);
         this.updateCropBox = this.updateCropBox.bind(this);
+        this.validateDimensions = this.validateDimensions.bind(this);
     }
 
     initCrop() {
@@ -48,13 +45,28 @@ class Cropper extends VideoEditor {
         document.addEventListener("keydown", this.handleKey);
         document.addEventListener("keyup", this.handleKey);
         this.cropImage.addEventListener("click", this.handleClick);
+        this.inputReplaceBlackBorders.addEventListener(
+            "change",
+            this.validateDimensions,
+        );
+        this.aspectRadios.forEach((r) => {
+            r.addEventListener("change", this.validateDimensions);
+        });
     }
+
     removeListeners() {
         super.removeListeners();
         this.image.removeEventListener("load", this.updateCropBox);
         document.removeEventListener("keydown", this.handleKey);
         document.removeEventListener("keyup", this.handleKey);
         this.cropImage.removeEventListener("click", this.handleClick);
+        this.inputReplaceBlackBorders.removeEventListener(
+            "change",
+            this.validateDimensions,
+        );
+        this.aspectRadios.forEach((r) => {
+            r.removeEventListener("change", this.validateDimensions);
+        });
     }
 
     updateCropBox() {
@@ -85,6 +97,7 @@ class Cropper extends VideoEditor {
         if (this.aspectRatio === "custom") {
             this.inputHeight.value = this.cropOffsetBottom - this.cropOffsetTop;
         }
+        this.aspectError.style.display = this.valid ? "none" : "";
     }
 
     get gradients() {
@@ -369,6 +382,116 @@ class Cropper extends VideoEditor {
         this.crop = data;
         this.updateCropBox();
     }
+
+    get aspectError() {
+        return this.shadowRoot.querySelector(".aspect-error");
+    }
+
+    get cropOverlay() {
+        return this.shadowRoot.querySelector('[data-ref="cropOverlay"]');
+    }
+
+    get cropImage() {
+        return this.shadowRoot.querySelector('[data-ref="cropImage"]');
+    }
+
+    get info() {
+        return this.shadowRoot.querySelector('[data-ref="info"]');
+    }
+
+    get inputWidth() {
+        return this.shadowRoot.querySelector('[data-ref="inputWidth"]');
+    }
+
+    get inputHeight() {
+        return this.shadowRoot.querySelector('[data-ref="inputHeight"]');
+    }
+
+    get inputReplaceBlackBorders() {
+        return this.shadowRoot.querySelector(
+            '[data-ref="inputReplaceBlackBorders"]',
+        );
+    }
+
+    get inputMirror() {
+        return this.shadowRoot.querySelector('[data-ref="inputMirror"]');
+    }
+
+    get inputEqual() {
+        return this.shadowRoot.querySelector('[data-ref="inputEqual"]');
+    }
+
+    get aspectRadios() {
+        return this.shadowRoot.querySelectorAll(".aspect-ratio input");
+    }
+
+    get cropOffsetTop() {
+        return Number(this.shadowRoot.querySelector("[data-crop]").dataset.top);
+    }
+
+    set cropOffsetTop(value) {
+        this.shadowRoot.querySelector("[data-crop]").dataset.top =
+            String(value);
+        this.setDimensions().setPosition().setCustom();
+    }
+
+    get cropOffsetLeft() {
+        return Number(
+            this.shadowRoot.querySelector("[data-crop]").dataset.left,
+        );
+    }
+
+    set cropOffsetLeft(value) {
+        this.shadowRoot.querySelector("[data-crop]").dataset.left =
+            String(value);
+        this.setDimensions().setPosition().setCustom();
+    }
+
+    get cropOffsetBottom() {
+        return (
+            Number(
+                this.shadowRoot.querySelector("[data-crop]").dataset.bottom,
+            ) || null
+        );
+    }
+
+    set cropOffsetBottom(value) {
+        this.shadowRoot.querySelector("[data-crop]").dataset.bottom =
+            String(value);
+        this.setDimensions().setPosition().setCustom();
+    }
+
+    get cropOffsetRight() {
+        return (
+            Number(
+                this.shadowRoot.querySelector("[data-crop]").dataset.right,
+            ) || null
+        );
+    }
+
+    set cropOffsetRight(value) {
+        this.shadowRoot.querySelector("[data-crop]").dataset.right =
+            String(value);
+        this.setDimensions().setPosition().setCustom();
+    }
+
+    setDimensions() {
+        this.shadowRoot.querySelector('[data-type="wh"]').innerText =
+            `${this.cropOffsetRight - this.cropOffsetLeft}:${this.cropOffsetBottom - this.cropOffsetTop}`;
+        return this;
+    }
+
+    setPosition() {
+        this.shadowRoot.querySelector('[data-type="xy"]').innerText =
+            `${this.cropOffsetLeft}:${this.cropOffsetTop}`;
+        return this;
+    }
+
+    setCustom() {
+        this.shadowRoot.querySelector('[data-type="custom"]').innerText =
+            `Custom (${this.cropOffsetRight - this.cropOffsetLeft}x${this.cropOffsetBottom - this.cropOffsetTop})`;
+        return this;
+    }
 }
 
 Cropper.template = html`
@@ -396,7 +519,7 @@ ${EDITOR_CSS}
         background-blend-mode: lighten;
     }
 
-    .info {
+    .info, .settings {
         grid-area: left;
         display: grid;
         grid-auto-rows: min-content;
@@ -404,6 +527,10 @@ ${EDITOR_CSS}
         font-size: .75rem;
         white-space: nowrap;
         width: 250px;
+    }
+    .settings {
+        grid-area: right;
+        justify-self: end;
     }
     fieldset {
         border: 2px solid var(--clr-bg-200);
@@ -463,53 +590,17 @@ ${EDITOR_CSS}
     }
 </style>
 ${EDITOR_TEMPLATE}
-<div #ref="cropOverlay" class="crop"><div #ref="cropImage"></div></div>
-<div class="info" #ref="info">
-    <div *if="{{ !this.valid }}" class="error">
+<div data-ref="cropOverlay" class="crop">
+    <div data-ref="cropImage"></div>
+</div>
+<div class="info" data-ref="info">
+    <div class="aspect-error error">
         Resulting video does not fit into target aspect ratio;
     </div>
-    <fieldset>
-        <legend>Scale:</legend>
-        <label>
-            <span>Width:</span>
-            <input type="number" #ref="inputWidth">
-        </label>
-        <label>
-            <span>Height:</span>
-            <input type="number" #ref="inputHeight">
-        </label>
-        <label>
-            <span>Replace Borders</span>
-            <input type="checkbox" name="replaceBlackBorders" #ref="inputReplaceBlackBorders" @change="{{ this.validateDimensions() }}" checked="checked">
-        </label>
-        <label>
-            <span>Mirror</span>
-            <input type="checkbox" name="mirror" #ref="inputMirror">
-        </label>
-        <label>
-            <span>Equal Borders</span>
-            <input type="checkbox" name="equal" #ref="inputEqual" checked="checked">
-        </label>
-    </fieldset>
-    <fieldset class="aspect-ratio">
-        <legend>Aspect Ratio:</legend>
-        <label>
-            <span>4:3</span>
-            <input type="radio" name="input-aspect" value="4:3" @change="{{ this.validateDimensions() }}">
-        </label>
-        <label>
-            <span>16:9</span>
-            <input type="radio" name="input-aspect" value="16:9" @change="{{ this.validateDimensions() }}">
-        </label>
-        <label>
-            <span>Custom ({{ this.cropOffsetRight - this.cropOffsetLeft }}x{{ this.cropOffsetBottom - this.cropOffsetTop }})</span>
-            <input type="radio" name="input-aspect" value="custom" @change="{{ this.validateDimensions() }}">
-        </label>
-    </fieldset>
-    <fieldset>
+    <fieldset data-crop data-top="0" data-left="0" data-right data-bottom>
         <legend>Crop Box:</legend>
-        <label><span>w:h</span><span>{{ this.cropOffsetRight - this.cropOffsetLeft }}:{{ this.cropOffsetBottom - this.cropOffsetTop }}</span></label>
-        <label><span>x:y</span><span>{{ this.cropOffsetLeft }}:{{ this.cropOffsetTop }}</span></label>
+        <label><span>w:h</span><span data-type="wh"></span></label>
+        <label><span>x:y</span><span data-type="xy"></span></label>
     </fieldset>
     <div class="help">
         <dl>
@@ -530,9 +621,49 @@ ${EDITOR_TEMPLATE}
             <dd>Set lower right</dd>
         </dl>
     </div>
-    <div *v-if="{{ this.divisionBySixteenError }}" class="warning height-warning" title="For best results height should be dividable by 16">
+    <div class="warning height-warning" title="For best results height should be dividable by 16">
         <span class="iconify" data-icon="mdi-alert-outline"></span>
     </div>
+</div>
+<div class="settings">
+    <fieldset>
+        <legend>Scale:</legend>
+        <label>
+            <span>Width:</span>
+            <input type="number" data-ref="inputWidth">
+        </label>
+        <label>
+            <span>Height:</span>
+            <input type="number" data-ref="inputHeight">
+        </label>
+        <label>
+            <span>Replace Borders</span>
+            <input type="checkbox" name="replaceBlackBorders" data-ref="inputReplaceBlackBorders" checked="checked">
+        </label>
+        <label>
+            <span>Mirror</span>
+            <input type="checkbox" name="mirror" data-ref="inputMirror">
+        </label>
+        <label>
+            <span>Equal Borders</span>
+            <input type="checkbox" name="equal" data-ref="inputEqual" checked="checked">
+        </label>
+    </fieldset>
+    <fieldset class="aspect-ratio">
+        <legend>Aspect Ratio:</legend>
+        <label>
+            <span>4:3</span>
+            <input type="radio" name="input-aspect" value="4:3">
+        </label>
+        <label>
+            <span>16:9</span>
+            <input type="radio" name="input-aspect" value="16:9">
+        </label>
+        <label>
+            <span data-type="custom"></span>
+            <input type="radio" name="input-aspect" value="custom">
+        </label>
+    </fieldset>
 </div>
 `;
 

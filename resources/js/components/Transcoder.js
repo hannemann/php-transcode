@@ -125,33 +125,6 @@ customElements.define("ffmpeg-transcoder", Transcoder);
 
 TODO:
 
-- [x] remove slim from stream config and buttons
-    - [x] Configurator/Streams/Buttons
-    - [x] Configurator/Streams/Config/index
-- [x] remove slim from textviewer
-- [x] remove slim from toast
-- [x] remove slim from clips
-- [x] remove slim from clips/clip
-- [x] remove slim from filter graph
-- [x] remove slim from request loading
-- [x] remove slim from modals
-- [ ] remove slim from dialogues
-        - [x] Scale
-        - [x] Concat
-        - [x] Player
-        - [ ] VideoEditor
-            - [x] Clipper
-            - [ ] Cropper
-            - [ ] Delogo
-            - [ ] RemoveLogo
-- [x] remove slim from statusbar
-    - [x] index
-    - [x] Items
-        - [x] Current
-        - [x] Done
-        - [x] Failed
-        - [x] Pending
-
 - fix error on close player
 
 */

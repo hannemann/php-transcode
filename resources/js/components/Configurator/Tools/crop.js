@@ -18,12 +18,11 @@ export const requestCrop = async function (type, id = NaN, data = null) {
             width: scaleFilter?.width || video.coded_width,
             height: scaleFilter?.height || video.coded_height,
         };
-        d.crop = this.crop;
         d.path = this.item.path;
         d.type = type;
         d.filterIndex = id;
-        m.appendChild(d);
         requestAnimationFrame(() => {
+            d.crop = this.crop;
             d.markers = this.clips;
             d.mirror = false;
             d.width = d.video.width;
@@ -42,6 +41,7 @@ export const requestCrop = async function (type, id = NaN, data = null) {
                 );
             }
         });
+        m.appendChild(d);
         document.body.insertBefore(
             m,
             document.querySelector("transcoder-toast"),

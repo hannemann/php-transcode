@@ -1,14 +1,20 @@
-import { Slim, Iconify } from "@/components/lib";
+import { DomHelper } from "../../../../Helper/Dom";
+import { Iconify } from "@/components/lib";
 import { Time } from "../../../../Helper/Time";
 import { handleKeyDown, handleKeyUp } from "./mixins/handleKey";
 import ConfiguratorHelper from "../../../../Helper/Configurator";
 
 const THUMBNAIL_HEIGHT = 30;
 
-class VideoEditor extends Slim {
+class VideoEditor extends HTMLElement {
     #markers = [];
     raw = [];
     clipsConfig = ConfiguratorHelper.clips.clips;
+
+    constructor() {
+        super();
+        DomHelper.initDom.call(this);
+    }
 
     connectedCallback() {
         this.bindListeners();
