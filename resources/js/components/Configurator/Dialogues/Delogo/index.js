@@ -54,6 +54,7 @@ class DeLogo extends VideoEditor {
         this.addNext = this.addNext.bind(this);
         this.editItem = this.editItem.bind(this);
         this.deleteItem = this.deleteItem.bind(this);
+        this.handleFakeBox = this.handleFakeBox.bind(this);
     }
 
     addListeners() {
@@ -81,6 +82,8 @@ class DeLogo extends VideoEditor {
                 "click",
                 this.deleteItem,
             );
+            e.addEventListener("pointerenter", this.handleFakeBox);
+            e.addEventListener("pointerleave", this.handleFakeBox);
         });
     }
 
@@ -112,6 +115,8 @@ class DeLogo extends VideoEditor {
                 "click",
                 this.deleteItem,
             );
+            e.removeEventListener("pointerenter", this.handleFakeBox);
+            e.removeEventListener("pointerleave", this.handleFakeBox);
         });
     }
 
@@ -139,6 +144,11 @@ class DeLogo extends VideoEditor {
                 );
                 this.delogoBox.style.width = `20px`;
                 this.delogoBox.style.height = `20px`;
+            }
+            if (!this.fakeBox) {
+                this.fakeBox = document.createElement("div");
+                this.shadowRoot.appendChild(this.fakeBox);
+                this.fakeBox.classList.add("fake-box");
             }
             //console.log(e, e.offsetX, e.offsetY);
             this.delogoOffsetTop =
@@ -169,7 +179,6 @@ class DeLogo extends VideoEditor {
 
     updateZoom() {
         const image = this.image.getBoundingClientRect();
-        const ratio = this.video.width / image.width;
         const tr = `translate(
             ${
                 (this.coords.x -
@@ -267,15 +276,14 @@ class DeLogo extends VideoEditor {
 
     applyFilterData(data) {
         this.isEdit = true;
+        this.isSaved = false;
         this.coords = data;
         this.setBetween(data.between);
         this.updateZoom();
         this.current = data.between.from * 1000;
         this.updateIndicatorPos();
         this.updateImages();
-        this.activeDelogoFilter = this.shadowRoot.querySelector(
-            `.filters [data-index="${this.filterIndex}"]`,
-        );
+        this.activeDelogoFilter = this.filterIndex;
     }
 
     setBetween(between) {
@@ -291,7 +299,7 @@ class DeLogo extends VideoEditor {
 
     setBetweenTo() {
         this.between.to = Time.toSeconds(this.timestamp());
-        this.betweenTo = this.getCutTimeStamp();
+        this.betweenTo = this.getCutTimeStamp(this.between.to);
     }
 
     getCutTimeStamp(timestamp) {
@@ -335,6 +343,18 @@ class DeLogo extends VideoEditor {
         this.isEdit = false;
         this.isSaved = false;
         this.resetBetween();
+        const item = {
+            index: this.configurator.filterGraph.length,
+            type: "cpu",
+            filterType: "delogo",
+            between: {
+                from: null,
+                to: null,
+            },
+            ...this.coords,
+        };
+        this.filters = [...this.filters, item];
+        this.activeDelogoFilter = item.index;
     }
 
     editItem(e) {
@@ -363,19 +383,11 @@ class DeLogo extends VideoEditor {
     }
 
     initFilters() {
-        this.removeItemListeners();
-        const items = [];
-        this.filters = [...this.configurator.filterGraph].map((f, k) => {
-            if (f.filterType !== "delogo") {
-                return null;
-            }
+        this.filters = [...this.configurator.filterGraph].filter((f, k) => {
+            if (f.filterType !== "delogo") return false;
             f.index = k;
-            items.push(this.createItem(f));
-            return f;
+            return true;
         });
-        this.filtersContainer.replaceChildren(...items);
-        Iconify.scan(this.shadowRoot);
-        this.addItemListeners();
     }
 
     createItem(item) {
@@ -385,6 +397,10 @@ class DeLogo extends VideoEditor {
         node.innerText =
             `${this.getCutTimeStamp(item.between.from)} - ` +
             `${this.getCutTimeStamp(item.between.to)}`;
+        node.classList.toggle(
+            "incomplete",
+            item.between.from === null || item.between.to === null,
+        );
         const iconWrap = document.createElement("div");
         iconWrap.classList.add("icon-stack");
         const icon = document.createElement("span");
@@ -399,6 +415,30 @@ class DeLogo extends VideoEditor {
         return node;
     }
 
+    handleFakeBox(e) {
+        const isActive = e.type === "pointerenter";
+        this.fakeBox.classList.toggle("active", isActive);
+        if (!isActive) return;
+        this.fakeCoords = JSON.parse(e.currentTarget.dataset.delogo);
+    }
+
+    set filters(items) {
+        this.removeItemListeners();
+        this.filtersContainer.replaceChildren(
+            ...items.map(this.createItem.bind(this)),
+        );
+        Iconify.scan(this.shadowRoot);
+        this.addItemListeners();
+    }
+
+    get filters() {
+        return [...this.filtersContainer.querySelectorAll(":scope > div")].map(
+            (i) => {
+                return JSON.parse(i.dataset.delogo);
+            },
+        );
+    }
+
     set isSaved(value) {
         this.saved = !!value;
         this.saveButton.disabled = this.saved;
@@ -409,14 +449,28 @@ class DeLogo extends VideoEditor {
         this.shadowRoot
             .querySelectorAll(".filters [data-delogo]")
             .forEach((f) => delete f.dataset.active);
+        if (!isNaN(item)) {
+            item = this.shadowRoot.querySelector(
+                `.filters [data-index="${item}"]`,
+            );
+        }
         if (item) {
             item.dataset.active = "";
         }
     }
 
+    set fakeCoords(coord) {
+        const image = this.imageRect;
+        const ratio = this.videoImageRatio;
+        this.fakeBox.style.top = `${Math.round(coord.y / ratio)}px`;
+        this.fakeBox.style.left = `${Math.round(coord.x / ratio + (Math.round(image.left) - this.offsetLeft))}px`;
+        this.fakeBox.style.height = `${Math.round(coord.h / ratio)}px`;
+        this.fakeBox.style.width = `${Math.round(coord.w / ratio)}px`;
+    }
+
     set coords(coord) {
-        const image = this.image.getBoundingClientRect();
-        const ratio = this.video.width / image.width;
+        const image = this.imageRect;
+        const ratio = this.videoImageRatio;
         this.delogoBox.style.top = `${Math.round(coord.y / ratio)}px`;
         this.delogoBox.style.left = `${Math.round(coord.x / ratio + (Math.round(image.left) - this.offsetLeft))}px`;
         this.delogoBox.style.height = `${Math.round(coord.h / ratio)}px`;
@@ -426,8 +480,8 @@ class DeLogo extends VideoEditor {
     get coords() {
         if (this.delogoBox) {
             const box = this.delogoBox.getBoundingClientRect();
-            const image = this.image.getBoundingClientRect();
-            const ratio = this.video.width / image.width;
+            const image = this.imageRect;
+            const ratio = this.videoImageRatio;
             return {
                 x: Math.round((box.left - Math.round(image.left)) * ratio),
                 y: Math.round((box.top - image.top) * ratio),
@@ -437,6 +491,14 @@ class DeLogo extends VideoEditor {
         } else {
             return null;
         }
+    }
+
+    get imageRect() {
+        return this.image.getBoundingClientRect();
+    }
+
+    get videoImageRatio() {
+        return this.video.width / this.imageRect.width;
     }
 
     get betweenFrom() {
@@ -528,12 +590,21 @@ DeLogo.template = html`
             position: absolute;
             background-color: hsla(0 100% 50% / 0.5);
         }
+        .fake-box {
+            position: absolute;
+            background-color: hsla(180 100% 50% / 0.5);
+            display: none;
+        }
+        .fake-box.active {
+            display: revert;
+        }
         .info {
             grid-area: left;
             display: grid;
             grid-auto-rows: min-content;
             gap: 0.5rem;
             font-size: 0.75rem;
+            max-width: 250px;
         }
         .zoom {
             width: 250px;
@@ -560,8 +631,11 @@ DeLogo.template = html`
             margin: 0;
         }
         .sidebar {
+            grid-area: right;
             display: grid;
             grid-template-rows: min-content min-content auto;
+            max-width: 350px;
+            justify-self: end;
         }
         .between {
             & > span {
@@ -611,6 +685,9 @@ DeLogo.template = html`
                             0 0 20px 0 var(--clr-enlightened-glow),
                             0 0 10px 0 inset var(--clr-enlightened-glow);
                     }
+                }
+                &.incomplete {
+                    opacity: 0.8;
                 }
                 &:not([data-delogo]) {
                     display: none;

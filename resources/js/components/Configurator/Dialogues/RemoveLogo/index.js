@@ -143,36 +143,39 @@ RemoveLogo.template = html`
         :host {
             position: relative;
         }
-        .box {
-            position: absolute;
-            background-color: hsla(0 100% 50% / 0.5);
-        }
         .info {
             grid-area: left;
             display: grid;
             grid-auto-rows: min-content;
             gap: 0.5rem;
             font-size: 0.75rem;
+            p {
+                max-width: 150px;
+                margin: 0;
+            }
         }
-        .toggle-type::part(button) {
+        theme-button::part(button) {
             min-width: 150px;
         }
         .toggle-aspect {
             display: none;
         }
-        .info p {
-            max-width: 150px;
-        }
         .actions {
             grid-area: right;
+            display: grid;
+            justify-items: end;
+            gap: 0.5rem;
+            grid-auto-rows: min-content;
         }
     </style>
     ${EDITOR_TEMPLATE}
     <div class="info">
-        <theme-button class="toggle-type">${IMAGE_TYPE_ORIGINAL}</theme-button>
-        <p>Find a black frame containing only the logo</p>
+        <p>Find a black frame containing the logo on black background.</p>
+        <p>Toggle Original/Mask to test.</p>
+        <p>Optionally paint white parts of mask black.</p>
     </div>
     <div class="actions">
+        <theme-button class="toggle-type">${IMAGE_TYPE_ORIGINAL}</theme-button>
         <theme-button class="paint-button">Paint</theme-button>
     </div>
 `;

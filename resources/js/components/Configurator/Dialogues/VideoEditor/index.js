@@ -202,8 +202,10 @@ class VideoEditor extends HTMLElement {
     }
 
     initImages() {
-        this.addThumbnails();
         this.updateImages();
+        requestAnimationFrame(() => {
+            this.addThumbnails();
+        });
     }
 
     updateImages() {

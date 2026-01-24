@@ -16,15 +16,17 @@ export const requestDelogo = async function (type, id = null, data = null) {
         d.configurator = this;
         requestAnimationFrame(() => (d.markers = this.clips));
         m.appendChild(d);
-        if (d.filterIndex !== null && data) {
-            d.addEventListener(
-                "delogo-updated",
-                () => {
+        d.addEventListener(
+            "delogo-updated",
+            () => {
+                if (d.filterIndex !== null && data) {
                     d.applyFilterData(data);
-                },
-                { once: true },
-            );
-        }
+                } else {
+                    d.addNext();
+                }
+            },
+            { once: true },
+        );
         document.body.insertBefore(
             m,
             document.querySelector("transcoder-toast"),
