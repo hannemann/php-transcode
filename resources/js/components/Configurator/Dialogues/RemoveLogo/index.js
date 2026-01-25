@@ -44,6 +44,7 @@ class RemoveLogo extends VideoEditor {
             id: "paint",
             activeColor: "#000000",
             activeFillColor: "#000000",
+            availableLineWidths: [20,50,100,150],
             colorScheme: {
                 backgroundColor: "var(--clr-bg-0)",
                 main: "var(--clr-bg-150)",

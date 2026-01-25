@@ -125,6 +125,9 @@ customElements.define("ffmpeg-transcoder", Transcoder);
 
 TODO:
 
-- fix error on close player
+- sorting of streams
+- metadata of streams (is standard, language, ...)
+- chapters for cut ot commercial breaks for testing result
+- indicate timestamp on mouse hover over indicator bar
 
 */
