@@ -606,9 +606,7 @@ DeLogo.template = html`
         }
         .fake-box {
             position: absolute;
-            background: hsla(
-                var(--hue-warning) var(--sat-alert) var(--lit-alert) / 0.5
-            );
+            background: hsla(180deg 100% 50% / 0.5);
             display: none;
         }
         .fake-box.active {

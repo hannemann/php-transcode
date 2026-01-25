@@ -673,9 +673,7 @@ export const EDITOR_CSS = html`<style>
         z-index: 2;
     }
     .indicator .by-timestamp {
-        background: hsla(
-            var(--hue-warning) var(--sat-alert) var(--lit-alert) / 0.5
-        );
+        background: hsla(180deg 100% 50% / 0.5);
     }
     .toggle-aspect {
         grid-area: frame;
