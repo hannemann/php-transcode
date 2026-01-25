@@ -1,5 +1,4 @@
 class Time {
-
     static toSeconds(coord) {
         const [hours, minutes, seconds] = coord.split(":");
         return (
@@ -27,18 +26,29 @@ class Time {
     static calculateClipsDuration(clips) {
         if (!clips.length) return 0;
 
-        return Time.fromSeconds(clips.reduce((acc, cur) => {
-            if (cur.from && cur.to) {
-                acc += Time.milliSeconds(cur.to) - Time.milliSeconds(cur.from);
-            }
-            return acc;
-        }, 0) / 1000);
+        return Time.fromSeconds(
+            clips.reduce((acc, cur) => {
+                if (cur.from && cur.to) {
+                    acc +=
+                        Time.milliSeconds(cur.to) - Time.milliSeconds(cur.from);
+                }
+                return acc;
+            }, 0) / 1000,
+        );
     }
 
     static calculateCutTimestamp(clips, current) {
         const cut = clips.reduce((acc, cur) => {
-            const from = cur.raw ? (cur.raw.start || 0) : (cur.from ? Time.milliSeconds(cur.from) : 0);
-            const to = cur.raw ? (cur.raw.end || current) : (cur.to ? Time.milliSeconds(cur.to) : current);
+            const from = cur.raw
+                ? cur.raw.start || 0
+                : cur.from
+                  ? Time.milliSeconds(cur.from)
+                  : 0;
+            const to = cur.raw
+                ? cur.raw.end || current
+                : cur.to
+                  ? Time.milliSeconds(cur.to)
+                  : current;
             if (from > current) return acc;
             if (to > current) {
                 return acc + current - from;
@@ -49,11 +59,7 @@ class Time {
     }
 
     static duration(date) {
-        return date.toISOString()
-            .split("T")
-            .pop()
-            .split(".")
-            .shift();
+        return date.toISOString().split("T").pop().split(".").shift();
     }
 
     static deltaDuration(from, to) {

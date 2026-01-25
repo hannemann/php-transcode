@@ -14,6 +14,8 @@ class DeLogo extends VideoEditor {
         super.connectedCallback();
         this.isEdit = false;
         this.saved = false;
+        this.totalDuration = this.configurator.clips.totalDuration;
+        this.clips = [...this.configurator.clips.clips];
         requestAnimationFrame(() => {
             this.image.addEventListener("load", this.initDelogo, {
                 once: true,
@@ -288,8 +290,8 @@ class DeLogo extends VideoEditor {
 
     setBetween(between) {
         this.between = between;
-        this.betweenFrom = this.between.from;
-        this.betweenTo = this.between.to;
+        this.betweenFrom = this.getCutTimeStamp(this.between.from);
+        this.betweenTo = this.getCutTimeStamp(this.between.to);
     }
 
     setBetweenFrom() {
@@ -304,10 +306,7 @@ class DeLogo extends VideoEditor {
 
     getCutTimeStamp(timestamp) {
         if (!timestamp) return "n/a";
-        return Time.calculateCutTimestamp(
-            this.configurator.clips.clips,
-            timestamp * 1000,
-        );
+        return Time.calculateCutTimestamp(this.clips, timestamp * 1000);
     }
 
     resetBetween() {
@@ -394,6 +393,16 @@ class DeLogo extends VideoEditor {
         const node = document.createElement("div");
         node.dataset.index = item.index;
         node.dataset.delogo = JSON.stringify(item);
+
+        if (Time.fromSeconds(item.between.from) > this.totalDuration) {
+            node.classList.add("error");
+            node.dataset.fromError = "out-of-range";
+        }
+        if (Time.fromSeconds(item.between.to) > this.totalDuration) {
+            node.classList.add("error");
+            node.dataset.toError = "out-of-range";
+        }
+
         node.innerText =
             `${this.getCutTimeStamp(item.between.from)} - ` +
             `${this.getCutTimeStamp(item.between.to)}`;
@@ -418,8 +427,11 @@ class DeLogo extends VideoEditor {
     handleFakeBox(e) {
         const isActive = e.type === "pointerenter";
         this.fakeBox.classList.toggle("active", isActive);
+        this.indicatorByTimestamp = null;
         if (!isActive) return;
-        this.fakeCoords = JSON.parse(e.currentTarget.dataset.delogo);
+        const data = JSON.parse(e.currentTarget.dataset.delogo);
+        this.fakeCoords = data;
+        this.indicatorRangeByTimestamp = data.between;
     }
 
     set filters(items) {
@@ -588,11 +600,15 @@ DeLogo.template = html`
         }
         .box {
             position: absolute;
-            background-color: hsla(0 100% 50% / 0.5);
+            background: hsla(
+                var(--hue-alert) var(--sat-alert) var(--lit-alert) / 0.5
+            );
         }
         .fake-box {
             position: absolute;
-            background-color: hsla(180 100% 50% / 0.5);
+            background: hsla(
+                var(--hue-warning) var(--sat-alert) var(--lit-alert) / 0.5
+            );
             display: none;
         }
         .fake-box.active {
@@ -685,6 +701,11 @@ DeLogo.template = html`
                             0 0 20px 0 var(--clr-enlightened-glow),
                             0 0 10px 0 inset var(--clr-enlightened-glow);
                     }
+                }
+                &.error {
+                    background-color: hsl(
+                        from var(--clr-bg-150) var(--hue-error) s l
+                    );
                 }
                 &.incomplete {
                     opacity: 0.8;

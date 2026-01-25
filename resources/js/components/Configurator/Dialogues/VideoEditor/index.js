@@ -402,6 +402,30 @@ class VideoEditor extends HTMLElement {
         return this.indicator.querySelector(".current");
     }
 
+    set indicatorByTimestamp(value) {
+        this.indicator
+            .querySelectorAll(".by-timestamp")
+            .forEach((i) => i.remove());
+        if (isNaN(parseInt(value))) return;
+
+        const node = this.indicatorCurrent.cloneNode(true);
+        node.classList.add("by-timestamp");
+        const percentage = (100 / this.duration) * (value * 1000);
+        node.style.left = `min(${percentage}%, 100% - 1px`;
+        node.style.right = "auto";
+        node.style.width = "";
+        this.indicator.appendChild(node);
+    }
+
+    set indicatorRangeByTimestamp({ from, to }) {
+        this.indicatorByTimestamp = from;
+        if (isNaN(parseInt(to))) return;
+        const node = this.indicator.querySelector(".by-timestamp");
+        const percentage = (100 / this.duration) * (to * 1000);
+        node.style.right = `min(100% - ${percentage}%, 100% - 1px`;
+        node.style.width = "auto";
+    }
+
     get btnMove() {
         return this.shadowRoot.querySelector(".status .nav.move");
     }
@@ -640,12 +664,18 @@ export const EDITOR_CSS = html`<style>
         max-height: 100%;
         z-index: 0;
     }
-    .indicator .current {
+    .indicator .current,
+    .indicator .by-timestamp {
         position: absolute;
         inset-block: -3px;
         background: red;
         width: 1px;
         z-index: 2;
+    }
+    .indicator .by-timestamp {
+        background: hsla(
+            var(--hue-warning) var(--sat-alert) var(--lit-alert) / 0.5
+        );
     }
     .toggle-aspect {
         grid-area: frame;

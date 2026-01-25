@@ -5,7 +5,6 @@ import sortable from "html5sortable/dist/html5sortable.es";
 import "./Filter";
 
 class FilterGraph extends HTMLElement {
-
     constructor() {
         super();
         DomHelper.initDom.call(this);
@@ -13,31 +12,37 @@ class FilterGraph extends HTMLElement {
 
     connectedCallback() {
         requestAnimationFrame(() => {
-            this.filters.addEventListener('sortupdate', this);
-            this.configurator.filterGraph.forEach((v, k) => {
-                const filter = document.createElement('transcode-configurator-filter');
-                filter.dataset.id = k;
-                filter.configurator = this.configurator;
-                filter.filterData = v;
-                this.filters.appendChild(filter);
-            });
+            this.filters.addEventListener("sortupdate", this);
+            this.filters.append(
+                ...this.configurator.filterGraph.map((v, k) => {
+                    const node = document.createElement(
+                        "transcode-configurator-filter",
+                    );
+                    node.dataset.id = k;
+                    node.configurator = this.configurator;
+                    node.filterData = v;
+                    return node;
+                }),
+            );
             sortable(this.filters);
         });
     }
 
     disconnectedCallback() {
-        [...this.filters.childNodes].forEach(f => f.remove());
-        this.filters.removeEventListener('sortupdate', this);
-        sortable(this.filters, 'destroy');
+        [...this.filters.childNodes].forEach((f) => f.remove());
+        this.filters.removeEventListener("sortupdate", this);
+        sortable(this.filters, "destroy");
     }
 
     async handleEvent(e) {
-        this.configurator.filterGraph = e.detail.destination.items.map(i => i.filterData);
+        this.configurator.filterGraph = e.detail.destination.items.map(
+            (i) => i.filterData,
+        );
         await this.configurator.saveSettings();
     }
 
     get filters() {
-        return this.shadowRoot.querySelector('main > div');
+        return this.shadowRoot.querySelector("main > div");
     }
 }
 
