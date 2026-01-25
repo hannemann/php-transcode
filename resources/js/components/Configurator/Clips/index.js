@@ -5,12 +5,11 @@ import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 import "./Clip";
 import sortable from "html5sortable/dist/html5sortable.es";
 import { Request } from "@/components/Request";
-import { Time } from "../../../Helper/Time";
+import { VTime } from "../../../Helper/Time";
 
 const WS_CHANNEL = "Transcode.Clips";
 
 class Clips extends HTMLElement {
-
     constructor() {
         super();
     }
@@ -20,18 +19,18 @@ class Clips extends HTMLElement {
         this.clips = [this.newClip()];
         this.valid = true;
         this.bindListener();
-        this.btnCopy.addEventListener('click', this);
-        this.clipsContainer.addEventListener('sortupdate', this);
+        this.btnCopy.addEventListener("click", this);
+        this.clipsContainer.addEventListener("sortupdate", this);
         this.mode = "clips";
-        this.totalDuration = Time.fromSeconds(this.videoDuration);
+        this.totalDuration = new VTime(this.videoDuration * 1000).coord;
         this.initWebsocket();
-        requestAnimationFrame(() => sortable(this.clipsContainer));            
+        requestAnimationFrame(() => sortable(this.clipsContainer));
     }
 
     disconnectedCallback() {
         this.leaveWebsocket();
-        this.btnCopy.removeEventListener('click', this);
-        this.clipsContainer.removeEventListener('sortupdate', this);
+        this.btnCopy.removeEventListener("click", this);
+        this.clipsContainer.removeEventListener("sortupdate", this);
     }
 
     removeAllClips() {
@@ -39,11 +38,11 @@ class Clips extends HTMLElement {
     }
 
     removeClip(clip) {
-        clip.removeEventListener('updateclip', this);
-        clip.removeEventListener('clipinsert', this);
-        clip.removeEventListener('clipremove', this);
-        clip.removeEventListener('clipfocus', this);
-        clip.removeEventListener('clipblur', this);
+        clip.removeEventListener("updateclip", this);
+        clip.removeEventListener("clipinsert", this);
+        clip.removeEventListener("clipremove", this);
+        clip.removeEventListener("clipfocus", this);
+        clip.removeEventListener("clipblur", this);
         clip.remove();
     }
 
@@ -91,30 +90,29 @@ class Clips extends HTMLElement {
             this.update();
         }
         Iconify.scan(this.shadowRoot);
-
     }
 
     handleEvent(e) {
         switch (e.type) {
-            case 'updateclip':
+            case "updateclip":
                 this.handleUpdate(e);
                 break;
-            case 'clipinsert':
+            case "clipinsert":
                 this.handleAdd(e);
                 break;
-            case 'clipremove':
+            case "clipremove":
                 this.handleRemove(e);
                 break;
-            case 'clipfocus':
+            case "clipfocus":
                 this.handleFocus(e);
                 break;
-            case 'clipblur':
+            case "clipblur":
                 this.handleBlur(e);
                 break;
-            case 'click':
+            case "click":
                 this.handleCopy(e);
                 break;
-            case 'sortupdate':
+            case "sortupdate":
                 this.handleSortupdate(e);
                 break;
         }
@@ -124,21 +122,21 @@ class Clips extends HTMLElement {
         const clipData = this.newClip();
         clipData.from = from;
         clipData.to = to;
-        const clip = document.createElement('transcode-configurator-clip');
+        const clip = document.createElement("transcode-configurator-clip");
         clip.dataset.id = clipData.id;
-        clip.canRemove = this.clips.length > 0
+        clip.canRemove = this.clips.length > 0;
         // clip.isLast = this.clips.indexOf(clipData) === this.clips.length - 1;
-        clip.clipData = {...clipData};
+        clip.clipData = { ...clipData };
         clip.from = clipData.from;
         clip.to = clipData.to;
         this.clips.push(clipData);
         this.clipsContainer.append(clip);
         clip.cutpoint = this.getCutpoint(clipData);
-        clip.addEventListener('updateclip', this);
-        clip.addEventListener('clipinsert', this);
-        clip.addEventListener('clipremove', this);
-        clip.addEventListener('clipfocus', this);
-        clip.addEventListener('clipblur', this);
+        clip.addEventListener("updateclip", this);
+        clip.addEventListener("clipinsert", this);
+        clip.addEventListener("clipremove", this);
+        clip.addEventListener("clipfocus", this);
+        clip.addEventListener("clipblur", this);
         return clip;
     }
 
@@ -153,16 +151,19 @@ class Clips extends HTMLElement {
         this.clips.splice(
             e.detail.destination.index,
             0,
-            this.clips.splice(e.detail.origin.index, 1)[0]
+            this.clips.splice(e.detail.origin.index, 1)[0],
         );
         this.update();
     }
 
     async handleAdd(e) {
         const idx = this.clips.findIndex((c) => c.id === e.detail.id);
-        const clip = this.createClip('0:0:0.0', '0:0:0.0');
+        const clip = this.createClip("0:0:0.0", "0:0:0.0");
         this.clips.pop();
-        this.clipsContainer.insertBefore(clip, this.clipsContainer.childNodes[idx + 1]);
+        this.clipsContainer.insertBefore(
+            clip,
+            this.clipsContainer.childNodes[idx + 1],
+        );
         this.clips.splice(idx + 1, 0, clip.clipData);
         await this.update();
         clip.inputFrom.focus();
@@ -170,7 +171,9 @@ class Clips extends HTMLElement {
 
     async handleRemove(e) {
         if (this.clips.length > 1) {
-            const clip = this.clipsContainer.querySelector(`[data-id="${e.detail.id}"]`);
+            const clip = this.clipsContainer.querySelector(
+                `[data-id="${e.detail.id}"]`,
+            );
             clip.remove();
             const idx = this.clips.findIndex((c) => c.id === e.detail.id);
             const focus = Math.max(0, idx - 1);
@@ -185,14 +188,16 @@ class Clips extends HTMLElement {
     handleUpdate(e) {
         this.update();
         this.valid = Array.from(
-            this.shadowRoot.querySelectorAll("transcode-configurator-clip")
+            this.shadowRoot.querySelectorAll("transcode-configurator-clip"),
         ).every((c) => c.valid);
     }
 
     update() {
         const clips = [...this.clips];
-        this.clips = []
-        this.clipsContainer.replaceChildren(...clips.map(c => this.createClip(c.from, c.to)));
+        this.clips = [];
+        this.clipsContainer.replaceChildren(
+            ...clips.map((c) => this.createClip(c.from, c.to)),
+        );
         return new Promise((resolve) => {
             requestAnimationFrame(() => {
                 sortable(this.clipsContainer, "reload");
@@ -202,7 +207,7 @@ class Clips extends HTMLElement {
                 this.calculateTotalDuration();
                 document.dispatchEvent(new CustomEvent("clips-updated"));
                 const children = [...this.clipsContainer.childNodes];
-                children.forEach(c => c.isLast = false);
+                children.forEach((c) => (c.isLast = false));
                 children.pop().isLast = true;
                 resolve();
             });
@@ -218,17 +223,17 @@ class Clips extends HTMLElement {
     }
 
     getCutpoint(clip) {
-        if (this.clips.length <= 0) return ""
-        return Time.calculateCutTimestamp(this.clips, clip.from);
+        if (this.clips.length <= 0) return "";
+        return VTime.calcCut(this.clips, clip.from);
     }
 
     getTimestamps() {
         return this.clips.reduce((acc, cur) => {
             if (cur.from) {
-                acc.push(Time.milliSeconds(cur.from));
+                acc.push(new VTime(cur.from).milliSeconds);
             }
             if (cur.to) {
-                acc.push(Time.milliSeconds(cur.to));
+                acc.push(new VTime(cur.to).milliSeconds);
             }
             return acc;
         }, []);
@@ -236,9 +241,9 @@ class Clips extends HTMLElement {
 
     calculateTotalDuration() {
         if (this.clips.length) {
-            this.totalDuration = Time.calculateClipsDuration(this.clips);
+            this.totalDuration = VTime.sumClips(this.clips);
         } else {
-            this.totalDuration = Time.fromSeconds(this.videoDuration);
+            this.totalDuration = new VTime(this.videoDuration * 1000).coord;
         }
     }
 
@@ -247,7 +252,7 @@ class Clips extends HTMLElement {
         if (this.mode === "copy") {
             this.copyarea.rows = Math.max(
                 10,
-                Math.min(20, this.clips.length * 2)
+                Math.min(20, this.clips.length * 2),
             );
             this.copyarea.value = this.getCopyClips();
             this.copyarea.select();
@@ -287,33 +292,33 @@ class Clips extends HTMLElement {
     }
 
     set mode(value) {
-        const main = this.shadowRoot.querySelector('main');
-        main.classList.remove('copy', 'clips');
+        const main = this.shadowRoot.querySelector("main");
+        main.classList.remove("copy", "clips");
         main.classList.add(value);
     }
 
     get mode() {
-        return this.shadowRoot.querySelector('main').className;
+        return this.shadowRoot.querySelector("main").className;
     }
 
     get clipsContainer() {
-        return this.shadowRoot?.querySelector('div.clips')
+        return this.shadowRoot?.querySelector("div.clips");
     }
 
     get copyarea() {
-        return this.shadowRoot?.querySelector('.copy textarea')
+        return this.shadowRoot?.querySelector(".copy textarea");
     }
 
     get btnCopy() {
-        return this.shadowRoot?.querySelector('.btn-copy')
+        return this.shadowRoot?.querySelector(".btn-copy");
     }
 
     set totalDuration(value) {
-        this.shadowRoot.querySelector('.duration span').innerText = value;
+        this.shadowRoot.querySelector(".duration span").innerText = value;
     }
 
     get totalDuration() {
-        return this.shadowRoot.querySelector('.duration span').innerText;
+        return this.shadowRoot.querySelector(".duration span").innerText;
     }
 }
 

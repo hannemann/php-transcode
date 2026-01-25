@@ -3,7 +3,7 @@ import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 import CARD_CSS from "../CardCss";
 import { requestCrop } from "../Tools/crop.js";
 import { requestDelogo } from "../Tools/delogo.js";
-import { Time } from "../../../Helper/Time.js";
+import { VTime } from "../../../Helper/Time.js";
 
 class Filter extends HTMLElement {
     constructor() {
@@ -68,33 +68,27 @@ class Filter extends HTMLElement {
             return `${this.filterData.width} x ${this.filterData.height}`;
         }
         if (this.filterData.filterType === "delogo") {
-            let from = this.filterData.between?.from || "n/a";
-            let to = this.filterData.between?.to || "n/a";
-            const duration = Time.toSeconds(
-                this.configurator.clips.totalDuration,
-            );
-            if (!isNaN(from)) {
-                from = Time.calculateCutTimestamp(
-                    this.configurator.clips.clips,
-                    this.filterData.between.from * 1000,
-                );
-                if (Time.toSeconds(from) >= duration) {
+            let from = new VTime(this.filterData.between?.from * 1000);
+            let to = new VTime(this.filterData.between?.to * 1000);
+            const clips = this.configurator.clips;
+            const duration = new VTime(clips.totalDuration);
+            if (from.date) {
+                const ts = VTime.calcCut(clips.clips, from.milliseconds);
+                from = new VTime(ts);
+                if (from >= duration) {
                     this.itemNode.classList.add("error");
                     this.itemNode.dataset.fromError = "out-of-range";
                 }
             }
-            if (!isNaN(to)) {
-                to = Time.calculateCutTimestamp(
-                    this.configurator.clips.clips,
-                    this.filterData.between.to * 1000,
-                );
-                if (Time.toSeconds(to) >= duration) {
+            if (to.date) {
+                to = new VTime(VTime.calcCut(clips.clips, to.milliseconds));
+                if (to >= duration) {
                     this.itemNode.classList.add("error");
                     this.itemNode.dataset.toError = "out-of-range";
                 }
             }
 
-            return `${from} - ${to}, Top: ${this.filterData.y}px, Left: ${this.filterData.x}px, ${this.filterData.w}px x ${this.filterData.h}px`;
+            return `${from.toString()} - ${to.toString()}, Top: ${this.filterData.y}px, Left: ${this.filterData.x}px, ${this.filterData.w}px x ${this.filterData.h}px`;
         }
         return "";
     }

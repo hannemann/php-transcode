@@ -2,7 +2,7 @@ import { DomHelper } from "../../Helper/Dom";
 import Iconify from "@iconify/iconify";
 import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 import { Request } from "@/components/Request";
-import { Time } from "../../Helper/Time";
+import { VTime } from "../../Helper/Time";
 
 const CSRF_TOKEN = document.head.querySelector(
     "[name~=csrf-token][content]",
@@ -52,10 +52,11 @@ class ProgressItem extends HTMLElement {
     }
 
     getDuration(item) {
-        return Time.deltaDuration(
-            new Date(item.start),
+        const start = new VTime(new Date(item.start));
+        const end = new VTime(
             new Date(item.end !== "-1" ? item.end : item.updated_at),
         );
+        return new VTime(start.delta(end)).asTime().toString();
     }
 
     getItemPath(item) {

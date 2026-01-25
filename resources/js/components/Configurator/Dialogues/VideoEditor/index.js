@@ -1,6 +1,6 @@
 import { DomHelper } from "../../../../Helper/Dom";
 import { Iconify } from "@/components/lib";
-import { Time } from "../../../../Helper/Time";
+import { VTime } from "../../../../Helper/Time";
 import { handleKeyDown, handleKeyUp } from "./mixins/handleKey";
 import ConfiguratorHelper from "../../../../Helper/Configurator";
 
@@ -249,12 +249,12 @@ class VideoEditor extends HTMLElement {
     }
 
     timestamp(current) {
-        return Time.fromMilliSeconds(current ?? this.current);
+        return new VTime(current ?? this.current).coord;
     }
 
     timestampCut() {
         const clips = this.clips || this.clipsConfig;
-        return Time.calculateCutTimestamp(clips, this.current);
+        return VTime.calcCut(clips, this.current);
     }
 
     updateFrameUrl() {
@@ -315,8 +315,10 @@ class VideoEditor extends HTMLElement {
 
         const markers = [...clips].reduce((acc, cur) => {
             if (cur.from && cur.to) {
-                acc.push({ start: Time.milliSeconds(cur.from) * multiplier });
-                acc.push({ start: Time.milliSeconds(cur.to) * multiplier });
+                const from = new VTime(cur.from).milliseconds * multiplier;
+                const to = new VTime(cur.to).milliseconds * multiplier;
+                acc.push({ start: from });
+                acc.push({ start: to });
             }
             return acc;
         }, []);

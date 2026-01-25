@@ -1,7 +1,7 @@
 import { DomHelper } from "../../Helper/Dom";
 import Iconify from "@iconify/iconify";
 import { Request } from "@/components/Request";
-import { Time } from "../../Helper/Time";
+import { VTime } from "../../Helper/Time";
 import "./Done";
 import "./Failed";
 import "./Current";
@@ -103,15 +103,11 @@ class Statusbar extends HTMLElement {
             ?.split("=")
             .pop();
         if (speed && encodedTime) {
-            const clipsDuration = Time.milliSeconds(
-                Time.calculateClipsDuration(clips),
-            );
-            const elapsed =
-                new Date(`1970-01-01T${encodedTime}`) -
-                new Date("1970-01-01T00:00:00.00");
-            const remainTime = new Date((clipsDuration - elapsed) / speed);
-            if (remainTime.getDate()) {
-                this.remainTime = Time.duration(remainTime);
+            const clipsDuration = new VTime(VTime.sumClips(clips));
+            const elapsed = new VTime(encodedTime);
+            const remainTime = new VTime((clipsDuration - elapsed) / speed);
+            if (remainTime.date) {
+                this.remainTime = remainTime.time;
             }
         }
     }
@@ -177,7 +173,7 @@ class Statusbar extends HTMLElement {
             currentRuntime =
                 new Date(current[0].updated_at) - new Date(current[0].start);
             runtimeInterval = setInterval(() => {
-                this.runtime = Time.duration(new Date(currentRuntime));
+                this.runtime = new VTime(currentRuntime).asTime().toString();
                 currentRuntime += 1000;
             }, 1000);
         } else if (!current.length) {

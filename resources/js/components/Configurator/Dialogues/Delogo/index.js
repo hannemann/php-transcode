@@ -1,5 +1,5 @@
 import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
-import { Time } from "../../../../Helper/Time";
+import { VTime } from "../../../../Helper/Time";
 import { saveDelogo } from "../../Tools/delogo";
 import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 import Iconify from "@iconify/iconify/dist/iconify.js";
@@ -295,18 +295,18 @@ class DeLogo extends VideoEditor {
     }
 
     setBetweenFrom() {
-        this.between.from = Time.toSeconds(this.timestamp());
+        this.between.from = new VTime(this.timestamp()).seconds;
         this.betweenFrom = this.getCutTimeStamp(this.between.from);
     }
 
     setBetweenTo() {
-        this.between.to = Time.toSeconds(this.timestamp());
+        this.between.to = new VTime(this.timestamp()).seconds;
         this.betweenTo = this.getCutTimeStamp(this.between.to);
     }
 
     getCutTimeStamp(timestamp) {
         if (!timestamp) return "n/a";
-        return Time.calculateCutTimestamp(this.clips, timestamp * 1000);
+        return VTime.calcCut(this.clips, timestamp * 1000);
     }
 
     resetBetween() {
@@ -391,31 +391,30 @@ class DeLogo extends VideoEditor {
 
     createItem(item) {
         const node = document.createElement("div");
+        const { from, to } = item.between;
         node.dataset.index = item.index;
         node.dataset.delogo = JSON.stringify(item);
 
-        const fromTime = Time.toSeconds(
-            this.getCutTimeStamp(item.between.from),
-        );
-        const toTime = Time.toSeconds(this.getCutTimeStamp(item.between.to));
-        const duration = Time.toSeconds(this.totalDuration);
-
-        if (fromTime >= duration) {
-            node.classList.add("error");
-            node.dataset.fromError = "out-of-range";
+        const duration = new VTime(this.totalDuration).seconds;
+        if (from) {
+            const fromTime = new VTime(this.getCutTimeStamp(from)).seconds;
+            if (fromTime >= duration) {
+                node.classList.add("error");
+                node.dataset.fromError = "out-of-range";
+            }
         }
-        if (toTime >= duration) {
-            node.classList.add("error");
-            node.dataset.toError = "out-of-range";
+        if (to) {
+            const toTime = new VTime(this.getCutTimeStamp(to)).seconds;
+
+            if (toTime >= duration) {
+                node.classList.add("error");
+                node.dataset.toError = "out-of-range";
+            }
         }
 
         node.innerText =
-            `${this.getCutTimeStamp(item.between.from)} - ` +
-            `${this.getCutTimeStamp(item.between.to)}`;
-        node.classList.toggle(
-            "incomplete",
-            item.between.from === null || item.between.to === null,
-        );
+            `${this.getCutTimeStamp(from)} - ` + `${this.getCutTimeStamp(to)}`;
+        node.classList.toggle("incomplete", from === null || to === null);
         const iconWrap = document.createElement("div");
         iconWrap.classList.add("icon-stack");
         const icon = document.createElement("span");
