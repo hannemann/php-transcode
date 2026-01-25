@@ -70,29 +70,28 @@ class Filter extends HTMLElement {
         if (this.filterData.filterType === "delogo") {
             let from = this.filterData.between?.from || "n/a";
             let to = this.filterData.between?.to || "n/a";
+            const duration = Time.toSeconds(
+                this.configurator.clips.totalDuration,
+            );
             if (!isNaN(from)) {
                 from = Time.calculateCutTimestamp(
                     this.configurator.clips.clips,
                     this.filterData.between.from * 1000,
                 );
+                if (Time.toSeconds(from) >= duration) {
+                    this.itemNode.classList.add("error");
+                    this.itemNode.dataset.fromError = "out-of-range";
+                }
             }
             if (!isNaN(to)) {
                 to = Time.calculateCutTimestamp(
                     this.configurator.clips.clips,
                     this.filterData.between.to * 1000,
                 );
-            }
-
-            const duration = Time.calculateClipsDuration(
-                this.configurator.clips.clips,
-            );
-            if (Time.fromSeconds(this.filterData.between.from) > duration) {
-                this.itemNode.classList.add("error");
-                this.itemNode.dataset.fromError = "out-of-range";
-            }
-            if (Time.fromSeconds(this.filterData.between.to) > duration) {
-                this.itemNode.classList.add("error");
-                this.itemNode.dataset.toError = "out-of-range";
+                if (Time.toSeconds(to) >= duration) {
+                    this.itemNode.classList.add("error");
+                    this.itemNode.dataset.toError = "out-of-range";
+                }
             }
 
             return `${from} - ${to}, Top: ${this.filterData.y}px, Left: ${this.filterData.x}px, ${this.filterData.w}px x ${this.filterData.h}px`;

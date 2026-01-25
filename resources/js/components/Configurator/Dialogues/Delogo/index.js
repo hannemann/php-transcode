@@ -394,11 +394,17 @@ class DeLogo extends VideoEditor {
         node.dataset.index = item.index;
         node.dataset.delogo = JSON.stringify(item);
 
-        if (Time.fromSeconds(item.between.from) > this.totalDuration) {
+        const fromTime = Time.toSeconds(
+            this.getCutTimeStamp(item.between.from),
+        );
+        const toTime = Time.toSeconds(this.getCutTimeStamp(item.between.to));
+        const duration = Time.toSeconds(this.totalDuration);
+
+        if (fromTime >= duration) {
             node.classList.add("error");
             node.dataset.fromError = "out-of-range";
         }
-        if (Time.fromSeconds(item.between.to) > this.totalDuration) {
+        if (toTime >= duration) {
             node.classList.add("error");
             node.dataset.toError = "out-of-range";
         }
