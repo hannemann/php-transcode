@@ -7,6 +7,16 @@ import "./Statusbar";
 
 import { DomHelper } from "../Helper/Dom";
 
+import { VTime } from "../Helper/Time";
+
+// new VTime("00:00:00.111");
+// new VTime(111);
+// new VTime(111);
+// new VTime("111");
+// console.log(new VTime(3).gte(new VTime(2)));
+// console.log(new VTime("00:10:00.000").delta(new VTime("00:20:00.000")));
+// console.log(new VTime("00:23:15.12").coord);
+
 class Transcoder extends HTMLElement {
     backgroundRequests = 0;
 

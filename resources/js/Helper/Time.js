@@ -67,4 +67,77 @@ class Time {
     }
 }
 
-export { Time };
+class VTime {
+    date;
+
+    /**
+     * @param {Number} time coord, numeric (milliseconds) or Date object
+     */
+    constructor(time) {
+        if (VTime.isCoord(time)) {
+            // console.log("Is Coord", time);
+            this.date = new Date(Time.milliSeconds(time));
+        }
+        if (VTime.isNumeric(time)) {
+            // console.log("Is Numeric", time);
+            this.date = new Date(parseFloat(time));
+        }
+        if (VTime.isDate(time)) {
+            // console.log("Is Date", time);
+            this.date = time;
+        }
+    }
+
+    static isCoord(ts) {
+        return /^\d{2}:\d{2}:\d{2}\.\d{1,3}$/.test(ts);
+    }
+
+    static isNumeric(ts) {
+        return !VTime.isCoord(ts) && !isNaN(parseFloat(ts));
+    }
+
+    static isDate(ts) {
+        return ts instanceof Date;
+    }
+
+    static isVtime(ts) {
+        return ts instanceof VTime;
+    }
+
+    #checkIsVtime(ts) {
+        if (!VTime.isVtime(ts)) {
+            throw new Error(
+                "Comparison only possible against instances of VTime",
+            );
+        }
+    }
+
+    gt(ts) {
+        this.#checkIsVtime(ts);
+        return this.date > ts.date;
+    }
+
+    gte(ts) {
+        this.#checkIsVtime(ts);
+        return this.date >= ts.date;
+    }
+
+    delta(ts) {
+        this.#checkIsVtime(ts);
+        return Math.abs(this.date.valueOf() - ts.date.valueOf());
+    }
+
+    get milliseconds() {
+        return this.date.valueOf();
+    }
+
+    get seconds() {
+        return this.milliseconds / 1000;
+    }
+
+    get coord() {
+        return this.date.toISOString().split("T").pop().replace("Z", "");
+    }
+}
+
+export { Time, VTime };
