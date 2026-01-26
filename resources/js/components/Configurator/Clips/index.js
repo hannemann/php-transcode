@@ -230,10 +230,10 @@ class Clips extends HTMLElement {
     getTimestamps() {
         return this.clips.reduce((acc, cur) => {
             if (cur.from) {
-                acc.push(new VTime(cur.from).milliSeconds);
+                acc.push(new VTime(cur.from).milliseconds);
             }
             if (cur.to) {
-                acc.push(new VTime(cur.to).milliSeconds);
+                acc.push(new VTime(cur.to).milliseconds);
             }
             return acc;
         }, []);
