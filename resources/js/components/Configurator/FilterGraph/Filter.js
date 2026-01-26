@@ -19,7 +19,10 @@ class Filter extends HTMLElement {
         document.addEventListener("clips-updated", this.handleClipsLoaded);
         this.btnDelete.addEventListener("click", this.handleDelete);
         this.labelFilterType.addEventListener("click", this.handleModify);
-        requestAnimationFrame(() => Iconify.scan(this.shadowRoot));
+        requestAnimationFrame(() => {
+            this.description = this.updateDescription();
+            Iconify.scan(this.shadowRoot);
+        });
     }
 
     disconnectedCallback() {

@@ -515,7 +515,8 @@ class DeLogo extends VideoEditor {
     }
 
     get videoImageRatio() {
-        return this.video.width / this.imageRect.width;
+        const scaleRatio = this.image.naturalWidth / this.video.width;
+        return (this.video.width / this.imageRect.width) * scaleRatio;
     }
 
     get betweenFrom() {
