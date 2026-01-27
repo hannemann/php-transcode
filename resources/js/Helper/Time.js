@@ -18,6 +18,9 @@ const toCoord = (ts) => {
 class VTime {
     date;
     #asTime = false;
+    #coord;
+    #time;
+    #valueOf;
 
     /**
      * @param {String|Number|Date} time coord, numeric (milliseconds) or Date object
@@ -133,7 +136,8 @@ class VTime {
      * @returns {Number}
      */
     valueOf() {
-        return this.date.valueOf();
+        if (!this.#valueOf) this.#valueOf = this.date.valueOf();
+        return this.#valueOf;
     }
 
     /**
@@ -151,7 +155,7 @@ class VTime {
      */
     delta(ts) {
         this.#checkIsVtime(ts);
-        return Math.abs(this.date.valueOf() - ts.date.valueOf());
+        return Math.abs(this.valueOf() - ts.valueOf());
     }
 
     /**
@@ -166,10 +170,19 @@ class VTime {
     }
 
     /**
+     * obtain position on timeline in edited video
+     * @param {{raw:{start:Number,end:Number}}[]|{from:Number,to:Number}[]} clips
+     * @returns
+     */
+    getCutpoint(clips) {
+        return VTime.calcCut(clips, this.valueOf());
+    }
+
+    /**
      * returns {Number}
      */
     get milliseconds() {
-        return this.date.valueOf();
+        return this.valueOf();
     }
 
     /**
@@ -184,7 +197,8 @@ class VTime {
      * returns {String}
      */
     get coord() {
-        return toCoord(this.date.valueOf());
+        if (!this.#coord) this.#coord = toCoord(this.milliseconds);
+        return this.#coord;
     }
 
     /**
@@ -192,7 +206,8 @@ class VTime {
      * returns {String}
      */
     get time() {
-        return this.coord.split(".").shift();
+        if (!this.#time) this.#time = this.coord.split(".").shift();
+        return this.#time;
     }
 }
 

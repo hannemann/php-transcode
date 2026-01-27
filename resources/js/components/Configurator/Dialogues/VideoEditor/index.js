@@ -23,7 +23,7 @@ class VideoEditor extends HTMLElement {
             this.video.avg_frame_rate.split("/")[1];
         this.start = parseFloat(this.video.start_time);
         this.current = parseInt(this.start * 1000, 10) ?? 0;
-        this.duration = this.video.duration * 1000;
+        this.duration = new VTime(this.video.duration * 1000);
         this.modeMove = false;
         requestAnimationFrame(() => {
             this.addListeners();
@@ -44,6 +44,8 @@ class VideoEditor extends HTMLElement {
         this.handleNavUp = this.handleNavUp.bind(this);
         this.toggleAspect = this.toggleAspect.bind(this);
         this.handleIndicatorClick = this.handleIndicatorClick.bind(this);
+        this.handleIndicatorMove = this.handleIndicatorMove.bind(this);
+        this.handleIndicatorLeave = this.handleIndicatorLeave.bind(this);
         this.setCurrentPosByMarker = this.setCurrentPosByMarker.bind(this);
         this.toggleMoveMode = this.toggleMoveMode.bind(this);
 
@@ -107,6 +109,14 @@ class VideoEditor extends HTMLElement {
 
     addListeners() {
         this.indicator.addEventListener("click", this.handleIndicatorClick);
+        this.indicator.addEventListener(
+            "pointermove",
+            this.handleIndicatorMove,
+        );
+        this.indicator.addEventListener(
+            "pointerleave",
+            this.handleIndicatorLeave,
+        );
         this.btnAspect.addEventListener("click", this.toggleAspect);
         this.btnMove.addEventListener("click", this.toggleMoveMode);
 
@@ -153,6 +163,14 @@ class VideoEditor extends HTMLElement {
 
     removeListeners() {
         this.indicator.removeEventListener("click", this.handleIndicatorClick);
+        this.indicator.removeEventListener(
+            "pointermove",
+            this.handleIndicatorMove,
+        );
+        this.indicator.removeEventListener(
+            "pointerleave",
+            this.handleIndicatorLeave,
+        );
         this.btnAspect.removeEventListener("click", this.toggleAspect);
         this.btnMove.removeEventListener("click", this.toggleMoveMode);
 
@@ -213,8 +231,13 @@ class VideoEditor extends HTMLElement {
         this.updateIndicatorPos();
         this.currentTimestamp = this.timestamp();
         this.currentTimestampCut = this.timestampCut();
+        this.updateTimeDisplay();
+    }
 
-        this.timeDisplay.innerText = `${this.timestamp()} (${this.currentTimestampCut}) / ${this.timestamp(this.duration)}`;
+    updateTimeDisplay() {
+        this.timeDisplay.innerText =
+            `${this.currentTimestamp} (${this.currentTimestampCut})` +
+            ` / ${this.duration.coord}`;
     }
 
     updateIndicatorPos() {
@@ -246,6 +269,23 @@ class VideoEditor extends HTMLElement {
                 this.indicator.offsetWidth;
             this.updateImages();
         }
+    }
+
+    handleIndicatorMove(e) {
+        const indicatorClickPos = parseInt(
+            e.pageX - this.indicator.getBoundingClientRect().left,
+        );
+        const ts = new VTime(
+            (this.duration * indicatorClickPos) / this.indicator.offsetWidth,
+        );
+        const clips = this.clips || this.clipsConfig;
+        this.timeDisplay.innerText =
+            `${ts.coord} (${ts.getCutpoint(clips)})` +
+            ` / ${this.duration.coord}`;
+    }
+
+    handleIndicatorLeave() {
+        this.updateTimeDisplay();
     }
 
     timestamp(current) {
