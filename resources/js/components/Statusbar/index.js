@@ -183,8 +183,15 @@ class Statusbar extends HTMLElement {
     }
 
     async requestKill() {
-        console.info("Kill of all ffmpeg processes requested");
-        Request.post("/kill");
+        const m = document.createElement("modal-confirm");
+        m.header = "Kill";
+        m.content = "Kill all FFMPEG processes?";
+        document.body.appendChild(m);
+        try {
+            await m.confirm();
+            console.info("Kill of all ffmpeg processes requested");
+            Request.post("/kill");
+        } catch (error) {}
     }
 
     get sectionRuntime() {

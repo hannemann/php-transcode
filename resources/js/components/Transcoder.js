@@ -129,8 +129,6 @@ TODO:
 - metadata of streams (is standard, language, ...)
 - chapters for cut ot commercial breaks for testing result
 - indicate timestamp on mouse hover over indicator bar
-- confirm transcode if qp is not default
-- confirm kill
 - cpu encoding
 
 */
