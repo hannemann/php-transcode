@@ -7,21 +7,6 @@ import "./Statusbar";
 
 import { DomHelper } from "../Helper/Dom";
 
-import { VTime } from "../Helper/Time";
-
-// new VTime("00:00:00.111");
-// new VTime(111);
-// new VTime(111);
-// new VTime("111");
-// console.log(new VTime(null).toString());
-// console.log(new VTime(2).toString());
-// console.log(new VTime(3) < new VTime(2));
-// console.log(new VTime("00:10:00.000").delta(new VTime("00:20:00.000")));
-// console.log(new VTime("00:23:15.12").milliseconds);
-// console.log(VTime.milliseconds("00:23:15.12"));
-// console.log(new VTime(60000).coord);
-// console.log(VTime.coord(60000));
-
 class Transcoder extends HTMLElement {
     backgroundRequests = 0;
 
@@ -144,5 +129,8 @@ TODO:
 - metadata of streams (is standard, language, ...)
 - chapters for cut ot commercial breaks for testing result
 - indicate timestamp on mouse hover over indicator bar
+- confirm transcode if qp is not default
+- confirm kill
+- cpu encoding
 
 */

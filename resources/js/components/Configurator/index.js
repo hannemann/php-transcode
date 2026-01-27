@@ -1,11 +1,11 @@
-import { Iconify } from '@/components/lib';
-import {Request} from '@/components/Request'
-import { COMBO_BUTTON_CSS } from '@/components/partials';
-import './Streams'
-import './Clips'
-import './Format'
-import './FilterGraph'
-import { ICON_STACK_CSS } from '@/components/Icons/Stack.css';
+import { Iconify } from "@/components/lib";
+import { Request } from "@/components/Request";
+import { COMBO_BUTTON_CSS } from "@/components/partials";
+import "./Streams";
+import "./Clips";
+import "./Format";
+import "./FilterGraph";
+import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 import "./Dialogues/Scale";
 import "./Dialogues/Concat";
 import "./Dialogues/Clipper";
@@ -13,11 +13,10 @@ import "./Dialogues/Cropper";
 import "./Dialogues/Delogo";
 import "./Dialogues/RemoveLogo";
 import { toolProxy } from "./Tools";
-import { DomHelper } from '../../Helper/Dom';
+import { DomHelper } from "../../Helper/Dom";
 
 const WS_CHANNEL = "Transcode.Config";
 class TranscodeConfigurator extends HTMLElement {
-
     #format;
     #streams;
     #filterGraph;
@@ -31,10 +30,12 @@ class TranscodeConfigurator extends HTMLElement {
 
     initDom() {
         const importNode = DomHelper.fromTemplate.call(this);
-        this.main = importNode.querySelector('main');
-        this.infoNode = importNode.querySelector('.info');
-        this.streamsSection = this.infoNode.querySelector('section');
-        this.streamConfig = importNode.querySelector('transcode-configurator-stream-config');
+        this.main = importNode.querySelector("main");
+        this.infoNode = importNode.querySelector(".info");
+        this.streamsSection = this.infoNode.querySelector("section");
+        this.streamConfig = importNode.querySelector(
+            "transcode-configurator-stream-config",
+        );
         DomHelper.appendShadow.call(this, importNode);
         requestAnimationFrame(() => Iconify.scan(this.shadowRoot));
         return this;
@@ -54,15 +55,33 @@ class TranscodeConfigurator extends HTMLElement {
     }
 
     addListeners() {
-        this.shadowRoot.querySelector('.btn-hide').addEventListener('click', this.hide);
-        this.shadowRoot.querySelector('.btn-save').addEventListener('click', this.saveProxy);
-        this.shadowRoot.querySelector('.btn-tools').addEventListener('click', this.toolProxy);
-        this.shadowRoot.querySelector('.btn-tools').addEventListener('change', this.toolProxy);
-        this.shadowRoot.querySelector('.btn-transcode').addEventListener('click', this.transcode);
-        this.shadowRoot.querySelector('.btn-play')
-            .addEventListener('click', this.toolProxy.bind(this, {target:{value:'play:cpu'}}));
-        this.shadowRoot.querySelector('.btn-clipper')
-            .addEventListener('click', this.toolProxy.bind(this, {target:{value:'clip'}}));
+        this.shadowRoot
+            .querySelector(".btn-hide")
+            .addEventListener("click", this.hide);
+        this.shadowRoot
+            .querySelector(".btn-save")
+            .addEventListener("click", this.saveProxy);
+        this.shadowRoot
+            .querySelector(".btn-tools")
+            .addEventListener("click", this.toolProxy);
+        this.shadowRoot
+            .querySelector(".btn-tools")
+            .addEventListener("change", this.toolProxy);
+        this.shadowRoot
+            .querySelector(".btn-transcode")
+            .addEventListener("click", this.transcode);
+        this.shadowRoot
+            .querySelector(".btn-play")
+            .addEventListener(
+                "click",
+                this.toolProxy.bind(this, { target: { value: "play:cpu" } }),
+            );
+        this.shadowRoot
+            .querySelector(".btn-clipper")
+            .addEventListener(
+                "click",
+                this.toolProxy.bind(this, { target: { value: "clip" } }),
+            );
         return this;
     }
 
@@ -81,16 +100,13 @@ class TranscodeConfigurator extends HTMLElement {
         this.classList.add("active");
         this.item.node.iconActive = true;
         document.dispatchEvent(
-            new CustomEvent("configurator-show", { detail: true })
+            new CustomEvent("configurator-show", { detail: true }),
         );
         document.addEventListener(
             "stream-configure",
-            this.handleConfigureStream
+            this.handleConfigureStream,
         );
-        document.addEventListener(
-            "clips-updated",
-            this.handleClipsUpdated
-        );
+        document.addEventListener("clips-updated", this.handleClipsUpdated);
         console.info("Show streams of %s", this.item.path);
     }
 
@@ -106,21 +122,21 @@ class TranscodeConfigurator extends HTMLElement {
                 delete this.item;
                 document.dispatchEvent(new CustomEvent("configurator-hidden"));
             },
-            { once: true }
+            { once: true },
         );
         this.classList.add("fade-out");
         this.leaveWebsocket();
         document.removeEventListener(
             "stream-configure",
-            this.handleConfigureStream
+            this.handleConfigureStream,
         );
+        document.removeEventListener("clips-updated", this.handleClipsUpdated);
         document.removeEventListener(
-            "clips-updated",
-            this.handleClipsUpdated
+            "stream-config",
+            this.handleConfigureStreamReady,
         );
-        document.removeEventListener("stream-config", this.handleConfigureStreamReady);
         document.dispatchEvent(
-            new CustomEvent("configurator-show", { detail: false })
+            new CustomEvent("configurator-show", { detail: false }),
         );
     }
 
@@ -128,7 +144,7 @@ class TranscodeConfigurator extends HTMLElement {
         this.channel = window.Echo.channel(WS_CHANNEL);
         this.channel.listen(
             WS_CHANNEL,
-            this.handleConfiguratorEvent.bind(this)
+            this.handleConfiguratorEvent.bind(this),
         );
         this.channel.subscribed(this.requestStreams.bind(this));
     }
@@ -149,7 +165,7 @@ class TranscodeConfigurator extends HTMLElement {
         }
     }
 
-    transcode() {
+    async transcode() {
         if (!this.clips.valid) {
             document.dispatchEvent(
                 new CustomEvent("toast", {
@@ -157,16 +173,43 @@ class TranscodeConfigurator extends HTMLElement {
                         message: "Clip is invalid",
                         type: "warning",
                     },
-                })
+                }),
             );
             return;
+        }
+        let confirm = null;
+        this.config.streams.forEach((s) => {
+            const stream = this.streams[s.id];
+            const type = stream.codec_type;
+            if (type === "video") {
+                const defaultQp = this.videoCodecs[s.config.codec]?.qp || 0;
+                if (defaultQp && defaultQp !== s.config.qp) {
+                    confirm = {
+                        header: "QP Mismatch",
+                        message:
+                            `Chosen QP ${s.config.qp} does not match` +
+                            `default QP ${defaultQp}. Transcode anyway?`,
+                    };
+                }
+            }
+        });
+        if (confirm) {
+            const m = document.createElement("modal-confirm");
+            m.header = confirm.header;
+            m.content = confirm.message;
+            document.body.appendChild(m);
+            try {
+                await m.confirm();
+            } catch (error) {
+                return;
+            }
         }
         try {
             requestAnimationFrame(() => {
                 console.info("Transcode %s", this.item.path, this.config);
                 Request.post(
                     `/transcode/${encodeURIComponent(this.item.path)}`,
-                    this.config
+                    this.config,
                 );
             });
         } catch (error) {}
@@ -178,39 +221,47 @@ class TranscodeConfigurator extends HTMLElement {
         this.streams = this.initTranscodeConfig(ws.streams, ws.clips);
         this.crop = ws.crop ?? {};
         this.removeLogo = ws.removeLogo ?? {};
-        this.delogo = ws.delogo ?? {}
+        this.delogo = ws.delogo ?? {};
         this.filterGraph = ws.filterGraph ?? [];
         this.chapters = ws.chapters ?? [];
         this.show();
     }
 
     initTranscodeConfig(streams, clips) {
-        console.log('Initialize transcode config');
-        const preferredAudioCodes = (clips?.length || 0) > 1 ? PREFERRED_AUDIO_CODECS?.['multiClip'] : PREFERRED_AUDIO_CODECS?.['singleClip'];
-        const codecsMap = new Map();
-        codecsMap.set('videoCodecs', Object.values(VIDEO_CODECS).sort((a,b) => a.v > b.v));
-        codecsMap.set('audioCodecs', Object.values(AUDIO_CODECS).sort((a,b) => a.v > b.v));
-        codecsMap.set('subtitleCodecs', Object.values(SUBTITLE_CODECS).sort((a,b) => a.v > b.v));
+        console.log("Initialize transcode config");
+        const preferredAudioCodes =
+            (clips?.length || 0) > 1
+                ? PREFERRED_AUDIO_CODECS?.["multiClip"]
+                : PREFERRED_AUDIO_CODECS?.["singleClip"];
         streams.forEach((stream) => {
             const type = stream.codec_type;
-            const codecs = codecsMap.get(`${type}Codecs`);
+            const codecs = this.codecsMap.get(`${type}Codecs`);
             stream.transcodeConfig = stream.transcodeConfig || {};
-            stream.transcodeConfig.codec = typeof stream.transcodeConfig?.codec !== "undefined" ? stream.transcodeConfig.codec : codecs.find(c => c.default).v
+            stream.transcodeConfig.codec =
+                typeof stream.transcodeConfig?.codec !== "undefined"
+                    ? stream.transcodeConfig.codec
+                    : codecs.find((c) => c.default).v;
             switch (type) {
-                case 'video':
-                    stream.transcodeConfig.qp = typeof stream.transcodeConfig?.qp !== "undefined" ? stream.transcodeConfig.qp : codecs.find(c => c.default).qp;
-                    stream.transcodeConfig.aspectRatio = stream.transcodeConfig.aspectRatio || '16:9';
+                case "video":
+                    stream.transcodeConfig.qp =
+                        typeof stream.transcodeConfig?.qp !== "undefined"
+                            ? stream.transcodeConfig.qp
+                            : codecs.find((c) => c.default).qp;
+                    stream.transcodeConfig.aspectRatio =
+                        stream.transcodeConfig.aspectRatio || "16:9";
                     break;
-                case 'audio':
+                case "audio":
                     if (!stream.transcodeConfig.manual) {
-                        const preferredCodec = AUDIO_CODECS[preferredAudioCodes?.[stream.channels]]?.v;
+                        const preferredCodec =
+                            AUDIO_CODECS[preferredAudioCodes?.[stream.channels]]
+                                ?.v;
                         if ("undefined" !== typeof preferredCodec) {
                             stream.transcodeConfig.codec = preferredCodec;
                         }
                     }
-                    stream.transcodeConfig.channels = stream.channels
+                    stream.transcodeConfig.channels = stream.channels;
                     break;
-                case 'subtitle':
+                case "subtitle":
                     break;
             }
         });
@@ -219,27 +270,33 @@ class TranscodeConfigurator extends HTMLElement {
 
     handleClipsUpdated() {
         requestAnimationFrame(() => {
-            const preferredAudioCodes = (this.clips.clips?.length || 0) > 1 ? PREFERRED_AUDIO_CODECS?.['multiClip'] : PREFERRED_AUDIO_CODECS?.['singleClip'];
+            const preferredAudioCodes =
+                (this.clips.clips?.length || 0) > 1
+                    ? PREFERRED_AUDIO_CODECS?.["multiClip"]
+                    : PREFERRED_AUDIO_CODECS?.["singleClip"];
             this.streams = this.streams.map((stream) => {
                 const type = stream.codec_type;
                 switch (type) {
-                    case 'video':
+                    case "video":
                         break;
-                    case 'audio':
+                    case "audio":
                         if (!stream.transcodeConfig.manual) {
-                            const preferredCodec = AUDIO_CODECS[preferredAudioCodes?.[stream.channels]]?.v;
+                            const preferredCodec =
+                                AUDIO_CODECS[
+                                    preferredAudioCodes?.[stream.channels]
+                                ]?.v;
                             if ("undefined" !== typeof preferredCodec) {
                                 stream.transcodeConfig.codec = preferredCodec;
                             }
                         }
-                        stream.transcodeConfig.channels = stream.channels
+                        stream.transcodeConfig.channels = stream.channels;
                         break;
-                    case 'subtitle':
+                    case "subtitle":
                         break;
                 }
                 return stream;
             });
-            document.dispatchEvent(new CustomEvent('stream-config'));
+            document.dispatchEvent(new CustomEvent("stream-config"));
         });
     }
 
@@ -247,26 +304,31 @@ class TranscodeConfigurator extends HTMLElement {
         this.canConcat =
             this.item?.parent?.videoFiles?.length > 1 &&
             !this.item.parent.videoFiles.find(
-                (i) => i.name === `${this.item.parent.channelHash}-concat.ts`
+                (i) => i.name === `${this.item.parent.channelHash}-concat.ts`,
             );
-            
-        this.shadowRoot.querySelectorAll('.btn-tools option[value^="concat"]')
-            .forEach(o => {
-                o.style.display = this.canConcat ? '' : 'none'
+
+        this.shadowRoot
+            .querySelectorAll('.btn-tools option[value^="concat"]')
+            .forEach((o) => {
+                o.style.display = this.canConcat ? "" : "none";
             });
     }
 
     handleConfigureStream(e) {
-        console.log('Start stream config');
+        console.log("Start stream config");
         const offsetOrigin = e.detail.origin.getBoundingClientRect();
         const offsetMain = this.main.getBoundingClientRect();
         const offset = {
             top: offsetOrigin.top - offsetMain.top,
             right: offsetMain.right - offsetOrigin.left,
         };
-        document.addEventListener("stream-config", this.handleConfigureStreamReady, {
-            once: true,
-        });
+        document.addEventListener(
+            "stream-config",
+            this.handleConfigureStreamReady,
+            {
+                once: true,
+            },
+        );
         if (
             this.streamConfig.classList.contains("active") &&
             e.detail.item.index !== this.streamConfig.item.index
@@ -275,10 +337,10 @@ class TranscodeConfigurator extends HTMLElement {
                 "transitionend",
                 () => {
                     requestAnimationFrame(() =>
-                        this.streamConfig.toggle(e.detail.item, offset)
+                        this.streamConfig.toggle(e.detail.item, offset),
                     );
                 },
-                { once: true }
+                { once: true },
             );
         }
         this.streamConfig.toggle(e.detail.item, offset);
@@ -287,18 +349,17 @@ class TranscodeConfigurator extends HTMLElement {
     handleStreamConfig(e) {
         console.info("Stream configured: ", e.detail.item.transcodeConfig);
     }
-    
+
     saveProxy(e) {
         const args = e.target.value.split(":");
-        this.saveSettings(args[1] === 'template')
+        this.saveSettings(args[1] === "template");
     }
 
     async saveSettings(asTemplate = false) {
-
-        await Request.post(
-            `/settings/${encodeURIComponent(this.item.path)}`,
-            {...this.config, asTemplate}
-        );
+        await Request.post(`/settings/${encodeURIComponent(this.item.path)}`, {
+            ...this.config,
+            asTemplate,
+        });
 
         this.format = this.format;
         this.filterGraph = this.filterGraph;
@@ -311,8 +372,8 @@ class TranscodeConfigurator extends HTMLElement {
 
     set format(value) {
         this.#format = value;
-        const tagFormat = 'transcode-configurator-format';
-        const tagClips = 'transcode-configurator-clips';
+        const tagFormat = "transcode-configurator-format";
+        const tagClips = "transcode-configurator-clips";
         this.streamsSection.querySelector(tagFormat)?.remove();
         this.infoNode.querySelector(tagClips)?.remove();
 
@@ -334,7 +395,7 @@ class TranscodeConfigurator extends HTMLElement {
 
     set streams(value) {
         this.#streams = value;
-        const tag = 'transcode-configurator-streams';
+        const tag = "transcode-configurator-streams";
         this.streamsSection.querySelector(tag)?.remove();
 
         if (this.streams) {
@@ -350,7 +411,7 @@ class TranscodeConfigurator extends HTMLElement {
 
     set filterGraph(value) {
         this.#filterGraph = value;
-        const tag = 'transcode-configurator-filter-graph';
+        const tag = "transcode-configurator-filter-graph";
         this.streamsSection.querySelector(tag)?.remove();
 
         if (this.filterGraph.length) {
@@ -375,12 +436,41 @@ class TranscodeConfigurator extends HTMLElement {
             crop: this.crop,
             removeLogo: this.removeLogo,
             delogo: this.delogo,
-            filterGraph: this.filterGraph
+            filterGraph: this.filterGraph,
         };
     }
 
     get clips() {
         return this.shadowRoot.querySelector("transcode-configurator-clips");
+    }
+
+    get codecsMap() {
+        const codecsMap = new Map();
+        codecsMap.set(
+            "videoCodecs",
+            Object.values(VIDEO_CODECS).sort((a, b) => a.v > b.v),
+        );
+        codecsMap.set(
+            "audioCodecs",
+            Object.values(AUDIO_CODECS).sort((a, b) => a.v > b.v),
+        );
+        codecsMap.set(
+            "subtitleCodecs",
+            Object.values(SUBTITLE_CODECS).sort((a, b) => a.v > b.v),
+        );
+        return codecsMap;
+    }
+
+    get videoCodecs() {
+        return this.codecsMap.get("videoCodecs");
+    }
+
+    get audioCodecs() {
+        return this.codecsMap.get("videoCodecs");
+    }
+
+    get subtitleCodecs() {
+        return this.codecsMap.get("videoCodecs");
     }
 }
 
@@ -549,4 +639,4 @@ ${CSS}
 </main>
 `;
 
-customElements.define('transcode-configurator', TranscodeConfigurator);
+customElements.define("transcode-configurator", TranscodeConfigurator);
