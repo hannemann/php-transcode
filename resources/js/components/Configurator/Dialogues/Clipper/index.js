@@ -49,6 +49,7 @@ class Clipper extends VideoEditor {
     }
 
     add() {
+        if (this.modeMove) return;
         this.raw.push(this.current);
         this.raw.sort((a, b) => a > b);
         this.calculateClips();
@@ -58,6 +59,7 @@ class Clipper extends VideoEditor {
     }
 
     remove() {
+        if (this.modeMove) return;
         const idx = this.raw.indexOf(this.current);
         if (idx > -1) {
             this.raw.splice(idx, 1);
