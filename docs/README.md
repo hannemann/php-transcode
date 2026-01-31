@@ -34,25 +34,33 @@ This folder contains comprehensive documentation for the PHP Transcode Toolbox p
 - **Topics**: Zero-framework approach, vanilla web components, performance benefits, implementation patterns
 - **For**: All developers - **READ THIS FIRST** before any frontend development
 
-### 📦 [Icon Migration Overview](./icon-migration-overview.md)
-- **Purpose**: Complete icon font solution to replace iconify library
-- **Topics**: Performance benefits, implementation examples, migration plan, testing checklist
-- **For**: All developers - **START HERE** for iconify replacement
-
 ## Quick Reference
 
 ### 🚀 Getting Started
 1. **Clone and Setup**:
-   ```bash
-   git clone <repository>
-   cd php-transcode
-   cp .env.example .env
-   ./run  # Start Docker containers
-   ```
+    ```bash
+    git clone <repository>
+    cd php-transcode
+    cp .env.example .env
+    ./run  # Start Docker containers
+    ```
 
 2. **Access Application**: Open http://localhost:8078
 
 3. **Development**: `vendor/bin/sail npm run watch` for live asset compilation
+
+### 📦 Ready-to-Implement Plans
+
+#### **📦 Icon Migration** (Immediate Benefits)
+**Status**: Ready for implementation
+**Location**: `docs/plans/icon-migration-overview.md`
+**Benefits**: 92% bundle size reduction, faster loading, offline support
+**Quick Start**: `docs/plans/icon-quickstart.md` (5-minute implementation)
+
+#### **📡 WebSocket Migration** (Future Enhancement)
+**Status**: Planned for future implementation  
+**Location**: `docs/plans/websocket-migration-plan.md`
+**Benefits**: Real-time bidirectional communication, reduced latency
 
 ### 🎯 Core Functionality
 - **Video Processing**: Transcode, concat, scale, crop videos

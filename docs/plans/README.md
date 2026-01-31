@@ -12,6 +12,14 @@ This directory contains detailed implementation plans for future improvements to
 
 **Summary**: Migrate from current HTTP + WebSocket hybrid pattern to full WebSocket-based bidirectional communication. This will reduce latency, improve connection efficiency, and enable advanced real-time features.
 
+### 📦 [Icon Font Migration Plan](./icon-migration-overview.md)
+**Status**: Ready for implementation
+**Priority**: High (immediate benefits)
+**Estimated Effort**: 1-2 weeks
+**Impact**: 92% bundle size reduction, faster load times, offline support
+
+**Summary**: Replace iconify library with custom icon font solution. Maintains all functionality while eliminating external dependencies and significantly improving performance.
+
 **Key Benefits**:
 - 30% reduction in response latency
 - Eliminate HTTP overhead for each request  
