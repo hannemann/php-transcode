@@ -34,6 +34,11 @@ This folder contains comprehensive documentation for the PHP Transcode Toolbox p
 - **Topics**: Zero-framework approach, vanilla web components, performance benefits, implementation patterns
 - **For**: All developers - **READ THIS FIRST** before any frontend development
 
+### 📦 [Icon Migration Overview](./icon-migration-overview.md)
+- **Purpose**: Complete icon font solution to replace iconify library
+- **Topics**: Performance benefits, implementation examples, migration plan, testing checklist
+- **For**: All developers - **START HERE** for iconify replacement
+
 ## Quick Reference
 
 ### 🚀 Getting Started

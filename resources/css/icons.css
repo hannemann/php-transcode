@@ -1,0 +1,175 @@
+/* Custom Icon Font for PHP Transcode Toolbox */
+
+@font-face {
+  font-family: 'PHPTranscodeIcons';
+  src: url('./fonts/php-transcode-icons.woff2') format('woff2'),
+       url('./fonts/php-transcode-icons.woff') format('woff'),
+       url('./fonts/php-transcode-icons.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Base icon styles */
+.custom-icon {
+  font-family: 'PHPTranscodeIcons';
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  letter-spacing: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  width: 1em;
+  height: 1em;
+  font-size: 1em;
+  text-align: center;
+  vertical-align: middle;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Icon definitions - Map to character codes */
+.icon-close::before { content: "\e001"; }
+.icon-play::before { content: "\e002"; }
+.icon-chevron-down::before { content: "\e003"; }
+.icon-chevron-right::before { content: "\e004"; }
+.icon-menu-down::before { content: "\e005"; }
+.icon-save::before { content: "\e006"; }
+.icon-tools::before { content: "\e007"; }
+.icon-scissors::before { content: "\e008"; }
+.icon-copy::before { content: "\e009"; }
+.icon-plus::before { content: "\e00a"; }
+.icon-minus::before { content: "\e00b"; }
+.icon-plus-box::before { content: "\e00c"; }
+.icon-minus-box::before { content: "\e00d"; }
+.icon-trash::before { content: "\e00e"; }
+.icon-reload::before { content: "\e00f"; }
+.icon-cog::before { content: "\e010"; }
+.icon-loading::before { content: "\e011"; }
+.icon-circle-outline::before { content: "\e012"; }
+.icon-thumb-up::before { content: "\e013"; }
+.icon-alert-box::before { content: "\e014"; }
+.icon-alert::before { content: "\e015"; }
+.icon-alert-circle::before { content: "\e016"; }
+.icon-skull::before { content: "\e017"; }
+.icon-folder::before { content: "\e018"; }
+.icon-filmstrip::before { content: "\e019"; }
+.icon-note-text::before { content: "\e01a"; }
+.icon-file-image::before { content: "\e01b"; }
+.icon-file::before { content: "\e01c"; }
+.icon-motion-play::before { content: "\e01d"; }
+.icon-swap-vertical::before { content: "\e01e"; }
+.icon-swap-horizontal::before { content: "\e01f"; }
+.icon-mouse::before { content: "\e020"; }
+.icon-checkbox-blank::before { content: "\e021"; }
+.icon-checkbox-marked::before { content: "\e022"; }
+
+/* Icon stack styling - replaces iconify pattern */
+.icon-stack {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  font-size: 1.5rem;
+}
+
+.icon-stack .custom-icon {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.icon-stack .custom-icon:first-child {
+  opacity: 0.7;
+}
+
+.icon-stack .custom-icon:last-child {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.icon-stack:hover .custom-icon:first-child {
+  opacity: 0.4;
+}
+
+.icon-stack:hover .custom-icon:last-child {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Icon size variations */
+.icon-xs { font-size: 0.75rem; }
+.icon-sm { font-size: 1rem; }
+.icon-md { font-size: 1.25rem; }
+.icon-lg { font-size: 1.5rem; }
+.icon-xl { font-size: 2rem; }
+
+/* Icon colors for different states */
+.icon-success { color: var(--clr-success, #4caf50); }
+.icon-info { color: var(--clr-info, #2196f3); }
+.icon-warning { color: var(--clr-warning, #ff9800); }
+.icon-error { color: var(--clr-error, #f44336); }
+.icon-muted { color: var(--clr-muted, #9e9e9e); }
+
+/* Active icon styling - matches existing theme */
+.icon-active {
+  color: var(--active-icon-clr, var(--clr-enlightened, #ffffff));
+  filter: var(--active-icon-glow, drop-shadow(0px 0px 5px rgba(255,255,255,0.3)));
+}
+
+/* Loading animation for loading icon */
+.icon-loading {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Toast notification specific styling */
+.toast-icon {
+  font-size: 1.2rem;
+  margin-right: 0.5rem;
+}
+
+div.success .toast-icon,
+div.success .custom-icon { color: var(--clr-success, #4caf50); }
+div.info .toast-icon,
+div.info .custom-icon { color: var(--clr-info, #2196f3); }
+div.warning .toast-icon,
+div.warning .custom-icon { color: var(--clr-warning, #ff9800); }
+div.error .toast-icon,
+div.error .custom-icon { color: var(--clr-error, #f44336); }
+
+/* Button icon styling */
+button .custom-icon,
+.btn .custom-icon {
+  margin: 0 0.25rem;
+}
+
+button:hover .custom-icon,
+.btn:hover .custom-icon {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+/* Disabled icon styling */
+.custom-icon.disabled,
+button:disabled .custom-icon,
+.btn:disabled .custom-icon {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive sizing */
+@media (max-width: 768px) {
+  .icon-stack { font-size: 1.25rem; }
+  .toast-icon { font-size: 1rem; }
+}

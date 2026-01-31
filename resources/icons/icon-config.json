@@ -1,0 +1,179 @@
+{
+  "name": "php-transcode-icons",
+  "version": "1.0.0",
+  "description": "Custom icon font for PHP Transcode Toolbox",
+  "author": "PHP Transcode Team",
+  "license": "MIT",
+  "icons": [
+    {
+      "name": "close",
+      "code": "e001",
+      "mdi": "mdi-close"
+    },
+    {
+      "name": "play",
+      "code": "e002", 
+      "mdi": "mdi-play"
+    },
+    {
+      "name": "chevron-down",
+      "code": "e003",
+      "mdi": "mdi-chevron-down"
+    },
+    {
+      "name": "chevron-right",
+      "code": "e004",
+      "mdi": "mdi-chevron-right"
+    },
+    {
+      "name": "menu-down",
+      "code": "e005",
+      "mdi": "mdi-menu-down-outline"
+    },
+    {
+      "name": "save",
+      "code": "e006",
+      "mdi": "mdi-content-save-outline"
+    },
+    {
+      "name": "tools",
+      "code": "e007",
+      "mdi": "mdi-tools"
+    },
+    {
+      "name": "scissors",
+      "code": "e008",
+      "mdi": "mdi-scissors"
+    },
+    {
+      "name": "copy",
+      "code": "e009",
+      "mdi": "mdi-content-copy"
+    },
+    {
+      "name": "plus",
+      "code": "e00a",
+      "mdi": "mdi-plus-outline"
+    },
+    {
+      "name": "minus",
+      "code": "e00b",
+      "mdi": "mdi-minus-outline"
+    },
+    {
+      "name": "plus-box",
+      "code": "e00c",
+      "mdi": "mdi-plus-box-outline"
+    },
+    {
+      "name": "minus-box",
+      "code": "e00d",
+      "mdi": "mdi-minus-box-outline"
+    },
+    {
+      "name": "trash",
+      "code": "e00e",
+      "mdi": "mdi-trash-can-outline"
+    },
+    {
+      "name": "reload",
+      "code": "e00f",
+      "mdi": "mdi-reload"
+    },
+    {
+      "name": "cog",
+      "code": "e010",
+      "mdi": "mdi-cog-outline"
+    },
+    {
+      "name": "loading",
+      "code": "e011",
+      "mdi": "mdi-loading"
+    },
+    {
+      "name": "circle-outline",
+      "code": "e012",
+      "mdi": "mdi-circle-outline"
+    },
+    {
+      "name": "thumb-up",
+      "code": "e013",
+      "mdi": "mdi-thumb-up-outline"
+    },
+    {
+      "name": "alert-box",
+      "code": "e014",
+      "mdi": "mdi-alert-box-outline"
+    },
+    {
+      "name": "alert",
+      "code": "e015",
+      "mdi": "mdi-alert-outline"
+    },
+    {
+      "name": "alert-circle",
+      "code": "e016",
+      "mdi": "mdi-alert-circle-outline"
+    },
+    {
+      "name": "skull",
+      "code": "e017",
+      "mdi": "mdi-skull-crossbones-outline"
+    },
+    {
+      "name": "folder",
+      "code": "e018",
+      "mdi": "mdi-folder"
+    },
+    {
+      "name": "filmstrip",
+      "code": "e019",
+      "mdi": "mdi-filmstrip"
+    },
+    {
+      "name": "note-text",
+      "code": "e01a",
+      "mdi": "mdi-note-text-outline"
+    },
+    {
+      "name": "file-image",
+      "code": "e01b",
+      "mdi": "mdi-file-image-outline"
+    },
+    {
+      "name": "file",
+      "code": "e01c",
+      "mdi": "mdi-file"
+    },
+    {
+      "name": "motion-play",
+      "code": "e01d",
+      "mdi": "mdi-motion-play-outline"
+    },
+    {
+      "name": "swap-vertical",
+      "code": "e01e",
+      "mdi": "mdi-swap-vertical-bold"
+    },
+    {
+      "name": "swap-horizontal",
+      "code": "e01f",
+      "mdi": "mdi-swap-horizontal-bold"
+    },
+    {
+      "name": "mouse",
+      "code": "e020",
+      "mdi": "mdi-mouse"
+    },
+    {
+      "name": "checkbox-blank",
+      "code": "e021",
+      "mdi": "mdi-checkbox-blank-outline"
+    },
+    {
+      "name": "checkbox-marked",
+      "code": "e022",
+      "mdi": "mdi-checkbox-marked-outline"
+    }
+  ]
+}
