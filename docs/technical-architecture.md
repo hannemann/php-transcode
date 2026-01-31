@@ -79,38 +79,46 @@ Multiple Files → Concat Preparation → Stream Analysis → Configuration → 
 - **Progress Metrics**: Percentage, rate, remaining time
 - **Error Storage**: Detailed error messages for debugging
 
-### Frontend Architecture
+### Frontend Architecture (Pure Vanilla Web Components)
+
+#### Philosophy: Framework-Free Frontend
+The frontend is built with a **strictly vanilla approach** - absolutely NO rendering frameworks like Vue.js or React. All components use the native Web Components API for maximum performance and minimal dependencies.
 
 #### Component System (`resources/js/components/`)
 
-##### Core Components
-- **Transcoder.js**: Main application shell and routing
-- **FilePicker/**: Hierarchical file browser with security
-- **Configurator/**: Video processing configuration interface
-- **Statusbar/**: Real-time job progress monitoring
+##### Core Components (Native Web Components)
+- **Transcoder.js**: Main application shell and routing (custom element)
+- **FilePicker/**: Hierarchical file browser with security (custom elements)
+- **Configurator/**: Video processing configuration interface (custom elements)
+- **Statusbar/**: Real-time job progress monitoring (custom elements)
 
 ##### Configurator Subcomponents
-- **Streams/**: Per-stream codec and format configuration
-- **Clips/**: Timeline-based clip marking interface
-- **Dialogues/**: Modal interfaces for specific operations
-- **Tools/**: Quick action toolbar
+- **Streams/**: Per-stream codec and format configuration (custom elements)
+- **Clips/**: Timeline-based clip marking interface (custom elements)
+- **Dialogues/**: Modal interfaces for specific operations (custom elements)
+- **Tools/**: Quick action toolbar (custom elements)
 
 ##### Utility Components
-- **Request/**: HTTP request wrapper with error handling
-- **Toast/**: Notification system
-- **Modal/**: Reusable modal framework
-- **Icons/**: Material Design Icons integration
+- **Request/**: HTTP client wrapper with error handling (plain JavaScript)
+- **Toast/**: Notification system (custom element)
+- **Modal/**: Reusable modal framework (custom element)
+- **Icons/**: Material Design Icons integration (iconify utility)
+- **Sortable**: Drag and drop functionality (html5sortable utility)
+- **Image Editor**: Logo mask creation (painterro utility)
 
-#### Real-time Communication
-- **Laravel Echo + Pusher**: WebSocket client implementation
+#### Real-time Communication (Vanilla JavaScript)
+- **Laravel Echo + Pusher**: WebSocket client implementation (utility only)
 - **Event-driven updates**: Progress, file changes, status updates
 - **Channel-based communication**: Separate channels for different data types
+- **Native event handling**: Using native DOM events and CustomEvent API
 
-#### Styling System
+#### Styling System (Pure CSS)
 - **CSS Custom Properties**: Theme system with light/dark modes
 - **Grid-based layouts**: Responsive design system
-- **Component-scoped styles**: Encapsulation via Shadow DOM
-- **Material Design**: Consistent UI patterns
+- **Component-scoped styles**: Encapsulation via native Shadow DOM
+- **Material Design**: Consistent UI patterns (CSS implementation)
+- **No CSS frameworks**: Pure PostCSS with custom properties
+- **Minimal dependencies**: Only essential utility libraries (iconify, hls.js, html5sortable, painterro)
 
 ## Database Schema
 
@@ -174,10 +182,13 @@ Multiple Files → Concat Preparation → Stream Analysis → Configuration → 
 - **Progress Streaming**: Real-time updates without polling
 - **Resource Management**: Controlled concurrent operations
 
-### Frontend Optimizations
-- **Lazy Loading**: Components loaded on demand
-- **Efficient DOM Updates**: Shadow DOM minimizes reflows
+### Frontend Optimizations (Vanilla JavaScript)
+- **Lazy Loading**: Native web components loaded on demand
+- **Efficient DOM Updates**: Native Shadow DOM minimizes reflows
 - **Web Workers**: Heavy computations off main thread
+- **No Framework Overhead**: Direct browser API usage for maximum performance
+- **Minimal Bundle Size**: Only essential utilities, no framework code
+- **Native Event System**: Using CustomEvent API for component communication
 
 ## Error Handling
 

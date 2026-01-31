@@ -56,21 +56,22 @@
 
 ---
 
-### 4. **Web Components UI Developer** 🎨
-**Purpose:** Modern frontend development with web components and responsive design
+### 4. **Vanilla Web Components Developer** 🎨
+**Purpose:** Modern frontend development with pure web components and responsive design
 
 **Capabilities:**
-- Custom web components architecture and best practices
-- Shadow DOM and component encapsulation
-- Performance optimization for media-heavy applications
-- Responsive design and accessibility
-- Modern JavaScript frameworks and build tools
+- Native web components architecture and best practices
+- Shadow DOM and component encapsulation (no frameworks)
+- Performance optimization for media-heavy applications (vanilla JS)
+- Responsive design and accessibility (pure CSS)
+- Modern JavaScript ES6+ features and browser APIs
 
 **Use Cases:**
-- Creating new UI components for video editing
-- Improving mobile responsiveness and touch interactions
-- Optimizing component performance for large video files
-- Implementing accessibility features
+- Creating new UI components for video editing (custom elements)
+- Improving mobile responsiveness and touch interactions (no framework)
+- Optimizing component performance for large video files (native DOM)
+- Implementing accessibility features (ARIA and semantic HTML)
+- **Maintaining vanilla approach**: No Vue.js, React, or other frameworks
 
 ---
 
@@ -215,7 +216,7 @@
 ### Phase 1: Core Capabilities (High Priority)
 1. **FFmpeg Video Processing Expert** - Essential for core functionality
 2. **Laravel Backend Architect** - Foundation for all backend work
-3. **Web Components UI Developer** - Critical for user experience
+3. **Vanilla Web Components Developer** - Critical for user experience (strictly no frameworks)
 
 ### Phase 2: Advanced Features (Medium Priority)
 4. **Real-time WebSocket Specialist** - Important for live features

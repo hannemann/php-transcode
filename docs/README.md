@@ -29,6 +29,11 @@ This folder contains comprehensive documentation for the PHP Transcode Toolbox p
 - **Topics**: Specialized skills, agent workflows, implementation priority, ROI analysis
 - **For**: Project managers, team leads, AI implementation planning
 
+### 🎨 [Frontend Philosophy](./frontend-philosophy.md)
+- **Purpose**: **CRITICAL** - Project's commitment to vanilla web development
+- **Topics**: Zero-framework approach, vanilla web components, performance benefits, implementation patterns
+- **For**: All developers - **READ THIS FIRST** before any frontend development
+
 ## Quick Reference
 
 ### 🚀 Getting Started
@@ -50,6 +55,7 @@ This folder contains comprehensive documentation for the PHP Transcode Toolbox p
 - **Real-time Updates**: WebSocket-based progress tracking
 - **File Management**: Secure file picker with access controls
 - **Clip Editor**: Frame-perfect cutting interface
+- **Vanilla Frontend**: Pure web components, NO frameworks (Vue.js, React, etc.)
 
 ### 🏗️ Key Technologies
 - **Backend**: Laravel 12.0 + PHP 8.3 + SQLite
@@ -60,7 +66,7 @@ This folder contains comprehensive documentation for the PHP Transcode Toolbox p
 ### 📁 Important Directories
 - `app/Http/Controllers/` - API endpoints
 - `app/Models/FFMpeg/` - Video processing logic
-- `resources/js/components/` - Frontend components
+- `resources/js/components/` - Vanilla web components (NO frameworks)
 - `config/transcode.php` - Codec configurations
 
 ### 🔧 Common Tasks
@@ -122,6 +128,9 @@ This folder contains comprehensive documentation for the PHP Transcode Toolbox p
 - [ ] WebSocket events properly handled
 - [ ] Error handling implemented
 - [ ] Progress tracking added for long operations
+- [ ] **Vanilla frontend compliance** - NO frameworks used
+- [ ] **Web Components API** - Native component implementation
+- [ ] **Direct browser APIs** - No unnecessary abstractions
 
 ### ✅ Before Deployment
 - [ ] All tests passing (`vendor/bin/sail php artisan test`)
@@ -129,6 +138,8 @@ This folder contains comprehensive documentation for the PHP Transcode Toolbox p
 - [ ] Environment variables set for production
 - [ ] Security review completed
 - [ ] Performance testing conducted
+- [ ] **Bundle size optimization** - Minimal JavaScript
+- [ ] **Browser compatibility** - Native API usage verified
 
 ---
 

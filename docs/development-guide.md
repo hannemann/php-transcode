@@ -132,11 +132,14 @@ components/
 └── [Utility]/              # Helper components
 ```
 
-**Best Practices:**
-- Use web components for encapsulation
-- Implement proper event handling
+**Best Practices (Vanilla Web Components):**
+- Use native web components for encapsulation
+- Implement proper event handling with native APIs
 - Use Shadow DOM for style isolation
 - Keep components focused and reusable
+- **Avoid framework patterns**: Use native DOM APIs directly
+- **Performance first**: Leverage browser optimizations
+- **Minimal abstraction**: No virtual DOM, no reactive systems
 
 #### Styling (resources/css/)
 ```
@@ -213,17 +216,38 @@ class NewOperationRequest extends FFMpegActionRequest
 }
 ```
 
-### Frontend: New Operation UI
+### Frontend: New Operation UI (Vanilla Web Components)
 
-1. **Create Dialogue Component**
+1. **Create Native Web Component**
 ```javascript
 // resources/js/components/Configurator/Dialogues/NewOperation.js
 class NewOperationDialogue extends HTMLElement {
-    // Component implementation
+    constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+    }
+    
+    connectedCallback() {
+        this.shadowRoot.innerHTML = this.getTemplate();
+        this.addEventListener();
+    }
+    
+    getTemplate() {
+        return `
+            <style>
+                /* Component-scoped styles */
+            </style>
+            <div class="dialogue-content">
+                <!-- Native HTML, no framework template -->
+            </div>
+        `;
+    }
 }
+
+customElements.define('new-operation-dialogue', NewOperationDialogue);
 ```
 
-2. **Add to Tools Dropdown**
+2. **Add to Tools Dropdown (No Framework)**
 ```javascript
 // resources/js/components/Configurator/Dialogues/index.js
 import './NewOperation';
@@ -232,11 +256,12 @@ import './NewOperation';
 <option value="newoperation:cpu:instantOpen">New Operation</option>
 ```
 
-3. **Add Request Handler**
+3. **Add Request Handler (Vanilla JavaScript)**
 ```javascript
 // resources/js/components/Configurator/Tools/index.js
 case 'newoperation':
-    // Handle operation
+    // Handle operation with native fetch and events
+    this.handleNewOperation(data);
     break;
 ```
 
