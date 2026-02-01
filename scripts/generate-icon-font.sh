@@ -32,8 +32,9 @@ if [ ! -f "$ICON_DIR/icon-config.json" ]; then
 fi
 
 # Read icon configuration and download each icon
-while IFS= read -r line; do
-    if [[ $line =~ '"mdi": *"([^"]+)"* ]]; then
+pattern='"mdi"[[:space:]]*:[[:space:]]*"mdi-([^"]+)"'
+while IFS= read -r line || [ -n "$line" ]; do
+    if [[ $line =~ $pattern ]]; then
         mdi_name="${BASH_REMATCH[1]}"
         echo "Downloading: $mdi_name"
         
