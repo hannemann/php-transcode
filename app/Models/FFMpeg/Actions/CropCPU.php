@@ -61,18 +61,18 @@ Class CropCPU extends Crop
             $data['ch'],
             $data['cx'],
             $data['cy'],
-            Crop::calculateWidth(
+            max($data['cw'], Crop::calculateWidth(
                 $data['replaceBlackBorders'] ? $data['height'] : $data['ch'],
                 $data['aspect']
-            ),
-            $data['replaceBlackBorders'] ? $data['height'] : $data['ch'],
+            )),
+            max($data['ch'], $data['replaceBlackBorders'] ? $data['height'] : $data['ch']),
             $data['mirror'] ?
                 sprintf(
                     self::TEMPLATE_FILTER_FILLBORDERS,
-                    $data['cx'],
-                    $data['width'] - $data['cw'] - $data['cx'],
-                    $data['cy'],
-                    $data['height'] - $data['ch'] - $data['cy']
+                    max(0, min($data['width'], $data['cx'])),
+                    max(0, min($data['width'], $data['width'] - $data['cw'] - $data['cx'])),
+                    max(0, min($data['height'], $data['cy'])),
+                    max(0, min($data['height'], $data['height'] - $data['ch'] - $data['cy']))
                 ) :
                 ''
         );
