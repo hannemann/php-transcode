@@ -6,19 +6,30 @@
 set -e
 
 # Configuration
-ICON_DIR="resources/icons"
-OUTPUT_DIR="public/fonts"
-TEMP_DIR="tmp/icons"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+ICON_DIR="$PROJECT_ROOT/resources/icons"
+OUTPUT_DIR="$PROJECT_ROOT/public/fonts"
+TEMP_DIR="$PROJECT_ROOT/tmp/icons"
 
 # Create directories
 mkdir -p "$OUTPUT_DIR"
 mkdir -p "$TEMP_DIR"
 
 echo "🎨 Creating custom icon font for PHP Transcode Toolbox..."
+echo "Script dir: $SCRIPT_DIR"
+echo "Project root: $PROJECT_ROOT"
+echo "Icon config: $ICON_DIR/icon-config.json"
 
 # Step 1: Download MDI SVG icons
 echo "📥 Downloading MDI SVG icons..."
 cd "$TEMP_DIR"
+
+# Check if icon config exists
+if [ ! -f "$ICON_DIR/icon-config.json" ]; then
+    echo "❌ Error: Icon config file not found at $ICON_DIR/icon-config.json"
+    exit 1
+fi
 
 # Read icon configuration and download each icon
 while IFS= read -r line; do
@@ -46,7 +57,7 @@ import os
 import re
 
 # Load icon configuration
-with open('../icon-config.json', 'r') as f:
+with open('$ICON_DIR/icon-config.json', 'r') as f:
     config = json.load(f)
 
 # Create new font
@@ -86,9 +97,9 @@ for icon in config['icons']:
         print(f"Missing SVG for: {icon['mdi']}")
 
 # Generate font files
-font.generate("../php-transcode-icons.ttf")
-font.generate("../php-transcode-icons.woff")
-font.generate("../php-transcode-icons.woff2")
+font.generate("$OUTPUT_DIR/php-transcode-icons.ttf")
+font.generate("$OUTPUT_DIR/php-transcode-icons.woff")
+font.generate("$OUTPUT_DIR/php-transcode-icons.woff2")
 EOF
 
     # Run FontForge script
@@ -103,7 +114,7 @@ import xml.etree.ElementTree as ET
 import json
 
 # Load configuration
-with open('../icon-config.json', 'r') as f:
+with open('$ICON_DIR/icon-config.json', 'r') as f:
     config = json.load(f)
 
 # Create SVG font structure
@@ -155,16 +166,16 @@ for icon in config['icons']:
 
 # Write combined SVG
 tree = ET.ElementTree(svg)
-tree.write("../combined-icons.svg", encoding='utf-8', xml_declaration=True)
+tree.write("$TEMP_DIR/combined-icons.svg", encoding='utf-8', xml_declaration=True)
 EOF
 
     # Convert to TTF
-    svg2ttf combined-icons.svg ../php-transcode-icons.ttf
+    svg2ttf "$TEMP_DIR/combined-icons.svg" "$OUTPUT_DIR/php-transcode-icons.ttf"
     
     # Convert to WOFF using fontforge (if available) or online converter
     if command -v fontforge &> /dev/null; then
-        fontforge -c "font.open('../php-transcode-icons.ttf').generate('../php-transcode-icons.woff')"
-        fontforge -c "font.open('../php-transcode-icons.ttf').generate('../php-transcode-icons.woff2')"
+        fontforge -c "font.open('$OUTPUT_DIR/php-transcode-icons.ttf').generate('$OUTPUT_DIR/php-transcode-icons.woff')"
+        fontforge -c "font.open('$OUTPUT_DIR/php-transcode-icons.ttf').generate('$OUTPUT_DIR/php-transcode-icons.woff2')"
     else
         echo "⚠️  FontForge not available for WOFF conversion"
         echo "   Use online converter: https://fontconverter.org"
@@ -181,7 +192,8 @@ fi
 
 # Step 3: Move fonts to output directory
 echo "📁 Moving fonts to output directory..."
-mv php-transcode-icons.* "$OUTPUT_DIR/"
+cd "$PROJECT_ROOT"
+mv "$TEMP_DIR"/php-transcode-icons.* "$OUTPUT_DIR/"
 
 # Step 4: Generate CSS fallback with Unicode characters
 echo "📝 Creating CSS fallback file..."
@@ -201,17 +213,6 @@ cat > "$ICON_DIR/icons-fallback.css" << 'EOF'
 /* Unicode fallbacks */
 EOF
 
-# Add unicode fallbacks
-unicode_start = 0xe001
-while IFS= read -r line; do
-    if [[ $line =~ '"name": *"([^"]+)"* ]]; then
-        name="${BASH_REMATCH[1]}"
-        echo ".icon-$name::before { content: \"\\$unicode_start\"; }" >> "$ICON_DIR/icons-fallback.css"
-        echo "Added unicode fallback for: $name"
-        unicode_start=$((unicode_start + 1))
-    fi
-done < "$ICON_DIR/icon-config.json"
-
 # Step 5: Clean up
 echo "🧹 Cleaning up temporary files..."
 cd ../
@@ -221,7 +222,7 @@ echo "✅ Icon font generation complete!"
 echo ""
 echo "📦 Generated files:"
 echo "   - $OUTPUT_DIR/php-transcode-icons.ttf"
-echo "   - $OUTPUT_DIR/php-transcode-icons.woff" 
+echo "   - $OUTPUT_DIR/php-transcode-icons.woff"
 echo "   - $OUTPUT_DIR/php-transcode-icons.woff2"
 echo ""
 echo "🎯 Next steps:"
