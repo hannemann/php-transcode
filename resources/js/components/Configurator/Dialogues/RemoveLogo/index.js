@@ -1,6 +1,7 @@
 import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
 import Painterro from "painterro";
 import { Request } from "../../../Request";
+import { VTime } from "../../../../Helper/Time";
 
 const IMAGE_TYPE_ORIGINAL = "Original";
 const IMAGE_TYPE_MASK = "Mask";
@@ -44,7 +45,7 @@ class RemoveLogo extends VideoEditor {
             id: "paint",
             activeColor: "#000000",
             activeFillColor: "#000000",
-            availableLineWidths: [20,50,100,150],
+            availableLineWidths: [20, 50, 100, 150],
             colorScheme: {
                 backgroundColor: "var(--clr-bg-0)",
                 main: "var(--clr-bg-150)",
@@ -100,6 +101,11 @@ class RemoveLogo extends VideoEditor {
             this.imageType = IMAGE_TYPE_ORIGINAL;
         }
         this.updateFrameUrl();
+    }
+
+    setTimestamp(value) {
+        this.current = new VTime(value).milliseconds;
+        this.updateImages();
     }
 
     get baseThumbUrl() {

@@ -39,7 +39,7 @@ class RemovelogoController extends Controller
     {
         try {
             return ResponseFacade::stream(function () use ($path, $request) {
-                echo Image::getLogoMaskData('recordings', $path, $request->input('timestamp'), $request->input('width'), $request->input('height'));
+                echo Image::getLogoMaskData('recordings', $path, $request->input('timestamp'), $request->input('width'), $request->input('height'), $request->input('current_filter'));
             }, 200, [
                 "Content-Type" => 'image/jpeg',
             ]);

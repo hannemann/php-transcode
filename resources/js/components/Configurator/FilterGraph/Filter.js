@@ -3,6 +3,7 @@ import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 import CARD_CSS from "../CardCss";
 import { requestCrop } from "../Tools/crop.js";
 import { requestDelogo } from "../Tools/delogo.js";
+import { requestRemovelogo } from "../Tools/removelogo.js";
 import { VTime } from "../../../Helper/Time.js";
 
 class Filter extends HTMLElement {
@@ -49,6 +50,15 @@ class Filter extends HTMLElement {
                     this.filterData,
                 );
                 break;
+            case "removeLogo":
+                console.log(this.filterData);
+                requestRemovelogo.call(
+                    this.configurator,
+                    "cpu",
+                    parseInt(this.dataset.id),
+                    this.filterData,
+                );
+                break;
         }
     }
 
@@ -69,6 +79,9 @@ class Filter extends HTMLElement {
         }
         if (this.filterData.filterType === "scale") {
             return `${this.filterData.width} x ${this.filterData.height}`;
+        }
+        if (this.filterData.filterType === "removeLogo") {
+            return `${this.filterData.timestamp}`;
         }
         if (this.filterData.filterType === "delogo") {
             let from = new VTime(this.filterData.between?.from * 1000);
@@ -159,6 +172,10 @@ Filter.template = html`
 
             &:has(img[src]) {
                 justify-content: space-between;
+
+                span:last-of-type {
+                    flex-grow: 1;
+                }
             }
 
             img[src] {

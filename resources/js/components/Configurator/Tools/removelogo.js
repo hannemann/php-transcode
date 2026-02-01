@@ -1,6 +1,6 @@
 import { TYPE_VIDEO } from "../Streams";
 
-export const requestRemovelogo = async function (type) {
+export const requestRemovelogo = async function (type, id = null, data = null) {
     try {
         const m = document.createElement("modal-window");
         m.canCancel = false;
@@ -13,7 +13,13 @@ export const requestRemovelogo = async function (type) {
         };
         d.path = this.item.path;
         d.type = type;
-        requestAnimationFrame(() => (d.markers = this.clips));
+        d.filterIndex = id;
+        requestAnimationFrame(() => {
+            d.markers = this.clips;
+            if (id !== null && data) {
+                d.setTimestamp(data.timestamp);
+            }
+        });
         m.appendChild(d);
         document.body.insertBefore(
             m,

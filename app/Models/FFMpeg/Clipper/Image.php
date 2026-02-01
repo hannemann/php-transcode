@@ -56,9 +56,9 @@ class Image
         return $fullName;
     }
 
-    public static function getLogoMaskData(string $disk, string $path, string $timestamp, int $width, int $height): string
+    public static function getLogoMaskData(string $disk, string $path, string $timestamp, int $width, int $height, ?int $currentFilter): string
     {
-        $filterGraph = (string)new FilterGraph($disk, $path);
+        $filterGraph = (string)new FilterGraph($disk, $path, $timestamp, $currentFilter);
         $args = static::getLogomaskArgs($disk, $path, $timestamp, $width, $height, $filterGraph);
         $args[] = 'pipe:1';
         return FFMpegDriver::create(null, Arr::dot(config('laravel-ffmpeg')))->command($args);
