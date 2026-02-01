@@ -38,7 +38,7 @@ class ComplexConcat
 
         $isHw = $format && $format instanceof h264_vaapi && $format->accelerationFramework;
 
-        $filters = collect([]);
+        $filters = collect(['null']);
         $filterGraph = (string)new FilterGraph($disk, $path);
         if ($filterGraph) {
             $filters->push($filterGraph);
