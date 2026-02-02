@@ -5,6 +5,8 @@ import { requestCrop } from "../Tools/crop.js";
 import { requestDelogo } from "../Tools/delogo.js";
 import { requestRemovelogo } from "../Tools/removelogo.js";
 import { VTime } from "../../../Helper/Time.js";
+import { saveCustomMask } from "../Dialogues/RemoveLogo/index.js";
+import Paint from "../../../Helper/Paint.js";
 
 class Filter extends HTMLElement {
     constructor() {
@@ -51,7 +53,6 @@ class Filter extends HTMLElement {
                 );
                 break;
             case "removeLogo":
-                console.log(this.filterData);
                 requestRemovelogo.call(
                     this.configurator,
                     "cpu",
@@ -135,6 +136,19 @@ class Filter extends HTMLElement {
         this.labelFilterType.innerText = `${this.dataset.id}. ${filterData.filterType}`;
         if (filterData.filterType === "removeLogo") {
             this.logoMaskImage.src = `/removelogo/${this.configurator.item.path}?${performance.now()}`;
+            this.logoMaskImage.addEventListener("click", () => {
+                Paint.init(
+                    async (image) => {
+                        await saveCustomMask(
+                            image,
+                            this.configurator.item.path,
+                        );
+                    },
+                    () => {
+                        this.logoMaskImage.src = `/removelogo/${this.configurator.item.path}?${performance.now()}`;
+                    },
+                ).show(this.logoMaskImage.src);
+            });
         } else {
             this.logoMaskImage.remove();
         }
@@ -180,6 +194,7 @@ Filter.template = html`
 
             img[src] {
                 max-height: 2rem;
+                cursor: pointer;
             }
 
             img:not([src]) {

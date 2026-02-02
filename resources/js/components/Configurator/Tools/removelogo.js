@@ -45,7 +45,8 @@ export const requestRemovelogo = async function (type, id = null, data = null) {
         if (idx > -1) {
             const m = document.createElement("modal-confirm");
             m.header = "Replace existing filter?";
-            m.content = "RemoveLogo filter can only be applied once.";
+            m.content =
+                "RemoveLogo filter can only be applied once. Note that custom masks wont be overwritten when replaced.";
             document.body.appendChild(m);
             try {
                 await m.confirm();
