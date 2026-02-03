@@ -98,4 +98,20 @@ class RemovelogoController extends Controller
 
         return response()->file($imagePath);
     }
+
+    public function deleteMasks(string $path) {
+        try {
+            RemovelogoCPU::deleteMasks($path);
+            $status = 200;
+            $message = 'Masks deleted';
+        } catch (\Exception $e) {
+            $status = 500;
+            $message = sprintf($e->getMessage());
+        } finally {
+            return response()->json([
+                'status' => $status,
+                'message' => $message
+            ], $status);
+        }
+    }
 }

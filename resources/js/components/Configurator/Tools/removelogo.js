@@ -1,6 +1,25 @@
 import { TYPE_VIDEO } from "../Streams";
 
 export const requestRemovelogo = async function (type, id = null, data = null) {
+    const currentIdx = this.filterGraph.findIndex(
+        (f) => f.filterType === "removeLogo",
+    );
+    if (currentIdx > -1) {
+        const m = document.createElement("modal-confirm");
+        m.header = "Replace existing filter?";
+        m.content = "RemoveLogo filter can only be applied once.";
+        document.body.appendChild(m);
+        try {
+            await m.confirm();
+            this.filterGraph[currentIdx] = { filterType: null };
+            await this.saveSettings();
+            console.log("Replace removeLogo filter confirmed");
+        } catch (error) {
+            console.log("Replace removeLogo filter canceled");
+            return;
+        }
+    }
+
     try {
         const m = document.createElement("modal-window");
         m.canCancel = false;
@@ -39,23 +58,8 @@ export const requestRemovelogo = async function (type, id = null, data = null) {
             ...this.removeLogo,
             ...{ filterType: "removeLogo" },
         };
-        const idx = this.filterGraph.findIndex(
-            (f) => f.filterType === "removeLogo",
-        );
-        if (idx > -1) {
-            const m = document.createElement("modal-confirm");
-            m.header = "Replace existing filter?";
-            m.content =
-                "RemoveLogo filter can only be applied once. Note that custom masks wont be overwritten when replaced.";
-            document.body.appendChild(m);
-            try {
-                await m.confirm();
-                this.filterGraph[idx] = filterData;
-                console.log("Replace removeLogo filter confirmed");
-            } catch (error) {
-                console.log("Replace removeLogo filter canceled");
-                return;
-            }
+        if (currentIdx > -1) {
+            this.filterGraph[currentIdx] = filterData;
         } else {
             this.filterGraph.push(filterData);
         }

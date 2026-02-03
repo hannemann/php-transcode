@@ -73,6 +73,7 @@ Route::post('/removelogoCustomMask/{path}', [RemovelogoController::class, 'saveC
 Route::post('/removelogo/{path}', [RemovelogoController::class, 'removelogo'])->where('path', '(.*)');
 Route::get('/removelogo/{path}', [RemovelogoController::class, 'logomask'])->where('path', '(.*)');
 Route::get('/removelogoImage/{path}', [RemovelogoController::class, 'image'])->where('path', '(.*)');
+Route::delete('/removelogoImage/{path}', [RemovelogoController::class, 'deleteMasks'])->where('path', '(.*)');
 Route::post('/kill', fn () => KillFFMpeg::execute());
 Route::get('/image/{path}', [ClipperController::class, 'image'])->where('path', '(.*)');
 Route::get('/stream-playlist/{path}.m3u8', [PlayerController::class, 'playlist'])->where('path', '(.*)');
