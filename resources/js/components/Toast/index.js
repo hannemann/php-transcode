@@ -1,23 +1,29 @@
-import { DomHelper } from '../../Helper/Dom'
-import Iconify from '@iconify/iconify'
+import { DomHelper } from "../../Helper/Dom";
+import Iconify from "@iconify/iconify";
 
-const STATES = ['success', 'info', 'warning', 'error']
-const DEFAULT_STATE = 'info'
+const STATE_SUCCESS = "success";
+const STATE_INFO = "info";
+const STATE_WARNING = "warning";
+const STATE_ERROR = "error";
+const STATES = [STATE_SUCCESS, STATE_INFO, STATE_WARNING, STATE_ERROR];
+const DEFAULT_STATE = "info";
+const AUTO_CONFIRM = [STATE_SUCCESS, STATE_INFO];
+const AUTO_CONFIRM_TIMEOUT = 15;
 
 class Toast extends HTMLElement {
-
     constructor() {
-        super()
-        this.items = []
-        document.addEventListener('toast', this.show.bind(this))
+        super();
+        this.items = [];
+        document.addEventListener("toast", this.show.bind(this));
     }
 
     connectedCallback() {
-
         const importNode = DomHelper.fromTemplate.call(this);
-        this.main = importNode.querySelector('main');
-        
-        const itemTemplate = importNode.querySelector('template[data-type="item"]');
+        this.main = importNode.querySelector("main");
+
+        const itemTemplate = importNode.querySelector(
+            'template[data-type="item"]',
+        );
         this.itemTemplate = itemTemplate.content;
         itemTemplate.remove();
 
@@ -25,60 +31,83 @@ class Toast extends HTMLElement {
     }
 
     show(e) {
-        e.detail.type = STATES.indexOf(e.detail.type) > -1 ? e.detail.type : DEFAULT_STATE
-        e.detail.id = `${performance.now()}-${this.items.length}`
-        this.items.unshift(e.detail)
+        e.detail.type =
+            STATES.indexOf(e.detail.type) > -1 ? e.detail.type : DEFAULT_STATE;
+        e.detail.id = `${performance.now()}-${this.items.length}`;
+        this.items.unshift(e.detail);
         this.renderItems();
-        this.animateIn()
+        this.animateIn();
     }
 
     renderItems() {
-        this.main.replaceChildren();
-        this.items.forEach(item => {
-            const node = document.importNode(this.itemTemplate, true).querySelector('div');
+        const nodes = this.items.map((item) => {
+            const node = document
+                .importNode(this.itemTemplate, true)
+                .querySelector("div");
+            item.boundListener = this.hide.bind(this, item);
             node.classList.add(item.type);
-            node.addEventListener('click', this.hide.bind(this, item), {once: true});
-            node.querySelector('section').append(document.createTextNode(item.message));
-            this.main.append(node);
+            item.node?.removeEventListener("click", item.boundListener);
+            node.addEventListener("click", item.boundListener, { once: true });
+            node.querySelector("section").append(
+                document.createTextNode(item.message),
+            );
+            item.node = node;
+            if (AUTO_CONFIRM.includes(item.type)) {
+                setTimeout(() => this.hide(item), AUTO_CONFIRM_TIMEOUT * 1000);
+            }
+            return node;
         });
-        requestAnimationFrame(() => Iconify.scan(this.shadowRoot))
+        this.main.replaceChildren(...nodes);
+        requestAnimationFrame(() => {
+            Iconify.scan(this.shadowRoot);
+        });
     }
 
     animateIn() {
-        let node = this.shadowRoot.querySelector('main > div')
-        this.items[0].height = node.offsetHeight
+        const node = this.shadowRoot.querySelector("main > div");
+        const item = this.items[0];
+        item.height = node.offsetHeight;
         requestAnimationFrame(() => {
-            node.dataset.transitionIn = 'before'
+            node.dataset.transitionIn = "before";
             requestAnimationFrame(() => {
-                node.style.height = `${this.items[0].height}px`
-                node.dataset.transition = 'in'
-                node.addEventListener('transitionend', () => {
-                    delete node.dataset.transition
-                    node.style.height = ''
-                }, {once: true})
-                requestAnimationFrame(() => delete node.dataset.transitionIn)
-            })
-        })
+                node.style.height = `${this.items[0].height}px`;
+                node.dataset.transition = "in";
+                node.addEventListener(
+                    "transitionend",
+                    () => {
+                        delete node.dataset.transition;
+                        node.style.height = "";
+                    },
+                    { once: true },
+                );
+                requestAnimationFrame(() => delete node.dataset.transitionIn);
+            });
+        });
     }
 
     hide(item) {
-        let idx = this.items.findIndex(i => item.id === i.id)
+        let idx = this.items.findIndex((i) => item.id === i.id);
         if (idx > -1) {
-            let node = this.shadowRoot.querySelectorAll('main > div')[idx];
-            node.style.height = `${item.height}px`
+            let node = this.shadowRoot.querySelectorAll("main > div")[idx];
+            node.style.height = `${item.height}px`;
+            node.removeEventListener("click", item.boundListener);
             requestAnimationFrame(() => {
-                node.dataset.transition = 'out'
+                node.dataset.transition = "out";
                 requestAnimationFrame(() => {
-                    node.addEventListener('transitionend', () => {
-                        this.items.splice(idx, 1)
-                        node.style.height = ''
-                        delete node.dataset.transition
-                        delete node.dataset.transitionOut
-                        this.renderItems();
-                    }, {once: true})
-                    node.dataset.transitionOut = 'before'
-                })
-            })
+                    node.addEventListener(
+                        "transitionend",
+                        () => {
+                            this.items.splice(idx, 1);
+                            node.style.height = "";
+                            delete node.dataset.transition;
+                            delete node.dataset.transitionOut;
+                            this.renderItems();
+                        },
+                        { once: true },
+                    );
+                    node.dataset.transitionOut = "before";
+                });
+            });
         }
     }
 }
@@ -173,4 +202,19 @@ svg[data-icon="mdi-close"] {
 </main>
 `;
 
-customElements.define('transcoder-toast', Toast);
+customElements.define("transcoder-toast", Toast);
+
+// uncomment to test toasts
+
+// let i = 0;
+// const interval = setInterval(() => {
+//     const state = ["info", "success", "warning", "error"][
+//         Math.floor(Math.random() * (4 - 1 + 1) + 1)
+//     ];
+//     document.dispatchEvent(
+//         new CustomEvent("toast", {
+//             detail: { message: performance.now(), type: state },
+//         }),
+//     );
+//     if (++i > 20) clearInterval(interval);
+// }, 1000);

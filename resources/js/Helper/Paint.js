@@ -42,7 +42,6 @@ export default class Paint {
             defaultTool: "brush",
             language: "de",
             onClose: async () => {
-                console.log(arguments);
                 if ("function" === typeof closeHandler) {
                     await closeHandler();
                 }
