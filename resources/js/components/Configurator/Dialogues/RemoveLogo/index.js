@@ -2,11 +2,38 @@ import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
 import Paint from "../../../../Helper/Paint";
 import { Request } from "../../../Request";
 import { VTime } from "../../../../Helper/Time";
+import { STATE_INFO } from "../../../Toast";
 
 const IMAGE_TYPE_ORIGINAL = "Original";
 const IMAGE_TYPE_MASK = "Mask";
 
 export const saveCustomMask = async function (image, path) {
+    const canvas = document.querySelector("#painterro-paintarea canvas");
+    const ctx = canvas.getContext("2d");
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const pixelArray = imageData.data;
+    const totalPixels = pixelArray.length / 4;
+
+    let nonBlackPixels = 0;
+    for (let i = 0; i < pixelArray.length; i += 4) {
+        const r = pixelArray[i];
+        const g = pixelArray[i + 1];
+        const b = pixelArray[i + 2];
+        const a = pixelArray[i + 3];
+
+        if (!(r === 0 && g === 0 && b === 0 && a > 0)) {
+            nonBlackPixels++;
+        }
+    }
+    const nonBlackPercent = Math.round((nonBlackPixels / totalPixels) * 100);
+    if (nonBlackPercent > 10) {
+        const m = document.createElement("modal-confirm");
+        m.header = "Too much white";
+        m.content = `FFMpeg will have a really hard time masking ${nonBlackPercent}% of the video. Proceed?`;
+        document.body.appendChild(m);
+        await m.confirm();
+    }
+
     const data = {
         image: image.asDataURL("image/jpeg"),
     };
@@ -19,7 +46,7 @@ export const saveCustomMask = async function (image, path) {
         new CustomEvent("toast", {
             detail: {
                 message: response.message,
-                type: "info",
+                type: STATE_INFO,
             },
         }),
     );

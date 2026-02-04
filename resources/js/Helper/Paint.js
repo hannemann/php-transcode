@@ -55,12 +55,14 @@ export default class Paint {
     }
 
     static async save(saveHandler, image, callback) {
+        let success = true;
         try {
             await saveHandler(image);
         } catch (error) {
+            success = false;
         } finally {
-            callback(true);
-            Paint.Painterro.close();
+            callback(success);
+            success && Paint.Painterro.close();
         }
     }
 }

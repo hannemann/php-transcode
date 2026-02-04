@@ -1,10 +1,10 @@
 import { DomHelper } from "../../Helper/Dom";
 import Iconify from "@iconify/iconify";
 
-const STATE_SUCCESS = "success";
-const STATE_INFO = "info";
-const STATE_WARNING = "warning";
-const STATE_ERROR = "error";
+export const STATE_SUCCESS = "success";
+export const STATE_INFO = "info";
+export const STATE_WARNING = "warning";
+export const STATE_ERROR = "error";
 const STATES = [STATE_SUCCESS, STATE_INFO, STATE_WARNING, STATE_ERROR];
 const DEFAULT_STATE = "info";
 const AUTO_CONFIRM = [STATE_SUCCESS, STATE_INFO];

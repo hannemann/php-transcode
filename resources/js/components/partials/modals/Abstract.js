@@ -165,6 +165,7 @@ const MODAL_BASE_CSS = html`<style>
         justify-content: center;
         align-items: center;
         opacity: 0;
+        z-index: 10;
     }
     :host(.fade-in) {
         opacity: 1;
