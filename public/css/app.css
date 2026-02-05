@@ -18,54 +18,85 @@
     --window-border: none;
 }
 :root {
-
     --clr-base-hue: 250;
     --clr-base-sat: 40%;
     --clr-base-lit: 10%;
     --clr-base-alpha: 1;
 
-    --clr-bg-0: hsl(var(--clr-base-hue) var(--clr-base-sat) var(--clr-base-lit));
-    --clr-bg-0-translucent: hsla(var(--clr-base-hue) var(--clr-base-sat) var(--clr-base-lit) / .4);
-    --clr-bg-100: hsl(var(--clr-base-hue) var(--clr-base-sat) calc(var(--clr-base-lit) + 10%));
-    --clr-bg-140: hsl(var(--clr-base-hue) calc(var(--clr-base-sat) - 5%) calc(var(--clr-base-lit) + 15%));
-    --clr-bg-150: hsl(var(--clr-base-hue) calc(var(--clr-base-sat) - 5%) calc(var(--clr-base-lit) + 16%));
-    --clr-bg-200: hsl(var(--clr-base-hue) calc(var(--clr-base-sat) - 10%) calc(var(--clr-base-lit) + 20%));
-    --clr-bg-300: hsl(var(--clr-base-hue) calc(var(--clr-base-sat) - 10%) calc(var(--clr-base-lit) + 30%));
-    --clr-bg-400: hsl(var(--clr-base-hue) calc(var(--clr-base-sat) - 10%) calc(var(--clr-base-lit) + 40%));
-    --clr-bg-500: hsl(var(--clr-base-hue) calc(var(--clr-base-sat) - 10%) calc(var(--clr-base-lit) + 50%));
+    --clr-bg-0: hsl(
+        var(--clr-base-hue) var(--clr-base-sat) var(--clr-base-lit)
+    );
+    --clr-bg-0-translucent: hsla(
+        var(--clr-base-hue) var(--clr-base-sat) var(--clr-base-lit) / 0.4
+    );
+    --clr-bg-100: hsl(
+        var(--clr-base-hue) var(--clr-base-sat) calc(var(--clr-base-lit) + 10%)
+    );
+    --clr-bg-140: hsl(
+        var(--clr-base-hue) calc(var(--clr-base-sat) - 5%)
+            calc(var(--clr-base-lit) + 15%)
+    );
+    --clr-bg-150: hsl(
+        var(--clr-base-hue) calc(var(--clr-base-sat) - 5%)
+            calc(var(--clr-base-lit) + 16%)
+    );
+    --clr-bg-200: hsl(
+        var(--clr-base-hue) calc(var(--clr-base-sat) - 10%)
+            calc(var(--clr-base-lit) + 20%)
+    );
+    --clr-bg-300: hsl(
+        var(--clr-base-hue) calc(var(--clr-base-sat) - 10%)
+            calc(var(--clr-base-lit) + 30%)
+    );
+    --clr-bg-400: hsl(
+        var(--clr-base-hue) calc(var(--clr-base-sat) - 10%)
+            calc(var(--clr-base-lit) + 40%)
+    );
+    --clr-bg-500: hsl(
+        var(--clr-base-hue) calc(var(--clr-base-sat) - 10%)
+            calc(var(--clr-base-lit) + 50%)
+    );
 
-    --clr-text-0: hsl(var(--clr-base-hue) calc(var(--clr-base-sat) - 30%) calc(var(--clr-base-lit) + 60%));
-    --clr-text-100: hsl(var(--clr-base-hue) calc(var(--clr-base-sat) - 10%) calc(var(--clr-base-lit) + 60%));
-    --clr-text-disabled: hsla(var(--clr-base-hue) calc(var(--clr-base-sat) - 30%) calc(var(--clr-base-lit) + 60%) / .5);
+    --clr-text-0: hsl(
+        var(--clr-base-hue) calc(var(--clr-base-sat) - 30%)
+            calc(var(--clr-base-lit) + 60%)
+    );
+    --clr-text-100: hsl(
+        var(--clr-base-hue) calc(var(--clr-base-sat) - 10%)
+            calc(var(--clr-base-lit) + 60%)
+    );
+    --clr-text-disabled: hsla(
+        var(--clr-base-hue) calc(var(--clr-base-sat) - 30%)
+            calc(var(--clr-base-lit) + 60%) / 0.5
+    );
+    --clr-text-success: hsl(
+        var(--hue-success) calc(var(--clr-base-sat) + 40%)
+            calc(var(--clr-base-lit) + 60%)
+    );
+    --clr-text-error: hsl(
+        var(--hue-error) calc(var(--clr-base-sat) + 40%)
+            calc(var(--clr-base-lit) + 60%)
+    );
 
     --clr-text-200-inverse: var(--clr-bg-0);
 
     --clr-shadow-0: hsla(
-        calc(var(--clr-base-hue) - 50)
-        calc(var(--clr-base-sat) + 25%)
-        calc(var(--clr-base-lit) + 20%) /
-        calc(var(--clr-base-alpha) - .25)
+        calc(var(--clr-base-hue) - 50) calc(var(--clr-base-sat) + 25%)
+            calc(var(--clr-base-lit) + 20%) / calc(var(--clr-base-alpha) - 0.25)
     );
 
     --clr-enlightened: hsla(
-        calc(var(--clr-base-hue) - 60)
-        calc(var(--clr-base-sat) + 60%)
-        calc(var(--clr-base-lit) + 70%) / 
-        var(--clr-base-alpha)
+        calc(var(--clr-base-hue) - 60) calc(var(--clr-base-sat) + 60%)
+            calc(var(--clr-base-lit) + 70%) / var(--clr-base-alpha)
     );
 
     --clr-disabled: hsla(
-        0
-        0
-        calc(var(--clr-base-lit) + 30%) / 
-        var(--clr-base-alpha)
+        0 0 calc(var(--clr-base-lit) + 30%) / var(--clr-base-alpha)
     );
 
     --clr-enlightened-glow: hsla(
-        calc(var(--clr-base-hue) - 60)
-        calc(var(--clr-base-sat) + 60%)
-        calc(var(--clr-base-lit) + 50%) / 
-        var(--clr-base-alpha)
+        calc(var(--clr-base-hue) - 60) calc(var(--clr-base-sat) + 60%)
+            calc(var(--clr-base-lit) + 50%) / var(--clr-base-alpha)
     );
 
     --hue-success: 135;
@@ -77,8 +108,8 @@
     --hue-alert: 0;
 
     --clr-cropper-gradient: green;
-
 }
+
 :root {
     --font-size-50: clamp(14px, 1.5vw, 18px);
     --font-size-100: clamp(14px, 2vw, 20px);

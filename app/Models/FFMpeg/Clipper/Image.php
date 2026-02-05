@@ -140,11 +140,21 @@ class Image
             '-pix_fmt', 'gray',
             '-'
         ];        
+        
         $data = FFMpegDriver::create(null, Arr::dot(config('laravel-ffmpeg')))->command($args);
-        $stats = count_chars($data, 1);
-        $blackBytes = $stats[0] ?? 0;
         $totalBytes = strlen($data);
+        
+        if ($totalBytes === 0) return 0;
 
+        $stats = count_chars($data, 1);
+        
+        // Wir summieren alle Pixel, die "schwarz genug" sind (0 bis 10)
+        $blackBytes = 0;
+        for ($i = 0; $i <= 10; $i++) {
+            $blackBytes += $stats[$i] ?? 0;
+        }
+
+        // Alles was übrig bleibt, ist "echtes" Weiß/Grau (Last für FFmpeg)
         $percentage = (($totalBytes - $blackBytes) / $totalBytes) * 100;
 
         return $percentage;
