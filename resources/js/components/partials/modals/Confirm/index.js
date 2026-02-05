@@ -22,7 +22,6 @@ import {
     }
  */
 class Confirm extends AbstractModal {
-
     confirm() {
         return this.promise;
     }
@@ -34,6 +33,11 @@ class Confirm extends AbstractModal {
 
 Confirm.template = /*html*/ `
 ${MODAL_BASE_CSS}
+<style>
+    :host {
+        z-index: 100;
+    }
+</style>
 ${MODAL_TEMPLATE_BEGIN}
 ${MODAL_TEMPLATE_END}
 `;

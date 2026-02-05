@@ -22,7 +22,6 @@ import {
     }
  */
 class Alert extends AbstractModal {
-
     static cancelable = false;
 
     alert() {
@@ -32,6 +31,11 @@ class Alert extends AbstractModal {
 
 Alert.template = /*html*/ `
 ${MODAL_BASE_CSS}
+<style>
+    :host {
+        z-index: 100;
+    }
+</style>
 ${MODAL_TEMPLATE_BEGIN}
     <slot></slot>
 ${MODAL_TEMPLATE_END}
