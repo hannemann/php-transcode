@@ -41,7 +41,7 @@ class RemovelogoController extends Controller
             return ResponseFacade::stream(function () use ($path, $request) {
                 echo Image::getLogoMaskData('recordings', $path, $request->input('timestamp'), $request->input('width'), $request->input('height'), $request->input('current_filter'));
             }, 200, [
-                "Content-Type" => 'image/jpeg',
+                "Content-Type" => 'image/png',
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -55,7 +55,7 @@ class RemovelogoController extends Controller
     public function saveCustomMask(RemoveLogoCustomMaskUploadRequest $request, string $path): JsonResponse
     {
         try {
-            $imageName = 'logomask.jpg';
+            $imageName = 'logomask.png';
 
             $imageBase64 = $request->input('image');
             $imageBase64 = preg_replace('/^data:[^,]*,/', '', $imageBase64);
@@ -87,14 +87,15 @@ class RemovelogoController extends Controller
                 config('filesystems.disks.recordings.root'),
                 $customMask
             );
-            return response()->file($imagePath);
+        } else {
+            $filterGraph = new FilterGraph('recordings', $path);
+            $timestamp = $filterGraph->getSettings()->firstWhere('filterType', 'removeLogo')['timestamp'];
+            // force filterGraph execution
+            (string)$filterGraph;
+            $imagePath = Image::getLogoMaskFullname('recordings', $path, $timestamp);
         }
 
-        $filterGraph = new FilterGraph('recordings', $path);
-        $timestamp = $filterGraph->getSettings()->firstWhere('filterType', 'removeLogo')['timestamp'];
-        // force filterGraph execution
-        (string)$filterGraph;
-        $imagePath = Image::getLogoMaskFullname('recordings', $path, $timestamp);
+        $nonBlack = round(Image::getNonBlackPercentage($imagePath));
 
         return response()->file($imagePath);
     }

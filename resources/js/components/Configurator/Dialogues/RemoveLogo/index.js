@@ -35,7 +35,7 @@ export const saveCustomMask = async function (image, path) {
     }
 
     const data = {
-        image: image.asDataURL("image/jpeg"),
+        image: image.asDataURL("image/png"),
     };
     const result = await Request.post(
         `/removelogoCustomMask/${encodeURIComponent(path)}`,

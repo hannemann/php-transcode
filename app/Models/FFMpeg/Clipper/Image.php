@@ -84,7 +84,7 @@ class Image
             dirname($path),
             DIRECTORY_SEPARATOR,
             sha1($path . $timestamp),
-            '.logomask.jpg'
+            '.logomask.png'
         );
     }
 
@@ -130,5 +130,23 @@ class Image
             config('filesystems.disks.' . $disk . '.root'),
             $path
         );
+    }
+
+    public static function getNonBlackPercentage($path) {
+        $args = [
+            '-i', $path,
+            '-vf', 'format=pix_fmts=rgb24,format=gray',
+            '-f', 'rawvideo',
+            '-pix_fmt', 'gray',
+            '-'
+        ];        
+        $data = FFMpegDriver::create(null, Arr::dot(config('laravel-ffmpeg')))->command($args);
+        $stats = count_chars($data, 1);
+        $blackBytes = $stats[0] ?? 0;
+        $totalBytes = strlen($data);
+
+        $percentage = (($totalBytes - $blackBytes) / $totalBytes) * 100;
+
+        return $percentage;
     }
 }

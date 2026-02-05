@@ -100,7 +100,7 @@ Class RemovelogoCPU extends Crop
             '%s%s%s',
             dirname($path),
             DIRECTORY_SEPARATOR,
-            'logomask.jpg'
+            'logomask.png'
         );   
     }
 
@@ -117,7 +117,7 @@ Class RemovelogoCPU extends Crop
             [
                 config('filesystems.disks.recordings.root'),
                 dirname($path),
-                '*logomask.jpg'
+                '*logomask.png'
             ]
         );
         FileFacade::delete(FileFacade::glob($glob));

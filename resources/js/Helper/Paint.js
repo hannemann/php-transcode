@@ -35,12 +35,14 @@ export default class Paint {
         Paint.Painterro = Painterro({
             id: ID,
             colorScheme: COLOR_SCHEME,
+            backgroundFillColor: "#000000",
             activeColor: "#000000",
             activeFillColor: "#000000",
             availableLineWidths: [20, 50, 100, 150],
             defaultLineWidth: 150,
             defaultTool: "brush",
             language: "de",
+            imageFormat: "png",
             onClose: async () => {
                 if ("function" === typeof closeHandler) {
                     await closeHandler();
