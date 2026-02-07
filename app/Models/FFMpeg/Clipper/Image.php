@@ -15,7 +15,7 @@ class Image
     /**
      * create image from timestamp
      */
-    public static function getImageData(string $disk, string $path, string $timestamp, ?int $width = null, ?int $height = null, bool $filtered, ?int $currentFilter, string $out = 'pipe:1')
+    public static function getImageData(string $disk, string $path, string $timestamp, ?int $width = null, ?int $height = null, ?bool $filtered = false, ?int $currentFilter = null, string $out = 'pipe:1')
     {
         $file = static::getInputFilename($disk, $path);
         $args = [
