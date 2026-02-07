@@ -7,6 +7,8 @@ use Illuminate\Support\Arr;
 use App\Models\FFMpeg\Filters\Video\FilterGraph;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Collection;
+use App\Exceptions\VideoEditor\InvalidMaskCoverageException;
+use App\Models\FFMpeg\Actions\RemovelogoCPU;
 
 class Image
 {
@@ -75,6 +77,54 @@ class Image
             FFMpegDriver::create(null, Arr::dot(config('laravel-ffmpeg')))->command($args);
         }
         return $fullName;
+    }
+
+    public static function createLogoMaskFromDataURL(string $path, string $imageBase64): void
+    {
+        $imageName = 'logomask.png';
+        
+        $base64Data = preg_replace('/^data:[^,]*,/', '', $imageBase64);
+        $decodedData = base64_decode($base64Data);
+        if (!$decodedData) {
+            throw new \Exception("Invalid base64 data");
+        }
+
+        $image = imagecreatefromstring($decodedData);
+        if (!$image) {
+            throw new \Exception("Could not create image from string");
+        }
+
+        imagealphablending($image, false);
+        imagesavealpha($image, true);
+
+        ob_start();
+        imagepng($image, null, -1);
+        $imageData = ob_get_clean();
+        imagedestroy($image);
+
+        $targetPath = dirname($path) . DIRECTORY_SEPARATOR . $imageName;
+        Storage::disk('recordings')->put($targetPath, $imageData);
+    }
+
+    public static function getLogoMaskFullnameByPath(string $path): ?string {
+
+        $customMask = RemovelogoCPU::getCustomMaskPath($path);
+
+        if (RemovelogoCPU::hasCustomMask($customMask)) {
+            return sprintf(
+                '%s/%s',
+                config('filesystems.disks.recordings.root'),
+                $customMask
+            );
+        } else {
+            $filterGraph = new FilterGraph('recordings', $path);
+            $removeLogo = $filterGraph->getSettings()->firstWhere('filterType', 'removeLogo');
+            if (!$removeLogo) return null;
+            $timestamp = $removeLogo['timestamp'];
+            // force filterGraph execution
+            (string)$filterGraph;
+            return self::getLogoMaskFullname('recordings', $path, $timestamp);
+        }
     }
 
     public static function getLogoMaskFilename(string $path, string $timestamp): string
@@ -156,6 +206,10 @@ class Image
 
         // Alles was übrig bleibt, ist "echtes" Weiß/Grau (Last für FFmpeg)
         $percentage = (($totalBytes - $blackBytes) / $totalBytes) * 100;
+
+        if ($percentage > 10) {
+            throw new InvalidMaskCoverageException($percentage);
+        }
 
         return $percentage;
     }

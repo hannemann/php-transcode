@@ -2,6 +2,8 @@ import { TYPE_VIDEO } from "../Streams";
 
 export const requestDelogo = async function (type, id = null, data = null) {
     try {
+        const clips = this.clips; // for some reaseon we have to cache clips before saving
+        await this.saveSettings();
         const m = document.createElement("modal-window");
         m.header = "Delogo";
         m.classList.add("no-shadow");
@@ -14,7 +16,7 @@ export const requestDelogo = async function (type, id = null, data = null) {
         d.type = type;
         d.filterIndex = id;
         d.configurator = this;
-        requestAnimationFrame(() => (d.markers = this.clips));
+        requestAnimationFrame(() => (d.markers = clips));
         m.appendChild(d);
         d.addEventListener(
             "delogo-updated",

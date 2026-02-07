@@ -1,6 +1,8 @@
 import { TYPE_VIDEO } from "../Streams";
 
 export const clipper = async function () {
+    const clips = this.clips; // for some reaseon we have to cache clips before saving
+    await this.saveSettings();
     if (this.format.format_name === "mpegts") {
         const m = document.createElement("modal-alert");
         m.appendChild(
@@ -16,7 +18,7 @@ export const clipper = async function () {
     m.header = "Clipper";
     m.classList.add("no-shadow");
     const d = document.createElement("dialogue-clipper");
-    d.setClips(this.clips.getTimestamps());
+    d.setClips(clips.getTimestamps());
     d.video = {
         ...this.streams.filter((s) => s.codec_type === TYPE_VIDEO)?.[0],
         duration: parseFloat(this.format.duration),

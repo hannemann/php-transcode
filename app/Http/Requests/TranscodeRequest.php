@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Rules\MaskCoverage;
 
 class TranscodeRequest extends FFMpegActionRequest
 {
@@ -39,5 +40,20 @@ class TranscodeRequest extends FFMpegActionRequest
             'clips.*.from'                          => ['nullable', 'regex:/^([0-9]+:)?[0-9]+:[0-9]+:[0-9]+\.[0-9]+$/'],
             'clips.*.id'                            => 'required|integer',
         ];
+    }
+    
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $rule = new MaskCoverage($this->route('path'), $this->input('filterGraph'));
+            
+            $rule->validate(
+                'mask', 
+                null,
+                function ($message) use ($validator) {
+                    $validator->errors()->add('mask', $message);
+                }
+            );
+        });
     }
 }
