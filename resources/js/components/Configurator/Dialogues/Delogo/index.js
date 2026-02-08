@@ -218,13 +218,14 @@ class DeLogo extends VideoEditor {
                         this.delogoBox.offsetLeft + delta,
                         this.image.offsetLeft +
                             this.image.width -
+                            1 -
                             this.delogoBox.offsetWidth,
                     )}px`;
                 }
                 if (e.key === "ArrowLeft") {
                     this.delogoBox.style.left = `${Math.max(
                         this.delogoBox.offsetLeft - delta,
-                        this.image.offsetLeft,
+                        this.image.offsetLeft + 1,
                     )}px`;
                 }
                 if (e.key === "ArrowDown") {
@@ -232,13 +233,14 @@ class DeLogo extends VideoEditor {
                         this.delogoBox.offsetTop + delta,
                         this.image.offsetTop +
                             this.image.height -
+                            1 -
                             this.delogoBox.offsetHeight,
                     )}px`;
                 }
                 if (e.key === "ArrowUp") {
                     this.delogoBox.style.top = `${Math.max(
                         this.delogoBox.offsetTop - delta,
-                        this.image.offsetTop,
+                        this.image.offsetTop + 1,
                     )}px`;
                 }
             } else {
@@ -248,6 +250,7 @@ class DeLogo extends VideoEditor {
                         this.delogoBox.offsetWidth + delta,
                         this.image.offsetLeft +
                             this.image.offsetWidth -
+                            1 -
                             this.delogoBox.offsetLeft,
                     )}px`;
                 }
@@ -262,6 +265,7 @@ class DeLogo extends VideoEditor {
                         this.delogoBox.offsetHeight + delta,
                         this.image.offsetTop +
                             this.image.offsetHeight -
+                            1 -
                             this.delogoBox.offsetTop,
                     )}px`;
                 }
