@@ -7,6 +7,7 @@ use Illuminate\Support\Collection;
 use App\Models\FFMpeg\Actions\CropCPU;
 use App\Models\FFMpeg\Actions\ScaleCPU;
 use App\Models\FFMpeg\Actions\DelogoCPU;
+use App\Models\FFMpeg\Actions\Fillborders;
 use App\Models\FFMpeg\Actions\RemovelogoCPU;
 
 class FilterGraph
@@ -16,6 +17,7 @@ class FilterGraph
     const FILTER_TYPE_CROP = 'crop';
     const FILTER_TYPE_DELOGO = 'delogo';
     const FILTER_TYPE_REMOVELOGO = 'removeLogo';
+    const FILTER_TYPE_FILLBORDERS = 'fillborders';
 
     private string $disk;
     private string $path;
@@ -65,6 +67,9 @@ class FilterGraph
                 case self::FILTER_TYPE_DELOGO:
                     $this->filters->push($this->getDelogoFilter($setting));
                     break;
+                case self::FILTER_TYPE_FILLBORDERS:
+                    $this->filters->push($this->getFillbordersFilter($setting));
+                    break;
                 case self::FILTER_TYPE_REMOVELOGO:
                     $this->filters->push($this->getRemoveLogoFilter($setting));
                     break;
@@ -101,6 +106,10 @@ class FilterGraph
     private function getDelogoFilter(array $settings): string
     {
         return DelogoCPU::getFilterString($settings, $this->timestamp);
+    }
+
+    private function getFillbordersFilter(array $settings): string {
+        return Fillborders::getFilterString($settings, $this->timestamp);
     }
 
     private function getRemoveLogoFilter(array $settings): string

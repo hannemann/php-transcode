@@ -12,6 +12,7 @@ import "./Dialogues/Clipper";
 import "./Dialogues/Cropper";
 import "./Dialogues/Delogo";
 import "./Dialogues/RemoveLogo";
+import "./Dialogues/Fillborders";
 import { toolProxy } from "./Tools";
 import { DomHelper } from "../../Helper/Dom";
 
@@ -222,6 +223,7 @@ class TranscodeConfigurator extends HTMLElement {
         this.crop = ws.crop ?? {};
         this.removeLogo = ws.removeLogo ?? {};
         this.delogo = ws.delogo ?? {};
+        this.fillborders = ws.fillborders ?? {};
         this.filterGraph = ws.filterGraph ?? [];
         this.chapters = ws.chapters ?? [];
         this.show();
@@ -619,6 +621,7 @@ ${CSS}
                 <option value="scale:cpu:instantOpen">Scale (CPU)</option>
                 <option value="delogo:cpu:instantOpen">DeLogo</option>
                 <option value="removelogo:cpu:instantOpen">RemoveLogo</option>
+                <option value="fillborders:cpu:instantOpen">Fillborders</option>
             </combo-button>
             <theme-button class="btn-clipper">
                 <span class="icon-stack" slot="icon">

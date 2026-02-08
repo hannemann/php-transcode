@@ -4,6 +4,7 @@ import CARD_CSS from "../CardCss";
 import { requestCrop } from "../Tools/crop.js";
 import { requestDelogo } from "../Tools/delogo.js";
 import { requestRemovelogo } from "../Tools/removelogo.js";
+import { requestFillborders } from "../Tools/fillborders.js";
 import { VTime } from "../../../Helper/Time.js";
 import { saveCustomMask } from "../Dialogues/RemoveLogo/index.js";
 import Paint from "../../../Helper/Paint.js";
@@ -54,6 +55,14 @@ class Filter extends HTMLElement {
                 break;
             case "removeLogo":
                 requestRemovelogo.call(
+                    this.configurator,
+                    "cpu",
+                    parseInt(this.dataset.id),
+                    this.filterData,
+                );
+                break;
+            case "fillborders":
+                requestFillborders.call(
                     this.configurator,
                     "cpu",
                     parseInt(this.dataset.id),

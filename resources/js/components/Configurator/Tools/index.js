@@ -7,11 +7,12 @@ import { requestDelogo } from "./delogo.js";
 import { requestRemovelogo } from "./removelogo.js";
 import { requestPlay } from "./player.js";
 import { requestDeinterlace } from "./deinterlace.js";
+import { requestFillborders } from "./fillborders.js";
 
 export const toolProxy = function (e) {
     const args = e.target.value.split(":");
-    if (e.type === "change" && args[2] !== 'instantOpen') return;
-    
+    if (e.type === "change" && args[2] !== "instantOpen") return;
+
     switch (args.shift()) {
         case "concat":
             requestConcat.apply(this, args);
@@ -39,6 +40,9 @@ export const toolProxy = function (e) {
             break;
         case "deinterlace":
             requestDeinterlace.apply(this, args);
+            break;
+        case "fillborders":
+            requestFillborders.apply(this, args);
             break;
     }
 };
