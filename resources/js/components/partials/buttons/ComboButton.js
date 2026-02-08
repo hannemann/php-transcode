@@ -1,9 +1,8 @@
 import { Iconify } from "@/components/lib";
-import COMBO_BUTTON_DROPDOWN_CSS from './ComboButton/DropdownCSS';
+import COMBO_BUTTON_DROPDOWN_CSS from "./ComboButton/DropdownCSS";
 import { DomHelper } from "../../../Helper/Dom";
 
 class ComboButton extends HTMLElement {
-
     connectedCallback() {
         this.initListeners().initDom().addListeners();
 
@@ -34,13 +33,15 @@ class ComboButton extends HTMLElement {
 
     initDom() {
         const importNode = DomHelper.fromTemplate.call(this);
-        this.button = importNode.querySelector('button');
-        this.dropdown = importNode.querySelector('.dropdown');
-        this.label = importNode.querySelector('.label');
+        this.button = importNode.querySelector("button");
+        this.dropdown = importNode.querySelector(".dropdown");
+        this.label = importNode.querySelector(".label");
         this.options = this.querySelectorAll("option");
         this.dummyOption = importNode.querySelector('[part="option"]');
-        this.dummyOptionHover = importNode.querySelector('[part="option-hover"]');
-        this.btnToggle = importNode.querySelector('.toggle');
+        this.dummyOptionHover = importNode.querySelector(
+            '[part="option-hover"]',
+        );
+        this.btnToggle = importNode.querySelector(".toggle");
         this.selectedIndex = this.options.length - 1;
         this.value = this.options[this.selectedIndex].value;
         this.label.innerText = this.options[this.selectedIndex].textContent;
@@ -50,18 +51,18 @@ class ComboButton extends HTMLElement {
     }
 
     addListeners() {
-        this.btnToggle.addEventListener('click', this.toggle);
+        this.btnToggle.addEventListener("click", this.toggle);
     }
 
     removeListeners() {
-        this.btnToggle.removeEventListener('click', this.toggle);
+        this.btnToggle.removeEventListener("click", this.toggle);
     }
 
     /**
      * @param {ClickEvent} e
      */
     toggle(e) {
-        const path = e.composedPath()
+        const path = e.composedPath();
         if (path.indexOf(this.wrapper) > -1 || path.indexOf(this) > -1) {
             e.stopPropagation();
         }
@@ -78,9 +79,11 @@ class ComboButton extends HTMLElement {
             delete this.noScroll;
             document.removeEventListener("click", this.toggle, { once: true });
         } else {
-            this.noScroll = document.body.appendChild(document.createElement('div'))
-            this.noScroll.style.position = 'fixed'
-            this.noScroll.style.inset = 0
+            this.noScroll = document.body.appendChild(
+                document.createElement("div"),
+            );
+            this.noScroll.style.position = "fixed";
+            this.noScroll.style.inset = 0;
             this.wrapper = document.createElement("div");
             this.options.forEach((o) => {
                 this.wrapper.appendChild(o.cloneNode(true));
@@ -102,13 +105,15 @@ class ComboButton extends HTMLElement {
         this.wrapper.style.minWidth = `calc(${
             dim.width
         }px - ${styles.getPropertyValue(
-            "border-left-width"
+            "border-left-width",
         )} - ${styles.getPropertyValue("border-right-width")})`;
         this.wrapper.style.display = "revert";
         const wrapperDim = this.wrapper.getBoundingClientRect();
         if (wrapperDim.bottom > window.innerHeight) {
             this.wrapper.style.top = `${
-                dim.top - wrapperDim.height + document.scrollingElement.scrollTop
+                dim.top -
+                wrapperDim.height +
+                document.scrollingElement.scrollTop
             }px`;
         }
         this.wrapper.style.transform = "translate(-100%)";
@@ -119,10 +124,17 @@ class ComboButton extends HTMLElement {
      */
     setValue(e) {
         this.value = e.target.value;
-        this.label.innerText = e.target.textContent;
-        this.selectedIndex = Array.from(this.options).indexOf(
-            e.explicitOriginalTarget
-        );
+    }
+
+    get value() {
+        return this.options[this.selectedIndex].value;
+    }
+
+    set value(value) {
+        const option = [...this.options].find((o) => o.value === value);
+        if (!option) return;
+        this.selectedIndex = [...this.options].findIndex((o) => o === option);
+        this.label.innerText = option.textContent;
         this.dispatchEvent(new CustomEvent("change"));
     }
 }
@@ -182,7 +194,6 @@ ComboButton.template = /*html*/ `
     <option part="option-hover" />
 </div>
 `;
-
 
 const dropDownStyle = document.createElement("style");
 dropDownStyle.appendChild(document.createTextNode(COMBO_BUTTON_DROPDOWN_CSS));

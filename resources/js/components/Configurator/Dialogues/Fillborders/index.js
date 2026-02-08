@@ -1,4 +1,5 @@
 import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
+import { COMBO_BUTTON_CSS } from "@/components/partials";
 
 class Fillborders extends VideoEditor {
     video = null;
@@ -256,14 +257,6 @@ class Fillborders extends VideoEditor {
         });
     }
 
-    get mirror() {
-        return this.inputMirror.checked;
-    }
-
-    set mirror(value) {
-        this.inputMirror.checked = !!value;
-    }
-
     get equal() {
         return this.inputEqual.checked;
     }
@@ -274,7 +267,7 @@ class Fillborders extends VideoEditor {
             right: this.width - this.fillbordersOffsetRight,
             bottom: this.height - this.fillbordersOffsetBottom,
             left: this.fillbordersOffsetLeft,
-            mode: this.inputMirror.checked ? "mirror" : "fixed",
+            mode: this.mode,
             between: {
                 from: this.from ?? null,
                 to: this.to ?? null,
@@ -309,10 +302,6 @@ class Fillborders extends VideoEditor {
 
     get info() {
         return this.shadowRoot.querySelector('[data-ref="info"]');
-    }
-
-    get inputMirror() {
-        return this.shadowRoot.querySelector('[data-ref="inputMirror"]');
     }
 
     get inputEqual() {
@@ -373,6 +362,23 @@ class Fillborders extends VideoEditor {
         this.setDimensions();
     }
 
+    get color() {
+        return this.shadowRoot.querySelector('[data-ref="color"]').value;
+    }
+
+    set color(value) {
+        return (this.shadowRoot.querySelector('[data-ref="color"]').value =
+            value);
+    }
+
+    get mode() {
+        return this.shadowRoot.querySelector('[data-ref="mode"]').value;
+    }
+
+    set mode(value) {
+        this.shadowRoot.querySelector('[data-ref="mode"]').value = value;
+    }
+
     setDimensions() {
         this.shadowRoot.querySelector('[data-type="top"]').innerText =
             this.fillbordersOffsetTop;
@@ -387,6 +393,7 @@ class Fillborders extends VideoEditor {
 }
 
 Fillborders.template = html`
+${COMBO_BUTTON_CSS}
 ${EDITOR_CSS}
 <style>
     .toggle-aspect {
@@ -497,12 +504,24 @@ ${EDITOR_TEMPLATE}
     <fieldset>
         <legend>Settings:</legend>
         <label>
-            <span>Mirror</span>
-            <input type="checkbox" name="mirror" data-ref="inputMirror">
-        </label>
-        <label>
             <span>Equal Borders</span>
             <input type="checkbox" name="equal" data-ref="inputEqual" checked="checked">
+        </label>
+        <label>
+            <span>Mode</span>
+            <combo-button data-ref="mode">
+                <option value="smear">Smear</option>
+                <option value="reflect">Reflect</option>
+                <option value="wrap">Wrap</option>
+                <option value="margins">Margins</option>
+                <option value="fade">fade</option>
+                <option value="mirror">Mirror</option>
+                <option value="fixed">Fixed</option>
+            </combo-button>
+        </label>
+        <label>
+            <span>Color</span>
+            <input type="color" data-ref="color" value="#000000">
         </label>
     </fieldset>
 </div>

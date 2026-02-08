@@ -4,22 +4,9 @@ namespace App\Models\FFMpeg\Actions;
 
 use FFMpeg\Format\Video\X264 as Format;
 use FFMpeg\Coordinate\TimeCode;
-use App\Models\Video\File;
-use App\Models\FFMpeg\Actions\Helper\OutputMapper;
-use App\Models\FFMpeg\Actions\Helper\Libx264Options;
-use App\Jobs\ProcessVideo;
 
-Class Fillborders extends AbstractAction
+class Fillborders extends AbstractAction
 {
-
-    private int $top = 0;
-    private int $right = 0;
-    private int $bottom = 0;
-    private int $left = 0;
-
-    private string $mode = 'smear';
-    private string $color = 'black';
-
     const VALID_MODES = [
         'smear',
         'mirror',
