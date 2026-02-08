@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+CWD=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+${CWD}/../../vendor/bin/sail exec php-transcode php "$@"

@@ -41,14 +41,14 @@ class TranscodeRequest extends FFMpegActionRequest
             'clips.*.id'                            => 'required|integer',
         ];
     }
-    
+
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
             $rule = new MaskCoverage($this->route('path'), $this->input('filterGraph'));
-            
+
             $rule->validate(
-                'mask', 
+                'mask',
                 null,
                 function ($message) use ($validator) {
                     $validator->errors()->add('mask', $message);

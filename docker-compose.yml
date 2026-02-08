@@ -5,23 +5,24 @@ services:
             context: ./docker/8.3
             dockerfile: Dockerfile
             args:
-              WWWGROUP: '${WWWGROUP}'
+                WWWGROUP: "${WWWGROUP}"
         image: php-transcode/sail:8.3
         ports:
-            - '${APP_PORT:-8078}:80'
-            - '${REVERB_PORT:-8079}:${REVERB_PORT:-8079}'
+            - "${APP_PORT:-8078}:80"
+            - "${REVERB_PORT:-8079}:${REVERB_PORT:-8079}"
         environment:
-            WWWUSER: '${WWWUSER}'
-            GROUP_ID_RENDER: '${GROUP_ID_RENDER:-144}'
+            WWWUSER: "${WWWUSER}"
+            GROUP_ID_RENDER: "${GROUP_ID_RENDER:-144}"
             LARAVEL_SAIL: 1
-            XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
-            XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
-            REVERB_PORT: '${REVERB_PORT:-8079}'
+            XDEBUG_MODE: "${SAIL_XDEBUG_MODE:-off}"
+            XDEBUG_CONFIG: "${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}"
+            REVERB_PORT: "${REVERB_PORT:-8079}"
         volumes:
-            - '.:/var/www/html'
-            - './docker/8.3/php.ini:/etc/php/8.3/cli/conf.d/99-sail.ini'
-            - './docker/8.3/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf'
-            - '${MEDIA_PATH_HOST}:${MEDIA_PATH_CONTAINER}'
+            - ".:/var/www/html"
+            - "./docker/8.3/php.ini:/etc/php/8.3/cli/conf.d/99-sail.ini"
+            - "./docker/8.3/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf"
+            - "${MEDIA_PATH_HOST}:${MEDIA_PATH_CONTAINER}"
+            - "/tmp/php-cs-fixer:/tmp/php-cs-fixer"
         networks:
             - sail
         extra_hosts:
