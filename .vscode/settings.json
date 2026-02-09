@@ -1,4 +1,9 @@
 {
+    "editor.quickSuggestions": {
+        "other": true,
+        "comments": false,
+        "strings": true // Das ist wichtig für Autocomplete in Backticks!
+    },
     "intelephense.environment.phpVersion": "8.3.0",
 
     "php.validate.enable": false,

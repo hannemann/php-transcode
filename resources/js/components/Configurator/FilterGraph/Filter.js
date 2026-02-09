@@ -93,6 +93,34 @@ class Filter extends HTMLElement {
         if (this.filterData.filterType === "removeLogo") {
             return `${this.filterData.timestamp}`;
         }
+        if (this.filterData.filterType === "fillborders") {
+            let from = new VTime(this.filterData.between?.from * 1000);
+            let to = new VTime(this.filterData.between?.to * 1000);
+            const clips = this.configurator.clips;
+            const duration = new VTime(clips.totalDuration);
+            if (from.date) {
+                const ts = VTime.calcCut(clips.clips, from.milliseconds);
+                from = new VTime(ts);
+                if (from >= duration) {
+                    this.itemNode.classList.add("error");
+                    this.itemNode.dataset.fromError = "out-of-range";
+                }
+            }
+            if (to.date) {
+                to = new VTime(VTime.calcCut(clips.clips, to.milliseconds));
+                if (to >= duration) {
+                    this.itemNode.classList.add("error");
+                    this.itemNode.dataset.toError = "out-of-range";
+                }
+            }
+            return (
+                `${from.toString()} - ${to.toString()}` +
+                `T: ${this.filterData.top}, ` +
+                `R: ${this.filterData.right}, ` +
+                `B: ${this.filterData.bottom}, ` +
+                `L: ${this.filterData.left}`
+            );
+        }
         if (this.filterData.filterType === "delogo") {
             let from = new VTime(this.filterData.between?.from * 1000);
             let to = new VTime(this.filterData.between?.to * 1000);

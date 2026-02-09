@@ -9,6 +9,8 @@
         "usernamehw.errorlens",
         "ecmel.vscode-html-css",
         "redwan-hossain.auto-rename-tag-clone",
-        "ericc-ch.lit-html"
+        "ericc-ch.lit-html",
+        "vunguyentuan.vscode-css-variables",
+        "styled-components.vscode-styled-components"
     ]
 }

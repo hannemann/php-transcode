@@ -1,5 +1,8 @@
 import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
 import { COMBO_BUTTON_CSS } from "@/components/partials";
+import { VTime } from "../../../../Helper/Time";
+import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
+import Iconify from "@iconify/iconify/dist/iconify.js";
 
 class Fillborders extends VideoEditor {
     video = null;
@@ -26,6 +29,7 @@ class Fillborders extends VideoEditor {
         this.initFillborders = this.initFillborders.bind(this);
         this.handleKey = this.handleKey.bind(this);
         this.handleClick = this.handleClick.bind(this);
+        this.handleFromTo = this.handleFromTo.bind(this);
         this.updateFillbordersBox = this.updateFillbordersBox.bind(this);
     }
 
@@ -37,6 +41,7 @@ class Fillborders extends VideoEditor {
             this.fillbordersOffsetRight = this.image.naturalWidth;
         }
         this.updateFillbordersBox();
+        Iconify.scan(this.shadowRoot);
     }
 
     addListeners() {
@@ -45,6 +50,16 @@ class Fillborders extends VideoEditor {
         document.addEventListener("keydown", this.handleKey);
         document.addEventListener("keyup", this.handleKey);
         this.fillbordersImage.addEventListener("click", this.handleClick);
+        this.coordsDisplay
+            .querySelector('[data-ref="from"]')
+            .addEventListener("click", this.handleFromTo);
+        this.coordsDisplay
+            .querySelector('[data-ref="to"]')
+            .addEventListener("click", this.handleFromTo);
+        this.btnFrom.addEventListener("click", this.handleFromTo);
+        this.btnTo.addEventListener("click", this.handleFromTo);
+        this.btnDelFrom.addEventListener("click", this.handleFromTo);
+        this.btnDelTo.addEventListener("click", this.handleFromTo);
     }
 
     removeListeners() {
@@ -53,6 +68,16 @@ class Fillborders extends VideoEditor {
         document.removeEventListener("keydown", this.handleKey);
         document.removeEventListener("keyup", this.handleKey);
         this.fillbordersImage.removeEventListener("click", this.handleClick);
+        this.btnFrom.removeEventListener("click", this.handleFromTo);
+        this.btnTo.removeEventListener("click", this.handleFromTo);
+        this.coordsDisplay
+            .querySelector('[data-ref="from"]')
+            .removeEventListener("click", this.handleFromTo);
+        this.coordsDisplay
+            .querySelector('[data-ref="to"]')
+            .removeEventListener("click", this.handleFromTo);
+        this.btnDelFrom.removeEventListener("click", this.handleFromTo);
+        this.btnDelTo.removeEventListener("click", this.handleFromTo);
     }
 
     updateFillbordersBox() {
@@ -64,6 +89,29 @@ class Fillborders extends VideoEditor {
         this.fillbordersImage.style.backgroundImage = `${this.gradients},url("${this.image.src}")`;
         this.image.style.display = "none";
         this.dispatchEvent(new CustomEvent("fillborders-updated"));
+    }
+
+    /**
+     *
+     * @param {MouseEvent} e
+     */
+    handleFromTo(e) {
+        const path = e.composedPath();
+        let ref = e.currentTarget.dataset.ref;
+
+        if (!ref.includes("btn-del") && path.includes(this.coordsDisplay)) {
+            this.current = new VTime(this[ref]).milliseconds;
+            this.updateIndicatorPos();
+            this.updateImages();
+            return;
+        }
+
+        let value = this.current;
+        if (ref.includes("btn-del")) {
+            value = "";
+            ref = ref.replace("btn-del-", "");
+        }
+        this[ref] = value;
     }
 
     get gradients() {
@@ -269,8 +317,9 @@ class Fillborders extends VideoEditor {
             left: this.fillbordersOffsetLeft,
             mode: this.mode,
             between: {
-                from: this.from ?? null,
-                to: this.to ?? null,
+                from:
+                    this.from && this.to ? new VTime(this.from).seconds : null,
+                to: this.from && this.to ? new VTime(this.to).seconds : null,
             },
             color: this.color ?? null,
         };
@@ -282,7 +331,8 @@ class Fillborders extends VideoEditor {
         this.fillbordersOffsetBottom =
             this.video.height - fillborders.bottom ?? 0;
         this.fillbordersOffsetRight = this.video.width - fillborders.right ?? 0;
-        this.between = fillborders.between;
+        this.from = fillborders.between.from * 1000;
+        this.to = fillborders.between.to * 1000;
         this.color = fillborders.color;
         this.mode = fillborders.mode;
     }
@@ -290,6 +340,11 @@ class Fillborders extends VideoEditor {
     applyFilterData(data) {
         this.fillborders = data;
         this.updateFillbordersBox();
+        if (this.from) {
+            this.current = new VTime(data.between.from * 1000).milliseconds;
+            this.updateIndicatorPos();
+            this.updateImages();
+        }
     }
 
     get fillbordersOverlay() {
@@ -379,6 +434,59 @@ class Fillborders extends VideoEditor {
         this.shadowRoot.querySelector('[data-ref="mode"]').value = value;
     }
 
+    get coordsDisplay() {
+        return this.shadowRoot.querySelector(
+            'label[data-ref="between-coords"]',
+        );
+    }
+
+    // TODO: save real value as dataset, display cut timestamp
+
+    /**
+     * display from value
+     */
+    get from() {
+        return (
+            this.shadowRoot.querySelector('span[data-ref="from"]').innerText ||
+            null
+        );
+    }
+
+    set from(value) {
+        this.shadowRoot.querySelector('span[data-ref="from"]').innerText = value
+            ? new VTime(value).coord
+            : "";
+    }
+
+    get to() {
+        return (
+            this.shadowRoot.querySelector('span[data-ref="to"]').innerText ||
+            null
+        );
+    }
+
+    set to(value) {
+        this.shadowRoot.querySelector('span[data-ref="to"]').innerText = value
+            ? new VTime(value).coord
+            : "";
+    }
+
+    get btnFrom() {
+        return this.shadowRoot.querySelector('theme-button[data-ref="from"]');
+    }
+
+    get btnTo() {
+        return this.shadowRoot.querySelector('theme-button[data-ref="to"]');
+    }
+
+    get btnDelFrom() {
+        return this.shadowRoot.querySelector('[data-ref="btn-del-from"]');
+    }
+
+    get btnDelTo() {
+        return this.shadowRoot.querySelector('[data-ref="btn-del-to"]');
+    }
+
     setDimensions() {
         this.shadowRoot.querySelector('[data-type="top"]').innerText =
             this.fillbordersOffsetTop;
@@ -391,18 +499,17 @@ class Fillborders extends VideoEditor {
         return this;
     }
 }
-
-Fillborders.template = html`
-${COMBO_BUTTON_CSS}
-${EDITOR_CSS}
-<style>
+const STYLES = css`
+    ${COMBO_BUTTON_CSS.replace("<style>", "").replace("</style>", "")}
+    ${EDITOR_CSS.replace("<style>", "").replace("</style>", "")}
+    ${ICON_STACK_CSS.replace("<style>", "").replace("</style>", "")}
     .toggle-aspect {
         display: none;
     }
     .fillborders {
         box-sizing: border-box;
         grid-area: frame;
-        border: 0 solid hsla(0 50% 50% / .5);
+        border: 0 solid hsla(0 50% 50% / 0.5);
         justify-self: center;
         cursor: crosshair;
         position: relative;
@@ -418,12 +525,13 @@ ${EDITOR_CSS}
         background-blend-mode: lighten;
     }
 
-    .info, .settings {
+    .info,
+    .settings {
         grid-area: left;
         display: grid;
         grid-auto-rows: min-content;
-        gap: .5rem;
-        font-size: .75rem;
+        gap: 0.5rem;
+        font-size: 0.75rem;
         white-space: nowrap;
         width: 250px;
     }
@@ -433,22 +541,22 @@ ${EDITOR_CSS}
     }
     fieldset {
         border: 2px solid var(--clr-bg-200);
-        padding: .5rem;
+        padding: 0.5rem;
         background: var(--clr-bg-100);
         display: flex;
         flex-direction: column;
-        gap: .5rem;
+        gap: 0.5rem;
         border-radius: 0.25rem;
     }
     legend {
         background: var(--clr-bg-0);
-        padding: .25rem;
+        padding: 0.25rem;
         border-radius: 0.25rem;
     }
     label {
         display: flex;
         justify-content: space-between;
-        gap: .5rem;
+        gap: 0.5rem;
     }
     input {
         accent-color: var(--clr-enlightened);
@@ -459,7 +567,7 @@ ${EDITOR_CSS}
     .help dl {
         display: grid;
         grid-template-columns: auto 1fr;
-        grid-column-gap: .5rem;
+        grid-column-gap: 0.5rem;
     }
     .help dd {
         margin: 0;
@@ -467,6 +575,48 @@ ${EDITOR_CSS}
     :host > theme-button {
         justify-self: end;
     }
+    input[type="color"] {
+        background: var(--clr-bg-100);
+        border: 2px solid var(--clr-bg-200);
+
+        &:hover {
+            border-color: var(--clr-enlightened);
+            box-shadow:
+                0 0 20px 0 var(--clr-enlightened-glow),
+                0 0 10px 0 inset var(--clr-enlightened-glow);
+        }
+    }
+    [data-ref="between-coords"] {
+        display: none;
+        &:has([data-ref]:not([data-ref^="btn"]):not(:empty)) {
+            display: grid;
+            justify-content: stretch;
+        }
+
+        & > div {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.5rem;
+            width: 100%;
+
+            & span:not([data-ref]) {
+                width: 5ch;
+            }
+
+            & [data-ref]:not([data-ref^="btn"]) {
+                flex-grow: 1;
+                cursor: pointer;
+            }
+
+            & .icon-stack {
+                cursor: pointer;
+            }
+        }
+    }
+`;
+Fillborders.template = html`
+<style>
+    ${STYLES}
 </style>
 ${EDITOR_TEMPLATE}
 <div data-ref="fillbordersOverlay" class="fillborders">
@@ -522,6 +672,29 @@ ${EDITOR_TEMPLATE}
         <label>
             <span>Color</span>
             <input type="color" data-ref="color" value="#000000">
+        </label>
+        <label>
+            <span>Between</span>
+            <theme-button data-ref="from">Start</theme-button>
+            <theme-button data-ref="to">End</theme-button>
+        </label>
+        <label data-ref="between-coords">
+            <div>
+                <span>From:</span>
+                <span data-ref="from"></span>
+                <div class="icon-stack" data-ref="btn-del-from">
+                    <span class="iconify" data-icon="mdi-close"></span>
+                    <span class="iconify hover" data-icon="mdi-close"></span>
+                </div>
+            </div>
+            <div>
+                <span>To:</span>
+                <span data-ref="to"></span>
+                <div class="icon-stack" data-ref="btn-del-to">
+                    <span class="iconify" data-icon="mdi-close"></span>
+                    <span class="iconify hover" data-icon="mdi-close"></span>
+                </div>
+            </div>
         </label>
     </fieldset>
 </div>
