@@ -23,5 +23,7 @@
         "editor.defaultFormatter": "onecentlin.laravel-blade"
     },
 
-    "errorLens.enabledDiagnosticLevels": ["error", "warning"]
+    "errorLens.enabledDiagnosticLevels": ["error", "warning"],
+
+    "makefile.configureOnOpen": false
 }

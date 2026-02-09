@@ -6,6 +6,8 @@
         "felixfbecker.php-debug",
         "tobermory.es6-string-html",
         "esbenp.prettier-vscode",
-        "usernamehw.errorlens"
+        "usernamehw.errorlens",
+        "ecmel.vscode-html-css",
+        "redwan-hossain.auto-rename-tag-clone"
     ]
 }
