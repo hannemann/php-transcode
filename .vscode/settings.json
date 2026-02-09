@@ -1,0 +1,27 @@
+{
+    "intelephense.environment.phpVersion": "8.3.0",
+
+    "php.validate.enable": false,
+    "php.suggest.basic": false,
+
+    "LaravelExtraIntellisense.phpCommand": "/usr/bin/bash ./docker/bin/php",
+    "intelephense.files.maxSize": 5000000,
+
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+    "[php]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "editor.defaultFormatter": "bmewburn.vscode-intelephense-client",
+        "editor.formatOnSave": true
+    },
+    "intelephense.format.braces": "per",
+    "intelephense.format.enable": true,
+
+    "[blade]": {
+        "editor.defaultFormatter": "onecentlin.laravel-blade"
+    },
+
+    "errorLens.enabledDiagnosticLevels": ["error", "warning"]
+}

@@ -1,0 +1,11 @@
+{
+    "recommendations": [
+        "bmewburn.vscode-intelephense-client",
+        "amiruk.laravel-extra-intellisense",
+        "onecentlin.laravel-blade",
+        "felixfbecker.php-debug",
+        "tobermory.es6-string-html",
+        "esbenp.prettier-vscode",
+        "usernamehw.errorlens"
+    ]
+}
