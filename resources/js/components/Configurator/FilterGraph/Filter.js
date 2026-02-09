@@ -114,11 +114,11 @@ class Filter extends HTMLElement {
                 }
             }
             return (
-                `${from.toString()} - ${to.toString()}` +
-                `T: ${this.filterData.top}, ` +
-                `R: ${this.filterData.right}, ` +
-                `B: ${this.filterData.bottom}, ` +
-                `L: ${this.filterData.left}`
+                `${from.toString()} - ${to.toString()}, ` +
+                `Top: ${this.filterData.top}px, ` +
+                `Right: ${this.filterData.right}px, ` +
+                `Bottom: ${this.filterData.bottom}px, ` +
+                `Left: ${this.filterData.left}px`
             );
         }
         if (this.filterData.filterType === "delogo") {
