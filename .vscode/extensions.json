@@ -8,6 +8,7 @@
         "esbenp.prettier-vscode",
         "usernamehw.errorlens",
         "ecmel.vscode-html-css",
-        "redwan-hossain.auto-rename-tag-clone"
+        "redwan-hossain.auto-rename-tag-clone",
+        "ericc-ch.lit-html"
     ]
 }
