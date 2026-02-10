@@ -2,8 +2,6 @@ import { TYPE_VIDEO } from "../Streams";
 
 export const requestCrop = async function (type, id = NaN, data = null) {
     try {
-        const clips = this.clips; // for some reaseon we have to cache clips before saving
-        await this.saveSettings();
         const m = document.createElement("modal-window");
         m.header = "Cropper";
         m.classList.add("no-shadow");
@@ -25,7 +23,7 @@ export const requestCrop = async function (type, id = NaN, data = null) {
         d.filterIndex = id;
         requestAnimationFrame(() => {
             d.crop = this.crop;
-            d.markers = clips;
+            d.markers = this.clips;
             d.mirror = false;
             d.width = d.video.width;
             d.height = d.video.height;

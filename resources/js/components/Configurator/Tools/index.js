@@ -9,10 +9,11 @@ import { requestPlay } from "./player.js";
 import { requestDeinterlace } from "./deinterlace.js";
 import { requestFillborders } from "./fillborders.js";
 
-export const toolProxy = function (e) {
+export const toolProxy = async function (e) {
     const args = e.target.value.split(":");
     if (e.type === "change" && args[2] !== "instantOpen") return;
 
+    await this.saveSettings(false, true);
     switch (args.shift()) {
         case "concat":
             requestConcat.apply(this, args);

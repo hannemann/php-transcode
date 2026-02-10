@@ -6,8 +6,6 @@ export const requestFillborders = async function (
     data = null,
 ) {
     try {
-        const clips = this.clips; // for some reaseon we have to cache clips before saving
-        await this.saveSettings();
         const m = document.createElement("modal-window");
         m.header = "Fillborders";
         m.classList.add("no-shadow");
@@ -25,11 +23,9 @@ export const requestFillborders = async function (
         };
         d.path = this.item.path;
         d.filterIndex = id;
-        console.log(clips);
         requestAnimationFrame(() => {
             d.fillborders = data ?? this.fillborders;
-            d.markers = clips;
-            d.mirror = false;
+            d.markers = this.clips;
             d.width = d.video.width;
             d.height = d.video.height;
             if (id !== null && data) {

@@ -357,11 +357,13 @@ class TranscodeConfigurator extends HTMLElement {
         this.saveSettings(args[1] === "template");
     }
 
-    async saveSettings(asTemplate = false) {
+    async saveSettings(asTemplate = false, skipUpdates = false) {
         await Request.post(`/settings/${encodeURIComponent(this.item.path)}`, {
             ...this.config,
             asTemplate,
         });
+
+        if (skipUpdates) return;
 
         this.format = this.format;
         this.filterGraph = this.filterGraph;

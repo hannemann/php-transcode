@@ -440,35 +440,33 @@ class Fillborders extends VideoEditor {
         );
     }
 
-    // TODO: save real value as dataset, display cut timestamp
-
     /**
      * display from value
      */
     get from() {
-        return (
-            this.shadowRoot.querySelector('span[data-ref="from"]').innerText ||
-            null
-        );
+        const node = this.shadowRoot.querySelector('span[data-ref="from"]');
+        const raw = node.dataset.raw;
+        return raw ? parseFloat(raw) : null;
     }
 
     set from(value) {
-        this.shadowRoot.querySelector('span[data-ref="from"]').innerText = value
-            ? new VTime(value).coord
-            : "";
+        const node = this.shadowRoot.querySelector('span[data-ref="from"]');
+        value = value ? new VTime(value).milliseconds : "";
+        node.dataset.raw = value;
+        node.innerText = value ? VTime.calcCut(this.clipsConfig, value) : "";
     }
 
     get to() {
-        return (
-            this.shadowRoot.querySelector('span[data-ref="to"]').innerText ||
-            null
-        );
+        const node = this.shadowRoot.querySelector('span[data-ref="to"]');
+        const raw = node.dataset.raw;
+        return raw ? parseFloat(raw) : null;
     }
 
     set to(value) {
-        this.shadowRoot.querySelector('span[data-ref="to"]').innerText = value
-            ? new VTime(value).coord
-            : "";
+        const node = this.shadowRoot.querySelector('span[data-ref="to"]');
+        value = value ? new VTime(value).milliseconds : "";
+        node.dataset.raw = value;
+        node.innerText = value ? VTime.calcCut(this.clipsConfig, value) : "";
     }
 
     get btnFrom() {
