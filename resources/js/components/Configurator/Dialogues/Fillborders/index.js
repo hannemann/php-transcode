@@ -331,8 +331,8 @@ class Fillborders extends VideoEditor {
         this.fillbordersOffsetBottom =
             this.video.height - fillborders.bottom ?? 0;
         this.fillbordersOffsetRight = this.video.width - fillborders.right ?? 0;
-        this.from = fillborders.between.from * 1000;
-        this.to = fillborders.between.to * 1000;
+        this.from = fillborders.between?.from * 1000 || null;
+        this.to = fillborders.between?.to * 1000 || null;
         this.color = fillborders.color;
         this.mode = fillborders.mode;
     }

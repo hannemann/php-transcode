@@ -14,8 +14,6 @@ class DeLogo extends VideoEditor {
         super.connectedCallback();
         this.isEdit = false;
         this.saved = false;
-        this.totalDuration = this.configurator.clips.totalDuration;
-        this.clips = [...this.configurator.clips.clips];
         requestAnimationFrame(() => {
             this.image.addEventListener("load", this.initDelogo, {
                 once: true,
@@ -310,7 +308,7 @@ class DeLogo extends VideoEditor {
 
     getCutTimeStamp(timestamp) {
         if (!timestamp) return "n/a";
-        return VTime.calcCut(this.clips, timestamp * 1000);
+        return VTime.calcCut(this.clipsConfig, timestamp * 1000);
     }
 
     resetBetween() {
@@ -399,7 +397,8 @@ class DeLogo extends VideoEditor {
         node.dataset.index = item.index;
         node.dataset.delogo = JSON.stringify(item);
 
-        const duration = new VTime(this.totalDuration).seconds;
+        const duration = new VTime(this.configurator.clips.totalDuration)
+            .seconds;
         if (from) {
             const fromTime = new VTime(this.getCutTimeStamp(from)).seconds;
             if (fromTime >= duration) {

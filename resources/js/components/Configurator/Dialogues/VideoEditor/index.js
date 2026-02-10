@@ -9,7 +9,6 @@ const THUMBNAIL_HEIGHT = 30;
 class VideoEditor extends HTMLElement {
     #markers = [];
     raw = [];
-    clipsConfig = ConfiguratorHelper.clips.clips;
 
     constructor() {
         super();
@@ -384,6 +383,10 @@ class VideoEditor extends HTMLElement {
         } else {
             delete this.btnMove.dataset.active;
         }
+    }
+
+    get clipsConfig() {
+        return ConfiguratorHelper.clips.clips;
     }
 
     get baseUrl() {

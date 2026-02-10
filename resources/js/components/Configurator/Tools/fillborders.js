@@ -25,6 +25,7 @@ export const requestFillborders = async function (
         };
         d.path = this.item.path;
         d.filterIndex = id;
+        console.log(clips);
         requestAnimationFrame(() => {
             d.fillborders = data ?? this.fillborders;
             d.markers = clips;
