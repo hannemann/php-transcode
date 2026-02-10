@@ -653,7 +653,7 @@ ${EDITOR_TEMPLATE}
         <legend>Settings:</legend>
         <label>
             <span>Equal Borders</span>
-            <input type="checkbox" name="equal" data-ref="inputEqual" checked="checked">
+            <input type="checkbox" name="equal" data-ref="inputEqual">
         </label>
         <label>
             <span>Mode</span>

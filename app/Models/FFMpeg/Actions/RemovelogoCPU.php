@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File as FileFacade;
 use App\Jobs\ProcessVideo;
 
-Class RemovelogoCPU extends Crop
+class RemovelogoCPU extends Crop
 {
     const TEMPLATE_FILTER = 'removelogo=filename=%s';
 
@@ -48,7 +48,7 @@ Class RemovelogoCPU extends Crop
     {
         $file = array_pop($commands[0]);
         $cmds = collect($commands[0]);
-        
+
         $cmds = Libx264Options::strip($cmds);
         $cmds->splice($cmds->search('-b:v'), 2);
         $cmds->splice($cmds->search('-b:a'), 2);
@@ -90,7 +90,7 @@ Class RemovelogoCPU extends Crop
     {
         return sprintf(
             self::TEMPLATE_FILTER,
-            $bitmap
+            escapeshellarg(addcslashes($bitmap, "',:\\"))
         );
     }
 
@@ -101,7 +101,7 @@ Class RemovelogoCPU extends Crop
             dirname($path),
             DIRECTORY_SEPARATOR,
             'logomask.png'
-        );   
+        );
     }
 
     public static function hasCustomMask(string $path): bool
