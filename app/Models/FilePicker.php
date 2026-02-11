@@ -9,6 +9,7 @@ use App\Helper\File as FileHelper;
 use App\Models\Video\File as VideoFile;
 use League\Flysystem\UnableToReadFile;
 use Illuminate\Filesystem\FilesystemAdapter;
+use App\Models\FFMpeg\Actions\Helper\Chapters;
 
 class FilePicker
 {
@@ -107,6 +108,9 @@ class FilePicker
         $fullFileName = static::disk()->getConfig()['root'] . DIRECTORY_SEPARATOR . $file;
         if (($mime = VideoFile::getMimeType($fullFileName))) {
             return $mime;
+        }
+        if (strpos($file, Chapters::FILE_EXTENSION)) {
+            return 'text/plain';
         }
         return static::disk()->mimeType($file);
     }

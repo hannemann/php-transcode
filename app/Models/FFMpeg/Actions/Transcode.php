@@ -19,6 +19,7 @@ class Transcode extends AbstractAction
     protected string $filenameSuffix = 'mkv';
 
     protected Helper\ConcatDemuxer $concatDemuxer;
+    protected Helper\Chapters $chapterHelper;
     protected ComplexConcat $complexConcat;
     protected float $duration;
     protected float $clipDuration;
@@ -50,6 +51,7 @@ class Transcode extends AbstractAction
         $this->complexConcat = new ComplexConcat($this->codecConfig, $this->video, $this->audio, $this->subtitle, $this->clips);
         $this->codecMapper = new Helper\CodecMapper($this->codecConfig, $this->streams, $this->video, $this->audio, $this->subtitle);
         $this->outputMapper = new Helper\OutputMapper($this->codecConfig, $this->video, $this->audio, $this->subtitle);
+        $this->chapterHelper = new Helper\Chapters($this->disk, $this->path, $this->clips);
         $this->clipDuration = $this->concatDemuxer->getDuration();
         $this->mediaExporter = $this->media->export();
 
@@ -65,11 +67,11 @@ class Transcode extends AbstractAction
         if ($this->format instanceof h264_vaapi) {
             $this->codecMapper->execute(collect([]));
             $this->codecMapper->resetIndices();
-            
+
             if (strpos($this->codecMapper->currentVideoCodec, 'nvenc') !== false) {
                 $this->format->setAccelerationFramework(h264_vaapi::ACCEL_CUDA);
             }
-            
+
             if (strpos($this->codecMapper->currentVideoCodec, 'vaapi') !== false) {
                 $this->format->setAccelerationFramework(h264_vaapi::ACCEL_VAAPI);
             }
@@ -116,6 +118,13 @@ class Transcode extends AbstractAction
             $cmds = $this->complexConcat->getFilter($cmds, $this->format, $this->disk, $this->path);
         } else {
             $cmds = $this->outputMapper->execute($cmds);
+        }
+
+        if ($this->chapterHelper->isActive()) {
+            $cmds = $this->chapterHelper->removeChapters($cmds);
+        }
+        if (count($this->clips) > 1) {
+            $this->chapterHelper->createChaptersFileFromCutpoints($file);
         }
 
         $cmds->push($file);
