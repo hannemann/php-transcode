@@ -128,7 +128,11 @@ TODO:
 - sorting of streams
 - metadata of streams (is standard, language, ...)
 - chapters for cut ot commercial breaks for testing result
-- indicate timestamp on mouse hover over indicator bar
+        - -map_chapters -1
+        - dialog zum erhalten der kapitel
+        - via Chapter Datei review kapitel anlegen
+        - https://github.com/dyphire/mpv-scripts/blob/main/README.md
+        - https://debianforum.de/forum/viewtopic.php?t=191505
 - cpu encoding
 
 */
