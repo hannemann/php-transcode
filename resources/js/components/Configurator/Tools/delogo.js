@@ -61,7 +61,14 @@ export function saveDelogo(type, delogo, isEdit = false) {
     if (delogo.filterIndex !== null && isEdit) {
         this.filterGraph[delogo.filterIndex] = filterData;
     } else {
-        this.filterGraph.push(filterData);
+        const lastDelogo = this.filterGraph.findLastIndex(
+            (i) => i.filterType === "delogo",
+        );
+        if (lastDelogo > -1) {
+            this.filterGraph.splice(lastDelogo + 1, 0, filterData);
+        } else {
+            this.filterGraph.push(filterData);
+        }
     }
     this.saveSettings();
     delogo.saved = true;

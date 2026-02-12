@@ -54,6 +54,7 @@ class DeLogo extends VideoEditor {
         this.addNext = this.addNext.bind(this);
         this.editItem = this.editItem.bind(this);
         this.deleteItem = this.deleteItem.bind(this);
+        this.copyItem = this.copyItem.bind(this);
         this.handleFakeBox = this.handleFakeBox.bind(this);
     }
 
@@ -77,11 +78,15 @@ class DeLogo extends VideoEditor {
 
     addItemListeners() {
         this.filtersContainer.querySelectorAll(":scope > div")?.forEach((e) => {
-            e.addEventListener("click", this.editItem);
-            e.querySelector(".icon-stack").addEventListener(
+            e.querySelector(".icon-stack.close").addEventListener(
                 "click",
                 this.deleteItem,
             );
+            e.querySelector(".icon-stack.copy").addEventListener(
+                "click",
+                this.copyItem,
+            );
+            e.addEventListener("click", this.editItem);
             e.addEventListener("pointerenter", this.handleFakeBox);
             e.addEventListener("pointerleave", this.handleFakeBox);
         });
@@ -111,9 +116,13 @@ class DeLogo extends VideoEditor {
     removeItemListeners() {
         this.filtersContainer.querySelectorAll(":scope > div")?.forEach((e) => {
             e.removeEventListener("click", this.editItem);
-            e.querySelector(".icon-stack").removeEventListener(
+            e.querySelector(".icon-stack.close").removeEventListener(
                 "click",
                 this.deleteItem,
+            );
+            e.querySelector(".icon-stack.copy").removeEventListener(
+                "click",
+                this.copyItem,
             );
             e.removeEventListener("pointerenter", this.handleFakeBox);
             e.removeEventListener("pointerleave", this.handleFakeBox);
@@ -373,14 +382,45 @@ class DeLogo extends VideoEditor {
         this.activeDelogoFilter = e.currentTarget;
     }
 
+    /**
+     * @param {Event} e
+     */
     async deleteItem(e) {
-        e.stopPropagation();
+        e.stopImmediatePropagation();
         this.configurator.filterGraph.splice(
             parseInt(e.currentTarget.closest("[data-delogo]").dataset.index),
             1,
         );
         await this.configurator.saveSettings();
+        this.isSaved = true;
         this.initFilters();
+    }
+
+    /**
+     * @param {Event} e
+     */
+    async copyItem(e) {
+        e.stopImmediatePropagation();
+        const idx = e.currentTarget.closest("[data-delogo]").dataset.index;
+        const src = this.configurator.filterGraph[idx];
+        const dest = structuredClone(src);
+
+        dest.between.from = new VTime(this.current).seconds;
+        dest.between.to = new VTime(this.current).seconds;
+
+        const lastDelogo = this.configurator.filterGraph.findLastIndex(
+            (i) => i.filterType === "delogo",
+        );
+        this.configurator.filterGraph.splice(lastDelogo + 1, 0, dest);
+
+        await this.configurator.saveSettings();
+        this.isSaved = true;
+
+        this.initFilters();
+        const lastDelogoNode = this.filtersContainer.querySelector(
+            ":scope > div:last-of-type",
+        );
+        this.editItem({ currentTarget: lastDelogoNode });
     }
 
     initFilters() {
@@ -415,11 +455,13 @@ class DeLogo extends VideoEditor {
             }
         }
 
-        node.innerText =
-            `${this.getCutTimeStamp(from)} - ` + `${this.getCutTimeStamp(to)}`;
+        node.innerHTML =
+            `<span>${this.getCutTimeStamp(from)} - ` +
+            `${this.getCutTimeStamp(to)}</span>`;
         node.classList.toggle("incomplete", from === null || to === null);
+
         const iconWrap = document.createElement("div");
-        iconWrap.classList.add("icon-stack");
+        iconWrap.classList.add("icon-stack", "close");
         const icon = document.createElement("span");
         icon.classList.add("iconify");
         icon.dataset.icon = "mdi-close";
@@ -427,7 +469,18 @@ class DeLogo extends VideoEditor {
         iconHover.classList.add("iconify", "hover");
         iconHover.dataset.icon = "mdi-close";
         iconWrap.append(icon, iconHover);
-        node.append(iconWrap);
+
+        const copyIconWrap = document.createElement("div");
+        copyIconWrap.classList.add("icon-stack", "copy");
+        const copyIcon = document.createElement("span");
+        copyIcon.classList.add("iconify");
+        copyIcon.dataset.icon = "mdi-content-copy";
+        const copyIconHover = document.createElement("span");
+        copyIconHover.classList.add("iconify", "hover");
+        copyIconHover.dataset.icon = "mdi-content-copy";
+        copyIconWrap.append(copyIcon, copyIconHover);
+
+        node.append(copyIconWrap, iconWrap);
 
         return node;
     }
@@ -657,7 +710,7 @@ DeLogo.template = html`
             grid-area: right;
             display: grid;
             grid-template-rows: min-content min-content auto;
-            max-width: 350px;
+            width: 360px;
             justify-self: end;
         }
         .between {
@@ -694,8 +747,13 @@ DeLogo.template = html`
                     transition-timing-function: ease-out;
                     transition-duration: var(--transition-medium);
                     display: flex;
+                    gap: 0.5rem;
                     justify-content: space-between;
                     align-items: center;
+
+                    span {
+                        flex-grow: 1;
+                    }
 
                     &[data-active] {
                         background: var(--clr-bg-200);
