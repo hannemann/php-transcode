@@ -1,4 +1,4 @@
-# PHP Transcode Toolbox (doc incomplete)
+## PHP Transcode Toolbox (doc incomplete)
 
 ## Create frame perfect cuts out of your DVB Recordings
 
@@ -7,16 +7,18 @@ Cutting DVB recordings with FFMPEG can be a hazzle since you have to take severa
 - If the movie is 4:3 and the commercials are 16:9 the encode fails as soon as the resolution changes
 - The same applies to changes in audio streams
 
-To circumvent these flaws in the video stream one would have to create several complicated FFMpeg commands.
-This program tries to mitigate that by providing a browser based gui for FFMpeg.
+To circumvent these flaws in the video stream one would have to create several complicated FFMpeg commands.\
+This program tries to mitigate that by providing a browser based gui for FFMpeg.\
 The heavy lifting can be done on the server utilizing hardware acceleration by VAAPI (Tested with INTEL and AMD integrated GPU).
 
 ## Features
 
 - Frame perfect h264 cutting using the concat filter
-- Transcode (vaapi)
+- Transcode
     - h264_vaapi
-    - h265_vaapi
+    - hevc_vaapi
+    - h264_nvenc
+    - hevc_nvenc
     - aac
     - ac3
     - flac
@@ -24,11 +26,13 @@ The heavy lifting can be done on the server utilizing hardware acceleration by V
     - cvb_subtitle
     - dvd_subtitle
     - Stream selection
-    - Aspect ration selection
+    - Aspect ratio selection
 - Clipper GUI
 - Cropper Gui
 - GUI for DeLogo Filter
-- Gui for RemoveLogo Filter
+- GUI for RemoveLogo Filter
+- GUI for Fillborders Filter
+- Deinterlace
 - Scale
 - Remux
 - Experimental HLS Player (for checking the result only. no fancy features provided)
@@ -37,10 +41,9 @@ The heavy lifting can be done on the server utilizing hardware acceleration by V
 
 Since the project is based on the PHP framework laravel you can simply utilize laravel sail
 
-- git clone
-- cp .env.example .env # adjust settings
-- ./run
-  In case of `connection reset by peer` errors while pulling docker images just start again
+1. git clone
+2. cp .env.example .env # adjust settings
+3. ./run
 
 ## Hooks
 
@@ -51,14 +54,16 @@ Since the project is based on the PHP framework laravel you can simply utilize l
 
 Please have a look into .env.example
 
-# Usage:
+## Usage:
 
-Point your Browser to http://127.0.0.1:8078  
-(The IP has to match the websocket configuration which currently is hardcoded as 127.0.0.1)
+Point your Browser to <http://127.0.0.1:8078> or <http://HOST:8078>
 
-# Clipper
+## Clipper
 
-Search your recording frame by frame for unwanted material
+Search your recording frame by frame for unwanted material.\
+If chapter markers are present in the video file these are shown in the timeline.\
+These are removed by default from the output file but in the folder of the recording a chapter file is created.\
+For chapter file autoloading in Celluloid one can use [chapter-make-read.lua](https://github.com/dyphire/mpv-scripts/blob/main/chapter-make-read.lua) from [dyphire/mpv-scipts](https://github.com/dyphire/mpv-scripts)
 
 ## Usage:
 
@@ -79,24 +84,16 @@ Search your recording frame by frame for unwanted material
     - 5 seconds forward: Shift + Arrow left
 - Set marker: +
 - remove marker: -
-- Move Marker (only if indicator is on clip border):
+- Move Marker (only if indicator is on clip border or ):
     - Alt + Arrow left/right/up/down (works als with step modifiers)
 - Skip to next clip (only if indicator is on clip border):
     - CTRL + Shift + Arrow left/right
 
-# Transcoding
+## Transcoding
 
-## Multiple files produced by VDR
-
-1. Concat
-2. Optionally scale to desired width
-3. If not scaled remux to mkv or mp4
-4. Use Clipper to mark parts to be kept
-5. Transcode
-
-## Single file
-
-Like multiple files but skip step 1
+1. Concat if case of multiple files
+2. Configure desired filters
+3. Transcode
 
 ## Troubleshooting
 
@@ -108,7 +105,7 @@ Like multiple files but skip step 1
 
 Scale or transcode aborts with error like:
 
-```
+```plaintext
 Impossible to convert between the formats supported by the filter 'Parsed_scale_vaapi_0' and the filter 'auto_scaler_0'
 Error reinitializing filters!
 Failed to inject frame into filter network: Function not implemented
@@ -146,20 +143,20 @@ Error while processing the decoded data for stream #0:0
 - touch database/database.sqlite
 - chown www-data database.sqlite
 
-## Systemd (non docker installation)
+## Systemd (non docker installation, not recommended)
 
 ### Laravel Websockets
 
-```
+```plaintext
 [Unit]
 Description=Runs and keeps alive the PHP Transcode artisan websocket
 
 [Service]
 Restart=always
 WorkingDirectory=/var/www/php-transcode
-ExecStart=/usr/bin/php artisan websockets:serve --port=8079
-User=www-data
-Group=www-data
+ExecStart=/usr/bin/php artisan reverb:start --port=8079
+User=1000
+Group=1000
 
 [Install]
 WantedBy=default.target
@@ -167,7 +164,7 @@ WantedBy=default.target
 
 ### Laravel Queue worker
 
-```
+```plaintext
 [Unit]
 Description=Runs and keeps alive the PHP Transcoder artisan queue:work process
 
@@ -175,8 +172,8 @@ Description=Runs and keeps alive the PHP Transcoder artisan queue:work process
 Restart=always
 WorkingDirectory=/var/www/php-transcode
 ExecStart=/usr/bin/php artisan queue:work --queue=default,ffmpeg
-User=www-data
-Group=www-data
+User=1000
+Group=1000
 
 [Install]
 WantedBy=default.target
@@ -184,7 +181,7 @@ WantedBy=default.target
 
 ### Laravel Player Queue worker
 
-```
+```plaintext
 [Unit]
 Description=Runs and keeps alive the PHP Transcoder artisan queue:work process for the player
 
@@ -192,12 +189,14 @@ Description=Runs and keeps alive the PHP Transcoder artisan queue:work process f
 Restart=always
 WorkingDirectory=/var/www/php-transcode
 ExecStart=/usr/bin/php artisan queue:work --queue=player
-User=www-data
-Group=www-data
+User=1000
+Group=1000
 
 [Install]
 WantedBy=default.target
 ```
+
+Note that you have to choose user and group with access to recordings and GPU.
 
 ## TODO:
 
@@ -207,32 +206,38 @@ WantedBy=default.target
 
 ## Resources
 
-- https://github.com/video-dev/hls.js/blob/master/docs/API.md
-- https://ffmpeg.org/ffmpeg-all.html
-- https://github.com/protonemedia/laravel-ffmpeg
-- https://trac.ffmpeg.org/wiki/Concatenate
-- https://materialdesignicons.com/
+- <https://github.com/video-dev/hls.js/blob/master/docs/API.md>
+- <https://ffmpeg.org/ffmpeg-all.html>
+- <https://github.com/protonemedia/laravel-ffmpeg>
+- <https://trac.ffmpeg.org/wiki/Concatenate>
+- <https://materialdesignicons.com/>
 
 ## Dev
 
 Start container:
 
-```shell
+```plaintext
 vendor/bin/sail up -d
 ```
 
 Run assets watcher:
 
-```shell
+```plaintext
 vendor/bin/sail npm run watch
 ```
 
 Stop container:
 
-```shell
+```plaintext
 vendor/bin/sail down
 ```
 
 Xdebug:
 
 - change environment variable `SAIL_XDEBUG_MODE` from `off` to `develop,debug` and restart container for step debugging.
+
+After applying changes to the queue restart it
+
+```plaintext
+make restart-queue
+```

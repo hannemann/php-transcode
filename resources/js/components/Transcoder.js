@@ -125,14 +125,11 @@ customElements.define("ffmpeg-transcoder", Transcoder);
 
 TODO:
 
-- sorting of streams
 - metadata of streams (is standard, language, ...)
-- chapters for cut ot commercial breaks for testing result
-        - -map_chapters -1
-        - dialog zum erhalten der kapitel
-        - via Chapter Datei review kapitel anlegen
-        - https://github.com/dyphire/mpv-scripts/blob/main/README.md
-        - https://debianforum.de/forum/viewtopic.php?t=191505
+- cleanup crop filter
+- add pad filter
+- remove filter actions (replaced by filter grapgh)
+- sorting of streams
 - cpu encoding
 
 */
