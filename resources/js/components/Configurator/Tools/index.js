@@ -8,6 +8,7 @@ import { requestRemovelogo } from "./removelogo.js";
 import { requestPlay } from "./player.js";
 import { requestDeinterlace } from "./deinterlace.js";
 import { requestFillborders } from "./fillborders.js";
+import { requestChaptersKeep } from "./chaptersKeep.js";
 
 export const toolProxy = async function (e) {
     const args = e.target.value.split(":");
@@ -41,6 +42,9 @@ export const toolProxy = async function (e) {
             break;
         case "deinterlace":
             requestDeinterlace.apply(this, args);
+            break;
+        case "chapters_keep":
+            requestChaptersKeep.apply(this, args);
             break;
         case "fillborders":
             requestFillborders.apply(this, args);

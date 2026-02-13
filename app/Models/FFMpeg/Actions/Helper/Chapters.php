@@ -5,6 +5,7 @@ namespace App\Models\FFMpeg\Actions\Helper;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use FFMpeg\Coordinate\TimeCode;
+use App\Helper\Settings;
 
 /**
  * @property string $disk
@@ -15,20 +16,20 @@ class Chapters
 {
     const FILE_EXTENSION = 'chp';
     const CHAPTER_OFFSET = 2;
+    const FILTER_TYPE_CHAPTERS_KEEP = 'chapters_keep';
 
-    public function __construct(string $disk, string $path, array $clips = [])
-    {
-        $this->disk = $disk;
-        $this->path = $path;
-        $this->clips = $clips;
-    }
+    public function __construct(private string $disk, private string $path, private array $clips = []) {}
 
     /**
      * check if chepters should be removed
      */
     public function isActive(): bool
     {
-        return true;
+        return collect(Settings::getSettings($this->path)['filterGraph'] ?? [])
+            ->doesntContain(
+                'filterType',
+                self::FILTER_TYPE_CHAPTERS_KEEP
+            );
     }
 
     /**

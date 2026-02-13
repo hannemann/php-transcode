@@ -618,6 +618,7 @@ ${CSS}
                 <option value="remux:mkv">Remux MKV</option>
                 <option value="remux:mp4">Remux MP4</option>
                 <option value="remux:ts">Remux TS</option>
+                <option value="chapters_keep:cpu:instantOpen">Keep Chapters</option>
                 <option value="deinterlace:cpu:instantOpen">Deinterlace</option>
                 <option value="crop:cpu:instantOpen">Crop (CPU)</option>
                 <option value="scale:cpu:instantOpen">Scale (CPU)</option>

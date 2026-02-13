@@ -45,12 +45,13 @@ class FilterGraph
     {
 
         $settings = $this->getSettings();
-        $filters = $settings->filter(function($setting, int $key) {
+        $filters = $settings->filter(function ($setting, int $key) {
             if ($this->currentFilter !== null && $key > $this->currentFilter - 1) {
                 return false;
             }
+            if ($setting['noProcessing'] ?? null) return false;
             return true;
-        })->map(function($setting) {
+        })->map(function ($setting) {
 
             switch ($setting['filterType']) {
                 case self::FILTER_TYPE_SCALE:
@@ -108,7 +109,8 @@ class FilterGraph
         return DelogoCPU::getFilterString($settings, $this->timestamp);
     }
 
-    private function getFillbordersFilter(array $settings): string {
+    private function getFillbordersFilter(array $settings): string
+    {
         return Fillborders::getFilterString($settings, $this->timestamp);
     }
 
