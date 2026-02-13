@@ -349,7 +349,7 @@ class DeLogo extends VideoEditor {
     }
 
     addNext() {
-        this.filterIndex = null;
+        this.filterIndex = this.lastDelogoNode?.dataset.index || null;
         this.isEdit = false;
         this.isSaved = false;
         this.resetBetween();
@@ -369,16 +369,16 @@ class DeLogo extends VideoEditor {
 
     editItem(e) {
         if ("undefined" !== typeof e.currentTarget.dataset.active) {
-            this.filterIndex = null;
+            this.filterIndex = this.lastDelogoNode.dataset.index;
             this.activeDelogoFilter = null;
             this.resetBetween();
             this.isSaved = true;
             return;
         }
         const data = JSON.parse(e.currentTarget.dataset.delogo);
+        this.filterIndex = e.currentTarget.dataset.index;
         this.isSaved = false;
         this.applyFilterData(data);
-        this.filterIndex = e.currentTarget.dataset.index;
         this.activeDelogoFilter = e.currentTarget;
     }
 
@@ -408,19 +408,13 @@ class DeLogo extends VideoEditor {
         dest.between.from = new VTime(this.current).seconds;
         dest.between.to = new VTime(this.current).seconds;
 
-        const lastDelogo = this.configurator.filterGraph.findLastIndex(
-            (i) => i.filterType === "delogo",
-        );
-        this.configurator.filterGraph.splice(lastDelogo + 1, 0, dest);
+        this.configurator.filterGraph.splice(this.lastDelogo + 1, 0, dest);
 
         await this.configurator.saveSettings();
         this.isSaved = true;
 
         this.initFilters();
-        const lastDelogoNode = this.filtersContainer.querySelector(
-            ":scope > div:last-of-type",
-        );
-        this.editItem({ currentTarget: lastDelogoNode });
+        this.editItem({ currentTarget: this.lastDelogoNode });
     }
 
     initFilters() {
@@ -493,6 +487,16 @@ class DeLogo extends VideoEditor {
         const data = JSON.parse(e.currentTarget.dataset.delogo);
         this.fakeCoords = data;
         this.indicatorRangeByTimestamp = data.between;
+    }
+
+    get lastDelogo() {
+        return this.configurator.filterGraph.findLastIndex(
+            (i) => i.filterType === "delogo",
+        );
+    }
+
+    get lastDelogoNode() {
+        return this.filtersContainer.querySelector(":scope > div:last-of-type");
     }
 
     set filters(items) {
