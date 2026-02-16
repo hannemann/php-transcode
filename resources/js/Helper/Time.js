@@ -26,17 +26,25 @@ class VTime {
      * @param {String|Number|Date} time coord, numeric (milliseconds) or Date object
      */
     constructor(time) {
-        if (VTime.isCoord(time)) {
-            // console.log("Is Coord", time);
-            this.date = new Date(toMilliseconds(time));
-        }
-        if (VTime.isNumeric(time)) {
-            // console.log("Is Numeric", time);
-            this.date = new Date(parseFloat(time));
+        if (VTime.isVtime(time)) {
+            // console.log("Is VTime", time);
+            this.date = new Date(time.valueOf());
+            return;
         }
         if (VTime.isDate(time)) {
             // console.log("Is Date", time);
             this.date = time;
+            return;
+        }
+        if (VTime.isCoord(time)) {
+            // console.log("Is Coord", time);
+            this.date = new Date(toMilliseconds(time));
+            return;
+        }
+        if (VTime.isNumeric(time)) {
+            // console.log("Is Numeric", time);
+            this.date = new Date(parseFloat(time));
+            return;
         }
     }
 
@@ -136,7 +144,7 @@ class VTime {
      * @returns {Number}
      */
     valueOf() {
-        if (!this.#valueOf) this.#valueOf = this.date.valueOf();
+        if (!this.#valueOf) this.#valueOf = this.date?.valueOf() || null;
         return this.#valueOf;
     }
 
@@ -186,10 +194,12 @@ class VTime {
     }
 
     /**
-     * returns {Number}
+     * returns {Number|null}
      */
     get seconds() {
-        return this.milliseconds / 1000;
+        return this.milliseconds === null
+            ? this.milliseconds
+            : this.milliseconds / 1000;
     }
 
     /**

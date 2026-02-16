@@ -3,8 +3,10 @@ import { VTime } from "../../../../Helper/Time";
 import { saveDelogo } from "../../Tools/delogo";
 import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 import Iconify from "@iconify/iconify/dist/iconify.js";
+import { Enable } from "../../../../Models/Filters/Filters/Enable";
+import { Delogo } from "../../../../Models/Filters/Delogo";
 
-class DeLogo extends VideoEditor {
+export class DeLogo extends VideoEditor {
     delogoOffsetTop = 0;
     delogoOffsetLeft = 0;
     delogoOffsetBottom = null;
@@ -293,55 +295,69 @@ class DeLogo extends VideoEditor {
         this.coords = data;
         this.setBetween(data.between);
         this.updateZoom();
-        this.current = data.between.from * 1000;
+        this.current = data.between.from.milliseconds;
         this.updateIndicatorPos();
         this.updateImages();
         this.activeDelogoFilter = this.filterIndex;
     }
 
+    /**
+     * @param {Delogo} model
+     */
+    set filterData(model) {
+        this.applyFilterData(model);
+    }
+
+    /**
+     * @returns {Delogo}
+     */
+    get filterData() {
+        const coords = this.coords || { x: null, y: null, w: null, h: null };
+        const between = {
+            from: this.between.from.seconds,
+            to: this.between.to.seconds,
+        };
+        return new Delogo(this.filterIndex, { ...coords, between });
+    }
+
     setBetween(between) {
         this.between = between;
-        this.betweenFrom = this.getCutTimeStamp(this.between.from);
-        this.betweenTo = this.getCutTimeStamp(this.between.to);
+        this.betweenFrom = this.between.from?.getCutpoint(this.clipsConfig);
+        this.betweenTo = this.between.to?.getCutpoint(this.clipsConfig);
     }
 
     setBetweenFrom() {
-        this.between.from = new VTime(this.timestamp()).seconds;
-        this.betweenFrom = this.getCutTimeStamp(this.between.from);
+        this.between.from = this.timestamp();
+        this.betweenFrom = this.between.from?.getCutpoint(this.clipsConfig);
     }
 
     setBetweenTo() {
-        this.between.to = new VTime(this.timestamp()).seconds;
-        this.betweenTo = this.getCutTimeStamp(this.between.to);
-    }
-
-    getCutTimeStamp(timestamp) {
-        if (!timestamp) return "n/a";
-        return VTime.calcCut(this.clipsConfig, timestamp * 1000);
+        this.between.to = this.timestamp();
+        this.betweenTo = this.between.to?.getCutpoint(this.clipsConfig);
     }
 
     resetBetween() {
-        this.between = { from: null, to: null };
+        this.between = new Enable();
         this.betweenFrom = "n/a";
         this.betweenTo = "n/a";
     }
 
     gotoBetweenFrom() {
         if (!this.between.from) return;
-        this.current = this.between.from * 1000;
+        this.current = this.between.from.milliseconds;
         this.updateIndicatorPos();
         this.updateImages();
     }
 
     gotoBetweenTo() {
         if (!this.between.to) return;
-        this.current = this.between.to * 1000;
+        this.current = this.between.to.milliseconds;
         this.updateIndicatorPos();
         this.updateImages();
     }
 
     save() {
-        saveDelogo.call(this.configurator, this.type, this, this.isEdit);
+        saveDelogo.call(this.configurator, this, this.isEdit);
         this.isSaved = this.saved;
         this.initFilters();
         this.activeDelogoFilter = null;
@@ -375,10 +391,13 @@ class DeLogo extends VideoEditor {
             this.isSaved = true;
             return;
         }
-        const data = JSON.parse(e.currentTarget.dataset.delogo);
-        this.filterIndex = e.currentTarget.dataset.index;
+        const delogo = new Delogo(
+            parseInt(e.currentTarget.dataset.index),
+            JSON.parse(e.currentTarget.dataset.delogo),
+        );
+        this.filterIndex = delogo.filterIndex;
         this.isSaved = false;
-        this.applyFilterData(data);
+        this.applyFilterData(delogo);
         this.activeDelogoFilter = e.currentTarget;
     }
 
@@ -418,30 +437,39 @@ class DeLogo extends VideoEditor {
     }
 
     initFilters() {
-        this.filters = [...this.configurator.filterGraph].filter((f, k) => {
-            if (f.filterType !== "delogo") return false;
-            f.index = k;
-            return true;
-        });
+        this.filters = [...this.configurator.filterGraph]
+            .filter((f, k) => {
+                if (f.filterType !== "delogo") return false;
+                f.index = k;
+                return true;
+            })
+            .map((f) => new Delogo(f.index, f));
     }
 
+    /**
+     *
+     * @param {Delogo} item
+     * @returns {HTMLElement}
+     */
     createItem(item) {
         const node = document.createElement("div");
         const { from, to } = item.between;
-        node.dataset.index = item.index;
+        const fromCut = from.getCutpoint(this.clipsConfig);
+        const toCut = to.getCutpoint(this.clipsConfig);
+        node.dataset.index = item.filterIndex;
         node.dataset.delogo = JSON.stringify(item);
 
         const duration = new VTime(this.configurator.clips.totalDuration)
             .seconds;
         if (from) {
-            const fromTime = new VTime(this.getCutTimeStamp(from)).seconds;
+            const fromTime = new VTime(fromCut).seconds;
             if (fromTime >= duration) {
                 node.classList.add("error");
                 node.dataset.fromError = "out-of-range";
             }
         }
         if (to) {
-            const toTime = new VTime(this.getCutTimeStamp(to)).seconds;
+            const toTime = new VTime(toCut).seconds;
 
             if (toTime >= duration) {
                 node.classList.add("error");
@@ -449,9 +477,7 @@ class DeLogo extends VideoEditor {
             }
         }
 
-        node.innerHTML =
-            `<span>${this.getCutTimeStamp(from)} - ` +
-            `${this.getCutTimeStamp(to)}</span>`;
+        node.innerHTML = `<span>${fromCut} - ` + `${toCut}</span>`;
         node.classList.toggle("incomplete", from === null || to === null);
 
         const iconWrap = document.createElement("div");

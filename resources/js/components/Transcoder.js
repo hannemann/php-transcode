@@ -125,9 +125,9 @@ customElements.define("ffmpeg-transcoder", Transcoder);
 
 TODO:
 
-- metadata of streams (is standard, language, ...)
-- cleanup crop filter
 - add pad filter
+- cleanup crop filter
+- metadata of streams (is standard, language, ...)
 - remove filter actions (replaced by filter grapgh)
 - sorting of streams
 - cpu encoding

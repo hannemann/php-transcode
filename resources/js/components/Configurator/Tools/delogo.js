@@ -1,6 +1,7 @@
+import { DeLogo } from "../Dialogues/Delogo";
 import { TYPE_VIDEO } from "../Streams";
 
-export const requestDelogo = async function (type, id = null, data = null) {
+export const requestDelogo = async function (model) {
     try {
         const m = document.createElement("modal-window");
         m.header = "Delogo";
@@ -11,16 +12,15 @@ export const requestDelogo = async function (type, id = null, data = null) {
             duration: parseFloat(this.format.duration),
         };
         d.path = this.item.path;
-        d.type = type;
-        d.filterIndex = id;
+        d.filterIndex = model.filterIndex;
         d.configurator = this;
         requestAnimationFrame(() => (d.markers = this.clips));
         m.appendChild(d);
         d.addEventListener(
             "delogo-updated",
             () => {
-                if (d.filterIndex !== null && data) {
-                    d.applyFilterData(data);
+                if (d.filterIndex !== null && model) {
+                    d.applyFilterData(model);
                 } else {
                     d.addNext();
                 }
@@ -32,7 +32,7 @@ export const requestDelogo = async function (type, id = null, data = null) {
             document.querySelector("transcoder-toast"),
         );
         await m.open();
-        saveDelogo.call(this, type, d, !!data);
+        saveDelogo.call(this, d, !!model);
     } catch (error) {
         if (error) {
             console.error(error);
@@ -40,34 +40,35 @@ export const requestDelogo = async function (type, id = null, data = null) {
     }
 };
 
-export function saveDelogo(type, delogo, isEdit = false) {
+/**
+ *
+ * @param {DeLogo} delogo
+ * @param {Boolean} isEdit
+ * @returns
+ */
+export function saveDelogo(delogo, isEdit = false) {
     if (delogo.saved) return;
-    this.delogo = { ...delogo.coords, ...[type], between: delogo.between };
+    this.delogo = delogo.filterData;
     console.info(
-        "Delogo video file %s. x: %d, x: %d, w: %d, h: %d, from: %s, to: %s, type: %s",
+        "Delogo video file %s. x: %d, x: %d, w: %d, h: %d, from: %s, to: %s",
         this.item.path,
         this.delogo.x,
         this.delogo.y,
         this.delogo.w,
         this.delogo.h,
-        this.delogo.between.from?.toString() || "n/a",
-        this.delogo.between.to?.toString() || "n/a",
-        type,
+        this.delogo.between.from?.seconds || "n/a",
+        this.delogo.between.to?.seconds || "n/a",
     );
-    const filterData = {
-        filterType: "delogo",
-        ...this.delogo,
-    };
-    if (delogo.filterIndex !== null && isEdit) {
-        this.filterGraph[delogo.filterIndex] = filterData;
+    if (this.delogo.filterIndex !== null && isEdit) {
+        this.filterGraph[delogo.filterIndex] = this.delogo;
     } else {
         const lastDelogo = this.filterGraph.findLastIndex(
             (i) => i.filterType === "delogo",
         );
         if (lastDelogo > -1) {
-            this.filterGraph.splice(lastDelogo + 1, 0, filterData);
+            this.filterGraph.splice(lastDelogo + 1, 0, this.delogo);
         } else {
-            this.filterGraph.push(filterData);
+            this.filterGraph.push(this.delogo);
         }
     }
     this.saveSettings();
