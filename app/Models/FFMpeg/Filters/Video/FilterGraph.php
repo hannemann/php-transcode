@@ -9,6 +9,8 @@ use App\Models\FFMpeg\Actions\ScaleCPU;
 use App\Models\FFMpeg\Actions\DelogoCPU;
 use App\Models\FFMpeg\Actions\Fillborders;
 use App\Models\FFMpeg\Actions\RemovelogoCPU;
+use App\Models\FFMpeg\Filters\Video\Pad;
+use App\Models\FFMpeg\Filters\Video\Crop;
 
 class FilterGraph
 {
@@ -18,6 +20,7 @@ class FilterGraph
     const FILTER_TYPE_DELOGO = 'delogo';
     const FILTER_TYPE_REMOVELOGO = 'removeLogo';
     const FILTER_TYPE_FILLBORDERS = 'fillborders';
+    const FILTER_TYPE_PAD = 'pad';
 
     private string $disk;
     private string $path;
@@ -63,7 +66,7 @@ class FilterGraph
                     $this->filters->push($this->getDeinterlaceFilter($setting));
                     break;
                 case self::FILTER_TYPE_CROP:
-                    $this->filters->push($this->getCropFilter($setting));
+                    $this->filters->push(CropCPU::getFilterString($setting));
                     break;
                 case self::FILTER_TYPE_DELOGO:
                     $this->filters->push($this->getDelogoFilter($setting));
@@ -73,6 +76,9 @@ class FilterGraph
                     break;
                 case self::FILTER_TYPE_REMOVELOGO:
                     $this->filters->push($this->getRemoveLogoFilter($setting));
+                    break;
+                case self::FILTER_TYPE_PAD:
+                    $this->filters->push(Pad::getFilterString($setting));
                     break;
             }
             return $this->filters->last();
@@ -97,11 +103,6 @@ class FilterGraph
     private function getDeinterlaceFilter(array $settings): string
     {
         return 'bwdif=mode=send_field:parity=auto:deint=all';
-    }
-
-    private function getCropFilter(array $settings): string
-    {
-        return CropCPU::getFilterString($settings);
     }
 
     private function getDelogoFilter(array $settings): string
