@@ -307,7 +307,10 @@ export class DeLogo extends VideoEditor {
     }
 
     resetBetween() {
-        this.between = new Enable();
+        if (this.model) {
+            this.model.between.from = null;
+            this.model.between.to = null;
+        }
         this.betweenFrom = "n/a";
         this.betweenTo = "n/a";
     }
@@ -330,6 +333,7 @@ export class DeLogo extends VideoEditor {
         if ("undefined" !== typeof e.currentTarget.dataset.active) {
             this.filterIndex = this.lastDelogoNode.dataset.index;
             this.activeDelogoFilter = null;
+            this.model = new Delogo();
             this.resetBetween();
             this.isSaved = true;
             return;
@@ -448,12 +452,11 @@ export class DeLogo extends VideoEditor {
         this.fakeBox.classList.toggle("active", isActive);
         this.indicatorByTimestamp = null;
         if (!isActive) return;
-        const idx = parseInt(e.currentTarget.dataset.index);
-        const model = this.configurator.filterGraph[idx];
-        this.fakeCoords = model;
+        const delogo = JSON.parse(e.currentTarget.dataset.delogo);
+        this.fakeCoords = delogo;
         this.indicatorRangeByTimestamp = {
-            from: model.between.from.seconds || 0,
-            to: model.between.to.seconds || 0,
+            from: delogo.between.from || 0,
+            to: delogo.between.to || 0,
         };
     }
 
