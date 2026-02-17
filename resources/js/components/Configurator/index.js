@@ -13,6 +13,7 @@ import "./Dialogues/Cropper";
 import "./Dialogues/Delogo";
 import "./Dialogues/RemoveLogo";
 import "./Dialogues/Fillborders";
+import "./Dialogues/Pad";
 import { toolProxy } from "./Tools";
 import { DomHelper } from "../../Helper/Dom";
 
@@ -620,6 +621,7 @@ ${CSS}
                 <option value="remux:ts">Remux TS</option>
                 <option value="chapters_keep:cpu:instantOpen">Keep Chapters</option>
                 <option value="deinterlace:cpu:instantOpen">Deinterlace</option>
+                <option value="pad:cpu:instantOpen">Pad</option>
                 <option value="crop:cpu:instantOpen">Crop (CPU)</option>
                 <option value="scale:cpu:instantOpen">Scale (CPU)</option>
                 <option value="delogo:cpu:instantOpen">DeLogo</option>
