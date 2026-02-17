@@ -46,12 +46,7 @@ class Filter extends HTMLElement {
                 requestCrop.call(this.configurator, "cpu", idx, filterData);
                 break;
             case "removeLogo":
-                requestRemovelogo.call(
-                    this.configurator,
-                    "cpu",
-                    idx,
-                    filterData,
-                );
+                requestRemovelogo.call(this.configurator, filterData);
                 break;
             case "fillborders":
                 requestFillborders.call(

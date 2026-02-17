@@ -30,5 +30,6 @@
 
     "errorLens.enabledDiagnosticLevels": ["error", "warning"],
 
-    "makefile.configureOnOpen": false
+    "makefile.configureOnOpen": false,
+    "cSpell.words": ["Delogo"]
 }

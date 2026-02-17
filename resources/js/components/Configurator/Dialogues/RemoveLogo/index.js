@@ -3,6 +3,7 @@ import Paint from "../../../../Helper/Paint";
 import { Request } from "../../../Request";
 import { VTime } from "../../../../Helper/Time";
 import { STATE_INFO } from "../../../Toast";
+import { RemoveLogo as Model } from "../../../../Models/Filters/RemoveLogo";
 
 const IMAGE_TYPE_ORIGINAL = "Original";
 const IMAGE_TYPE_MASK = "Mask";
@@ -35,6 +36,10 @@ export const saveCustomMask = async function (image, path) {
 };
 
 class RemoveLogo extends VideoEditor {
+    /**
+     * @type {Model}
+     */
+    #model;
     raw = [-1];
 
     bindListeners() {
@@ -82,8 +87,15 @@ class RemoveLogo extends VideoEditor {
         this.updateFrameUrl();
     }
 
-    setTimestamp(value) {
-        this.current = new VTime(value).milliseconds;
+    updateModel() {
+        this.#model.timestamp = this.timestamp();
+        this.#model.w = this.video.width;
+        this.#model.h = this.video.height;
+    }
+
+    set model(model) {
+        this.#model = model;
+        this.current = model.timestamp.milliseconds || 0;
         this.updateImages();
     }
 
@@ -95,15 +107,6 @@ class RemoveLogo extends VideoEditor {
         return this.imageType === IMAGE_TYPE_ORIGINAL
             ? super.baseUrl
             : `/removelogoImage/${encodeURIComponent(this.path)}?timestamp=`;
-    }
-
-    get removeLogo() {
-        return {
-            timestamp: this.timestamp(),
-            w: this.video.width,
-            h: this.video.height,
-            type: this.type,
-        };
     }
 
     get paintButton() {

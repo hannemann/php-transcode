@@ -1,17 +1,22 @@
+import { RemoveLogo } from "../../../Models/Filters/RemoveLogo";
 import { TYPE_VIDEO } from "../Streams";
 
-export const requestRemovelogo = async function (type, id = null, data = null) {
-    const currentIdx = this.filterGraph.findIndex(
-        (f) => f.filterType === "removeLogo",
+export const requestRemovelogo = async function (model) {
+    model = model || new RemoveLogo();
+    const presentRemoveLogo = model.configurator.filterGraph.find(
+        (f) => f.filterType === model.filterType,
     );
-    if (currentIdx > -1) {
+    const isPresentRemoveLogo =
+        model.configurator.filterGraph.indexOf(model) > -1;
+
+    if (presentRemoveLogo && !isPresentRemoveLogo) {
         const m = document.createElement("modal-confirm");
         m.header = "Replace existing filter?";
         m.content = "RemoveLogo filter can only be applied once.";
         document.body.appendChild(m);
         try {
             await m.confirm();
-            this.filterGraph[currentIdx] = { filterType: null };
+            this.filterGraph[model.filterIndex] = { filterType: null };
             await this.saveSettings();
             console.log("Replace removeLogo filter confirmed");
         } catch (error) {
@@ -31,12 +36,11 @@ export const requestRemovelogo = async function (type, id = null, data = null) {
             duration: parseFloat(this.format.duration),
         };
         d.path = this.item.path;
-        d.type = type;
-        d.filterIndex = id;
+        d.filterIndex = model.filterIndex;
         requestAnimationFrame(() => {
             d.markers = this.clips;
-            if (id !== null && data) {
-                d.setTimestamp(data.timestamp);
+            if (d.filterIndex !== null && model) {
+                d.model = model;
             }
         });
         m.appendChild(d);
@@ -45,23 +49,19 @@ export const requestRemovelogo = async function (type, id = null, data = null) {
             document.querySelector("transcoder-toast"),
         );
         await m.open();
+        d.updateModel();
         console.info(
-            "Removelogo video file %s. Create logomask at timestamp %s, width: %s, height: %s, type: %s",
+            "Removelogo video file %s. Create logomask at timestamp %s, width: %s, height: %s",
             this.item.path,
-            d.removeLogo.timestamp,
-            d.removeLogo.w,
-            d.removeLogo.h,
-            d.removeLogo.type,
+            model.timestamp,
+            model.w,
+            model.h,
         );
-        this.removeLogo = d.removeLogo;
-        const filterData = {
-            ...this.removeLogo,
-            ...{ filterType: "removeLogo" },
-        };
-        if (currentIdx > -1) {
-            this.filterGraph[currentIdx] = filterData;
+        this.removeLogo = model;
+        if (isPresentRemoveLogo) {
+            this.filterGraph[model.filterIndex] = model;
         } else {
-            this.filterGraph.push(filterData);
+            this.filterGraph.push(model);
         }
         this.saveSettings();
     } catch (error) {

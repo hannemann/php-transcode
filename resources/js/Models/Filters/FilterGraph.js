@@ -1,5 +1,11 @@
 import { Delogo } from "./Delogo";
 import { FilterModel } from "./FilterModel";
+import { RemoveLogo } from "./RemoveLogo";
+
+const modelMap = {
+    delogo: Delogo,
+    removeLogo: RemoveLogo,
+};
 
 /**
  * Factory function to transform raw data into specific FilterModel instances.
@@ -9,10 +15,8 @@ import { FilterModel } from "./FilterModel";
  */
 const mapFilterModel = function (item, idx) {
     if (item instanceof FilterModel) return item;
-    switch (item.filterType) {
-        case "delogo":
-            item = new Delogo(idx, item);
-            break;
+    if (modelMap[item.filterType]) {
+        item = new modelMap[item.filterType](idx, item);
     }
     return item;
 };

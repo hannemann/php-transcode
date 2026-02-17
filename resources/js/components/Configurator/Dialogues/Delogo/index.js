@@ -369,18 +369,11 @@ export class DeLogo extends VideoEditor {
         this.isEdit = false;
         this.isSaved = false;
         this.resetBetween();
-        const item = {
-            index: this.configurator.filterGraph.length,
-            type: "cpu",
-            filterType: "delogo",
-            between: {
-                from: null,
-                to: null,
-            },
-            ...this.coords,
-        };
-        this.filters = [...this.filters, item];
-        this.activeDelogoFilter = item.index;
+        const item = new Delogo();
+        const filters = this.filters;
+        filters.push(item);
+        this.filters = filters;
+        this.activeDelogoFilter = this.configurator.filterGraph.length;
     }
 
     editItem(e) {
@@ -437,13 +430,11 @@ export class DeLogo extends VideoEditor {
     }
 
     initFilters() {
-        this.filters = [...this.configurator.filterGraph]
-            .filter((f, k) => {
-                if (f.filterType !== "delogo") return false;
-                f.index = k;
-                return true;
-            })
-            .map((f) => new Delogo(f.index, f));
+        this.filters = [...this.configurator.filterGraph].filter((f, k) => {
+            if (f.filterType !== "delogo") return false;
+            f.index = k;
+            return true;
+        });
     }
 
     /**
@@ -454,8 +445,8 @@ export class DeLogo extends VideoEditor {
     createItem(item) {
         const node = document.createElement("div");
         const { from, to } = item.between;
-        const fromCut = from.getCutpoint(this.clipsConfig);
-        const toCut = to.getCutpoint(this.clipsConfig);
+        const fromCut = from?.getCutpoint?.(this.clipsConfig) || "n/a";
+        const toCut = to?.getCutpoint?.(this.clipsConfig) || "n/a";
         node.dataset.index = item.filterIndex;
         node.dataset.delogo = JSON.stringify(item);
 
@@ -537,7 +528,7 @@ export class DeLogo extends VideoEditor {
     get filters() {
         return [...this.filtersContainer.querySelectorAll(":scope > div")].map(
             (i) => {
-                return JSON.parse(i.dataset.delogo);
+                return this.configurator.filterGraph[Number(i.dataset.index)];
             },
         );
     }

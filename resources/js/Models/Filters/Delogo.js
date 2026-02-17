@@ -55,8 +55,4 @@ export class Delogo extends FilterModel {
             between: this.between,
         };
     }
-
-    static isDelogo(f) {
-        return f instanceof Delogo;
-    }
 }

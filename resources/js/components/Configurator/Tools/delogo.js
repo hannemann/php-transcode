@@ -1,7 +1,9 @@
+import { Delogo } from "../../../Models/Filters/Delogo";
 import { DeLogo } from "../Dialogues/Delogo";
 import { TYPE_VIDEO } from "../Streams";
 
 export const requestDelogo = async function (model) {
+    model = model || new Delogo();
     try {
         const m = document.createElement("modal-window");
         m.header = "Delogo";

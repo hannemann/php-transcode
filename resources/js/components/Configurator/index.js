@@ -625,8 +625,8 @@ ${CSS}
                 <option value="pad:cpu:instantOpen">Pad</option>
                 <option value="crop:cpu:instantOpen">Crop (CPU)</option>
                 <option value="scale:cpu:instantOpen">Scale (CPU)</option>
-                <option value="delogo:cpu:instantOpen">DeLogo</option>
-                <option value="removelogo:cpu:instantOpen">RemoveLogo</option>
+                <option value="delogo:instantOpen">DeLogo</option>
+                <option value="removelogo:instantOpen">RemoveLogo</option>
                 <option value="fillborders:cpu:instantOpen">Fillborders</option>
             </combo-button>
             <theme-button class="btn-clipper">
