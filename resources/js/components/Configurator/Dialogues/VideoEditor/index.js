@@ -303,19 +303,9 @@ class VideoEditor extends HTMLElement {
             params.push(`current_filter=${this.filterIndex}`);
         }
         if (this.aspectDecimal) {
-            const filterGraph = document
-                .querySelector("ffmpeg-transcoder")
-                .shadowRoot.querySelector("transcode-configurator").filterGraph;
-            const scaleFilter = filterGraph.find((f, idx) => {
-                if (!isNaN(filterIndex) && idx > filterIndex) return false;
-                return f.filterType === "scale";
-            });
-            const height = scaleFilter
-                ? parseInt(scaleFilter.height)
-                : this.video.coded_height;
-            const width = height * this.aspectDecimal;
-            params.push(`height=${height}`);
-            params.push(`width=${width}`);
+            const dim = this.outputDimensions;
+            params.push(`height=${dim.height}`);
+            params.push(`width=${dim.width}`);
         }
         this.frameUrl = `${this.baseUrl}${this.timestamp()}&${params.join("&")}`;
     }
@@ -395,6 +385,34 @@ class VideoEditor extends HTMLElement {
 
     get baseThumbUrl() {
         return this.baseUrl;
+    }
+
+    get outputDimensions() {
+        /**
+         * @type {Array}
+         */
+        const filterGraph = document
+            .querySelector("ffmpeg-transcoder")
+            .shadowRoot.querySelector("transcode-configurator").filterGraph;
+        const filterIndex = parseInt(this.filterIndex);
+        const filter = filterGraph.findLast((f, idx) => {
+            if (!isNaN(filterIndex) && idx >= filterIndex) return false;
+            return ["scale", "crop", "pad"].includes(f.filterType);
+        });
+        const height = filter
+            ? parseInt(filter.height || filter.ch)
+            : this.video.coded_height;
+        const width = filter
+            ? Math.round(
+                  this.aspectDecimal
+                      ? height * this.aspectDecimal
+                      : filter.wisth || filter.cw,
+              )
+            : this.video.coded_width;
+        return {
+            width,
+            height,
+        };
     }
 
     get aspectRatio() {

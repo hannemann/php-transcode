@@ -6,21 +6,17 @@ export const requestCrop = async function (type, id = NaN, data = null) {
         m.header = "Cropper";
         m.classList.add("no-shadow");
         const d = document.createElement("dialogue-cropper");
-        const video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);
-        // const scaleFilter = this.filterGraph.find(f => f.filterType === 'scale');
-        const scaleFilter = this.filterGraph.find((f, idx) => {
-            if (!isNaN(id) && idx > id) return false;
-            return f.filterType === "scale";
-        });
+        d.filterIndex = id;
+        d.video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);
+        const dim = d.outputDimensions;
         d.video = {
-            ...video,
+            ...d.video,
             duration: parseFloat(this.format.duration),
-            width: scaleFilter?.width || video.coded_width,
-            height: scaleFilter?.height || video.coded_height,
+            width: dim.width,
+            height: dim.height,
         };
         d.path = this.item.path;
         d.type = type;
-        d.filterIndex = id;
         requestAnimationFrame(() => {
             d.crop = this.crop;
             d.markers = this.clips;
@@ -58,7 +54,13 @@ export const requestCrop = async function (type, id = NaN, data = null) {
             d.crop.aspect,
         );
         this.crop = d.crop;
-        const filterData = { ...d.crop, ...{ filterType: "crop" } };
+        const filterData = {
+            cw: d.crop.cw,
+            ch: d.crop.ch,
+            cx: d.crop.cx,
+            cy: d.crop.cy,
+            filterType: "crop",
+        };
         if (id !== null && data) {
             this.filterGraph[id] = filterData;
         } else {

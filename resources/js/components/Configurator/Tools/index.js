@@ -9,10 +9,13 @@ import { requestPlay } from "./player.js";
 import { requestDeinterlace } from "./deinterlace.js";
 import { requestFillborders } from "./fillborders.js";
 import { requestChaptersKeep } from "./chaptersKeep.js";
+import { requestPad } from "./pad.js";
 
 export const toolProxy = async function (e) {
     const args = e.target.value.split(":");
-    if (e.type === "change" && args[2] !== "instantOpen") return;
+    const instantOpen = args.includes("instantOpen");
+    if (instantOpen) (args.splice(args.indexOf("instantOpen")), 1);
+    if (e.type === "change" && !instantOpen) return;
 
     await this.saveSettings(false, true);
     switch (args.shift()) {
@@ -48,6 +51,9 @@ export const toolProxy = async function (e) {
             break;
         case "fillborders":
             requestFillborders.apply(this, args);
+            break;
+        case "pad":
+            requestPad.apply(this, args);
             break;
     }
 };

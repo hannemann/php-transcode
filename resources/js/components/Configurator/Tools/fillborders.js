@@ -10,19 +10,16 @@ export const requestFillborders = async function (
         m.header = "Fillborders";
         m.classList.add("no-shadow");
         const d = document.createElement("dialogue-fillborders");
-        const video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);
-        const scaleFilter = this.filterGraph.find((f, idx) => {
-            if (!isNaN(id) && idx > id) return false;
-            return f.filterType === "scale";
-        });
+        d.filterIndex = id;
+        d.video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);
+        const dim = d.outputDimensions;
         d.video = {
-            ...video,
+            ...d.video,
             duration: parseFloat(this.format.duration),
-            width: scaleFilter?.width || video.coded_width,
-            height: scaleFilter?.height || video.coded_height,
+            width: dim.width,
+            height: dim.height,
         };
         d.path = this.item.path;
-        d.filterIndex = id;
         requestAnimationFrame(() => {
             d.fillborders = data ?? this.fillborders;
             d.markers = this.clips;
