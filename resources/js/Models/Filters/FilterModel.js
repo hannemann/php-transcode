@@ -22,7 +22,7 @@ export class FilterModel {
         this.filterIndex = newIndex;
     }
 
-    get configurator() {
+    static get configurator() {
         if (!FilterModel.#configurator) {
             FilterModel.#configurator = ConfiguratorHelper.configurator;
         }
@@ -30,6 +30,6 @@ export class FilterModel {
     }
 
     get isActive() {
-        return this.configurator.filterIndex === this.filterIndex;
+        return FilterModel.configurator.filterIndex === this.filterIndex;
     }
 }

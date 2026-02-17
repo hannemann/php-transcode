@@ -4,6 +4,7 @@ import { TYPE_VIDEO } from "../Streams";
 
 export const requestDelogo = async function (model) {
     model = model || new Delogo();
+    const isEdit = isNaN(parseInt(model.filterIndex));
     try {
         const m = document.createElement("modal-window");
         m.header = "Delogo";
@@ -21,11 +22,8 @@ export const requestDelogo = async function (model) {
         d.addEventListener(
             "delogo-updated",
             () => {
-                if (d.filterIndex !== null && model) {
-                    d.applyFilterData(model);
-                } else {
-                    d.addNext();
-                }
+                d.model = model;
+                d.run();
             },
             { once: true },
         );
@@ -34,7 +32,7 @@ export const requestDelogo = async function (model) {
             document.querySelector("transcoder-toast"),
         );
         await m.open();
-        saveDelogo.call(this, d, !!model);
+        saveDelogo.call(this, d, isEdit);
     } catch (error) {
         if (error) {
             console.error(error);
@@ -50,7 +48,7 @@ export const requestDelogo = async function (model) {
  */
 export function saveDelogo(delogo, isEdit = false) {
     if (delogo.saved) return;
-    this.delogo = delogo.filterData;
+    this.delogo = delogo.model;
     console.info(
         "Delogo video file %s. x: %d, x: %d, w: %d, h: %d, from: %s, to: %s",
         this.item.path,
@@ -58,20 +56,21 @@ export function saveDelogo(delogo, isEdit = false) {
         this.delogo.y,
         this.delogo.w,
         this.delogo.h,
-        this.delogo.between.from?.seconds || "n/a",
-        this.delogo.between.to?.seconds || "n/a",
+        this.delogo.between.from?.coord || "n/a",
+        this.delogo.between.to?.coord || "n/a",
     );
     if (this.delogo.filterIndex !== null && isEdit) {
         this.filterGraph[delogo.filterIndex] = this.delogo;
     } else {
-        const lastDelogo = this.filterGraph.findLastIndex(
-            (i) => i.filterType === "delogo",
-        );
-        if (lastDelogo > -1) {
-            this.filterGraph.splice(lastDelogo + 1, 0, this.delogo);
-        } else {
-            this.filterGraph.push(this.delogo);
-        }
+        this.filterGraph.splice(this.delogo.filterIndex, 0, this.delogo);
+        // const lastDelogo = this.filterGraph.findLastIndex(
+        //     (i) => i.filterType === "delogo",
+        // );
+        // if (lastDelogo > -1) {
+        //     this.filterGraph.splice(lastDelogo + 1, 0, this.delogo);
+        // } else {
+        //     this.filterGraph.push(this.delogo);
+        // }
     }
     this.saveSettings();
     delogo.saved = true;

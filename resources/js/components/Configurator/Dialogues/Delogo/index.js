@@ -7,6 +7,10 @@ import { Enable } from "../../../../Models/Filters/Filters/Enable";
 import { Delogo } from "../../../../Models/Filters/Delogo";
 
 export class DeLogo extends VideoEditor {
+    /**
+     * @type {Delogo}
+     */
+    model;
     delogoOffsetTop = 0;
     delogoOffsetLeft = 0;
     delogoOffsetBottom = null;
@@ -285,55 +289,21 @@ export class DeLogo extends VideoEditor {
                     )}px`;
                 }
             }
+            this.model.coords = this.coords;
             this.updateZoom();
         }
     }
 
-    applyFilterData(data) {
-        this.isEdit = true;
-        this.isSaved = false;
-        this.coords = data;
-        this.setBetween(data.between);
-        this.updateZoom();
-        this.current = data.between.from.milliseconds;
-        this.updateIndicatorPos();
-        this.updateImages();
-        this.activeDelogoFilter = this.filterIndex;
-    }
-
-    /**
-     * @param {Delogo} model
-     */
-    set filterData(model) {
-        this.applyFilterData(model);
-    }
-
-    /**
-     * @returns {Delogo}
-     */
-    get filterData() {
-        const coords = this.coords || { x: null, y: null, w: null, h: null };
-        const between = {
-            from: this.between.from.seconds,
-            to: this.between.to.seconds,
-        };
-        return new Delogo(this.filterIndex, { ...coords, between });
-    }
-
-    setBetween(between) {
-        this.between = between;
-        this.betweenFrom = this.between.from?.getCutpoint(this.clipsConfig);
-        this.betweenTo = this.between.to?.getCutpoint(this.clipsConfig);
-    }
-
     setBetweenFrom() {
-        this.between.from = this.timestamp();
-        this.betweenFrom = this.between.from?.getCutpoint(this.clipsConfig);
+        this.model.between.from = this.timestamp();
+        this.betweenFrom = this.model.between.from?.getCutpoint(
+            this.clipsConfig,
+        );
     }
 
     setBetweenTo() {
-        this.between.to = this.timestamp();
-        this.betweenTo = this.between.to?.getCutpoint(this.clipsConfig);
+        this.model.between.to = this.timestamp();
+        this.betweenTo = this.model.between.to?.getCutpoint(this.clipsConfig);
     }
 
     resetBetween() {
@@ -343,37 +313,17 @@ export class DeLogo extends VideoEditor {
     }
 
     gotoBetweenFrom() {
-        if (!this.between.from) return;
-        this.current = this.between.from.milliseconds;
+        if (!this.model.between.from) return;
+        this.current = this.model.between.from.milliseconds;
         this.updateIndicatorPos();
         this.updateImages();
     }
 
     gotoBetweenTo() {
-        if (!this.between.to) return;
-        this.current = this.between.to.milliseconds;
+        if (!this.model.between.to) return;
+        this.current = this.model.between.to.milliseconds;
         this.updateIndicatorPos();
         this.updateImages();
-    }
-
-    save() {
-        saveDelogo.call(this.configurator, this, this.isEdit);
-        this.isSaved = this.saved;
-        this.initFilters();
-        this.activeDelogoFilter = null;
-        Iconify.scan(this.shadowRoot);
-    }
-
-    addNext() {
-        this.filterIndex = this.lastDelogoNode?.dataset.index || null;
-        this.isEdit = false;
-        this.isSaved = false;
-        this.resetBetween();
-        const item = new Delogo();
-        const filters = this.filters;
-        filters.push(item);
-        this.filters = filters;
-        this.activeDelogoFilter = this.configurator.filterGraph.length;
     }
 
     editItem(e) {
@@ -384,13 +334,10 @@ export class DeLogo extends VideoEditor {
             this.isSaved = true;
             return;
         }
-        const delogo = new Delogo(
-            parseInt(e.currentTarget.dataset.index),
-            JSON.parse(e.currentTarget.dataset.delogo),
-        );
-        this.filterIndex = delogo.filterIndex;
+        this.filterIndex = parseInt(e.currentTarget.dataset.index);
+        this.model = this.configurator.filterGraph[this.filterIndex];
         this.isSaved = false;
-        this.applyFilterData(delogo);
+        this.applyFilterData();
         this.activeDelogoFilter = e.currentTarget;
     }
 
@@ -501,9 +448,62 @@ export class DeLogo extends VideoEditor {
         this.fakeBox.classList.toggle("active", isActive);
         this.indicatorByTimestamp = null;
         if (!isActive) return;
-        const data = JSON.parse(e.currentTarget.dataset.delogo);
-        this.fakeCoords = data;
-        this.indicatorRangeByTimestamp = data.between;
+        const idx = parseInt(e.currentTarget.dataset.index);
+        const model = this.configurator.filterGraph[idx];
+        this.fakeCoords = model;
+        this.indicatorRangeByTimestamp = {
+            from: model.between.from.seconds || 0,
+            to: model.between.to.seconds || 0,
+        };
+    }
+
+    run() {
+        if (!isNaN(parseInt(this.model.filterIndex))) {
+            this.applyFilterData();
+        } else {
+            this.addNext();
+        }
+    }
+
+    save() {
+        saveDelogo.call(this.configurator, this, this.isEdit);
+        this.isSaved = this.saved;
+        this.initFilters();
+        this.activeDelogoFilter = null;
+        this.model = new Delogo();
+        Iconify.scan(this.shadowRoot);
+    }
+
+    applyFilterData() {
+        this.isEdit = true;
+        this.isSaved = false;
+        this.coords = this.model.coords;
+        this.betweenFrom = this.model.between.from?.getCutpoint(
+            this.clipsConfig,
+        );
+        this.betweenTo = this.model.between.to?.getCutpoint(this.clipsConfig);
+        this.updateZoom();
+        this.current = this.model.between.from.milliseconds;
+        this.updateIndicatorPos();
+        this.updateImages();
+        this.activeDelogoFilter = this.filterIndex;
+    }
+
+    // TODO: check add next and fix that bs
+
+    addNext() {
+        this.isEdit = false;
+        this.isSaved = false;
+        this.resetBetween();
+        this.model.coords = this.coords;
+        this.model.between.from = this.current / 1000;
+        this.model.between.to = this.current / 1000;
+        this.model.setIndex(Delogo.proposedFilterIndex);
+        this.filterIndex = this.model.filterIndex;
+        const filters = this.filters;
+        filters.push(this.model);
+        this.filters = filters;
+        this.activeDelogoFilter = this.model.filterIndex;
     }
 
     get lastDelogo() {
@@ -602,6 +602,7 @@ export class DeLogo extends VideoEditor {
     }
 
     set betweenFrom(value) {
+        this.model && (this.model.between.from = value);
         this.displayBetweenFrom.querySelector("span:last-of-type").innerText =
             value;
     }
@@ -611,6 +612,7 @@ export class DeLogo extends VideoEditor {
     }
 
     get betweenTo() {
+        this.model && (this.model.between.to = value);
         return this.displayBetweenTo.querySelector("span:last-of-type")
             .innerText;
     }

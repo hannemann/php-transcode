@@ -3,11 +3,11 @@ import { TYPE_VIDEO } from "../Streams";
 
 export const requestRemovelogo = async function (model) {
     model = model || new RemoveLogo();
-    const presentRemoveLogo = model.configurator.filterGraph.find(
+    const presentRemoveLogo = RemoveLogo.configurator.filterGraph.find(
         (f) => f.filterType === model.filterType,
     );
     const isPresentRemoveLogo =
-        model.configurator.filterGraph.indexOf(model) > -1;
+        RemoveLogo.configurator.filterGraph.indexOf(model) > -1;
 
     if (presentRemoveLogo && !isPresentRemoveLogo) {
         const m = document.createElement("modal-confirm");

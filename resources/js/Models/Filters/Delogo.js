@@ -12,9 +12,21 @@ import { Enable } from "./Filters/Enable";
  * @property {EnableData} [between]       enable between
  */
 
+const filterType = "delogo";
+
 export class Delogo extends FilterModel {
-    filterType = "delogo";
+    filterType = filterType;
     type = "cpu";
+
+    static get all() {
+        return FilterModel.configurator.filterGraph.filter(
+            (f) => f.filterType === filterType,
+        );
+    }
+
+    static get proposedFilterIndex() {
+        return Delogo.all.length;
+    }
 
     /**
      *
@@ -53,6 +65,19 @@ export class Delogo extends FilterModel {
             w: this.w,
             h: this.h,
             between: this.between,
+        };
+    }
+
+    set coords(value) {
+        ({ x: this.x, y: this.y, w: this.w, h: this.h } = value);
+    }
+
+    get coords() {
+        return {
+            x: this.x,
+            y: this.y,
+            w: this.w,
+            h: this.h,
         };
     }
 }

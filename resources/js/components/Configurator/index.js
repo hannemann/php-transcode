@@ -359,6 +359,12 @@ class TranscodeConfigurator extends HTMLElement {
         this.saveSettings(args[1] === "template");
     }
 
+    /**
+     *
+     * @param {Boolean} asTemplate      if should be saved as template for other files in this folder
+     * @param {Boolean} skipUpdates     if no update is needed (save before add next filter @see tools/index.js)
+     * @returns
+     */
     async saveSettings(asTemplate = false, skipUpdates = false) {
         await Request.post(`/settings/${encodeURIComponent(this.item.path)}`, {
             ...this.config,
@@ -368,7 +374,7 @@ class TranscodeConfigurator extends HTMLElement {
         if (skipUpdates) return;
 
         this.format = this.format;
-        this.filterGraph = this.filterGraph;
+        this.filterGraph = this.filterGraph.reindex();
         this.streams = this.streams;
     }
 
