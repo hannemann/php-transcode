@@ -8,7 +8,6 @@ import { requestFillborders } from "../Tools/fillborders.js";
 import { VTime } from "../../../Helper/Time.js";
 import { saveCustomMask } from "../Dialogues/RemoveLogo/index.js";
 import Paint from "../../../Helper/Paint.js";
-import { Delogo as ModelDelogo } from "../../../Models/Filters/Delogo.js";
 
 class Filter extends HTMLElement {
     constructor() {
@@ -37,36 +36,29 @@ class Filter extends HTMLElement {
     }
 
     handleModify(e) {
-        switch (this.filterData.filterType) {
+        const idx = Number(this.dataset.id);
+        const filterData = this.configurator.filterGraph[idx];
+        switch (filterData.filterType) {
             case "delogo":
-                const model = new ModelDelogo(
-                    parseInt(this.dataset.id),
-                    this.filterData,
-                );
-                requestDelogo.call(this.configurator, model);
+                requestDelogo.call(this.configurator, filterData);
                 break;
             case "crop":
-                requestCrop.call(
-                    this.configurator,
-                    "cpu",
-                    parseInt(this.dataset.id),
-                    this.filterData,
-                );
+                requestCrop.call(this.configurator, "cpu", idx, filterData);
                 break;
             case "removeLogo":
                 requestRemovelogo.call(
                     this.configurator,
                     "cpu",
-                    parseInt(this.dataset.id),
-                    this.filterData,
+                    idx,
+                    filterData,
                 );
                 break;
             case "fillborders":
                 requestFillborders.call(
                     this.configurator,
                     "cpu",
-                    parseInt(this.dataset.id),
-                    this.filterData,
+                    idx,
+                    filterData,
                 );
                 break;
         }

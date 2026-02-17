@@ -16,6 +16,7 @@ import "./Dialogues/Fillborders";
 import "./Dialogues/Pad";
 import { toolProxy } from "./Tools";
 import { DomHelper } from "../../Helper/Dom";
+import { FilterGraph } from "../../Models/Filters/FilterGraph";
 
 const WS_CHANNEL = "Transcode.Config";
 class TranscodeConfigurator extends HTMLElement {
@@ -415,7 +416,7 @@ class TranscodeConfigurator extends HTMLElement {
     }
 
     set filterGraph(value) {
-        this.#filterGraph = value;
+        this.#filterGraph = new FilterGraph(value);
         const tag = "transcode-configurator-filter-graph";
         this.streamsSection.querySelector(tag)?.remove();
 
