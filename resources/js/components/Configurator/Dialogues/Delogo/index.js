@@ -452,6 +452,7 @@ export class DeLogo extends VideoEditor {
         this.fakeBox.classList.toggle("active", isActive);
         this.indicatorByTimestamp = null;
         if (!isActive) return;
+        // TODO: grab from this.filters, timestamp should be seconds property of between
         const delogo = JSON.parse(e.currentTarget.dataset.delogo);
         this.fakeCoords = delogo;
         this.indicatorRangeByTimestamp = {
