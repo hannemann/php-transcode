@@ -25,7 +25,10 @@ export class Delogo extends FilterModel {
     }
 
     static get proposedFilterIndex() {
-        return Delogo.all.length;
+        if (Delogo.all.length > 0) {
+            return Delogo.all.pop().filterIndex + 1;
+        }
+        return Delogo.configurator.filterGraph.length;
     }
 
     /**

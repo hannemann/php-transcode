@@ -452,7 +452,6 @@ export class DeLogo extends VideoEditor {
         this.fakeBox.classList.toggle("active", isActive);
         this.indicatorByTimestamp = null;
         if (!isActive) return;
-        // TODO: grab from this.filters, timestamp should be seconds property of between
         const delogo = JSON.parse(e.currentTarget.dataset.delogo);
         this.fakeCoords = delogo;
         this.indicatorRangeByTimestamp = {
@@ -462,7 +461,7 @@ export class DeLogo extends VideoEditor {
     }
 
     run() {
-        if (!isNaN(parseInt(this.model.filterIndex))) {
+        if (this.configurator.filterGraph.indexOf(this.model) > -1) {
             this.applyFilterData();
         } else {
             this.addNext();
@@ -493,8 +492,6 @@ export class DeLogo extends VideoEditor {
         this.activeDelogoFilter = this.filterIndex;
     }
 
-    // TODO: check add next and fix that bs
-
     addNext() {
         this.isEdit = false;
         this.isSaved = false;
@@ -502,7 +499,6 @@ export class DeLogo extends VideoEditor {
         this.model.coords = this.coords;
         this.model.between.from = this.current / 1000;
         this.model.between.to = this.current / 1000;
-        this.model.setIndex(Delogo.proposedFilterIndex);
         this.filterIndex = this.model.filterIndex;
         const filters = this.filters;
         filters.push(this.model);
@@ -606,7 +602,6 @@ export class DeLogo extends VideoEditor {
     }
 
     set betweenFrom(value) {
-        this.model && (this.model.between.from = value);
         this.displayBetweenFrom.querySelector("span:last-of-type").innerText =
             value;
     }
@@ -616,7 +611,6 @@ export class DeLogo extends VideoEditor {
     }
 
     get betweenTo() {
-        this.model && (this.model.between.to = value);
         return this.displayBetweenTo.querySelector("span:last-of-type")
             .innerText;
     }
