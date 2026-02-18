@@ -487,6 +487,7 @@ class VideoEditor extends HTMLElement {
         const percentage = (100 / this.duration) * (to * 1000);
         node.style.right = `min(100% - ${percentage}%, 100% - 1px`;
         node.style.width = "auto";
+        node.style.minWidth = "1px";
     }
 
     get btnMove() {

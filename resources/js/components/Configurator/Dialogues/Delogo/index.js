@@ -61,7 +61,7 @@ export class DeLogo extends VideoEditor {
         this.editItem = this.editItem.bind(this);
         this.deleteItem = this.deleteItem.bind(this);
         this.copyItem = this.copyItem.bind(this);
-        this.handleFakeBox = this.handleFakeBox.bind(this);
+        this.showItemTimeRange = this.showItemTimeRange.bind(this);
     }
 
     addListeners() {
@@ -93,8 +93,8 @@ export class DeLogo extends VideoEditor {
                 this.copyItem,
             );
             e.addEventListener("click", this.editItem);
-            e.addEventListener("pointerenter", this.handleFakeBox);
-            e.addEventListener("pointerleave", this.handleFakeBox);
+            e.addEventListener("pointerenter", this.showItemTimeRange);
+            e.addEventListener("pointerleave", this.showItemTimeRange);
         });
     }
 
@@ -130,8 +130,8 @@ export class DeLogo extends VideoEditor {
                 "click",
                 this.copyItem,
             );
-            e.removeEventListener("pointerenter", this.handleFakeBox);
-            e.removeEventListener("pointerleave", this.handleFakeBox);
+            e.removeEventListener("pointerenter", this.showItemTimeRange);
+            e.removeEventListener("pointerleave", this.showItemTimeRange);
         });
     }
 
@@ -160,10 +160,10 @@ export class DeLogo extends VideoEditor {
                 this.delogoBox.style.width = `20px`;
                 this.delogoBox.style.height = `20px`;
             }
-            if (!this.fakeBox) {
-                this.fakeBox = document.createElement("div");
-                this.shadowRoot.appendChild(this.fakeBox);
-                this.fakeBox.classList.add("fake-box");
+            if (!this.itemBox) {
+                this.itemBox = document.createElement("div");
+                this.shadowRoot.appendChild(this.itemBox);
+                this.itemBox.classList.add("fake-box");
             }
             //console.log(e, e.offsetX, e.offsetY);
             this.delogoOffsetTop =
@@ -341,7 +341,7 @@ export class DeLogo extends VideoEditor {
         this.filterIndex = parseInt(e.currentTarget.dataset.index);
         this.model = this.configurator.filterGraph[this.filterIndex];
         this.isSaved = false;
-        this.applyFilterData();
+        this.applyModelData();
         this.activeDelogoFilter = e.currentTarget;
     }
 
@@ -422,38 +422,41 @@ export class DeLogo extends VideoEditor {
         node.innerHTML = `<span>${fromCut} - ` + `${toCut}</span>`;
         node.classList.toggle("incomplete", from === null || to === null);
 
-        const iconWrap = document.createElement("div");
-        iconWrap.classList.add("icon-stack", "close");
-        const icon = document.createElement("span");
-        icon.classList.add("iconify");
-        icon.dataset.icon = "mdi-close";
-        const iconHover = document.createElement("span");
-        iconHover.classList.add("iconify", "hover");
-        iconHover.dataset.icon = "mdi-close";
-        iconWrap.append(icon, iconHover);
-
-        const copyIconWrap = document.createElement("div");
-        copyIconWrap.classList.add("icon-stack", "copy");
-        const copyIcon = document.createElement("span");
-        copyIcon.classList.add("iconify");
-        copyIcon.dataset.icon = "mdi-content-copy";
-        const copyIconHover = document.createElement("span");
-        copyIconHover.classList.add("iconify", "hover");
-        copyIconHover.dataset.icon = "mdi-content-copy";
-        copyIconWrap.append(copyIcon, copyIconHover);
-
-        node.append(copyIconWrap, iconWrap);
+        node.append(
+            this.createIcon("mdi-content-copy", "copy"),
+            this.createIcon("mdi-close", "close"),
+        );
 
         return node;
     }
 
-    handleFakeBox(e) {
+    /**
+     * create icon stack
+     * @param {String} icon
+     * @param {String} wrapperClass
+     * @returns {HTMLElement}
+     */
+    createIcon(iconName, wrapperClass) {
+        const iconStack = document.createElement("div");
+        iconStack.classList.add("icon-stack", wrapperClass);
+        const icon = document.createElement("span");
+        icon.classList.add("iconify");
+        icon.dataset.icon = iconName;
+        const iconHover = document.createElement("span");
+        iconHover.classList.add("iconify", "hover");
+        iconHover.dataset.icon = iconName;
+        iconStack.append(icon, iconHover);
+
+        return iconStack;
+    }
+
+    showItemTimeRange(e) {
         const isActive = e.type === "pointerenter";
-        this.fakeBox.classList.toggle("active", isActive);
+        this.itemBox.classList.toggle("active", isActive);
         this.indicatorByTimestamp = null;
         if (!isActive) return;
         const delogo = JSON.parse(e.currentTarget.dataset.delogo);
-        this.fakeCoords = delogo;
+        this.itemCoords = delogo;
         this.indicatorRangeByTimestamp = {
             from: delogo.between.from || 0,
             to: delogo.between.to || 0,
@@ -461,8 +464,9 @@ export class DeLogo extends VideoEditor {
     }
 
     run() {
-        if (this.configurator.filterGraph.indexOf(this.model) > -1) {
-            this.applyFilterData();
+        const isNew = this.configurator.filterGraph.indexOf(this.model) > -1;
+        if (isNew) {
+            this.applyModelData();
         } else {
             this.addNext();
         }
@@ -477,7 +481,7 @@ export class DeLogo extends VideoEditor {
         Iconify.scan(this.shadowRoot);
     }
 
-    applyFilterData() {
+    applyModelData() {
         this.isEdit = true;
         this.isSaved = false;
         this.coords = this.model.coords;
@@ -553,13 +557,16 @@ export class DeLogo extends VideoEditor {
         }
     }
 
-    set fakeCoords(coord) {
+    /**
+     * coords of specific item, used to show position in timeline on hover
+     */
+    set itemCoords(coord) {
         const image = this.imageRect;
         const ratio = this.videoImageRatio;
-        this.fakeBox.style.top = `${Math.round(coord.y / ratio)}px`;
-        this.fakeBox.style.left = `${Math.round(coord.x / ratio + (Math.round(image.left) - this.offsetLeft))}px`;
-        this.fakeBox.style.height = `${Math.round(coord.h / ratio)}px`;
-        this.fakeBox.style.width = `${Math.round(coord.w / ratio)}px`;
+        this.itemBox.style.top = `${Math.round(coord.y / ratio)}px`;
+        this.itemBox.style.left = `${Math.round(coord.x / ratio + (Math.round(image.left) - this.offsetLeft))}px`;
+        this.itemBox.style.height = `${Math.round(coord.h / ratio)}px`;
+        this.itemBox.style.width = `${Math.round(coord.w / ratio)}px`;
     }
 
     set coords(coord) {
