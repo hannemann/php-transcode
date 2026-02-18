@@ -2,7 +2,10 @@ import { TYPE_VIDEO } from "../Streams";
 import { FillBorders } from "../../../Models/Filters/FillBorders";
 
 export const requestFillborders = async function (model) {
-    model = model || new FillBorders();
+    const last = this.filterGraph.getLastOfType("fillborders");
+    if (!model) {
+        model = new FillBorders(null, last?.borders);
+    }
     try {
         const m = document.createElement("modal-window");
         m.header = "Fillborders";

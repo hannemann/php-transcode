@@ -59,18 +59,8 @@ export function saveDelogo(delogo, isEdit = false) {
         this.delogo.between.from?.coord || "n/a",
         this.delogo.between.to?.coord || "n/a",
     );
-    if (this.delogo.filterIndex !== null && isEdit) {
-        this.filterGraph[delogo.filterIndex] = this.delogo;
-    } else {
+    if (!isEdit) {
         this.filterGraph.splice(this.delogo.filterIndex, 0, this.delogo);
-        // const lastDelogo = this.filterGraph.findLastIndex(
-        //     (i) => i.filterType === "delogo",
-        // );
-        // if (lastDelogo > -1) {
-        //     this.filterGraph.splice(lastDelogo + 1, 0, this.delogo);
-        // } else {
-        //     this.filterGraph.push(this.delogo);
-        // }
     }
     this.saveSettings();
     delogo.saved = true;

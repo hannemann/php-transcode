@@ -58,9 +58,7 @@ export const requestRemovelogo = async function (model) {
             model.h,
         );
         this.removeLogo = model;
-        if (isPresentRemoveLogo) {
-            this.filterGraph[model.filterIndex] = model;
-        } else {
+        if (!isPresentRemoveLogo) {
             this.filterGraph.push(model);
         }
         this.saveSettings();

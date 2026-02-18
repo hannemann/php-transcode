@@ -65,4 +65,22 @@ export class FillBorders extends FilterModel {
             between: this.between,
         };
     }
+
+    set borders(value) {
+        ({
+            top: this.top,
+            right: this.right,
+            bottom: this.bottom,
+            left: this.left,
+        } = value);
+    }
+
+    get borders() {
+        return {
+            top: this.top,
+            right: this.right,
+            bottom: this.bottom,
+            left: this.left,
+        };
+    }
 }

@@ -68,4 +68,13 @@ export class FilterGraph extends Array {
         });
         return this;
     }
+
+    /**
+     * obtain last of type if exists
+     * @param {String} type
+     * @returns {FilterModel|undefined}
+     */
+    getLastOfType(type) {
+        return this.findLast((f) => f.filterType === type);
+    }
 }
