@@ -1,10 +1,12 @@
-import { Delogo } from "./Delogo";
 import { FilterModel } from "./FilterModel";
+import { Delogo } from "./Delogo";
 import { RemoveLogo } from "./RemoveLogo";
+import { FillBorders } from "./FillBorders";
 
 const modelMap = {
     delogo: Delogo,
     removeLogo: RemoveLogo,
+    fillborders: FillBorders,
 };
 
 /**

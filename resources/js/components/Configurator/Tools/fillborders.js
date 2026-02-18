@@ -1,16 +1,14 @@
 import { TYPE_VIDEO } from "../Streams";
+import { FillBorders } from "../../../Models/Filters/FillBorders";
 
-export const requestFillborders = async function (
-    type,
-    id = null,
-    data = null,
-) {
+export const requestFillborders = async function (model) {
+    model = model || new FillBorders();
     try {
         const m = document.createElement("modal-window");
         m.header = "Fillborders";
         m.classList.add("no-shadow");
         const d = document.createElement("dialogue-fillborders");
-        d.filterIndex = id;
+        d.filterIndex = model.filterIndex;
         d.video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);
         const dim = d.outputDimensions;
         d.video = {
@@ -20,21 +18,19 @@ export const requestFillborders = async function (
             height: dim.height,
         };
         d.path = this.item.path;
+        d.model = model;
         requestAnimationFrame(() => {
-            d.fillborders = data ?? this.fillborders;
             d.markers = this.clips;
             d.width = d.video.width;
             d.height = d.video.height;
-            if (id !== null && data) {
-                d.mode = data.mode;
-                d.addEventListener(
-                    "fillborders-updated",
-                    () => {
-                        d.applyFilterData(data);
-                    },
-                    { once: true },
-                );
-            }
+            d.mode = model.mode;
+            d.addEventListener(
+                "fillborders-updated",
+                () => {
+                    d.run();
+                },
+                { once: true },
+            );
         });
         m.appendChild(d);
         document.body.insertBefore(
@@ -42,22 +38,21 @@ export const requestFillborders = async function (
             document.querySelector("transcoder-toast"),
         );
         await m.open();
+        model.mode = d.mode;
+        model.color = d.color;
         console.info(
             "Fillborders on video file %s: top: %d, right: %d, bottom: %d, left: %d, mode: %s, color: %s",
             this.item.path,
-            d.fillborders.top,
-            d.fillborders.right,
-            d.fillborders.bottom,
-            d.fillborders.left,
-            d.fillborders.mode ?? "n/a",
-            d.fillborders.color ?? "n/a",
+            model.top,
+            model.right,
+            model.bottom,
+            model.left,
+            model.mode ?? "n/a",
+            model.color ?? "n/a",
         );
-        this.fillborders = d.fillborders;
-        const filterData = { filterType: "fillborders", ...d.fillborders };
-        if (id !== null && data) {
-            this.filterGraph[id] = filterData;
-        } else {
-            this.filterGraph.push(filterData);
+        this.fillborders = model;
+        if (isNaN(parseInt(model.filterIndex))) {
+            this.filterGraph.push(model);
         }
         this.saveSettings();
     } catch (error) {

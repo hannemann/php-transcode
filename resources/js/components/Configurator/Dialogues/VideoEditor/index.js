@@ -406,7 +406,7 @@ class VideoEditor extends HTMLElement {
             ? Math.round(
                   this.aspectDecimal
                       ? height * this.aspectDecimal
-                      : filter.wisth || filter.cw,
+                      : filter.width || filter.cw,
               )
             : this.video.coded_width;
         return {

@@ -49,12 +49,7 @@ class Filter extends HTMLElement {
                 requestRemovelogo.call(this.configurator, filterData);
                 break;
             case "fillborders":
-                requestFillborders.call(
-                    this.configurator,
-                    "cpu",
-                    idx,
-                    filterData,
-                );
+                requestFillborders.call(this.configurator, filterData);
                 break;
         }
     }

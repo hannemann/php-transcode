@@ -633,7 +633,7 @@ ${CSS}
                 <option value="scale:cpu:instantOpen">Scale (CPU)</option>
                 <option value="delogo:instantOpen">DeLogo</option>
                 <option value="removelogo:instantOpen">RemoveLogo</option>
-                <option value="fillborders:cpu:instantOpen">Fillborders</option>
+                <option value="fillborders:instantOpen">Fillborders</option>
             </combo-button>
             <theme-button class="btn-clipper">
                 <span class="icon-stack" slot="icon">

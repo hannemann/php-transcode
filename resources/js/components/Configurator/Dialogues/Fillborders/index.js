@@ -114,30 +114,6 @@ class Fillborders extends VideoEditor {
         this[ref] = value;
     }
 
-    get gradients() {
-        let top = `linear-gradient(180deg, var(--clr-cropper-gradient) ${this.fillbordersPercentTop}%, transparent ${this.fillbordersPercentTop}%)`;
-        let bottom = `linear-gradient(180deg, transparent ${this.fillbordersPercentBottom}%, var(--clr-cropper-gradient) ${this.fillbordersPercentBottom}%)`;
-        let left = `linear-gradient(90deg, var(--clr-cropper-gradient) ${this.fillbordersPercentLeft}%, transparent ${this.fillbordersPercentLeft}%)`;
-        let right = `linear-gradient(90deg, transparent ${this.fillbordersPercentRight}%, var(--clr-cropper-gradient) ${this.fillbordersPercentRight}%)`;
-        return [top, bottom, left, right].join(",");
-    }
-
-    get fillbordersPercentTop() {
-        return (100 / this.image.naturalHeight) * this.fillbordersOffsetTop;
-    }
-
-    get fillbordersPercentBottom() {
-        return (100 / this.image.naturalHeight) * this.fillbordersOffsetBottom;
-    }
-
-    get fillbordersPercentLeft() {
-        return (100 / this.image.naturalWidth) * this.fillbordersOffsetLeft;
-    }
-
-    get fillbordersPercentRight() {
-        return (100 / this.image.naturalWidth) * this.fillbordersOffsetRight;
-    }
-
     handleKey(e) {
         if (e.key === "Control" || e.key === "Shift") {
             if (e.type === "keydown") {
@@ -285,6 +261,10 @@ class Fillborders extends VideoEditor {
                 this.updateFillbordersBox();
             }
         }
+        this.model.top = this.fillbordersOffsetTop;
+        this.model.right = this.width - this.fillbordersOffsetRight;
+        this.model.bottom = this.height - this.fillbordersOffsetBottom;
+        this.model.left = this.fillbordersOffsetLeft;
     }
 
     handleClick(e) {
@@ -309,42 +289,74 @@ class Fillborders extends VideoEditor {
         return this.inputEqual.checked;
     }
 
-    get fillborders() {
-        return {
-            top: this.fillbordersOffsetTop,
-            right: this.width - this.fillbordersOffsetRight,
-            bottom: this.height - this.fillbordersOffsetBottom,
-            left: this.fillbordersOffsetLeft,
-            mode: this.mode,
-            between: {
-                from:
-                    this.from && this.to ? new VTime(this.from).seconds : null,
-                to: this.from && this.to ? new VTime(this.to).seconds : null,
-            },
-            color: this.color ?? null,
-        };
-    }
+    // get fillborders() {
+    //     return {
+    //         top: this.fillbordersOffsetTop,
+    //         right: this.width - this.fillbordersOffsetRight,
+    //         bottom: this.height - this.fillbordersOffsetBottom,
+    //         left: this.fillbordersOffsetLeft,
+    //         mode: this.mode,
+    //         between: {
+    //             from:
+    //                 this.from && this.to ? new VTime(this.from).seconds : null,
+    //             to: this.from && this.to ? new VTime(this.to).seconds : null,
+    //         },
+    //         color: this.color ?? null,
+    //     };
+    // }
 
-    set fillborders(fillborders) {
-        this.fillbordersOffsetTop = fillborders.top ?? 0;
-        this.fillbordersOffsetLeft = fillborders.left ?? 0;
+    // set model(fillborders) {
+    //     this.fillbordersOffsetTop = fillborders.top ?? 0;
+    //     this.fillbordersOffsetLeft = fillborders.left ?? 0;
+    //     this.fillbordersOffsetBottom =
+    //         this.video.height - fillborders.bottom ?? 0;
+    //     this.fillbordersOffsetRight = this.video.width - fillborders.right ?? 0;
+    //     this.from = fillborders.between?.from * 1000 || null;
+    //     this.to = fillborders.between?.to * 1000 || null;
+    //     this.color = fillborders.color;
+    //     this.mode = fillborders.mode;
+    // }
+
+    run() {
+        this.fillbordersOffsetTop = this.model.top ?? 0;
+        this.fillbordersOffsetLeft = this.model.left ?? 0;
         this.fillbordersOffsetBottom =
-            this.video.height - fillborders.bottom ?? 0;
-        this.fillbordersOffsetRight = this.video.width - fillborders.right ?? 0;
-        this.from = fillborders.between?.from * 1000 || null;
-        this.to = fillborders.between?.to * 1000 || null;
-        this.color = fillborders.color;
-        this.mode = fillborders.mode;
-    }
-
-    applyFilterData(data) {
-        this.fillborders = data;
+            this.video.height - this.model.bottom ?? 0;
+        this.fillbordersOffsetRight = this.video.width - this.model.right ?? 0;
+        this.from = this.model.between.from.milliseconds || null;
+        this.to = this.model.between.to.milliseconds || null;
+        this.color = this.model.color;
+        this.mode = this.model.mode;
         this.updateFillbordersBox();
         if (this.from) {
-            this.current = new VTime(data.between.from * 1000).milliseconds;
+            this.current = this.model.between.from.milliseconds;
             this.updateIndicatorPos();
             this.updateImages();
         }
+    }
+
+    get gradients() {
+        let top = `linear-gradient(180deg, var(--clr-cropper-gradient) ${this.fillbordersPercentTop}%, transparent ${this.fillbordersPercentTop}%)`;
+        let bottom = `linear-gradient(180deg, transparent ${this.fillbordersPercentBottom}%, var(--clr-cropper-gradient) ${this.fillbordersPercentBottom}%)`;
+        let left = `linear-gradient(90deg, var(--clr-cropper-gradient) ${this.fillbordersPercentLeft}%, transparent ${this.fillbordersPercentLeft}%)`;
+        let right = `linear-gradient(90deg, transparent ${this.fillbordersPercentRight}%, var(--clr-cropper-gradient) ${this.fillbordersPercentRight}%)`;
+        return [top, bottom, left, right].join(",");
+    }
+
+    get fillbordersPercentTop() {
+        return (100 / this.image.naturalHeight) * this.fillbordersOffsetTop;
+    }
+
+    get fillbordersPercentBottom() {
+        return (100 / this.image.naturalHeight) * this.fillbordersOffsetBottom;
+    }
+
+    get fillbordersPercentLeft() {
+        return (100 / this.image.naturalWidth) * this.fillbordersOffsetLeft;
+    }
+
+    get fillbordersPercentRight() {
+        return (100 / this.image.naturalWidth) * this.fillbordersOffsetRight;
     }
 
     get fillbordersOverlay() {
@@ -422,8 +434,8 @@ class Fillborders extends VideoEditor {
     }
 
     set color(value) {
-        return (this.shadowRoot.querySelector('[data-ref="color"]').value =
-            value);
+        this.model.color = value;
+        this.shadowRoot.querySelector('[data-ref="color"]').value = value;
     }
 
     get mode() {
@@ -431,6 +443,7 @@ class Fillborders extends VideoEditor {
     }
 
     set mode(value) {
+        this.model.mode = value;
         this.shadowRoot.querySelector('[data-ref="mode"]').value = value;
     }
 
@@ -450,10 +463,12 @@ class Fillborders extends VideoEditor {
     }
 
     set from(value) {
+        this.model.between.from = new VTime(value);
         const node = this.shadowRoot.querySelector('span[data-ref="from"]');
-        value = value ? new VTime(value).milliseconds : "";
-        node.dataset.raw = value;
-        node.innerText = value ? VTime.calcCut(this.clipsConfig, value) : "";
+        node.dataset.raw = this.model.between.from.milliseconds || "";
+        node.innerText = value
+            ? this.model.between.from.getCutpoint(this.clipsConfig)
+            : "";
     }
 
     get to() {
@@ -463,10 +478,12 @@ class Fillborders extends VideoEditor {
     }
 
     set to(value) {
+        this.model.between.to = new VTime(value);
         const node = this.shadowRoot.querySelector('span[data-ref="to"]');
-        value = value ? new VTime(value).milliseconds : "";
-        node.dataset.raw = value;
-        node.innerText = value ? VTime.calcCut(this.clipsConfig, value) : "";
+        node.dataset.raw = this.model.between.to.milliseconds;
+        node.innerText = value
+            ? this.model.between.to.getCutpoint(this.clipsConfig)
+            : "";
     }
 
     get btnFrom() {
