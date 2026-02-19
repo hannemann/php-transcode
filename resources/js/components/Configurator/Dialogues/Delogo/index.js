@@ -367,17 +367,18 @@ export class DeLogo extends VideoEditor {
         const idx = e.currentTarget.closest("[data-delogo]").dataset.index;
         const src = this.configurator.filterGraph[idx];
         const dest = structuredClone(src);
+        dest.filterIndex = Delogo.proposedFilterIndex;
 
         dest.between.from = new VTime(this.current).seconds;
         dest.between.to = new VTime(this.current).seconds;
 
-        this.configurator.filterGraph.splice(this.lastDelogo + 1, 0, dest);
+        this.configurator.filterGraph.splice(dest.filterIndex, 0, dest);
 
         await this.configurator.saveSettings();
         this.isSaved = true;
 
         this.initFilters();
-        this.editItem({ currentTarget: this.lastDelogoNode });
+        this.editItem({ currentTarget: this.lastFilterNode });
     }
 
     initFilters() {
@@ -515,16 +516,6 @@ export class DeLogo extends VideoEditor {
         this.filterIndex = this.model.filterIndex;
     }
 
-    get lastDelogo() {
-        return this.configurator.filterGraph.findLastIndex(
-            (i) => i.filterType === "delogo",
-        );
-    }
-
-    get lastDelogoNode() {
-        return this.filtersContainer.querySelector(":scope > div:last-of-type");
-    }
-
     set filters(items) {
         this.removeItemListeners();
         this.filtersContainer.replaceChildren(
@@ -539,6 +530,12 @@ export class DeLogo extends VideoEditor {
             (i) => {
                 return this.configurator.filterGraph[Number(i.dataset.index)];
             },
+        );
+    }
+
+    get lastFilterNode() {
+        return this.filtersContainer.querySelector(
+            ":nth-last-child(1 of [data-delogo])",
         );
     }
 
