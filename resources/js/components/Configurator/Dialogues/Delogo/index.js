@@ -331,9 +331,8 @@ export class DeLogo extends VideoEditor {
 
     editItem(e) {
         if ("undefined" !== typeof e.currentTarget.dataset.active) {
-            this.filterIndex = this.lastDelogoNode.dataset.index;
             this.activeDelogoFilter = null;
-            this.model = new Delogo();
+            this.resetModel();
             this.resetBetween();
             this.isSaved = true;
             return;
@@ -356,6 +355,7 @@ export class DeLogo extends VideoEditor {
         );
         await this.configurator.saveSettings();
         this.isSaved = true;
+        this.resetModel();
         this.initFilters();
     }
 
@@ -472,13 +472,12 @@ export class DeLogo extends VideoEditor {
         }
     }
 
-    // TODO: filterindex after save/edit should be last delogo filter index +1 (?)
     save() {
         saveDelogo.call(this.configurator, this, this.isEdit);
         this.isSaved = this.saved;
         this.initFilters();
         this.activeDelogoFilter = null;
-        this.model = new Delogo(Delogo.proposedFilterIndex);
+        this.resetModel();
         Iconify.scan(this.shadowRoot);
     }
 
@@ -509,6 +508,11 @@ export class DeLogo extends VideoEditor {
         filters.push(this.model);
         this.filters = filters;
         this.activeDelogoFilter = this.model.filterIndex;
+    }
+
+    resetModel() {
+        this.model = new Delogo(Delogo.proposedFilterIndex);
+        this.filterIndex = this.model.filterIndex;
     }
 
     get lastDelogo() {
