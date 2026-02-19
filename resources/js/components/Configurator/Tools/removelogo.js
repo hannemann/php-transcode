@@ -2,7 +2,7 @@ import { RemoveLogo } from "../../../Models/Filters/RemoveLogo";
 import { TYPE_VIDEO } from "../Streams";
 
 export const requestRemovelogo = async function (model) {
-    model = model || new RemoveLogo();
+    model = model || new RemoveLogo(this.filterGraph.length);
     const presentRemoveLogo = RemoveLogo.configurator.filterGraph.find(
         (f) => f.filterType === model.filterType,
     );

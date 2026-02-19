@@ -472,12 +472,13 @@ export class DeLogo extends VideoEditor {
         }
     }
 
+    // TODO: filterindex after save/edit should be last delogo filter index +1 (?)
     save() {
         saveDelogo.call(this.configurator, this, this.isEdit);
         this.isSaved = this.saved;
         this.initFilters();
         this.activeDelogoFilter = null;
-        this.model = new Delogo();
+        this.model = new Delogo(Delogo.proposedFilterIndex);
         Iconify.scan(this.shadowRoot);
     }
 
