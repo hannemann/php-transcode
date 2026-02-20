@@ -1,0 +1,2 @@
+@custom-media --breakpoint-sm (min-width: 40em);
+@custom-selector :--heading h1, h2, h3;
