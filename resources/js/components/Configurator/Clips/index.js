@@ -89,6 +89,7 @@ class Clips extends HTMLElement {
             ws.clips.forEach((c) => this.createClip(c.from, c.to));
             this.update();
         }
+        document.dispatchEvent(new CustomEvent("clips-loaded"));
         Iconify.scan(this.shadowRoot);
     }
 

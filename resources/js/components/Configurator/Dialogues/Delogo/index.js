@@ -353,10 +353,18 @@ export class DeLogo extends VideoEditor {
             parseInt(e.currentTarget.closest("[data-delogo]").dataset.index),
             1,
         );
+
+        document.addEventListener(
+            "clips-loaded",
+            () => {
+                this.isSaved = true;
+                this.resetModel();
+                this.initFilters();
+            },
+            { once: true },
+        );
+
         await this.configurator.saveSettings();
-        this.isSaved = true;
-        this.resetModel();
-        this.initFilters();
     }
 
     /**
@@ -374,11 +382,17 @@ export class DeLogo extends VideoEditor {
 
         this.configurator.filterGraph.splice(dest.filterIndex, 0, dest);
 
-        await this.configurator.saveSettings();
-        this.isSaved = true;
+        document.addEventListener(
+            "clips-loaded",
+            () => {
+                this.isSaved = true;
+                this.initFilters();
+                this.editItem({ currentTarget: this.lastFilterNode });
+            },
+            { once: true },
+        );
 
-        this.initFilters();
-        this.editItem({ currentTarget: this.lastFilterNode });
+        await this.configurator.saveSettings();
     }
 
     initFilters() {
