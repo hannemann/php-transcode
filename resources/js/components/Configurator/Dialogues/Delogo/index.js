@@ -3,8 +3,8 @@ import { VTime } from "../../../../Helper/Time";
 import { saveDelogo } from "../../Tools/delogo";
 import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 import Iconify from "@iconify/iconify/dist/iconify.js";
-import { Enable } from "../../../../Models/Filters/Filters/Enable";
 import { Delogo } from "../../../../Models/Filters/Delogo";
+import "./Filters/Item";
 
 export class DeLogo extends VideoEditor {
     /**
@@ -410,40 +410,46 @@ export class DeLogo extends VideoEditor {
      * @returns {HTMLElement}
      */
     createItem(item) {
-        const node = document.createElement("div");
-        const { from, to } = item.between;
-        const fromCut = from?.getCutpoint?.(this.clipsConfig) || "n/a";
-        const toCut = to?.getCutpoint?.(this.clipsConfig) || "n/a";
-        node.dataset.index = item.filterIndex;
-        node.dataset.delogo = JSON.stringify(item);
-
-        const duration = new VTime(this.configurator.clips.totalDuration)
-            .seconds;
-        if (from) {
-            const fromTime = new VTime(fromCut).seconds;
-            if (fromTime >= duration) {
-                node.classList.add("error");
-                node.dataset.fromError = "out-of-range";
-            }
-        }
-        if (to) {
-            const toTime = new VTime(toCut).seconds;
-
-            if (toTime >= duration) {
-                node.classList.add("error");
-                node.dataset.toError = "out-of-range";
-            }
-        }
-
-        node.innerHTML = `<span>${fromCut} - ` + `${toCut}</span>`;
-        node.classList.toggle("incomplete", from === null || to === null);
-
-        node.append(
-            this.createIcon("mdi-content-copy", "copy"),
-            this.createIcon("mdi-close", "close"),
-        );
+        const node = document.createElement("delogo-filter-item");
+        node.clipsConfig = this.clipsConfig;
+        node.enable = item.between;
 
         return node;
+
+        // const node = document.createElement("div");
+        // const { from, to } = item.between;
+        // const fromCut = from?.getCutpoint?.(this.clipsConfig) || "n/a";
+        // const toCut = to?.getCutpoint?.(this.clipsConfig) || "n/a";
+        // node.dataset.index = item.filterIndex;
+        // node.dataset.delogo = JSON.stringify(item);
+
+        // const duration = new VTime(this.configurator.clips.totalDuration)
+        //     .seconds;
+        // if (from) {
+        //     const fromTime = new VTime(fromCut).seconds;
+        //     if (fromTime >= duration) {
+        //         node.classList.add("error");
+        //         node.dataset.fromError = "out-of-range";
+        //     }
+        // }
+        // if (to) {
+        //     const toTime = new VTime(toCut).seconds;
+
+        //     if (toTime >= duration) {
+        //         node.classList.add("error");
+        //         node.dataset.toError = "out-of-range";
+        //     }
+        // }
+
+        // node.innerHTML = `<span>${fromCut} - ` + `${toCut}</span>`;
+        // node.classList.toggle("incomplete", from === null || to === null);
+
+        // node.append(
+        //     this.createIcon("mdi-content-copy", "copy"),
+        //     this.createIcon("mdi-close", "close"),
+        // );
+
+        // return node;
     }
 
     /**
@@ -452,19 +458,19 @@ export class DeLogo extends VideoEditor {
      * @param {String} wrapperClass
      * @returns {HTMLElement}
      */
-    createIcon(iconName, wrapperClass) {
-        const iconStack = document.createElement("div");
-        iconStack.classList.add("icon-stack", wrapperClass);
-        const icon = document.createElement("span");
-        icon.classList.add("iconify");
-        icon.dataset.icon = iconName;
-        const iconHover = document.createElement("span");
-        iconHover.classList.add("iconify", "hover");
-        iconHover.dataset.icon = iconName;
-        iconStack.append(icon, iconHover);
+    // createIcon(iconName, wrapperClass) {
+    //     const iconStack = document.createElement("div");
+    //     iconStack.classList.add("icon-stack", wrapperClass);
+    //     const icon = document.createElement("span");
+    //     icon.classList.add("iconify");
+    //     icon.dataset.icon = iconName;
+    //     const iconHover = document.createElement("span");
+    //     iconHover.classList.add("iconify", "hover");
+    //     iconHover.dataset.icon = iconName;
+    //     iconStack.append(icon, iconHover);
 
-        return iconStack;
-    }
+    //     return iconStack;
+    // }
 
     showItemTimeRange(e) {
         const isActive = e.type === "pointerenter";
@@ -784,7 +790,8 @@ DeLogo.template = html`
             grid-auto-rows: min-content;
 
             & > div {
-                &[data-delogo] {
+                &[data-delogo],
+                delogo-filter-item {
                     background: var(--clr-bg-100);
                     color: var(--clr-text-100);
                     border: 2px solid var(--clr-bg-200);
@@ -822,7 +829,7 @@ DeLogo.template = html`
                 &.incomplete {
                     opacity: 0.8;
                 }
-                &:not([data-delogo]) {
+                &:not([data-delogo], delogo-filter-item) {
                     display: none;
                 }
             }
