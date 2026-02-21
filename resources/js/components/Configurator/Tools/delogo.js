@@ -3,7 +3,8 @@ import { DeLogo } from "../Dialogues/Delogo";
 import { TYPE_VIDEO } from "../Streams";
 
 export const requestDelogo = async function (model) {
-    model = model || new Delogo(Delogo.proposedFilterIndex);
+    model =
+        model || new Delogo(this.filterGraph.getProposedFilterIndex("delogo"));
     const isEdit = isNaN(parseInt(model.filterIndex));
     try {
         const m = document.createElement("modal-window");

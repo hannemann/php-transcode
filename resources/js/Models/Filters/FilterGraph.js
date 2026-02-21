@@ -70,6 +70,28 @@ export class FilterGraph extends Array {
     }
 
     /**
+     * obtain all filters of specific type
+     * @param {String} filterType
+     * @returns {FilterModel|Object.<filterType: String>}
+     */
+    getAllOfType(filterType) {
+        return this.filter((f) => f.filterType === filterType);
+    }
+
+    /**
+     * obtain proposed index for next item of grouped filters
+     * @param {String} filterType
+     * @returns {Number}
+     */
+    getProposedFilterIndex(filterType) {
+        const all = this.getAllOfType(filterType);
+        if (all.length > 0) {
+            return all.at(-1).filterIndex + 1;
+        }
+        return this.length;
+    }
+
+    /**
      * obtain last of type if exists
      * @param {String} type
      * @returns {FilterModel|undefined}

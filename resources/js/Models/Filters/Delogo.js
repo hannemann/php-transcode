@@ -18,19 +18,6 @@ export class Delogo extends FilterModel {
     filterType = filterType;
     type = "cpu";
 
-    static get all() {
-        return FilterModel.configurator.filterGraph.filter(
-            (f) => f.filterType === filterType,
-        );
-    }
-
-    static get proposedFilterIndex() {
-        if (Delogo.all.length > 0) {
-            return Delogo.all.pop().filterIndex + 1;
-        }
-        return Delogo.configurator.filterGraph.length;
-    }
-
     /**
      *
      * @param {Number} filterIndex

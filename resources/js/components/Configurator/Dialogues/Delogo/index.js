@@ -375,7 +375,8 @@ export class DeLogo extends VideoEditor {
         const idx = e.currentTarget.closest("[data-delogo]").dataset.index;
         const src = this.configurator.filterGraph[idx];
         const dest = structuredClone(src);
-        dest.filterIndex = Delogo.proposedFilterIndex;
+        dest.filterIndex =
+            this.configurator.filterGraph.getProposedFilterIndex("delogo");
 
         dest.between.from = new VTime(this.current).seconds;
         dest.between.to = new VTime(this.current).seconds;
@@ -526,7 +527,9 @@ export class DeLogo extends VideoEditor {
     }
 
     resetModel() {
-        this.model = new Delogo(Delogo.proposedFilterIndex);
+        this.model = new Delogo(
+            this.configurator.filterGraph.getProposedFilterIndex("delogo"),
+        );
         this.filterIndex = this.model.filterIndex;
     }
 
