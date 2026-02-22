@@ -6,7 +6,24 @@ import Iconify from "@iconify/iconify/dist/iconify.js";
 import { Delogo } from "../../../../Models/Filters/Delogo";
 import "./Filters/Item";
 
+const KEY_ACTIONS = {
+    // Skalieren
+    ArrowRight: (ed, d) => ed.resizeBox(d, 0),
+    ArrowLeft: (ed, d) => ed.resizeBox(-d, 0),
+    ArrowUp: (ed, d) => ed.resizeBox(0, -d),
+    ArrowDown: (ed, d) => ed.resizeBox(0, d),
+
+    // Verschieben (Ctrl)
+    "ctrl+ArrowRight": (ed, d) => ed.moveBox(d, 0),
+    "ctrl+ArrowLeft": (ed, d) => ed.moveBox(-d, 0),
+    "ctrl+ArrowUp": (ed, d) => ed.moveBox(0, -d),
+    "ctrl+ArrowDown": (ed, d) => ed.moveBox(0, d),
+};
+
 export class DeLogo extends VideoEditor {
+    #delogoBox;
+    #zoomDelogoBox;
+    #itemBox;
     /**
      * @type {Delogo}
      */
@@ -36,21 +53,14 @@ export class DeLogo extends VideoEditor {
         console.info("Initialize Delogo");
         this.addListeners();
         this.resetBetween();
-        this.zoomImage = this.zoom.appendChild(document.createElement("img"));
+        this.zoomImage = document.createElement("img");
+        this.zoom.prepend(this.zoomImage);
         this.zoomImage.src = this.image.src;
-        this.addDelogoBox({
-            offsetX: Math.round(
-                this.image.offsetLeft + this.image.width / 2 - 10,
-            ),
-            offsetY: Math.round(
-                this.image.offsetTop + this.image.height / 2 - 10,
-            ),
-        });
+        this.dispatchEvent(new CustomEvent("delogo-updated"));
     }
 
     bindListeners() {
         super.bindListeners();
-        this.addDelogoBox = this.addDelogoBox.bind(this);
         this.handleKey = this.handleKey.bind(this);
         this.setBetweenFrom = this.setBetweenFrom.bind(this);
         this.setBetweenTo = this.setBetweenTo.bind(this);
@@ -159,51 +169,6 @@ export class DeLogo extends VideoEditor {
         super.updateFrameUrl();
     }
 
-    addDelogoBox(e) {
-        requestAnimationFrame(() => {
-            // need to wait for offset properties to be calculated properly
-            if (!this.delogoBox) {
-                this.delogoBox = document.createElement("div");
-                this.shadowRoot.appendChild(this.delogoBox);
-                this.delogoBox.classList.add("box");
-                this.zoomDelogoBox = this.zoom.appendChild(
-                    this.delogoBox.cloneNode(true),
-                );
-                this.delogoBox.style.width = `20px`;
-                this.delogoBox.style.height = `20px`;
-            }
-            if (!this.itemBox) {
-                this.itemBox = document.createElement("div");
-                this.shadowRoot.appendChild(this.itemBox);
-                this.itemBox.classList.add("fake-box");
-            }
-            //console.log(e, e.offsetX, e.offsetY);
-            this.delogoOffsetTop =
-                e.offsetY - Math.round(this.delogoBox.offsetHeight / 2);
-            this.delogoOffsetLeft =
-                e.offsetX - Math.round(this.delogoBox.offsetWidth / 2);
-            this.delogoBox.style.top = `${Math.max(
-                this.image.offsetTop,
-                Math.min(
-                    this.image.offsetTop +
-                        this.image.height -
-                        this.delogoBox.offsetHeight,
-                    this.delogoOffsetTop,
-                ),
-            )}px`;
-            this.delogoBox.style.left = `${Math.max(
-                this.image.offsetLeft,
-                Math.min(
-                    this.image.offsetLeft +
-                        this.image.width -
-                        this.delogoBox.offsetWidth,
-                    this.delogoOffsetLeft,
-                ),
-            )}px`;
-            this.updateZoom();
-        });
-    }
-
     updateZoom() {
         const image = this.image.getBoundingClientRect();
         const tr = `translate(
@@ -230,80 +195,61 @@ export class DeLogo extends VideoEditor {
         this.displayTop.innerText = `${this.coords.y}px`;
         this.displayWidth.innerText = `${this.coords.w}px`;
         this.displayHeight.innerText = `${this.coords.h}px`;
-        this.dispatchEvent(new CustomEvent("delogo-updated"));
     }
 
     handleKey(e) {
-        if (this.delogoBox) {
+        if (!this.delogoBox) return;
+
+        const combo = `${e.ctrlKey ? "ctrl+" : ""}${e.key}`;
+        const action = KEY_ACTIONS[combo];
+
+        if (action) {
             e.preventDefault();
             const delta = e.shiftKey ? 10 : 1;
-            if (e.ctrlKey) {
-                if (e.key === "ArrowRight") {
-                    this.delogoBox.style.left = `${Math.min(
-                        this.delogoBox.offsetLeft + delta,
-                        this.image.offsetLeft +
-                            this.image.width -
-                            1 -
-                            this.delogoBox.offsetWidth,
-                    )}px`;
-                }
-                if (e.key === "ArrowLeft") {
-                    this.delogoBox.style.left = `${Math.max(
-                        this.delogoBox.offsetLeft - delta,
-                        this.image.offsetLeft + 1,
-                    )}px`;
-                }
-                if (e.key === "ArrowDown") {
-                    this.delogoBox.style.top = `${Math.min(
-                        this.delogoBox.offsetTop + delta,
-                        this.image.offsetTop +
-                            this.image.height -
-                            1 -
-                            this.delogoBox.offsetHeight,
-                    )}px`;
-                }
-                if (e.key === "ArrowUp") {
-                    this.delogoBox.style.top = `${Math.max(
-                        this.delogoBox.offsetTop - delta,
-                        this.image.offsetTop + 1,
-                    )}px`;
-                }
-            } else {
-                const box = this.delogoBox.getBoundingClientRect();
-                if (e.key === "ArrowRight") {
-                    this.delogoBox.style.width = `${Math.min(
-                        this.delogoBox.offsetWidth + delta,
-                        this.image.offsetLeft +
-                            this.image.offsetWidth -
-                            1 -
-                            this.delogoBox.offsetLeft,
-                    )}px`;
-                }
-                if (e.key === "ArrowLeft") {
-                    this.delogoBox.style.width = `${Math.max(
-                        this.delogoBox.offsetWidth - delta,
-                        5,
-                    )}px`;
-                }
-                if (e.key === "ArrowDown") {
-                    this.delogoBox.style.height = `${Math.min(
-                        this.delogoBox.offsetHeight + delta,
-                        this.image.offsetTop +
-                            this.image.offsetHeight -
-                            1 -
-                            this.delogoBox.offsetTop,
-                    )}px`;
-                }
-                if (e.key === "ArrowUp") {
-                    this.delogoBox.style.height = `${Math.max(
-                        this.delogoBox.offsetHeight - delta,
-                        5,
-                    )}px`;
-                }
-            }
+
+            action(this, delta);
+
             this.model.coords = this.coords;
             this.updateZoom();
         }
+    }
+
+    moveBox(dx, dy) {
+        const coords = { ...this.model.coords };
+        const videoWidth = this.video.width;
+        const videoHeight = this.video.height;
+
+        // 1px Puffer im echten Video-Format (0 bis VideoWidth)
+        coords.x = Math.max(
+            1,
+            Math.min(coords.x + dx, videoWidth - coords.w - 1),
+        );
+        coords.y = Math.max(
+            1,
+            Math.min(coords.y + dy, videoHeight - coords.h - 1),
+        );
+
+        this.model.coords = coords; // Modell aktualisieren
+        this.syncBoxToModel(); // UI nachziehen
+    }
+
+    resizeBox(dw, dh) {
+        const coords = { ...this.model.coords };
+        const videoWidth = this.video.width;
+        const videoHeight = this.video.height;
+        const minSize = 10; // 10 echte Video-Pixel
+
+        coords.w = Math.max(
+            minSize,
+            Math.min(coords.w + dw, videoWidth - coords.x - 1),
+        );
+        coords.h = Math.max(
+            minSize,
+            Math.min(coords.h + dh, videoHeight - coords.y - 1),
+        );
+
+        this.model.coords = coords;
+        this.syncBoxToModel();
     }
 
     setBetweenFrom() {
@@ -474,11 +420,12 @@ export class DeLogo extends VideoEditor {
             this.clipsConfig,
         );
         this.betweenTo = this.model.between.to?.getCutpoint(this.clipsConfig);
-        this.updateZoom();
         this.current = this.model.between.from.milliseconds;
         this.updateIndicatorPos();
         this.updateImages();
         this.activeDelogoFilter = this.filterIndex;
+        this.syncBoxToModel();
+        this.updateZoom();
     }
 
     addNext() {
@@ -493,6 +440,8 @@ export class DeLogo extends VideoEditor {
         filters.push(this.model);
         this.filters = filters;
         this.activeDelogoFilter = this.model.filterIndex;
+        this.syncBoxToModel();
+        this.updateZoom();
     }
 
     resetModel() {
@@ -500,6 +449,20 @@ export class DeLogo extends VideoEditor {
             this.configurator.filterGraph.getProposedFilterIndex("delogo"),
         );
         this.filterIndex = this.model.filterIndex;
+    }
+
+    syncBoxToModel() {
+        if (!this.delogoBox || !this.model.coords) return;
+
+        const coord = this.model.coords;
+        const ratio = this.videoImageRatio;
+
+        this.delogoBox.style.top = `${Math.round(coord.y / ratio) + this.image.offsetTop}px`;
+        this.delogoBox.style.left = `${Math.round(coord.x / ratio) + this.image.offsetLeft}px`;
+        this.delogoBox.style.height = `${Math.round(coord.h / ratio)}px`;
+        this.delogoBox.style.width = `${Math.round(coord.w / ratio)}px`;
+
+        this.updateZoom();
     }
 
     set filters(items) {
@@ -555,28 +518,12 @@ export class DeLogo extends VideoEditor {
     }
 
     set coords(coord) {
-        const image = this.imageRect;
-        const ratio = this.videoImageRatio;
-        this.delogoBox.style.top = `${Math.round(coord.y / ratio)}px`;
-        this.delogoBox.style.left = `${Math.round(coord.x / ratio + (Math.round(image.left) - this.offsetLeft))}px`;
-        this.delogoBox.style.height = `${Math.round(coord.h / ratio)}px`;
-        this.delogoBox.style.width = `${Math.round(coord.w / ratio)}px`;
+        this.model.coords = coord;
+        this.syncBoxToModel();
     }
 
     get coords() {
-        if (this.delogoBox) {
-            const box = this.delogoBox.getBoundingClientRect();
-            const image = this.imageRect;
-            const ratio = this.videoImageRatio;
-            return {
-                x: Math.round((box.left - Math.round(image.left)) * ratio),
-                y: Math.round((box.top - image.top) * ratio),
-                w: Math.round(box.width * ratio),
-                h: Math.round(box.height * ratio),
-            };
-        } else {
-            return null;
-        }
+        return this.model.coords; // Die "Wahrheit" liegt im Modell
     }
 
     get imageRect() {
@@ -665,24 +612,43 @@ export class DeLogo extends VideoEditor {
     get zoom() {
         return this.shadowRoot.querySelector(".zoom");
     }
+
+    get delogoBox() {
+        return (this.#delogoBox ??=
+            this.shadowRoot.querySelector(".delogo-box"));
+    }
+
+    get zoomDelogoBox() {
+        return (this.#zoomDelogoBox ??=
+            this.shadowRoot.querySelector(".zoom-delogo-box"));
+    }
+
+    get itemBox() {
+        return (this.#itemBox ??= this.shadowRoot.querySelector(".item-box"));
+    }
 }
 
 const STYLES = css`
     :host {
         position: relative;
     }
-    .box {
+    .delogo-box,
+    .zoom-delogo-box {
+        width: 20px;
+        height: 20px;
         position: absolute;
         background: hsla(
             var(--hue-alert) var(--sat-alert) var(--lit-alert) / 0.5
         );
     }
-    .fake-box {
+    .item-box {
+        width: 20px;
+        height: 20px;
         position: absolute;
         background: hsla(180deg 100% 50% / 0.5);
         display: none;
     }
-    .fake-box.active {
+    .item-box.active {
         display: revert;
     }
     .info {
@@ -760,7 +726,7 @@ DeLogo.template = html`
     </style>
     ${EDITOR_TEMPLATE}
     <div class="info">
-        <div class="zoom"></div>
+        <div class="zoom"><div class="zoom-delogo-box"></div></div>
         <p>Click on image to set delogo rectangle</p>
         <dl>
             <dt>x/y</dt>
@@ -832,6 +798,8 @@ DeLogo.template = html`
         </div>
         <div class="filters"></div>
     </div>
+    <div class="delogo-box"></div>
+    <div class="item-box"></div>
 `;
 
 customElements.define("dialogue-delogo", DeLogo);

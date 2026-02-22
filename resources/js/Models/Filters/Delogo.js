@@ -26,10 +26,10 @@ export class Delogo extends FilterModel {
     constructor(
         filterIndex = null,
         {
-            x = null,
-            y = null,
-            w = null,
-            h = null,
+            x = 1,
+            y = 1,
+            w = 50,
+            h = 50,
             between: { from = null, to = null } = {},
         } = {},
     ) {

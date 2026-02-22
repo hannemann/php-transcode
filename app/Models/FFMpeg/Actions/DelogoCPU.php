@@ -9,7 +9,7 @@ use App\Models\FFMpeg\Actions\Helper\OutputMapper;
 use App\Models\FFMpeg\Actions\Helper\Libx264Options;
 use App\Jobs\ProcessVideo;
 
-Class DelogoCPU extends Crop
+class DelogoCPU extends Crop
 {
     const TEMPLATE_FILTER = 'delogo=x=%d:y=%d:w=%d:h=%d';
     const TEMPLATE_FILTER_BETWEEN = 'delogo=enable=\'between(t,%f,%f)\':x=%d:y=%d:w=%d:h=%d';
@@ -38,7 +38,7 @@ Class DelogoCPU extends Crop
     {
         $file = array_pop($commands[0]);
         $cmds = collect($commands[0]);
-        
+
         $cmds = Libx264Options::strip($cmds);
         $cmds->splice($cmds->search('-b:v'), 2);
         $cmds->splice($cmds->search('-b:a'), 2);
@@ -84,6 +84,6 @@ Class DelogoCPU extends Crop
             $data['y'],
             $data['w'],
             $data['h'],
-        );// . ':show=1';
+        ) . ':show=1';
     }
 }
