@@ -1,11 +1,31 @@
 import { DomHelper } from "../../../../../Helper/Dom";
 import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
-import { Enable } from "../../../../../Models/Filters/Filters/Enable";
+import { Delogo } from "../../../../../Models/Filters/Delogo";
+import { VTime } from "../../../../../Helper/Time";
+
+const EVENT_PREFIX = "delogo-item";
+
+const ATTRIBUTES = {
+    ACTIVE: "data-active",
+};
 
 class DelogoItem extends HTMLElement {
+    /**
+     * @type {HTMLElement}
+     */
     #display;
+    /**
+     * @type {HTMLElement}
+     */
     #btnCopy;
+    /**
+     * @type {HTMLElement}
+     */
     #btnClose;
+    /**
+     * @type {VTime}
+     */
+    totalDuration;
 
     /**
      * @type {{raw:{start:Number,end:Number}}[]|{from:Number,to:Number}[]}
@@ -18,20 +38,125 @@ class DelogoItem extends HTMLElement {
     }
 
     connectedCallback() {
+        this.#setupEvents();
         Iconify.scan(this.shadowRoot);
     }
 
     /**
-     * @param {Enable} enable
+     * Clean up listeners when element is removed from DOM
      */
-    set enable(enable) {
-        const from = enable.from?.getCutpoint?.(this.clipsConfig) || "n/a";
-        const to = enable.to?.getCutpoint?.(this.clipsConfig) || "n/a";
-        this.display.innerText = `${from} - ${to}`;
+    disconnectedCallback() {
+        this.#takeDownEvents();
+    }
+
+    /**
+     * setup event listeners
+     */
+    #setupEvents() {
+        this.btnCopy.addEventListener("click", this);
+        this.btnClose.addEventListener("click", this);
+        this.addEventListener("click", this); // edit
+        this.addEventListener("pointerenter", this);
+        this.addEventListener("pointerleave", this);
+    }
+
+    /**
+     * take down event listeners
+     */
+    #takeDownEvents() {
+        this.btnCopy.removeEventListener("click", this);
+        this.btnClose.removeEventListener("click", this);
+        this.removeEventListener("click", this);
+        this.removeEventListener("pointerenter", this);
+        this.removeEventListener("pointerleave", this);
+    }
+
+    /**
+     * Central Event Hub
+     * @param {MouseEvent|PointerEvent} e
+     */
+    handleEvent(e) {
+        switch (e.type) {
+            case "click":
+                e.stopImmediatePropagation();
+                this.#handleClick(e);
+                break;
+            case "pointerenter":
+            case "pointerleave":
+                this.#handleHover(e);
+                break;
+        }
+    }
+
+    /**
+     * handle click events
+     * @param {MouseEvent} e
+     */
+    #handleClick(e) {
+        let suffix = "edit";
+
+        if (e.currentTarget === this.btnCopy) {
+            suffix = "copy";
+            e.stopImmediatePropagation();
+        } else if (e.currentTarget === this.btnClose) {
+            suffix = "delete";
+            e.stopImmediatePropagation();
+        }
+
+        this.#dispatch(`${EVENT_PREFIX}-${suffix}`);
+    }
+
+    /**
+     * handle hover events
+     * @param {PointerEvent} e
+     */
+    #handleHover(e) {
+        const suffix = e.type === "pointerenter" ? "on" : "off";
+        this.#dispatch(`${EVENT_PREFIX}-${suffix}`);
+    }
+
+    /**
+     * dispatch event
+     * @param {String} name
+     */
+    #dispatch(name) {
+        this.dispatchEvent(
+            new CustomEvent(name, {
+                bubbles: true,
+                composed: true,
+                detail: { item: this },
+            }),
+        );
+    }
+
+    /**
+     * @param {Delogo} model
+     */
+    set model(model) {
+        this.index = model.filterIndex;
+        const { from, to } = model.between;
+        const fromCut = from?.getCutpoint?.(this.clipsConfig) || "n/a";
+        const toCut = to?.getCutpoint?.(this.clipsConfig) || "n/a";
+        this.display.innerText = `${fromCut} - ${toCut}`;
+        this.classList.toggle("incomplete", from === null || to === null);
+
+        // TODO: validate from/to against first clip start- and last clip endtime
+    }
+
+    set index(idx) {
+        this.dataset.index = idx;
+    }
+
+    get index() {
+        return Number(this.dataset.index);
     }
 
     set active(value) {
-        this.toggleAttribute("data-active", !!value);
+        this.toggleAttribute(ATTRIBUTES.ACTIVE, !!value);
+    }
+
+    get active() {
+        return this.hasAttribute(ATTRIBUTES.ACTIVE);
     }
 
     // Dom node getters
@@ -74,7 +199,7 @@ const STYLES = css`
             flex-grow: 1;
         }
 
-        &[data-active] {
+        &:host([data-active]) {
             background: var(--clr-bg-200);
             color: var(--clr-enlightened);
             text-shadow:
@@ -84,6 +209,13 @@ const STYLES = css`
             box-shadow:
                 0 0 20px 0 var(--clr-enlightened-glow),
                 0 0 10px 0 inset var(--clr-enlightened-glow);
+        }
+
+        &:host(.error) {
+            background-color: hsl(from var(--clr-bg-150) var(--hue-error) s l);
+        }
+        &:host(.incomplete) {
+            opacity: 0.8;
         }
     }
 `;

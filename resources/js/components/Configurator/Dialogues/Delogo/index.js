@@ -17,6 +17,8 @@ export class DeLogo extends VideoEditor {
     delogoOffsetRight = null;
 
     connectedCallback() {
+        this.initDelogo = this.initDelogo.bind(this);
+        this.createItem = this.createItem.bind(this);
         super.connectedCallback();
         this.isEdit = false;
         this.saved = false;
@@ -48,7 +50,6 @@ export class DeLogo extends VideoEditor {
 
     bindListeners() {
         super.bindListeners();
-        this.initDelogo = this.initDelogo.bind(this);
         this.addDelogoBox = this.addDelogoBox.bind(this);
         this.handleKey = this.handleKey.bind(this);
         this.setBetweenFrom = this.setBetweenFrom.bind(this);
@@ -83,19 +84,11 @@ export class DeLogo extends VideoEditor {
     }
 
     addItemListeners() {
-        this.filtersContainer.querySelectorAll(":scope > div")?.forEach((e) => {
-            e.querySelector(".icon-stack.close").addEventListener(
-                "click",
-                this.deleteItem,
-            );
-            e.querySelector(".icon-stack.copy").addEventListener(
-                "click",
-                this.copyItem,
-            );
-            e.addEventListener("click", this.editItem);
-            e.addEventListener("pointerenter", this.showItemTimeRange);
-            e.addEventListener("pointerleave", this.showItemTimeRange);
-        });
+        this.filtersContainer.addEventListener("delogo-item-edit", this);
+        this.filtersContainer.addEventListener("delogo-item-copy", this);
+        this.filtersContainer.addEventListener("delogo-item-delete", this);
+        this.filtersContainer.addEventListener("delogo-item-on", this);
+        this.filtersContainer.addEventListener("delogo-item-off", this);
     }
 
     removeListeners() {
@@ -120,19 +113,38 @@ export class DeLogo extends VideoEditor {
     }
 
     removeItemListeners() {
-        this.filtersContainer.querySelectorAll(":scope > div")?.forEach((e) => {
-            e.removeEventListener("click", this.editItem);
-            e.querySelector(".icon-stack.close").removeEventListener(
-                "click",
-                this.deleteItem,
-            );
-            e.querySelector(".icon-stack.copy").removeEventListener(
-                "click",
-                this.copyItem,
-            );
-            e.removeEventListener("pointerenter", this.showItemTimeRange);
-            e.removeEventListener("pointerleave", this.showItemTimeRange);
-        });
+        this.filtersContainer.removeEventListener("delogo-item-edit", this);
+        this.filtersContainer.removeEventListener("delogo-item-copy", this);
+        this.filtersContainer.removeEventListener("delogo-item-delete", this);
+        this.filtersContainer.removeEventListener("delogo-item-on", this);
+        this.filtersContainer.removeEventListener("delogo-item-off", this);
+    }
+
+    /**
+     * Central event hub for the VideoEditor
+     * @param {CustomEvent} e
+     */
+    handleEvent(e) {
+        const itemComponent = e.detail?.item;
+        const index = itemComponent?.index;
+
+        switch (e.type) {
+            case "delogo-item-edit":
+                this.editItem(index);
+                break;
+            case "delogo-item-copy":
+                this.copyItem(index);
+                break;
+            case "delogo-item-delete":
+                this.deleteItem(index);
+                break;
+            case "delogo-item-on":
+                this.showItemTimeRange(index);
+                break;
+            case "delogo-item-off":
+                this.hideItemTimeRange();
+                break;
+        }
     }
 
     updateFrameUrl() {
@@ -329,30 +341,34 @@ export class DeLogo extends VideoEditor {
         this.updateImages();
     }
 
-    editItem(e) {
-        if ("undefined" !== typeof e.currentTarget.dataset.active) {
+    /**
+     *
+     * @param {Number} idx
+     * @returns
+     */
+    editItem(idx) {
+        const item = this.filtersContainer.querySelector(
+            `delogo-filter-item[data-index="${idx}"]`,
+        );
+        if (item.active) {
             this.activeDelogoFilter = null;
             this.resetModel();
             this.resetBetween();
             this.isSaved = true;
             return;
         }
-        this.filterIndex = parseInt(e.currentTarget.dataset.index);
-        this.model = this.configurator.filterGraph[this.filterIndex];
+        this.filterIndex = idx;
+        this.model = this.configurator.filterGraph[idx];
         this.isSaved = false;
         this.applyModelData();
-        this.activeDelogoFilter = e.currentTarget;
+        this.activeDelogoFilter = idx;
     }
 
     /**
-     * @param {Event} e
+     * @param {Number} idx
      */
-    async deleteItem(e) {
-        e.stopImmediatePropagation();
-        this.configurator.filterGraph.splice(
-            parseInt(e.currentTarget.closest("[data-delogo]").dataset.index),
-            1,
-        );
+    async deleteItem(idx) {
+        this.configurator.filterGraph.splice(idx, 1);
 
         document.addEventListener(
             "clips-loaded",
@@ -368,11 +384,9 @@ export class DeLogo extends VideoEditor {
     }
 
     /**
-     * @param {Event} e
+     * @param {Number} idx
      */
-    async copyItem(e) {
-        e.stopImmediatePropagation();
-        const idx = e.currentTarget.closest("[data-delogo]").dataset.index;
+    async copyItem(idx) {
         const src = this.configurator.filterGraph[idx];
         const dest = structuredClone(src);
         dest.filterIndex =
@@ -388,7 +402,7 @@ export class DeLogo extends VideoEditor {
             () => {
                 this.isSaved = true;
                 this.initFilters();
-                this.editItem({ currentTarget: this.lastFilterNode });
+                this.editItem(this.lastFilterNode.index);
             },
             { once: true },
         );
@@ -412,77 +426,26 @@ export class DeLogo extends VideoEditor {
     createItem(item) {
         const node = document.createElement("delogo-filter-item");
         node.clipsConfig = this.clipsConfig;
-        node.enable = item.between;
+        node.totalDuration = new VTime(this.configurator.clips.totalDuration);
+        node.model = item;
 
         return node;
-
-        // const node = document.createElement("div");
-        // const { from, to } = item.between;
-        // const fromCut = from?.getCutpoint?.(this.clipsConfig) || "n/a";
-        // const toCut = to?.getCutpoint?.(this.clipsConfig) || "n/a";
-        // node.dataset.index = item.filterIndex;
-        // node.dataset.delogo = JSON.stringify(item);
-
-        // const duration = new VTime(this.configurator.clips.totalDuration)
-        //     .seconds;
-        // if (from) {
-        //     const fromTime = new VTime(fromCut).seconds;
-        //     if (fromTime >= duration) {
-        //         node.classList.add("error");
-        //         node.dataset.fromError = "out-of-range";
-        //     }
-        // }
-        // if (to) {
-        //     const toTime = new VTime(toCut).seconds;
-
-        //     if (toTime >= duration) {
-        //         node.classList.add("error");
-        //         node.dataset.toError = "out-of-range";
-        //     }
-        // }
-
-        // node.innerHTML = `<span>${fromCut} - ` + `${toCut}</span>`;
-        // node.classList.toggle("incomplete", from === null || to === null);
-
-        // node.append(
-        //     this.createIcon("mdi-content-copy", "copy"),
-        //     this.createIcon("mdi-close", "close"),
-        // );
-
-        // return node;
     }
 
-    /**
-     * create icon stack
-     * @param {String} icon
-     * @param {String} wrapperClass
-     * @returns {HTMLElement}
-     */
-    // createIcon(iconName, wrapperClass) {
-    //     const iconStack = document.createElement("div");
-    //     iconStack.classList.add("icon-stack", wrapperClass);
-    //     const icon = document.createElement("span");
-    //     icon.classList.add("iconify");
-    //     icon.dataset.icon = iconName;
-    //     const iconHover = document.createElement("span");
-    //     iconHover.classList.add("iconify", "hover");
-    //     iconHover.dataset.icon = iconName;
-    //     iconStack.append(icon, iconHover);
-
-    //     return iconStack;
-    // }
-
-    showItemTimeRange(e) {
-        const isActive = e.type === "pointerenter";
-        this.itemBox.classList.toggle("active", isActive);
-        this.indicatorByTimestamp = null;
-        if (!isActive) return;
-        const delogo = JSON.parse(e.currentTarget.dataset.delogo);
+    showItemTimeRange(index) {
+        this.hideItemTimeRange();
+        const delogo = this.configurator.filterGraph[index];
         this.itemCoords = delogo;
         this.indicatorRangeByTimestamp = {
-            from: delogo.between.from || 0,
-            to: delogo.between.to || 0,
+            from: delogo.between.from.seconds || 0,
+            to: delogo.between.to.seconds || 0,
         };
+        this.itemBox.classList.add("active");
+    }
+
+    hideItemTimeRange() {
+        this.itemBox?.classList.remove("active");
+        this.indicatorByTimestamp = null;
     }
 
     run() {
@@ -540,12 +503,9 @@ export class DeLogo extends VideoEditor {
     }
 
     set filters(items) {
-        this.removeItemListeners();
-        this.filtersContainer.replaceChildren(
-            ...items.map(this.createItem.bind(this)),
-        );
+        this.hideItemTimeRange();
+        this.filtersContainer.replaceChildren(...items.map(this.createItem));
         Iconify.scan(this.shadowRoot);
-        this.addItemListeners();
     }
 
     get filters() {
@@ -558,7 +518,7 @@ export class DeLogo extends VideoEditor {
 
     get lastFilterNode() {
         return this.filtersContainer.querySelector(
-            ":nth-last-child(1 of [data-delogo])",
+            ":nth-last-child(1 of delogo-filter-item)",
         );
     }
 
@@ -570,15 +530,15 @@ export class DeLogo extends VideoEditor {
 
     set activeDelogoFilter(item) {
         this.shadowRoot
-            .querySelectorAll(".filters [data-delogo]")
-            .forEach((f) => delete f.dataset.active);
+            .querySelectorAll(".filters delogo-filter-item")
+            .forEach((f) => (f.active = false));
         if (!isNaN(item)) {
             item = this.shadowRoot.querySelector(
                 `.filters [data-index="${item}"]`,
             );
         }
         if (item) {
-            item.dataset.active = "";
+            item.active = true;
         }
     }
 
@@ -707,133 +667,96 @@ export class DeLogo extends VideoEditor {
     }
 }
 
+const STYLES = css`
+    :host {
+        position: relative;
+    }
+    .box {
+        position: absolute;
+        background: hsla(
+            var(--hue-alert) var(--sat-alert) var(--lit-alert) / 0.5
+        );
+    }
+    .fake-box {
+        position: absolute;
+        background: hsla(180deg 100% 50% / 0.5);
+        display: none;
+    }
+    .fake-box.active {
+        display: revert;
+    }
+    .info {
+        grid-area: left;
+        display: grid;
+        grid-auto-rows: min-content;
+        gap: 0.5rem;
+        font-size: 0.75rem;
+        max-width: 250px;
+    }
+    .zoom {
+        width: 250px;
+        aspect-ratio: 1;
+        overflow: hidden;
+        position: relative;
+        z-index: 1;
+        transform-origin: left top;
+        transition: transform 200ms linear;
+    }
+    .zoom:hover {
+        transform: scale(2);
+    }
+    .toggle-aspect {
+        display: none;
+    }
+    .info dl {
+        display: flex;
+        justify-content: space-between;
+        margin: 0;
+    }
+    p {
+        max-width: 250px;
+        margin: 0;
+    }
+    .sidebar {
+        grid-area: right;
+        display: grid;
+        grid-template-rows: min-content min-content auto;
+        width: 360px;
+        justify-self: end;
+    }
+    .between {
+        & > span {
+            display: flex;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+        div {
+            display: flex;
+            justify-content: end;
+            gap: 0.5rem;
+        }
+    }
+    .actions {
+        display: flex;
+        gap: 0.5rem;
+        padding-block: 0.5rem;
+    }
+    .filters {
+        display: grid;
+        gap: 0.5rem;
+        overflow-y: auto;
+        grid-auto-rows: min-content;
+
+        & > :not(delogo-filter-item) {
+            display: none;
+        }
+    }
+`;
+
 DeLogo.template = html`
     ${EDITOR_CSS} ${ICON_STACK_CSS}
     <style>
-        :host {
-            position: relative;
-        }
-        .box {
-            position: absolute;
-            background: hsla(
-                var(--hue-alert) var(--sat-alert) var(--lit-alert) / 0.5
-            );
-        }
-        .fake-box {
-            position: absolute;
-            background: hsla(180deg 100% 50% / 0.5);
-            display: none;
-        }
-        .fake-box.active {
-            display: revert;
-        }
-        .info {
-            grid-area: left;
-            display: grid;
-            grid-auto-rows: min-content;
-            gap: 0.5rem;
-            font-size: 0.75rem;
-            max-width: 250px;
-        }
-        .zoom {
-            width: 250px;
-            aspect-ratio: 1;
-            overflow: hidden;
-            position: relative;
-            z-index: 1;
-            transform-origin: left top;
-            transition: transform 200ms linear;
-        }
-        .zoom:hover {
-            transform: scale(2);
-        }
-        .toggle-aspect {
-            display: none;
-        }
-        .info dl {
-            display: flex;
-            justify-content: space-between;
-            margin: 0;
-        }
-        p {
-            max-width: 250px;
-            margin: 0;
-        }
-        .sidebar {
-            grid-area: right;
-            display: grid;
-            grid-template-rows: min-content min-content auto;
-            width: 360px;
-            justify-self: end;
-        }
-        .between {
-            & > span {
-                display: flex;
-                justify-content: space-between;
-                cursor: pointer;
-            }
-            div {
-                display: flex;
-                justify-content: end;
-                gap: 0.5rem;
-            }
-        }
-        .actions {
-            display: flex;
-            gap: 0.5rem;
-            padding-block: 0.5rem;
-        }
-        .filters {
-            display: grid;
-            gap: 0.5rem;
-            overflow-y: auto;
-            grid-auto-rows: min-content;
-
-            & > div {
-                &[data-delogo],
-                delogo-filter-item {
-                    background: var(--clr-bg-100);
-                    color: var(--clr-text-100);
-                    border: 2px solid var(--clr-bg-200);
-                    padding-inline: 0.5rem;
-                    transition-property:
-                        text-shadow, box-shadow, border-color, background-color;
-                    transition-timing-function: ease-out;
-                    transition-duration: var(--transition-medium);
-                    display: flex;
-                    gap: 0.5rem;
-                    justify-content: space-between;
-                    align-items: center;
-
-                    span {
-                        flex-grow: 1;
-                    }
-
-                    &[data-active] {
-                        background: var(--clr-bg-200);
-                        color: var(--clr-enlightened);
-                        text-shadow:
-                            0 0 5px var(--clr-enlightened-glow),
-                            0 0 10px var(--clr-enlightened-glow);
-                        border-color: var(--clr-enlightened);
-                        box-shadow:
-                            0 0 20px 0 var(--clr-enlightened-glow),
-                            0 0 10px 0 inset var(--clr-enlightened-glow);
-                    }
-                }
-                &.error {
-                    background-color: hsl(
-                        from var(--clr-bg-150) var(--hue-error) s l
-                    );
-                }
-                &.incomplete {
-                    opacity: 0.8;
-                }
-                &:not([data-delogo], delogo-filter-item) {
-                    display: none;
-                }
-            }
-        }
+        ${STYLES}
     </style>
     ${EDITOR_TEMPLATE}
     <div class="info">
