@@ -84,6 +84,6 @@ class DelogoCPU extends Crop
             $data['y'],
             $data['w'],
             $data['h'],
-        ) . ':show=1';
+        ); // . ':show=1';
     }
 }
