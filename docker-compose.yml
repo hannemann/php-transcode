@@ -10,6 +10,7 @@ services:
         ports:
             - "${APP_PORT:-8078}:80"
             - "${REVERB_PORT:-8079}:${REVERB_PORT:-8079}"
+            - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
         environment:
             WWWUSER: "${WWWUSER}"
             GROUP_ID_RENDER: "${GROUP_ID_RENDER:-144}"
