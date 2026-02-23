@@ -3,14 +3,14 @@ import { DeLogo } from "../Dialogues/Delogo";
 import { TYPE_VIDEO } from "../Streams";
 
 export const requestDelogo = async function (model) {
+    const backup = structuredClone(this.filterGraph);
     model =
         model || new Delogo(this.filterGraph.getProposedFilterIndex("delogo"));
-    const isEdit = isNaN(parseInt(model.filterIndex));
+    const m = document.createElement("modal-window");
+    const d = document.createElement("dialogue-delogo");
     try {
-        const m = document.createElement("modal-window");
         m.header = "Delogo";
         m.classList.add("no-shadow");
-        const d = document.createElement("dialogue-delogo");
         d.video = {
             ...this.streams.filter((s) => s.codec_type === TYPE_VIDEO)?.[0],
             duration: parseFloat(this.format.duration),
@@ -33,11 +33,13 @@ export const requestDelogo = async function (model) {
             document.querySelector("transcoder-toast"),
         );
         await m.open();
-        saveDelogo.call(this, d, isEdit);
     } catch (error) {
         if (error) {
             console.error(error);
         }
+        this.filterGraph = backup;
+    } finally {
+        saveDelogo.call(this, d);
     }
 };
 
@@ -47,7 +49,7 @@ export const requestDelogo = async function (model) {
  * @param {Boolean} isEdit
  * @returns
  */
-export function saveDelogo(delogo, isEdit = false) {
+export function saveDelogo(delogo) {
     if (delogo.saved) return;
     this.delogo = delogo.model;
     console.info(
@@ -60,7 +62,7 @@ export function saveDelogo(delogo, isEdit = false) {
         this.delogo.between.from?.coord || "n/a",
         this.delogo.between.to?.coord || "n/a",
     );
-    if (!isEdit) {
+    if (!this.filterGraph.includes(delogo.model)) {
         this.filterGraph.splice(this.delogo.filterIndex, 0, this.delogo);
     }
     this.saveSettings();

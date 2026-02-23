@@ -21,9 +21,6 @@ const KEY_ACTIONS = {
 };
 
 export class DeLogo extends VideoEditor {
-    #delogoBox;
-    #zoomDelogoBox;
-    #itemBox;
     /**
      * @type {Delogo}
      */
@@ -37,7 +34,6 @@ export class DeLogo extends VideoEditor {
         this.initDelogo = this.initDelogo.bind(this);
         this.createItem = this.createItem.bind(this);
         super.connectedCallback();
-        this.isEdit = false;
         this.saved = false;
         requestAnimationFrame(() => {
             this.image.addEventListener("load", this.initDelogo, {
@@ -326,6 +322,15 @@ export class DeLogo extends VideoEditor {
     }
 
     /**
+     * initialize filters
+     */
+    initFilters() {
+        this.filters = [...this.configurator.filterGraph].filter(
+            (f) => f.filterType === Delogo.filterType,
+        );
+    }
+
+    /**
      * edit item
      * @param {Number} idx
      * @returns
@@ -398,15 +403,6 @@ export class DeLogo extends VideoEditor {
     }
 
     /**
-     * initialize filters
-     */
-    initFilters() {
-        this.filters = [...this.configurator.filterGraph].filter(
-            (f) => f.filterType === Delogo.filterType,
-        );
-    }
-
-    /**
      *
      * @param {Delogo} item
      * @returns {HTMLElement}
@@ -446,23 +442,10 @@ export class DeLogo extends VideoEditor {
     }
 
     /**
-     * run delogo dialogue
-     */
-    run() {
-        const isEdit = this.configurator.filterGraph.includes(this.model);
-        if (isEdit) {
-            this.applyModelData();
-        } else {
-            this.centerBoxInVideo();
-            this.applyNewModel();
-        }
-    }
-
-    /**
      * save models
      */
     save() {
-        saveDelogo.call(this.configurator, this, this.isEdit);
+        saveDelogo.call(this.configurator, this);
         this.isSaved = this.saved;
         this.initFilters();
         this.activeDelogoFilter = null;
@@ -471,10 +454,21 @@ export class DeLogo extends VideoEditor {
     }
 
     /**
+     * run delogo dialogue
+     */
+    run() {
+        if (this.configurator.filterGraph.includes(this.model)) {
+            this.applyModelData();
+        } else {
+            this.centerBoxInVideo();
+            this.applyNewModel();
+        }
+    }
+
+    /**
      * apply data of existing model to ui
      */
     applyModelData() {
-        this.isEdit = true;
         this.isSaved = false;
         this.coords = this.model.coords;
         this.betweenFrom = this.model.between.from?.getCutpoint(
@@ -493,7 +487,6 @@ export class DeLogo extends VideoEditor {
      * apply new model data
      */
     applyNewModel() {
-        this.isEdit = false;
         this.isSaved = false;
 
         this.model.coords = this.coords;
@@ -722,56 +715,66 @@ export class DeLogo extends VideoEditor {
         return (this.#displayBetweenTo ??=
             this.shadowRoot.querySelector("span.between-to"));
     }
+
     #btnBetweenFrom;
     get btnBetweenFrom() {
         return (this.#btnBetweenFrom ??= this.shadowRoot.querySelector(
             'theme-button[data-type="between-from"]',
         ));
     }
+
     #btnBetweenTo;
     get btnBetweenTo() {
         return (this.#btnBetweenTo ??= this.shadowRoot.querySelector(
             'theme-button[data-type="between-to"]',
         ));
     }
+
     #btnBetweenReset;
     get btnBetweenReset() {
         return (this.#btnBetweenReset ??= this.shadowRoot.querySelector(
             'theme-button[data-type="between-reset"]',
         ));
     }
+
     #saveButton;
     get saveButton() {
         return (this.#saveButton ??= this.shadowRoot.querySelector(
             'theme-button[data-type="save"]',
         ));
     }
+
     #addButton;
     get addButton() {
         return (this.#addButton ??= this.shadowRoot.querySelector(
             'theme-button[data-type="add"]',
         ));
     }
+
     #filtersContainer;
     get filtersContainer() {
         return (this.#filtersContainer ??=
             this.shadowRoot.querySelector(".filters"));
     }
+
     #displayLeft;
     get displayLeft() {
         return (this.#displayLeft ??=
             this.shadowRoot.querySelector(".displayLeft"));
     }
+
     #displayTop;
     get displayTop() {
         return (this.#displayTop ??=
             this.shadowRoot.querySelector(".displayTop"));
     }
+
     #displayWidth;
     get displayWidth() {
         return (this.#displayWidth ??=
             this.shadowRoot.querySelector(".displayWidth"));
     }
+
     #displayHeight;
     get displayHeight() {
         return (this.#displayHeight ??=
@@ -782,16 +785,19 @@ export class DeLogo extends VideoEditor {
         return (this.#zoom ??= this.shadowRoot.querySelector(".zoom"));
     }
 
+    #delogoBox;
     get delogoBox() {
         return (this.#delogoBox ??=
             this.shadowRoot.querySelector(".delogo-box"));
     }
 
+    #zoomDelogoBox;
     get zoomDelogoBox() {
         return (this.#zoomDelogoBox ??=
             this.shadowRoot.querySelector(".zoom-delogo-box"));
     }
 
+    #itemBox;
     get itemBox() {
         return (this.#itemBox ??= this.shadowRoot.querySelector(".item-box"));
     }
