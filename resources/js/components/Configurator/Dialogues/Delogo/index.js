@@ -7,13 +7,13 @@ import { Delogo } from "../../../../Models/Filters/Delogo";
 import "./Filters/Item";
 
 const KEY_ACTIONS = {
-    // Skalieren
+    // resize
     ArrowRight: (ed, d) => ed.resizeBox(d, 0),
     ArrowLeft: (ed, d) => ed.resizeBox(-d, 0),
     ArrowUp: (ed, d) => ed.resizeBox(0, -d),
     ArrowDown: (ed, d) => ed.resizeBox(0, d),
 
-    // Verschieben (Ctrl)
+    // move (Ctrl)
     "ctrl+ArrowRight": (ed, d) => ed.moveBox(d, 0),
     "ctrl+ArrowLeft": (ed, d) => ed.moveBox(-d, 0),
     "ctrl+ArrowUp": (ed, d) => ed.moveBox(0, -d),
@@ -68,19 +68,20 @@ export class DeLogo extends VideoEditor {
         this.gotoBetweenFrom = this.gotoBetweenFrom.bind(this);
         this.gotoBetweenTo = this.gotoBetweenTo.bind(this);
         this.save = this.save.bind(this);
-        this.addNext = this.addNext.bind(this);
+        this.applyNewModel = this.applyNewModel.bind(this);
         this.editItem = this.editItem.bind(this);
         this.deleteItem = this.deleteItem.bind(this);
         this.copyItem = this.copyItem.bind(this);
         this.showItemTimeRange = this.showItemTimeRange.bind(this);
+        this.centerBoxUnderCursor = this.centerBoxUnderCursor.bind(this);
     }
 
     addListeners() {
         super.addListeners();
-        this.image.addEventListener("click", this.addDelogoBox);
+        this.image.addEventListener("click", this.centerBoxUnderCursor);
         document.addEventListener("keydown", this.handleKey);
 
-        this.addButton.addEventListener("click", this.addNext);
+        this.addButton.addEventListener("click", this.applyNewModel);
         this.saveButton.addEventListener("click", this.save);
 
         this.btnBetweenFrom.addEventListener("click", this.setBetweenFrom);
@@ -103,10 +104,10 @@ export class DeLogo extends VideoEditor {
 
     removeListeners() {
         super.removeListeners();
-        this.image.removeEventListener("click", this.addDelogoBox);
+        this.image.removeEventListener("click", this.centerBoxUnderCursor);
         document.removeEventListener("keydown", this.handleKey);
 
-        this.addButton.removeEventListener("click", this.addNext);
+        this.addButton.removeEventListener("click", this.applyNewModel);
         this.saveButton.removeEventListener("click", this.save);
 
         this.btnBetweenFrom.removeEventListener("click", this.setBetweenFrom);
@@ -128,6 +129,53 @@ export class DeLogo extends VideoEditor {
         this.filtersContainer.removeEventListener("delogo-item-delete", this);
         this.filtersContainer.removeEventListener("delogo-item-on", this);
         this.filtersContainer.removeEventListener("delogo-item-off", this);
+    }
+
+    /**
+     * update image url
+     * also update zoomimage utl
+     */
+    updateFrameUrl() {
+        this.image.addEventListener(
+            "load",
+            () => {
+                if (!this.zoomImage) return;
+                this.zoomImage.src = this.image.src;
+            },
+            { once: true },
+        );
+        super.updateFrameUrl();
+    }
+
+    /**
+     * sync zoom box to delogo box
+     */
+    updateZoom() {
+        const image = this.image.getBoundingClientRect();
+        const tr = `translate(
+            ${
+                (this.coords.x -
+                    this.zoom.offsetWidth / 2 +
+                    this.coords.w / 2) *
+                -1
+            }px,
+            ${
+                (this.coords.y -
+                    this.zoom.offsetHeight / 2 +
+                    this.coords.h / 2) *
+                -1
+            }px
+            )`;
+        this.zoomImage.style.transform = tr;
+        this.zoomDelogoBox.style.top = `${this.coords.y}px`;
+        this.zoomDelogoBox.style.left = `${this.coords.x}px`;
+        this.zoomDelogoBox.style.width = `${this.coords.w}px`;
+        this.zoomDelogoBox.style.height = `${this.coords.h}px`;
+        this.zoomDelogoBox.style.transform = tr;
+        this.displayLeft.innerText = `${this.coords.x}px`;
+        this.displayTop.innerText = `${this.coords.y}px`;
+        this.displayWidth.innerText = `${this.coords.w}px`;
+        this.displayHeight.innerText = `${this.coords.h}px`;
     }
 
     /**
@@ -157,46 +205,11 @@ export class DeLogo extends VideoEditor {
         }
     }
 
-    updateFrameUrl() {
-        this.image.addEventListener(
-            "load",
-            () => {
-                if (!this.zoomImage) return;
-                this.zoomImage.src = this.image.src;
-            },
-            { once: true },
-        );
-        super.updateFrameUrl();
-    }
-
-    updateZoom() {
-        const image = this.image.getBoundingClientRect();
-        const tr = `translate(
-            ${
-                (this.coords.x -
-                    this.zoom.offsetWidth / 2 +
-                    this.coords.w / 2) *
-                -1
-            }px,
-            ${
-                (this.coords.y -
-                    this.zoom.offsetHeight / 2 +
-                    this.coords.h / 2) *
-                -1
-            }px
-            )`;
-        this.zoomImage.style.transform = tr;
-        this.zoomDelogoBox.style.top = `${this.coords.y}px`;
-        this.zoomDelogoBox.style.left = `${this.coords.x}px`;
-        this.zoomDelogoBox.style.width = `${this.coords.w}px`;
-        this.zoomDelogoBox.style.height = `${this.coords.h}px`;
-        this.zoomDelogoBox.style.transform = tr;
-        this.displayLeft.innerText = `${this.coords.x}px`;
-        this.displayTop.innerText = `${this.coords.y}px`;
-        this.displayWidth.innerText = `${this.coords.w}px`;
-        this.displayHeight.innerText = `${this.coords.h}px`;
-    }
-
+    /**
+     * handle key presses
+     * @param {KeyboardEvent} e
+     * @returns
+     */
     handleKey(e) {
         if (!this.delogoBox) return;
 
@@ -205,7 +218,7 @@ export class DeLogo extends VideoEditor {
 
         if (action) {
             e.preventDefault();
-            const delta = e.shiftKey ? 10 : 1;
+            const delta = e.shiftKey ? 1 : 10;
 
             action(this, delta);
 
@@ -214,12 +227,17 @@ export class DeLogo extends VideoEditor {
         }
     }
 
+    /**
+     * move box by delta
+     * @param {Number} dx
+     * @param {Number} dy
+     */
     moveBox(dx, dy) {
         const coords = { ...this.model.coords };
         const videoWidth = this.video.width;
         const videoHeight = this.video.height;
 
-        // 1px Puffer im echten Video-Format (0 bis VideoWidth)
+        // 1px padding in real video pixels (0 to VideoWidth)
         coords.x = Math.max(
             1,
             Math.min(coords.x + dx, videoWidth - coords.w - 1),
@@ -229,15 +247,20 @@ export class DeLogo extends VideoEditor {
             Math.min(coords.y + dy, videoHeight - coords.h - 1),
         );
 
-        this.model.coords = coords; // Modell aktualisieren
-        this.syncBoxToModel(); // UI nachziehen
+        this.model.coords = coords;
+        this.syncBoxToModel();
     }
 
+    /**
+     * resize box by delta
+     * @param {Number} dw
+     * @param {Number} dh
+     */
     resizeBox(dw, dh) {
         const coords = { ...this.model.coords };
         const videoWidth = this.video.width;
         const videoHeight = this.video.height;
-        const minSize = 10; // 10 echte Video-Pixel
+        const minSize = 10;
 
         coords.w = Math.max(
             minSize,
@@ -252,6 +275,9 @@ export class DeLogo extends VideoEditor {
         this.syncBoxToModel();
     }
 
+    /**
+     * set between from value to model and update ui
+     */
     setBetweenFrom() {
         this.model.between.from = this.timestamp();
         this.betweenFrom = this.model.between.from?.getCutpoint(
@@ -259,11 +285,17 @@ export class DeLogo extends VideoEditor {
         );
     }
 
+    /**
+     * set between to value to model and update ui
+     */
     setBetweenTo() {
         this.model.between.to = this.timestamp();
         this.betweenTo = this.model.between.to?.getCutpoint(this.clipsConfig);
     }
 
+    /**
+     * reset between from and to values, reset ui
+     */
     resetBetween() {
         if (this.model) {
             this.model.between.from = null;
@@ -273,6 +305,9 @@ export class DeLogo extends VideoEditor {
         this.betweenTo = "n/a";
     }
 
+    /**
+     * goto between from value
+     */
     gotoBetweenFrom() {
         if (!this.model.between.from) return;
         this.current = this.model.between.from.milliseconds;
@@ -280,6 +315,9 @@ export class DeLogo extends VideoEditor {
         this.updateImages();
     }
 
+    /**
+     * goto between to value
+     */
     gotoBetweenTo() {
         if (!this.model.between.to) return;
         this.current = this.model.between.to.milliseconds;
@@ -288,7 +326,7 @@ export class DeLogo extends VideoEditor {
     }
 
     /**
-     *
+     * edit item
      * @param {Number} idx
      * @returns
      */
@@ -311,6 +349,7 @@ export class DeLogo extends VideoEditor {
     }
 
     /**
+     * delete item
      * @param {Number} idx
      */
     async deleteItem(idx) {
@@ -330,13 +369,15 @@ export class DeLogo extends VideoEditor {
     }
 
     /**
+     * copy item
      * @param {Number} idx
      */
     async copyItem(idx) {
         const src = this.configurator.filterGraph[idx];
         const dest = structuredClone(src);
-        dest.filterIndex =
-            this.configurator.filterGraph.getProposedFilterIndex("delogo");
+        dest.filterIndex = this.configurator.filterGraph.getProposedFilterIndex(
+            Delogo.filterType,
+        );
 
         dest.between.from = new VTime(this.current).seconds;
         dest.between.to = new VTime(this.current).seconds;
@@ -356,12 +397,13 @@ export class DeLogo extends VideoEditor {
         await this.configurator.saveSettings();
     }
 
+    /**
+     * initialize filters
+     */
     initFilters() {
-        this.filters = [...this.configurator.filterGraph].filter((f, k) => {
-            if (f.filterType !== "delogo") return false;
-            f.index = k;
-            return true;
-        });
+        this.filters = [...this.configurator.filterGraph].filter(
+            (f) => f.filterType === Delogo.filterType,
+        );
     }
 
     /**
@@ -378,10 +420,16 @@ export class DeLogo extends VideoEditor {
         return node;
     }
 
+    /**
+     * hightlight timerange in thumbs bar
+     * @param {Number} index
+     * @returns
+     */
     showItemTimeRange(index) {
         this.hideItemTimeRange();
         const delogo = this.configurator.filterGraph[index];
-        this.itemCoords = delogo;
+        if (!delogo) return;
+        this.itemCoords = delogo.coords;
         this.indicatorRangeByTimestamp = {
             from: delogo.between.from.seconds || 0,
             to: delogo.between.to.seconds || 0,
@@ -389,20 +437,30 @@ export class DeLogo extends VideoEditor {
         this.itemBox.classList.add("active");
     }
 
+    /**
+     * remove timerange from thumbsbar
+     */
     hideItemTimeRange() {
         this.itemBox?.classList.remove("active");
         this.indicatorByTimestamp = null;
     }
 
+    /**
+     * run delogo dialogue
+     */
     run() {
-        const isNew = this.configurator.filterGraph.indexOf(this.model) > -1;
-        if (isNew) {
+        const isEdit = this.configurator.filterGraph.includes(this.model);
+        if (isEdit) {
             this.applyModelData();
         } else {
-            this.addNext();
+            this.centerBoxInVideo();
+            this.applyNewModel();
         }
     }
 
+    /**
+     * save models
+     */
     save() {
         saveDelogo.call(this.configurator, this, this.isEdit);
         this.isSaved = this.saved;
@@ -412,6 +470,9 @@ export class DeLogo extends VideoEditor {
         Iconify.scan(this.shadowRoot);
     }
 
+    /**
+     * apply data of existing model to ui
+     */
     applyModelData() {
         this.isEdit = true;
         this.isSaved = false;
@@ -428,29 +489,42 @@ export class DeLogo extends VideoEditor {
         this.updateZoom();
     }
 
-    addNext() {
+    /**
+     * apply new model data
+     */
+    applyNewModel() {
         this.isEdit = false;
         this.isSaved = false;
-        this.resetBetween();
+
         this.model.coords = this.coords;
         this.model.between.from = this.current / 1000;
         this.model.between.to = this.current / 1000;
+
+        this.filters = [...this.filters, this.model];
         this.filterIndex = this.model.filterIndex;
-        const filters = this.filters;
-        filters.push(this.model);
-        this.filters = filters;
-        this.activeDelogoFilter = this.model.filterIndex;
+        this.activeDelogoFilter = this.filterIndex;
+
+        this.resetBetween();
         this.syncBoxToModel();
         this.updateZoom();
     }
 
+    /**
+     * reset model
+     */
     resetModel() {
         this.model = new Delogo(
-            this.configurator.filterGraph.getProposedFilterIndex("delogo"),
+            this.configurator.filterGraph.getProposedFilterIndex(
+                Delogo.filterType,
+            ),
+            this.coords,
         );
         this.filterIndex = this.model.filterIndex;
     }
 
+    /**
+     * syncs delogo box to model coordinates
+     */
     syncBoxToModel() {
         if (!this.delogoBox || !this.model.coords) return;
 
@@ -465,32 +539,99 @@ export class DeLogo extends VideoEditor {
         this.updateZoom();
     }
 
+    /**
+     * centers box in video
+     */
+    centerBoxInVideo() {
+        const vW = this.video.width;
+        const vH = this.video.height;
+        // use current dimensions or default 40
+        const w = this.model.coords?.w || 40;
+        const h = this.model.coords?.h || 40;
+
+        this.coords = {
+            x: Math.round(vW / 2 - w / 2),
+            y: Math.round(vH / 2 - h / 2),
+            w,
+            h,
+        };
+    }
+
+    /**
+     * centers box under cursor
+     * respects video size padding of 1px
+     * @param {MouseEvent} e
+     */
+    centerBoxUnderCursor(e) {
+        const ratio = this.videoImageRatio;
+        const vW = this.video.width;
+        const vH = this.video.height;
+
+        // use current dimensions or default 40
+        const w = this.model.coords?.w || 40;
+        const h = this.model.coords?.h || 40;
+
+        // 1. transform click to video pixels and center box
+        let targetX = Math.round(e.offsetX * ratio - w / 2);
+        let targetY = Math.round(e.offsetY * ratio - h / 2);
+
+        // 2. ensure 1px padding to video border
+        // x/y must not be smaller than 1
+        // x/y not bigger than (Video-Limit - Box-Size - 1 pad)
+        targetX = Math.max(1, Math.min(targetX, vW - w - 1));
+        targetY = Math.max(1, Math.min(targetY, vH - h - 1));
+
+        this.coords = {
+            x: targetX,
+            y: targetY,
+            w: w,
+            h: h,
+        };
+    }
+
+    /**
+     * set filter items and rerender ui
+     */
     set filters(items) {
         this.hideItemTimeRange();
         this.filtersContainer.replaceChildren(...items.map(this.createItem));
         Iconify.scan(this.shadowRoot);
     }
 
+    /**
+     * obtain filter items mapped to new array
+     */
     get filters() {
-        return [...this.filtersContainer.querySelectorAll(":scope > div")].map(
-            (i) => {
-                return this.configurator.filterGraph[Number(i.dataset.index)];
-            },
-        );
+        return [
+            ...this.filtersContainer.querySelectorAll(
+                ":scope > delogo-filter-item",
+            ),
+        ].map((i) => {
+            return this.configurator.filterGraph[Number(i.dataset.index)];
+        });
     }
 
+    /**
+     * obtain last filter node
+     */
     get lastFilterNode() {
         return this.filtersContainer.querySelector(
             ":nth-last-child(1 of delogo-filter-item)",
         );
     }
 
+    /**
+     * set is saved state and update ui
+     */
     set isSaved(value) {
         this.saved = !!value;
         this.saveButton.disabled = this.saved;
         this.addButton.disabled = !this.saved;
     }
 
+    /**
+     * hightlight current filter item
+     */
     set activeDelogoFilter(item) {
         this.shadowRoot
             .querySelectorAll(".filters delogo-filter-item")
@@ -517,23 +658,37 @@ export class DeLogo extends VideoEditor {
         this.itemBox.style.width = `${Math.round(coord.w / ratio)}px`;
     }
 
-    set coords(coord) {
-        this.model.coords = coord;
+    /**
+     * set coords in model and sync box
+     */
+    set coords(coords) {
+        this.model.coords = coords;
         this.syncBoxToModel();
     }
 
+    /**
+     * obtain coords from model
+     */
     get coords() {
-        return this.model.coords; // Die "Wahrheit" liegt im Modell
+        return this.model.coords;
     }
 
+    /**
+     * obtain image bounding client rect
+     */
     get imageRect() {
         return this.image.getBoundingClientRect();
     }
 
+    /**
+     * obtain video to image pixel ratio
+     */
     get videoImageRatio() {
         const scaleRatio = this.image.naturalWidth / this.video.width;
         return (this.video.width / this.imageRect.width) * scaleRatio;
     }
+
+    /* between display properties */
 
     get betweenFrom() {
         return this.displayBetweenFrom.querySelector("span:last-of-type")
@@ -543,10 +698,6 @@ export class DeLogo extends VideoEditor {
     set betweenFrom(value) {
         this.displayBetweenFrom.querySelector("span:last-of-type").innerText =
             value;
-    }
-
-    get displayBetweenFrom() {
-        return this.shadowRoot.querySelector("span.between-from");
     }
 
     get betweenTo() {
@@ -559,58 +710,76 @@ export class DeLogo extends VideoEditor {
             value;
     }
 
+    /* element getters */
+    #displayBetweenFrom;
+    get displayBetweenFrom() {
+        return (this.#displayBetweenFrom ??=
+            this.shadowRoot.querySelector("span.between-from"));
+    }
+
+    #displayBetweenTo;
     get displayBetweenTo() {
-        return this.shadowRoot.querySelector("span.between-to");
+        return (this.#displayBetweenTo ??=
+            this.shadowRoot.querySelector("span.between-to"));
     }
-
+    #btnBetweenFrom;
     get btnBetweenFrom() {
-        return this.shadowRoot.querySelector(
+        return (this.#btnBetweenFrom ??= this.shadowRoot.querySelector(
             'theme-button[data-type="between-from"]',
-        );
+        ));
     }
-
+    #btnBetweenTo;
     get btnBetweenTo() {
-        return this.shadowRoot.querySelector(
+        return (this.#btnBetweenTo ??= this.shadowRoot.querySelector(
             'theme-button[data-type="between-to"]',
-        );
+        ));
     }
-
+    #btnBetweenReset;
     get btnBetweenReset() {
-        return this.shadowRoot.querySelector(
+        return (this.#btnBetweenReset ??= this.shadowRoot.querySelector(
             'theme-button[data-type="between-reset"]',
-        );
+        ));
     }
-
+    #saveButton;
     get saveButton() {
-        return this.shadowRoot.querySelector('theme-button[data-type="save"]');
+        return (this.#saveButton ??= this.shadowRoot.querySelector(
+            'theme-button[data-type="save"]',
+        ));
     }
-
+    #addButton;
     get addButton() {
-        return this.shadowRoot.querySelector('theme-button[data-type="add"]');
+        return (this.#addButton ??= this.shadowRoot.querySelector(
+            'theme-button[data-type="add"]',
+        ));
     }
-
+    #filtersContainer;
     get filtersContainer() {
-        return this.shadowRoot.querySelector(".filters");
+        return (this.#filtersContainer ??=
+            this.shadowRoot.querySelector(".filters"));
     }
-
+    #displayLeft;
     get displayLeft() {
-        return this.shadowRoot.querySelector(".displayLeft");
+        return (this.#displayLeft ??=
+            this.shadowRoot.querySelector(".displayLeft"));
     }
-
+    #displayTop;
     get displayTop() {
-        return this.shadowRoot.querySelector(".displayTop");
+        return (this.#displayTop ??=
+            this.shadowRoot.querySelector(".displayTop"));
     }
-
+    #displayWidth;
     get displayWidth() {
-        return this.shadowRoot.querySelector(".displayWidth");
+        return (this.#displayWidth ??=
+            this.shadowRoot.querySelector(".displayWidth"));
     }
-
+    #displayHeight;
     get displayHeight() {
-        return this.shadowRoot.querySelector(".displayHeight");
+        return (this.#displayHeight ??=
+            this.shadowRoot.querySelector(".displayHeight"));
     }
-
+    #zoom;
     get zoom() {
-        return this.shadowRoot.querySelector(".zoom");
+        return (this.#zoom ??= this.shadowRoot.querySelector(".zoom"));
     }
 
     get delogoBox() {

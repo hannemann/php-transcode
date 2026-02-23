@@ -54,7 +54,7 @@ class DelogoCPU extends Crop
         return [$cmds->all()];
     }
 
-    public static function getFilterString($data, ?string $timestamp): string
+    public static function getFilterString($data, ?string $timestamp = ''): string
     {
 
         if ($timestamp && $data['between']['from'] && $data['between']['to']) {

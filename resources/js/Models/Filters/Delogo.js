@@ -12,10 +12,9 @@ import { Enable } from "./Filters/Enable";
  * @property {EnableData} [between]       enable between
  */
 
-const filterType = "delogo";
-
 export class Delogo extends FilterModel {
-    filterType = filterType;
+    static filterType = "delogo";
+    filterType = Delogo.filterType;
     type = "cpu";
 
     /**
@@ -26,10 +25,10 @@ export class Delogo extends FilterModel {
     constructor(
         filterIndex = null,
         {
-            x = 1,
-            y = 1,
-            w = 50,
-            h = 50,
+            x = null,
+            y = null,
+            w = null,
+            h = null,
             between: { from = null, to = null } = {},
         } = {},
     ) {
