@@ -947,7 +947,7 @@ DeLogo.template = html`
                 ></span>
                 + Shift
             </dt>
-            <dd>Faster movement</dd>
+            <dd>Finer movement</dd>
         </dl>
     </div>
     <div class="sidebar">
