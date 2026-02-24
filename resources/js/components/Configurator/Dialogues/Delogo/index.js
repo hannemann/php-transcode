@@ -58,39 +58,30 @@ export class DeLogo extends VideoEditor {
     bindListeners() {
         super.bindListeners();
         this.handleKey = this.handleKey.bind(this);
-        this.setBetweenFrom = this.setBetweenFrom.bind(this);
-        this.setBetweenTo = this.setBetweenTo.bind(this);
-        this.resetBetween = this.resetBetween.bind(this);
-        this.gotoBetweenFrom = this.gotoBetweenFrom.bind(this);
-        this.gotoBetweenTo = this.gotoBetweenTo.bind(this);
-        this.save = this.save.bind(this);
-        this.applyNewModel = this.applyNewModel.bind(this);
-        this.editItem = this.editItem.bind(this);
-        this.deleteItem = this.deleteItem.bind(this);
-        this.copyItem = this.copyItem.bind(this);
-        this.showItemTimeRange = this.showItemTimeRange.bind(this);
         this.centerBoxUnderCursor = this.centerBoxUnderCursor.bind(this);
     }
 
     addListeners() {
         super.addListeners();
+
+        // 1. Image Interaction
         this.image.addEventListener("click", this.centerBoxUnderCursor);
+
+        // 2. Scoped Keyboard Shortcuts (bound to host instead of document)
         document.addEventListener("keydown", this.handleKey);
 
-        this.addButton.addEventListener("click", this.applyNewModel);
-        this.saveButton.addEventListener("click", this.save);
+        // 3. UI Buttons (using 'this' as the listener to trigger handleEvent)
+        this.addButton.addEventListener("click", this);
+        this.saveButton.addEventListener("click", this);
+        this.btnBetweenFrom.addEventListener("click", this);
+        this.btnBetweenTo.addEventListener("click", this);
+        this.btnBetweenReset.addEventListener("click", this);
 
-        this.btnBetweenFrom.addEventListener("click", this.setBetweenFrom);
-        this.btnBetweenTo.addEventListener("click", this.setBetweenTo);
-        this.btnBetweenReset.addEventListener("click", this.resetBetween);
+        // 4. Display spans (navigation)
+        this.displayBetweenFrom.addEventListener("click", this);
+        this.displayBetweenTo.addEventListener("click", this);
 
-        this.displayBetweenFrom.addEventListener("click", this.gotoBetweenFrom);
-        this.displayBetweenTo.addEventListener("click", this.gotoBetweenTo);
-
-        this.addItemListeners();
-    }
-
-    addItemListeners() {
+        // 5. Filter Item Events (Delegated via Container)
         this.filtersContainer.addEventListener("delogo-item-edit", this);
         this.filtersContainer.addEventListener("delogo-item-copy", this);
         this.filtersContainer.addEventListener("delogo-item-delete", this);
@@ -100,26 +91,25 @@ export class DeLogo extends VideoEditor {
 
     removeListeners() {
         super.removeListeners();
+
+        // 1. Image Interaction
         this.image.removeEventListener("click", this.centerBoxUnderCursor);
+
+        // 2. Scoped Keyboard Shortcuts
         document.removeEventListener("keydown", this.handleKey);
 
-        this.addButton.removeEventListener("click", this.applyNewModel);
-        this.saveButton.removeEventListener("click", this.save);
+        // 3. UI Buttons
+        this.addButton.removeEventListener("click", this);
+        this.saveButton.removeEventListener("click", this);
+        this.btnBetweenFrom.removeEventListener("click", this);
+        this.btnBetweenTo.removeEventListener("click", this);
+        this.btnBetweenReset.removeEventListener("click", this);
 
-        this.btnBetweenFrom.removeEventListener("click", this.setBetweenFrom);
-        this.btnBetweenTo.removeEventListener("click", this.setBetweenTo);
-        this.btnBetweenReset.removeEventListener("click", this.resetBetween);
+        // 4. Display spans
+        this.displayBetweenFrom.removeEventListener("click", this);
+        this.displayBetweenTo.removeEventListener("click", this);
 
-        this.displayBetweenFrom.removeEventListener(
-            "click",
-            this.gotoBetweenFrom,
-        );
-        this.displayBetweenTo.removeEventListener("click", this.gotoBetweenTo);
-
-        this.removeItemListeners();
-    }
-
-    removeItemListeners() {
+        // 5. Filter Item Events (Container level)
         this.filtersContainer.removeEventListener("delogo-item-edit", this);
         this.filtersContainer.removeEventListener("delogo-item-copy", this);
         this.filtersContainer.removeEventListener("delogo-item-delete", this);
@@ -179,10 +169,46 @@ export class DeLogo extends VideoEditor {
      * @param {CustomEvent} e
      */
     handleEvent(e) {
-        const itemComponent = e.detail?.item;
-        const index = itemComponent?.index;
+        // Handle filter item specific events
+        if (e.type.startsWith("delogo-item-")) {
+            const index = e.detail?.item?.index;
+            this.#handleFilterAction(e.type, index);
+            return;
+        }
 
-        switch (e.type) {
+        // Handle standard UI actions based on data-type or element
+        const type = e.currentTarget?.dataset?.type;
+
+        switch (type) {
+            case "save":
+                this.save();
+                break;
+            case "add":
+                this.applyNewModel();
+                break;
+            case "between-from":
+                this.setBetweenFrom();
+                break;
+            case "between-to":
+                this.setBetweenTo();
+                break;
+            case "between-reset":
+                this.resetBetween();
+                break;
+        }
+
+        // Handle navigation clicks on the display spans
+        if (e.currentTarget === this.displayBetweenFrom) this.gotoBetweenFrom();
+        if (e.currentTarget === this.displayBetweenTo) this.gotoBetweenTo();
+    }
+
+    /**
+     * Internal helper for filter list actions
+     * @param {String} type
+     * @param {Number} index
+     */
+    #handleFilterAction(type, index) {
+        switch (type) {
             case "delogo-item-edit":
                 this.editItem(index);
                 break;
