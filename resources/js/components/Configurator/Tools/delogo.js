@@ -1,9 +1,10 @@
 import { Delogo } from "../../../Models/Filters/Delogo";
+import { FilterGraph } from "../../../Models/Filters/FilterGraph";
 import { DeLogo } from "../Dialogues/Delogo";
 import { TYPE_VIDEO } from "../Streams";
 
 export const requestDelogo = async function (model) {
-    const backup = structuredClone(this.filterGraph);
+    const backup = JSON.stringify(this.filterGraph);
     model =
         model || new Delogo(this.filterGraph.getProposedFilterIndex("delogo"));
     const m = document.createElement("modal-window");
@@ -33,13 +34,20 @@ export const requestDelogo = async function (model) {
             document.querySelector("transcoder-toast"),
         );
         await m.open();
-    } catch (error) {
-        if (error) {
-            console.error(error);
-        }
-        this.filterGraph = backup;
-    } finally {
         saveDelogo.call(this, d);
+    } catch (error) {
+        // 1. Silent Rollback: User actively clicked "Cancel" or pressed "Escape"
+        if (error === "cancel") {
+            console.info("Rolling back changes.");
+        }
+        // 2. Error Rollback: Something actually crashed
+        else if (error) {
+            console.error("Critical error during Delogo operation:", error);
+        }
+
+        // Always restore the backup to ensure UI and data consistency
+        this.filterGraph = new FilterGraph(JSON.parse(backup));
+        this.saveSettings();
     }
 };
 

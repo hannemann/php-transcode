@@ -28,7 +28,9 @@ class AbstractModal extends HTMLElement {
             }
         } catch (error) {
             this.dispatchEvent(new CustomEvent("cancel"));
-            if (error) {
+            if (error === "cancel") {
+                console.info("Operation cancelled by user.");
+            } else if (error) {
                 console.error(error);
             }
         } finally {
@@ -86,7 +88,7 @@ class AbstractModal extends HTMLElement {
     }
 
     cancelAction() {
-        this.reject();
+        this.reject("cancel");
     }
 
     closeAction() {
@@ -98,7 +100,7 @@ class AbstractModal extends HTMLElement {
         if (this.cancelButton) {
             switch (e.key) {
                 case "Escape":
-                    this.reject();
+                    this.reject("cancel");
                     break;
                 case "ArrowLeft":
                     if (this.okButton.matches(":focus")) {
