@@ -29,16 +29,18 @@ class Alert extends AbstractModal {
     }
 }
 
-Alert.template = /*html*/ `
-${MODAL_BASE_CSS}
-<style>
-    :host {
-        z-index: 100;
-    }
-</style>
-${MODAL_TEMPLATE_BEGIN}
+Alert.template = html`
+    <style>
+        ${MODAL_BASE_CSS}
+    </style>
+    <style>
+        :host {
+            z-index: 100;
+        }
+    </style>
+    ${MODAL_TEMPLATE_BEGIN}
     <slot></slot>
-${MODAL_TEMPLATE_END}
+    ${MODAL_TEMPLATE_END}
 `;
 
 export { Alert };

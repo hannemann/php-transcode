@@ -28,11 +28,13 @@ class Dialogue extends AbstractModal {
     }
 }
 
-Dialogue.template = /*html*/ `
-${MODAL_BASE_CSS}
-${MODAL_TEMPLATE_BEGIN}
+Dialogue.template = html`
+    <style>
+        ${MODAL_BASE_CSS}
+    </style>
+    ${MODAL_TEMPLATE_BEGIN}
     <slot></slot>
-${MODAL_TEMPLATE_END}
+    ${MODAL_TEMPLATE_END}
 `;
 
 export { Dialogue };

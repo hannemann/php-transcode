@@ -158,7 +158,7 @@ class AbstractModal extends HTMLElement {
     }
 }
 
-const MODAL_BASE_CSS = html`<style>
+const MODAL_BASE_CSS = css`
     :host {
         position: fixed;
         inset: 0;
@@ -224,9 +224,10 @@ const MODAL_BASE_CSS = html`<style>
         display: none;
         pointer-events: none;
     }
-</style> `;
+`;
 
-const MODAL_TEMPLATE_BEGIN = /*html*/ `
+// removed named tags to disable auto close of main tag
+const MODAL_TEMPLATE_BEGIN = `
 ${ICON_STACK_CSS}
 <main>
     <header>
@@ -238,7 +239,7 @@ ${ICON_STACK_CSS}
     <section>
 `;
 
-const MODAL_TEMPLATE_END = /*html*/ `
+const MODAL_TEMPLATE_END = html`
     </section>
     <footer>
         <theme-button data-type="cancel">Cancel</theme-button>
