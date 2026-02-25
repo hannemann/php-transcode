@@ -17,7 +17,7 @@ export const requestChaptersKeep = async function (type) {
         });
         this.saveSettings();
     } catch (error) {
-        if (error) {
+        if (error !== "cancel") {
             console.error(error);
         }
     }

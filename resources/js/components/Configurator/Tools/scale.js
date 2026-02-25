@@ -32,7 +32,7 @@ export const requestScale = async function (type) {
         this.filterGraph.push(filterSettings);
         this.saveSettings();
     } catch (error) {
-        if (error) {
+        if (error !== "cancel") {
             console.error(error);
         }
     }

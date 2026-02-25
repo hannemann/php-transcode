@@ -18,7 +18,7 @@ export const requestPlay = async function () {
         );
         await m.open();
     } catch (error) {
-        if (error) {
+        if (error !== "cancel") {
             console.error(error);
         }
     }

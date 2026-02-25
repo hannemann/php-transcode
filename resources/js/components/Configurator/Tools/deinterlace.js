@@ -7,14 +7,16 @@ export const requestDeinterlace = async function (type) {
         m.content = "Add Deinterlace filter to filtergraph?";
         document.body.appendChild(m);
         await m.confirm();
-        const idx = this.filterGraph.findIndex(f => f.filterType === 'deinterlace');
+        const idx = this.filterGraph.findIndex(
+            (f) => f.filterType === "deinterlace",
+        );
         if (idx > -1) {
             this.filterGraph.splice(idx, 1);
         }
-        this.filterGraph.unshift({filterType: 'deinterlace'});
+        this.filterGraph.unshift({ filterType: "deinterlace" });
         this.saveSettings();
     } catch (error) {
-        if (error) {
+        if (error !== "cancel") {
             console.error(error);
         }
     }

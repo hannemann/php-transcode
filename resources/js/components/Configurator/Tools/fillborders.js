@@ -59,7 +59,7 @@ export const requestFillborders = async function (model) {
         }
         this.saveSettings();
     } catch (error) {
-        if (error) {
+        if (error !== "cancel") {
             console.error(error);
         }
     }

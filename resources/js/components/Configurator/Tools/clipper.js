@@ -38,7 +38,7 @@ export const clipper = async function () {
         }
         this.saveSettings();
     } catch (error) {
-        if (error) {
+        if (error !== "cancel") {
             console.error(error);
         }
     }

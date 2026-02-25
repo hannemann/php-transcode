@@ -68,7 +68,7 @@ export const requestCrop = async function (type, id = NaN, data = null) {
         }
         this.saveSettings();
     } catch (error) {
-        if (error) {
+        if (error !== "cancel") {
             console.error(error);
         }
     }
