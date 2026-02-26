@@ -117,8 +117,8 @@ div.path.show {
 div.icon-stack {
     width: 1em;
 }
-</style>
 ${ICON_STACK_CSS}
+</style>
 `;
 
 export { PROGRESS_ITEM_CSS, ProgressItem };

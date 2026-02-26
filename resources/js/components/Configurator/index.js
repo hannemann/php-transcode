@@ -486,172 +486,195 @@ class TranscodeConfigurator extends HTMLElement {
     }
 }
 
-const CSS = /*css*/ `
-<style>
-:host {
-    position: fixed;
-    inset: 0;
-    display: none;
-    opacity: 1;
-    transition: opacity var(--transition-slow) linear;
-}
-:host(.active) {
-    display: flex;
-    align-items: center;
-}
-:host(.fade-out) {
-    opacity: 0;
-}
-main {
-    position: absolute;
-    box-shadow: 0 0 10vw 3vw var(--clr-shadow-0);
-    inset: var(--window-inset);
-    background-color: var(--clr-bg-0);
-    border-radius: var(--window-border-radius);
-    padding: min(30px, var(--rel-gutter-200));
-}
-main h1 {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0;
-    margin: 0 0 var(--rel-gutter-100) 0;
-    font-size: 1.75rem;
-    user-select: none;
-}
-main h1 div {
-    cursor: pointer;
-    height: 1em;
-    width: 1em;
-}
-main > div {
-    height: calc(100% - 1.75rem * 2);
-    gap: 1rem;
-    display: grid;
-    grid-template-areas: "info" "footer";
-    grid-template-rows: auto min-content;
-}
-.info {
-    grid-area: info;
-    display: grid;
-    grid-template-areas: "data clips" "filterGraph .";
-    grid-template-rows: repeat(2, min-content);
-    gap: 1rem;
-    overflow-y: auto;
-}
-@media (max-width: 640px) {
+const CSS = css`
+    :host {
+        position: fixed;
+        inset: 0;
+        display: none;
+        opacity: 1;
+        transition: opacity var(--transition-slow) linear;
+    }
+    :host(.active) {
+        display: flex;
+        align-items: center;
+    }
+    :host(.fade-out) {
+        opacity: 0;
+    }
+    main {
+        position: absolute;
+        box-shadow: 0 0 10vw 3vw var(--clr-shadow-0);
+        inset: var(--window-inset);
+        background-color: var(--clr-bg-0);
+        border-radius: var(--window-border-radius);
+        padding: min(30px, var(--rel-gutter-200));
+    }
+    main h1 {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0;
+        margin: 0 0 var(--rel-gutter-100) 0;
+        font-size: 1.75rem;
+        user-select: none;
+    }
+    main h1 div {
+        cursor: pointer;
+        height: 1em;
+        width: 1em;
+    }
+    main > div {
+        height: calc(100% - 1.75rem * 2);
+        gap: 1rem;
+        display: grid;
+        grid-template-areas: "info" "footer";
+        grid-template-rows: auto min-content;
+    }
     .info {
-        grid-template-areas: "data" "clips";
+        grid-area: info;
+        display: grid;
+        grid-template-areas: "data clips" "filterGraph .";
+        grid-template-rows: repeat(2, min-content);
+        gap: 1rem;
+        overflow-y: auto;
     }
-}
-.info section {
-    grid-area: data;
-    display: grid;
-    gap: 1rem;
-    grid-auto-rows: min-content;
+    @media (max-width: 640px) {
+        .info {
+            grid-template-areas: "data" "clips";
+        }
+    }
+    .info section {
+        grid-area: data;
+        display: grid;
+        gap: 1rem;
+        grid-auto-rows: min-content;
 
-    transcode-configurator-format {
-        order: 1;
-    }
+        transcode-configurator-format {
+            order: 1;
+        }
 
-    transcode-configurator-streams {
-        order: 2;
-    }
+        transcode-configurator-streams {
+            order: 2;
+        }
 
-    transcode-configurator-filter-graph {
-        order: 3;
+        transcode-configurator-filter-graph {
+            order: 3;
+        }
     }
-}
-.info transcode-configurator-clips {
-    grid-area: clips;
-}
-footer {
-    grid-area: footer;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: .5rem;
-    padding: 0 1rem;
-}
-footer .icon-stack {
-    font-size: var(--font-size-200);
-    aspect-ratio: 1;
-}
-combo-button {
-    min-width: 190px;
-}
-</style>
-${ICON_STACK_CSS}
-${COMBO_BUTTON_CSS}
+    .info transcode-configurator-clips {
+        grid-area: clips;
+    }
+    footer {
+        grid-area: footer;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0 1rem;
+    }
+    footer .icon-stack {
+        font-size: var(--font-size-200);
+        aspect-ratio: 1;
+    }
+    combo-button {
+        min-width: 190px;
+    }
 `;
 
-const HEADING = /*html*/ `
-<h1>
-    Transcode
-    <div class="icon-stack btn-hide">
-        <span class="iconify" data-icon="mdi-close"></span>
-        <span class="iconify hover" data-icon="mdi-close"></span>
-    </div>
-</h1>
-`;
-
-TranscodeConfigurator.template = /*html*/ `
-${CSS}
-<main>
-    ${HEADING}
-    <div>
-        <div class="info">
-            <section></section>
+const HEADING = html`
+    <h1>
+        Transcode
+        <div class="icon-stack btn-hide">
+            <span class="iconify" data-icon="mdi-close"></span>
+            <span class="iconify hover" data-icon="mdi-close"></span>
         </div>
-        <footer>
-            <button class="icon-stack btn-play" title="Play">
-                <span class="iconify" data-icon="mdi-play"></span>
-                <span class="iconify hover" data-icon="mdi-play"></span>
-            </button>
-            <combo-button class="btn-save">
-                <span class="icon-stack" slot="icon">
-                    <span class="iconify" data-icon="mdi-content-save-outline"></span>
-                    <span class="iconify hover" data-icon="mdi-content-save-outline"></span>
-                </span>
-                <option value="save:template">Save as Template</option>
-                <option value="save:normal">Save</option>
-            </combo-button>
-            <combo-button class="btn-tools">
-                <span class="icon-stack" slot="icon">
-                    <span class="iconify" data-icon="mdi-tools"></span>
-                    <span class="iconify hover" data-icon="mdi-tools"></span>
-                </span>
-                <option value="concat:mkv">Concat MKV</option>
-                <option value="concat:mp4">Concat MP4</option>
-                <option value="remux:mkv">Remux MKV</option>
-                <option value="remux:mp4">Remux MP4</option>
-                <option value="remux:ts">Remux TS</option>
-                <option value="chapters_keep:cpu:instantOpen">Keep Chapters</option>
-                <option value="deinterlace:cpu:instantOpen">Deinterlace</option>
-                <option value="pad:cpu:instantOpen">Pad</option>
-                <option value="crop:cpu:instantOpen">Crop (CPU)</option>
-                <option value="scale:cpu:instantOpen">Scale (CPU)</option>
-                <option value="delogo:instantOpen">DeLogo</option>
-                <option value="removelogo:instantOpen">RemoveLogo</option>
-                <option value="fillborders:instantOpen">Fillborders</option>
-            </combo-button>
-            <theme-button class="btn-clipper">
-                <span class="icon-stack" slot="icon">
-                    <span class="iconify" data-icon="mdi-scissors"></span>
-                    <span class="iconify hover" data-icon="mdi-scissors"></span>
-                </span>
-                Clipper
-            </theme-button>
-            <theme-button class="btn-transcode">
-                <span class="icon-stack" slot="icon">
-                    <span class="iconify" data-icon="mdi-motion-play-outline"></span>
-                    <span class="iconify hover" data-icon="mdi-motion-play-outline"></span>
-                </span>
-                Transcode</theme-button>
-        </footer>
-    </div>
-    <transcode-configurator-stream-config></transcode-configurator-stream-config>
-</main>
+    </h1>
+`;
+
+TranscodeConfigurator.template = html`
+    ${COMBO_BUTTON_CSS}
+    <style>
+        ${CSS}
+        ${ICON_STACK_CSS}
+    </style>
+    <main>
+        ${HEADING}
+        <div>
+            <div class="info">
+                <section></section>
+            </div>
+            <footer>
+                <button class="icon-stack btn-play" title="Play">
+                    <span class="iconify" data-icon="mdi-play"></span>
+                    <span class="iconify hover" data-icon="mdi-play"></span>
+                </button>
+                <combo-button class="btn-save">
+                    <span class="icon-stack" slot="icon">
+                        <span
+                            class="iconify"
+                            data-icon="mdi-content-save-outline"
+                        ></span>
+                        <span
+                            class="iconify hover"
+                            data-icon="mdi-content-save-outline"
+                        ></span>
+                    </span>
+                    <option value="save:template">Save as Template</option>
+                    <option value="save:normal">Save</option>
+                </combo-button>
+                <combo-button class="btn-tools">
+                    <span class="icon-stack" slot="icon">
+                        <span class="iconify" data-icon="mdi-tools"></span>
+                        <span
+                            class="iconify hover"
+                            data-icon="mdi-tools"
+                        ></span>
+                    </span>
+                    <option value="concat:mkv">Concat MKV</option>
+                    <option value="concat:mp4">Concat MP4</option>
+                    <option value="remux:mkv">Remux MKV</option>
+                    <option value="remux:mp4">Remux MP4</option>
+                    <option value="remux:ts">Remux TS</option>
+                    <option value="chapters_keep:cpu:instantOpen">
+                        Keep Chapters
+                    </option>
+                    <option value="deinterlace:cpu:instantOpen">
+                        Deinterlace
+                    </option>
+                    <option value="pad:cpu:instantOpen">Pad</option>
+                    <option value="crop:cpu:instantOpen">Crop (CPU)</option>
+                    <option value="scale:cpu:instantOpen">Scale (CPU)</option>
+                    <option value="delogo:instantOpen">DeLogo</option>
+                    <option value="removelogo:instantOpen">RemoveLogo</option>
+                    <option value="fillborders:instantOpen">Fillborders</option>
+                </combo-button>
+                <theme-button class="btn-clipper">
+                    <span class="icon-stack" slot="icon">
+                        <span class="iconify" data-icon="mdi-scissors"></span>
+                        <span
+                            class="iconify hover"
+                            data-icon="mdi-scissors"
+                        ></span>
+                    </span>
+                    Clipper
+                </theme-button>
+                <theme-button class="btn-transcode">
+                    <span class="icon-stack" slot="icon">
+                        <span
+                            class="iconify"
+                            data-icon="mdi-motion-play-outline"
+                        ></span>
+                        <span
+                            class="iconify hover"
+                            data-icon="mdi-motion-play-outline"
+                        ></span>
+                    </span>
+                    Transcode</theme-button
+                >
+            </footer>
+        </div>
+        <transcode-configurator-stream-config></transcode-configurator-stream-config>
+    </main>
 `;
 
 customElements.define("transcode-configurator", TranscodeConfigurator);

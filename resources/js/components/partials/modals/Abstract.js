@@ -226,9 +226,11 @@ const MODAL_BASE_CSS = css`
     }
 `;
 
-// removed named tags to disable auto close of main tag
+// removed named tags to disable auto close of main tag by some codium extension
 const MODAL_TEMPLATE_BEGIN = `
-${ICON_STACK_CSS}
+<style>
+    ${ICON_STACK_CSS}
+</style>
 <main>
     <header>
         <div class="icon-stack close-button">

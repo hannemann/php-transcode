@@ -1,10 +1,9 @@
-import { FilePickerBase, TYPE_DIRECTORY, TYPE_FILE } from './FilePickerBase'
-import Iconify from '@iconify/iconify'
-import { ICON_STACK_CSS } from '@/components/Icons/Stack.css'
+import { FilePickerBase, TYPE_DIRECTORY, TYPE_FILE } from "./FilePickerBase";
+import Iconify from "@iconify/iconify";
+import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 import { Request } from "@/components/Request";
 
 class FilePickerItem extends FilePickerBase {
-
     connectedCallback() {
         super.connectedCallback();
         this.wsUrl.push(encodeURIComponent(this.path));
@@ -25,40 +24,56 @@ class FilePickerItem extends FilePickerBase {
         this.initType();
         this.initIcon();
 
-        this.itemsContainer.classList.toggle('internal', this.internal);
+        this.itemsContainer.classList.toggle("internal", this.internal);
         if (this.internal) {
-            this.shadowRoot.querySelector('.dummy-button').remove();
+            this.shadowRoot.querySelector(".dummy-button").remove();
         } else {
-            this.shadowRoot.querySelector('.icon-stack.delete').remove();
+            this.shadowRoot.querySelector(".icon-stack.delete").remove();
         }
     }
 
     initType() {
         this.isDirectory = this.type === TYPE_DIRECTORY;
         this.isFile = this.type === TYPE_FILE;
-        this.itemsContainer.classList.toggle('file', this.type === TYPE_FILE);
-        this.itemsContainer.classList.toggle('dir', this.type === TYPE_DIRECTORY);
+        this.itemsContainer.classList.toggle("file", this.type === TYPE_FILE);
+        this.itemsContainer.classList.toggle(
+            "dir",
+            this.type === TYPE_DIRECTORY,
+        );
         if (this.isFile) {
-            this.shadowRoot.querySelector('.info[data-info="size"]').innerText = this.size;
-            this.shadowRoot.querySelector('.info[data-info="date"]').innerText = this.getLocalDate();
+            this.shadowRoot.querySelector('.info[data-info="size"]').innerText =
+                this.size;
+            this.shadowRoot.querySelector('.info[data-info="date"]').innerText =
+                this.getLocalDate();
         } else {
-            this.shadowRoot.querySelectorAll('.info').forEach(i => i.remove());
+            this.shadowRoot
+                .querySelectorAll(".info")
+                .forEach((i) => i.remove());
         }
     }
 
     initIcon() {
-        this.shadowRoot.querySelectorAll('.icon-stack:not(.delete) .iconify')
-            .forEach(i => i.dataset.icon = this.icon);
+        this.shadowRoot
+            .querySelectorAll(".icon-stack:not(.delete) .iconify")
+            .forEach((i) => (i.dataset.icon = this.icon));
     }
 
     addListeners() {
-        this.shadowRoot.querySelector('.label').addEventListener('click', this.handleClick);
-        this.shadowRoot.querySelector('.icon-stack.delete')?.addEventListener('click', this.delete);
+        this.shadowRoot
+            .querySelector(".label")
+            .addEventListener("click", this.handleClick);
+        this.shadowRoot
+            .querySelector(".icon-stack.delete")
+            ?.addEventListener("click", this.delete);
     }
 
     removeListeners() {
-        this.shadowRoot.querySelector('.label').removeEventListener('click', this.handleClick);
-        this.shadowRoot.querySelector('.icon-stack.delete')?.removeEventListener('click', this.delete);
+        this.shadowRoot
+            .querySelector(".label")
+            .removeEventListener("click", this.handleClick);
+        this.shadowRoot
+            .querySelector(".icon-stack.delete")
+            ?.removeEventListener("click", this.delete);
     }
 
     update() {
@@ -141,10 +156,10 @@ class FilePickerItem extends FilePickerBase {
         try {
             await m.confirm();
             await Request.delete(
-                `/file-picker/${encodeURIComponent(this.path)}`
+                `/file-picker/${encodeURIComponent(this.path)}`,
             );
             this.getRootNode().host.dispatchEvent(
-                new CustomEvent("child-deleted")
+                new CustomEvent("child-deleted"),
             );
         } catch (error) {}
     }
@@ -166,11 +181,11 @@ class FilePickerItem extends FilePickerBase {
     }
 
     set title(value) {
-        this.shadowRoot.querySelector('.label').title = value;
+        this.shadowRoot.querySelector(".label").title = value;
     }
 
     get title() {
-        return this.shadowRoot.querySelector('.label').title;
+        return this.shadowRoot.querySelector(".label").title;
     }
 
     get fileType() {
@@ -197,15 +212,14 @@ class FilePickerItem extends FilePickerBase {
             return this.items.filter(
                 (i) =>
                     i.type === TYPE_FILE &&
-                    "video" === i.mime.split("/").shift().toLowerCase()
+                    "video" === i.mime.split("/").shift().toLowerCase(),
             );
         }
         return [];
     }
 }
 
-const CSS = /*css*/ `
-<style>
+const CSS = css`
     :host {
         display: block;
     }
@@ -220,7 +234,9 @@ const CSS = /*css*/ `
     :host(:hover) span {
         background-color: var(--clr-bg-100);
     }
-    :host(:hover) .icon-stack:not(:disabled):not(.active):not(button) svg.hover {
+    :host(:hover)
+        .icon-stack:not(:disabled):not(.active):not(button)
+        svg.hover {
         opacity: 1;
     }
     .items {
@@ -235,7 +251,7 @@ const CSS = /*css*/ `
             opacity: 1;
         }
         50% {
-            opacity: .5;
+            opacity: 0.5;
         }
         100% {
             opacity: 1;
@@ -262,38 +278,42 @@ const CSS = /*css*/ `
         width: 1rem;
     }
     .info {
-        font-size: .85em;
+        font-size: 0.85em;
     }
-</style>
-${ICON_STACK_CSS}
 `;
 
-const ICON_TEMPLATE = /*html*/ `
-<div class="icon-stack">
-    <span class="iconify inactive"></span>
-    <span class="iconify active"></span>
-    <span class="iconify hover"></span>
-</div>
-`;
-
-FilePickerItem.template = /*html*/ `
-${CSS}
-<main>
-    <div class="item">
-        ${ICON_TEMPLATE}
-        <span class="label">
-            <slot></slot>
-        </span>
-        <span class="info" data-info="size"></span>
-        <span class="info" data-info="date"></span>
-        <button class="icon-stack delete">
-            <span class="iconify" data-icon="mdi-trash-can-outline"></span>
-            <span class="iconify hover" data-icon="mdi-trash-can-outline"></span>
-        </button>
-        <div class="dummy-button"></div>
+const ICON_TEMPLATE = html`
+    <div class="icon-stack">
+        <span class="iconify inactive"></span>
+        <span class="iconify active"></span>
+        <span class="iconify hover"></span>
     </div>
-    <div class="items"></div>
-</main>
+`;
+
+FilePickerItem.template = html`
+    <style>
+        ${CSS}
+        ${ICON_STACK_CSS}
+    </style>
+    <main>
+        <div class="item">
+            ${ICON_TEMPLATE}
+            <span class="label">
+                <slot></slot>
+            </span>
+            <span class="info" data-info="size"></span>
+            <span class="info" data-info="date"></span>
+            <button class="icon-stack delete">
+                <span class="iconify" data-icon="mdi-trash-can-outline"></span>
+                <span
+                    class="iconify hover"
+                    data-icon="mdi-trash-can-outline"
+                ></span>
+            </button>
+            <div class="dummy-button"></div>
+        </div>
+        <div class="items"></div>
+    </main>
 `;
 
 customElements.define("filepicker-item", FilePickerItem);

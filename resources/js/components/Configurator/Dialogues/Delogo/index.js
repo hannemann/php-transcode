@@ -921,8 +921,9 @@ const STYLES = css`
 `;
 
 DeLogo.template = html`
-    ${EDITOR_CSS} ${ICON_STACK_CSS}
+    ${EDITOR_CSS}
     <style>
+        ${ICON_STACK_CSS}
         ${STYLES}
     </style>
     ${EDITOR_TEMPLATE}

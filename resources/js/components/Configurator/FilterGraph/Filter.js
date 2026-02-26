@@ -183,7 +183,10 @@ class Filter extends HTMLElement {
 }
 
 Filter.template = html`
-    ${ICON_STACK_CSS} ${CARD_CSS}
+    ${CARD_CSS}
+    <style>
+        ${ICON_STACK_CSS}
+    </style>
     <style>
         section {
             display: flex;

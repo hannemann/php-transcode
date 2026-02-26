@@ -323,22 +323,20 @@ class Clips extends HTMLElement {
     }
 }
 
-Clips.template = /*html*/ `
-${ICON_STACK_CSS}
-${CARD_CSS}
-<style>
+const CSS = css`
     :host {
         user-select: none;
     }
     main {
         display: grid;
-        gap: .5rem;
+        gap: 0.5rem;
     }
     h2 {
         display: flex;
         justify-content: space-between;
     }
-    div.copy, div.clips {
+    div.copy,
+    div.clips {
         display: none;
     }
     .copy div.copy {
@@ -347,29 +345,36 @@ ${CARD_CSS}
     .clips div.clips {
         display: flex;
         flex-direction: column;
-        gap: .5rem;
+        gap: 0.5rem;
     }
     .clips .duration {
         display: flex;
-        gap: .5rem;
+        gap: 0.5rem;
     }
-</style>
-<main>
-    <h2>
-        Clips
-        <div class="btn-copy icon-stack">
-            <span class="iconify" data-icon="mdi-content-copy"></span>
-            <span class="iconify hover" data-icon="mdi-content-copy"></span>
+`;
+
+Clips.template = html`
+    ${CARD_CSS}
+    <style>
+        ${ICON_STACK_CSS}
+        ${CSS}
+    </style>
+    <main>
+        <h2>
+            Clips
+            <div class="btn-copy icon-stack">
+                <span class="iconify" data-icon="mdi-content-copy"></span>
+                <span class="iconify hover" data-icon="mdi-content-copy"></span>
+            </div>
+        </h2>
+        <div class="copy">
+            <textarea></textarea>
         </div>
-    </h2>
-    <div class="copy">
-        <textarea></textarea>
-    </div>
-    <div class="clips">
-    </div>
-    <div class="duration">
-        <h2>Duration:</h2> <span></span>
-    </div>
-</main>
+        <div class="clips"></div>
+        <div class="duration">
+            <h2>Duration:</h2>
+            <span></span>
+        </div>
+    </main>
 `;
 customElements.define("transcode-configurator-clips", Clips);

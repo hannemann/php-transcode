@@ -46,12 +46,14 @@ class FilterGraph extends HTMLElement {
     }
 }
 
-FilterGraph.template = /*html*/ `
-${ICON_STACK_CSS}
-${CARD_CSS}
-<main>
-    <h2>FilterGraph</h2>
-    <div></div>
-</main>
+FilterGraph.template = html`
+    <style>
+        ${ICON_STACK_CSS}
+    </style>
+    ${CARD_CSS}
+    <main>
+        <h2>FilterGraph</h2>
+        <div></div>
+    </main>
 `;
 customElements.define("transcode-configurator-filter-graph", FilterGraph);

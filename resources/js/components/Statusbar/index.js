@@ -259,97 +259,101 @@ class Statusbar extends HTMLElement {
     }
 }
 
+const CSS = css`
+    :host {
+        position: relative;
+        box-shadow: 0 0 7vw 0 var(--clr-shadow-0);
+        z-index: 0;
+    }
+    main {
+        padding: 0.5em;
+        font-size: max(10px, 0.85rem);
+        background: var(--clr-bg-150);
+        border: 2px var(--clr-bg-200);
+        display: flex;
+        gap: 0.5rem;
+        justify-content: space-between;
+        position: relative;
+        z-index: 1;
+    }
+    div {
+        cursor: pointer;
+    }
+    div.hidden {
+        display: none;
+    }
+    section:first-of-type {
+        flex-grow: 1;
+    }
+    section {
+        padding: 0 0.5rem;
+        border: 1px solid;
+        border-color: var(--clr-bg-0) var(--clr-bg-0) var(--clr-bg-200)
+            var(--clr-bg-200);
+        background-color: var(--clr-bg-140);
+        --duration: var(--transition-medium);
+        transform-origin: bottom right;
+        transition:
+            transform var(--duration) ease-in-out,
+            max-width var(--duration) ease-in-out,
+            max-height var(--duration) ease-in-out;
+    }
+    section.detail {
+        background: var(--clr-bg-150);
+        border: 2px var(--clr-bg-200);
+        box-shadow: 0 0 7vw 0 var(--clr-shadow-0);
+        border-top-left-radius: 0.5rem;
+        padding: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5em;
+        position: absolute;
+        right: 0;
+        max-width: 90vw;
+        transform: translateY(-100%) scaleY(1);
+        transform-origin: top;
+        top: 0;
+        z-index: 0;
+    }
+    section.hidden {
+        transform: translateY(0) scaleY(0);
+    }
+    .ffmpeg-out {
+        color: var(--clr-text-disabled);
+        display: flex;
+        justify-content: space-between;
+    }
+    .ffmpeg-out .icon-stack {
+        display: none;
+    }
+    :host(.running) .ffmpeg-out {
+        color: var(--clr-text-0);
+    }
+    :host(.running) .ffmpeg-out .icon-stack {
+        display: revert;
+    }
+    .runtime {
+        position: relative;
+    }
+    .runtime span:last-of-type {
+        position: absolute;
+        inset: 0 0 1px;
+        background: var(--clr-enlightened);
+        box-shadow: 0 0 5px 5px inset var(--clr-enlightened-glow);
+        color: var(--clr-text-200-inverse);
+        overflow: hidden;
+        border-radius: 0.2rem;
+        text-indent: 0.5rem;
+        max-width: 100%;
+        white-space: nowrap;
+    }
+`;
+
 Statusbar.template = html`
     <style>
-        :host {
-            position: relative;
-            box-shadow: 0 0 7vw 0 var(--clr-shadow-0);
-            z-index: 0;
-        }
-        main {
-            padding: 0.5em;
-            font-size: max(10px, 0.85rem);
-            background: var(--clr-bg-150);
-            border: 2px var(--clr-bg-200);
-            display: flex;
-            gap: 0.5rem;
-            justify-content: space-between;
-            position: relative;
-            z-index: 1;
-        }
-        div {
-            cursor: pointer;
-        }
-        div.hidden {
-            display: none;
-        }
-        section:first-of-type {
-            flex-grow: 1;
-        }
-        section {
-            padding: 0 0.5rem;
-            border: 1px solid;
-            border-color: var(--clr-bg-0) var(--clr-bg-0) var(--clr-bg-200)
-                var(--clr-bg-200);
-            background-color: var(--clr-bg-140);
-            --duration: var(--transition-medium);
-            transform-origin: bottom right;
-            transition:
-                transform var(--duration) ease-in-out,
-                max-width var(--duration) ease-in-out,
-                max-height var(--duration) ease-in-out;
-        }
-        section.detail {
-            background: var(--clr-bg-150);
-            border: 2px var(--clr-bg-200);
-            box-shadow: 0 0 7vw 0 var(--clr-shadow-0);
-            border-top-left-radius: 0.5rem;
-            padding: 0.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5em;
-            position: absolute;
-            right: 0;
-            max-width: 90vw;
-            transform: translateY(-100%) scaleY(1);
-            transform-origin: top;
-            top: 0;
-            z-index: 0;
-        }
-        section.hidden {
-            transform: translateY(0) scaleY(0);
-        }
-        .ffmpeg-out {
-            color: var(--clr-text-disabled);
-            display: flex;
-            justify-content: space-between;
-        }
-        .ffmpeg-out .icon-stack {
-            display: none;
-        }
-        :host(.running) .ffmpeg-out {
-            color: var(--clr-text-0);
-        }
-        :host(.running) .ffmpeg-out .icon-stack {
-            display: revert;
-        }
-        .runtime {
-            position: relative;
-        }
-        .runtime span:last-of-type {
-            position: absolute;
-            inset: 0 0 1px;
-            background: var(--clr-enlightened);
-            box-shadow: 0 0 5px 5px inset var(--clr-enlightened-glow);
-            color: var(--clr-text-200-inverse);
-            overflow: hidden;
-            border-radius: 0.2rem;
-            text-indent: 0.5rem;
-            max-width: 100%;
-            white-space: nowrap;
-        }
+        ${ICON_STACK_CSS}
+        ${CSS}
     </style>
-    ${ICON_STACK_CSS}
     <main>
         <section class="ffmpeg-out">
             <span></span>

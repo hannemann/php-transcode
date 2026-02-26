@@ -101,71 +101,70 @@ class TextViewer extends HTMLElement {
     }
 }
 
-const CSS = html`
+const CSS = css`
+    :host {
+        position: fixed;
+        inset: 0;
+        display: none;
+        opacity: 1;
+        transition: opacity var(--transition-slow) linear;
+    }
+    :host(.active) {
+        display: flex;
+        align-items: center;
+    }
+    :host(.fade-out) {
+        opacity: 0;
+    }
+    main {
+        position: absolute;
+        box-shadow: 0 0 10vw 3vw var(--clr-shadow-0);
+        inset: var(--rel-gutter-500);
+        background-color: var(--clr-bg-0);
+        border-radius: var(--rel-gutter-100);
+        padding: var(--rel-gutter-200);
+    }
+    main h1 {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0;
+        margin: 0 0 var(--rel-gutter-100) 0;
+        font-size: 1.75rem;
+        user-select: none;
+    }
+    main h1 div {
+        cursor: pointer;
+    }
+    pre {
+        white-space: pre-wrap;
+        background: var(--clr-bg-100);
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        overflow-y: auto;
+        height: calc(100% - 1.75rem - var(--rel-gutter-200) * 2);
+    }
+`;
+
+const HEADING = html`
+    <h1>
+        Textviewer
+        <div class="icon-stack">
+            <span class="iconify" data-icon="mdi-close"></span>
+            <span class="iconify hover" data-icon="mdi-close"></span>
+        </div>
+    </h1>
+`;
+
+TextViewer.template = html`
     <style>
-        :host {
-            position: fixed;
-            inset: 0;
-            display: none;
-            opacity: 1;
-            transition: opacity var(--transition-slow) linear;
-        }
-        :host(.active) {
-            display: flex;
-            align-items: center;
-        }
-        :host(.fade-out) {
-            opacity: 0;
-        }
-        main {
-            position: absolute;
-            box-shadow: 0 0 10vw 3vw var(--clr-shadow-0);
-            inset: var(--rel-gutter-500);
-            background-color: var(--clr-bg-0);
-            border-radius: var(--rel-gutter-100);
-            padding: var(--rel-gutter-200);
-        }
-        main h1 {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0;
-            margin: 0 0 var(--rel-gutter-100) 0;
-            font-size: 1.75rem;
-            user-select: none;
-        }
-        main h1 div {
-            cursor: pointer;
-        }
-        pre {
-            white-space: pre-wrap;
-            background: var(--clr-bg-100);
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-            overflow-y: auto;
-            height: calc(100% - 1.75rem - var(--rel-gutter-200) * 2);
-        }
+        ${CSS}
+        ${ICON_STACK_CSS}
     </style>
-    ${ICON_STACK_CSS}
-`;
-
-const HEADING = /*html*/ `
-<h1>
-    Textviewer
-    <div class="icon-stack">
-        <span class="iconify" data-icon="mdi-close"></span>
-        <span class="iconify hover" data-icon="mdi-close"></span>
-    </div>
-</h1>
-`;
-
-TextViewer.template = /*html*/ `
-${CSS}
-<main>
-    ${HEADING}
-<pre>
-</pre>
-</main>
+    <main>
+        ${HEADING}
+        <pre></pre>
+    </main>
 `;
 
 customElements.define("text-viewer", TextViewer);

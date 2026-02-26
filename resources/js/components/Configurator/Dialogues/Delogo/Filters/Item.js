@@ -221,8 +221,8 @@ const STYLES = css`
 `;
 
 DelogoItem.template = html`
-    ${ICON_STACK_CSS}
     <style>
+        ${ICON_STACK_CSS}
         ${STYLES}
     </style>
     <span data-ref="display"></span>
