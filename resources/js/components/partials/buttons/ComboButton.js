@@ -139,8 +139,7 @@ class ComboButton extends HTMLElement {
     }
 }
 
-ComboButton.template = /*html*/ `
-<style>
+const CSS = css`
     :host {
         display: inline-block;
     }
@@ -177,22 +176,30 @@ ComboButton.template = /*html*/ `
         display: none;
     }
     ::slotted(.icon-stack) {
-        margin-inline-start: .5rem;
+        margin-inline-start: 0.5rem;
     }
-</style>
-<button part="button">
-    <slot name="icon"></slot>
-    <span class="label" part="label"></span>
-    <div class="toggle" part="toggle">
-        <span class="iconify" data-icon="mdi-menu-down-outline"></span>
-        <span class="iconify hover" data-icon="mdi-menu-down-outline"></span>
+`;
+
+ComboButton.template = html`
+    <style>
+        ${CSS}
+    </style>
+    <button part="button">
+        <slot name="icon"></slot>
+        <span class="label" part="label"></span>
+        <div class="toggle" part="toggle">
+            <span class="iconify" data-icon="mdi-menu-down-outline"></span>
+            <span
+                class="iconify hover"
+                data-icon="mdi-menu-down-outline"
+            ></span>
+        </div>
+    </button>
+    <slot name="options"></slot>
+    <div class="dropdown" part="dropdown">
+        <option part="option" />
+        <option part="option-hover" />
     </div>
-</button>
-<slot name="options"></slot>
-<div class="dropdown" part="dropdown">
-    <option part="option" />
-    <option part="option-hover" />
-</div>
 `;
 
 const dropDownStyle = document.createElement("style");

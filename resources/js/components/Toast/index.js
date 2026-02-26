@@ -112,94 +112,112 @@ class Toast extends HTMLElement {
     }
 }
 
-Toast.template = /*html*/ `
-<style>
-:host {
-    position: fixed;
-    right: 2rem;
-    top: 2rem;
-    display: block;
-    overflow-y: hidden;
-    z-index: 100;
-}
-main {
-    display: flex;
-    flex-direction: column;
-    gap: .5rem;
-}
-main > div {
-    width: 25rem;
-    font-size: var(--font-size-50);
-    color: hsla(0, 0%, 100%, .8);
-    border-radius: .5rem;
-    position: relative;
-    transform-origin: center top;
-    transform: scaleY(1);
-    opacity: 1;
-    max-height: 10rem;
-    overflow: hidden;
-}
-main > div:hover {
-    max-height: 100rem;
-}
-main > div[data-transition="in"],
-main > div[data-transition="out"] {
-    transition: all var(--transition-medium) linear;
-}
-main > div[data-transition-in="before"],
-main > div[data-transition-out="before"] {
-    opacity: 0;
-    transform: scaleY(.01);
-    height: 0 !important;
-}
-main > div {
-    background: hsla(var(--hue-alert), var(--sat-alert), var(--lit-alert), var(--clr-base-alpha));
-    cursor: pointer;
-}
-main > div.success {
-    --hue-alert: var(--hue-success);
-}
-main > div.info {
-    --hue-alert: var(--hue-info);
-}
-main > div.warning {
-    --hue-alert: var(--hue-warning);
-}
-main > div.error {
-    --hue-alert: var(--hue-error);
-}
-svg {
-    display: none;
-    margin: .1rem .5rem 0 0;
-    flex-shrink: 0;
-}
-div.success svg[data-icon="mdi-thumb-up-outline"],
-div.info svg[data-icon="mdi-alert-box-outline"],
-div.warning svg[data-icon="mdi-alert-outline"],
-div.error svg[data-icon="mdi-alert-circle-outline"] {
-    display: block;
-}
-section {
-    display: flex;
-    align-items: flex-start;
-    padding: .5rem;
-}
-svg[data-icon="mdi-close"] {
-    display: block;
-}
-</style>
-<main>
-    <template data-type="item">
-        <div>
-            <section>
-                <span class="iconify" data-icon="mdi-thumb-up-outline"></span>
-                <span class="iconify" data-icon="mdi-alert-box-outline"></span>
-                <span class="iconify" data-icon="mdi-alert-outline"></span>
-                <span class="iconify" data-icon="mdi-alert-circle-outline"></span>
-            </section>
-        </div>
-    </template>
-</main>
+const CSS = css`
+    :host {
+        position: fixed;
+        right: 2rem;
+        top: 2rem;
+        display: block;
+        overflow-y: hidden;
+        z-index: 100;
+    }
+    main {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    main > div {
+        width: 25rem;
+        font-size: var(--font-size-50);
+        color: hsla(0, 0%, 100%, 0.8);
+        border-radius: 0.5rem;
+        position: relative;
+        transform-origin: center top;
+        transform: scaleY(1);
+        opacity: 1;
+        max-height: 10rem;
+        overflow: hidden;
+    }
+    main > div:hover {
+        max-height: 100rem;
+    }
+    main > div[data-transition="in"],
+    main > div[data-transition="out"] {
+        transition: all var(--transition-medium) linear;
+    }
+    main > div[data-transition-in="before"],
+    main > div[data-transition-out="before"] {
+        opacity: 0;
+        transform: scaleY(0.01);
+        height: 0 !important;
+    }
+    main > div {
+        background: hsla(
+            var(--hue-alert),
+            var(--sat-alert),
+            var(--lit-alert),
+            var(--clr-base-alpha)
+        );
+        cursor: pointer;
+    }
+    main > div.success {
+        --hue-alert: var(--hue-success);
+    }
+    main > div.info {
+        --hue-alert: var(--hue-info);
+    }
+    main > div.warning {
+        --hue-alert: var(--hue-warning);
+    }
+    main > div.error {
+        --hue-alert: var(--hue-error);
+    }
+    svg {
+        display: none;
+        margin: 0.1rem 0.5rem 0 0;
+        flex-shrink: 0;
+    }
+    div.success svg[data-icon="mdi-thumb-up-outline"],
+    div.info svg[data-icon="mdi-alert-box-outline"],
+    div.warning svg[data-icon="mdi-alert-outline"],
+    div.error svg[data-icon="mdi-alert-circle-outline"] {
+        display: block;
+    }
+    section {
+        display: flex;
+        align-items: flex-start;
+        padding: 0.5rem;
+    }
+    svg[data-icon="mdi-close"] {
+        display: block;
+    }
+`;
+
+Toast.template = html`
+    <style>
+        ${CSS}
+    </style>
+    <main>
+        <template data-type="item">
+            <div>
+                <section>
+                    <span
+                        class="iconify"
+                        data-icon="mdi-thumb-up-outline"
+                    ></span>
+                    <span
+                        class="iconify"
+                        data-icon="mdi-alert-box-outline"
+                    ></span>
+                    <span class="iconify" data-icon="mdi-alert-outline"></span>
+                    <span
+                        class="iconify"
+                        data-icon="mdi-alert-circle-outline"
+                    ></span>
+                </section>
+            </div>
+        </template>
+    </main>
 `;
 
 customElements.define("transcoder-toast", Toast);

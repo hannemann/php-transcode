@@ -28,7 +28,9 @@ class ProgressDone extends ProgressItem {
 }
 
 ProgressDone.template = html`
-    ${PROGRESS_ITEM_CSS}
+    <style>
+        ${PROGRESS_ITEM_CSS}
+    </style>
     <header>Done</header>
     <template data-type="item">
         <div class="item">

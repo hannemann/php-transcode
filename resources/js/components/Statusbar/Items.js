@@ -86,39 +86,37 @@ class ProgressItem extends HTMLElement {
     }
 }
 
-const PROGRESS_ITEM_CSS = /*css*/ `
-<style>
-:host > div {
-    display: flex;
-    justify-content: space-between;
-    gap: .5em;
-}
-header {
-    font-weight: bold;
-    user-select: none;
-}
-div > div:last-child {
-    text-align: right;
-    margin-left: auto;
-    width: 4em;
-}
-div.path {
-    white-space: nowrap;
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    flex-grow: 1;
-}
-div.path.show {
-    cursor: pointer;
-}
-div.icon-stack {
-    width: 1em;
-}
-${ICON_STACK_CSS}
-</style>
+const PROGRESS_ITEM_CSS = css`
+    :host > div {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.5em;
+    }
+    header {
+        font-weight: bold;
+        user-select: none;
+    }
+    div > div:last-child {
+        text-align: right;
+        margin-left: auto;
+        width: 4em;
+    }
+    div.path {
+        white-space: nowrap;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-grow: 1;
+    }
+    div.path.show {
+        cursor: pointer;
+    }
+    div.icon-stack {
+        width: 1em;
+    }
+    ${ICON_STACK_CSS}
 `;
 
 export { PROGRESS_ITEM_CSS, ProgressItem };

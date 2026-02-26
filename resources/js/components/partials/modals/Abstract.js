@@ -226,8 +226,9 @@ const MODAL_BASE_CSS = css`
     }
 `;
 
-// removed named tags to disable auto close of main tag by some codium extension
-const MODAL_TEMPLATE_BEGIN = `
+// maintain incomplete html
+// prettier-ignore
+const MODAL_TEMPLATE_BEGIN = html`
 <style>
     ${ICON_STACK_CSS}
 </style>
@@ -241,6 +242,8 @@ const MODAL_TEMPLATE_BEGIN = `
     <section>
 `;
 
+// maintain incomplete html
+// prettier-ignore
 const MODAL_TEMPLATE_END = html`
     </section>
     <footer>

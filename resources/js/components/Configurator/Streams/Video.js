@@ -101,20 +101,22 @@ class Video extends Stream {
 
 Video.prototype.header = "Video";
 
-Video.template = /*html*/ `
-${CARD_CSS}
-${MAINSTART}
-<section class="toggle">
-    <div class="short-description visible" data-toggle="true">
-        <span class="iconify" data-icon="mdi-chevron-right"></span>
-    </div>
-    <div class="long-description" data-desc="index" data-toggle="true">
-        <span class="iconify" data-icon="mdi-chevron-down"></span>
-    </div>
-    <div class="long-description" data-desc="codec"></div>
-    <div class="long-description" data-desc="dim"></div>
-</section>
-${MAINEND}
+Video.template = html`
+    <style>
+        ${CARD_CSS}
+    </style>
+    ${MAINSTART}
+    <section class="toggle">
+        <div class="short-description visible" data-toggle="true">
+            <span class="iconify" data-icon="mdi-chevron-right"></span>
+        </div>
+        <div class="long-description" data-desc="index" data-toggle="true">
+            <span class="iconify" data-icon="mdi-chevron-down"></span>
+        </div>
+        <div class="long-description" data-desc="codec"></div>
+        <div class="long-description" data-desc="dim"></div>
+    </section>
+    ${MAINEND}
 `;
 
 customElements.define("transcode-configurator-stream-video", Video);

@@ -354,8 +354,8 @@ const CSS = css`
 `;
 
 Clips.template = html`
-    ${CARD_CSS}
     <style>
+        ${CARD_CSS}
         ${ICON_STACK_CSS}
         ${CSS}
     </style>

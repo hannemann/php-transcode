@@ -515,7 +515,7 @@ class Fillborders extends VideoEditor {
     }
 }
 const STYLES = css`
-    ${COMBO_BUTTON_CSS.replace("<style>", "").replace("</style>", "")}
+    ${COMBO_BUTTON_CSS}
     ${EDITOR_CSS.replace("<style>", "").replace("</style>", "")}
     ${ICON_STACK_CSS}
     .toggle-aspect {

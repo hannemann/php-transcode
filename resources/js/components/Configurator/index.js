@@ -592,8 +592,8 @@ const HEADING = html`
 `;
 
 TranscodeConfigurator.template = html`
-    ${COMBO_BUTTON_CSS}
     <style>
+        ${COMBO_BUTTON_CSS}
         ${CSS}
         ${ICON_STACK_CSS}
     </style>

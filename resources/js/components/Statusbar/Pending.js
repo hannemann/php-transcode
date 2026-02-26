@@ -44,7 +44,9 @@ class ProgressPending extends ProgressItem {
 }
 
 ProgressPending.template = html`
-    ${PROGRESS_ITEM_CSS}
+    <style>
+        ${PROGRESS_ITEM_CSS}
+    </style>
     <header>Pending</header>
     <template data-type="item">
         <div class="item">

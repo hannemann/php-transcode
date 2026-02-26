@@ -43,7 +43,9 @@ class ProgressFailed extends ProgressItem {
 }
 
 ProgressFailed.template = html`
-    ${PROGRESS_ITEM_CSS}
+    <style>
+        ${PROGRESS_ITEM_CSS}
+    </style>
     <header>Failed</header>
     <template data-type="item">
         <div class="item">

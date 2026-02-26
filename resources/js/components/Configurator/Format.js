@@ -48,28 +48,32 @@ class Format extends HTMLElement {
     }
 }
 
-Format.template = /*html*/ `
-${CARD_CSS}
-<style>
+const CSS = css`
     .select-all {
         user-select: all;
     }
     .filename {
-        font-size: .75em;
+        font-size: 0.75em;
     }
-</style>
-<main>
-    <h2>Format</h2>
-    <section>
-        <div class="filename select-all"></div>
-        <div class="format-name"></div>
-        <div>
-            Duration: <span class="select-all duration"></span>,
-            Size: <span class="size"></span>,
-            Bitrate: <span class="bitrate"></span>
-        </div>
-    </section>
-</main>
+`;
+
+Format.template = html`
+    <style>
+        ${CARD_CSS}
+        ${CSS}
+    </style>
+    <main>
+        <h2>Format</h2>
+        <section>
+            <div class="filename select-all"></div>
+            <div class="format-name"></div>
+            <div>
+                Duration: <span class="select-all duration"></span>, Size:
+                <span class="size"></span>, Bitrate:
+                <span class="bitrate"></span>
+            </div>
+        </section>
+    </main>
 `;
 
 customElements.define("transcode-configurator-format", Format);

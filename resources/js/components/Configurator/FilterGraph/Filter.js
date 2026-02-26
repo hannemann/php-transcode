@@ -182,51 +182,51 @@ class Filter extends HTMLElement {
     }
 }
 
-Filter.template = html`
-    ${CARD_CSS}
-    <style>
-        ${ICON_STACK_CSS}
-    </style>
-    <style>
-        section {
-            display: flex;
+const CSS = css`
+    section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
+
+        &:has(.error) {
+            background-color: hsl(from var(--clr-bg-150) var(--hue-error) s l);
+        }
+    }
+    .item {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex-grow: 1;
+
+        &:has(img[src]) {
             justify-content: space-between;
-            align-items: center;
-            gap: 0.5rem;
 
-            &:has(.error) {
-                background-color: hsl(
-                    from var(--clr-bg-150) var(--hue-error) s l
-                );
+            span:last-of-type {
+                flex-grow: 1;
             }
         }
-        .item {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            flex-grow: 1;
 
-            &:has(img[src]) {
-                justify-content: space-between;
-
-                span:last-of-type {
-                    flex-grow: 1;
-                }
-            }
-
-            img[src] {
-                max-height: 2rem;
-                cursor: pointer;
-            }
-
-            img:not([src]) {
-                display: none;
-            }
-        }
-        .icon-stack,
-        .filterType {
+        img[src] {
+            max-height: 2rem;
             cursor: pointer;
         }
+
+        img:not([src]) {
+            display: none;
+        }
+    }
+    .icon-stack,
+    .filterType {
+        cursor: pointer;
+    }
+`;
+
+Filter.template = html`
+    <style>
+        ${CARD_CSS}
+        ${ICON_STACK_CSS}
+        ${CSS}
     </style>
     <section>
         <div class="item">

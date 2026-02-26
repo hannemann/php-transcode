@@ -49,8 +49,8 @@ class FilterGraph extends HTMLElement {
 FilterGraph.template = html`
     <style>
         ${ICON_STACK_CSS}
+        ${CARD_CSS}
     </style>
-    ${CARD_CSS}
     <main>
         <h2>FilterGraph</h2>
         <div></div>

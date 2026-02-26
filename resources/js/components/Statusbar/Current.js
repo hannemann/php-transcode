@@ -30,35 +30,39 @@ class ProgressCurrent extends ProgressItem {
     }
 }
 
-ProgressCurrent.template = html`
-    ${PROGRESS_ITEM_CSS}
-    <style>
-        .item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .path {
-            position: relative;
-            width: 100%;
-            display: block;
+const CSS = css`
+    .item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .path {
+        position: relative;
+        width: 100%;
+        display: block;
 
-            & > span {
-                display: flex;
-                justify-content: space-between;
-                gap: 1rem;
-            }
+        & > span {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
         }
-        .path > span:last-of-type {
-            text-indent: 0.25rem;
-            position: absolute;
-            inset: 0;
-            background: var(--clr-enlightened);
-            box-shadow: 0 0 5px 5px inset var(--clr-enlightened-glow);
-            color: var(--clr-text-200-inverse);
-            overflow-x: hidden;
-            border-radius: 0.2rem;
-        }
+    }
+    .path > span:last-of-type {
+        text-indent: 0.25rem;
+        position: absolute;
+        inset: 0;
+        background: var(--clr-enlightened);
+        box-shadow: 0 0 5px 5px inset var(--clr-enlightened-glow);
+        color: var(--clr-text-200-inverse);
+        overflow-x: hidden;
+        border-radius: 0.2rem;
+    }
+`;
+
+ProgressCurrent.template = html`
+    <style>
+        ${PROGRESS_ITEM_CSS}
+        ${CSS}
     </style>
     <header>Current</header>
     <div class="item">
