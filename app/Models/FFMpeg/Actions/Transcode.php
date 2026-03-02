@@ -101,6 +101,21 @@ class Transcode extends AbstractAction
     }
 
     /**
+     * obtain from to filter
+     */
+    public static function getFromTo(string $start, string $end): array
+    {
+        $commands = array('-ss', (string) $start);
+
+        if ($end !== null) {
+            $commands[] = '-to';
+            $commands[] = (string) $end;
+        }
+
+        return $commands;
+    }
+
+    /**
      * update commands array
      */
     protected function updateCommands(array $commands): array

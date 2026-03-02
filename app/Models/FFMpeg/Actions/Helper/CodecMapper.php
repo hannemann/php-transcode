@@ -1,9 +1,11 @@
 <?php
 
 namespace App\Models\FFMpeg\Actions\Helper;
+
 use FFMpeg\FFProbe\DataMapping\Stream;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 /**
  * @property Collection $cmds
@@ -33,7 +35,8 @@ class CodecMapper
     public $currentAudioCodec = null;
     public $currentSubtitleCodec = null;
 
-    public function __construct(array $codecConfig, Collection $streams, Collection $video, Collection $audio, Collection $subtitle) {
+    public function __construct(array $codecConfig, Collection $streams, Collection $video, Collection $audio, Collection $subtitle)
+    {
         $this->codecConfig = $codecConfig;
         $this->wantedStreams = collect($this->codecConfig)->pluck('id')->all();
         $this->streams = $streams;
@@ -49,7 +52,7 @@ class CodecMapper
     {
         $this->cmds = $cmds;
         $this->cleanCommands();
-        foreach($this->codecConfig as $stream) {
+        foreach ($this->codecConfig as $stream) {
             $type = $this->streams->filter(function ($item) use ($stream) {
                 return $item->get('index') == $stream['id'];
             })->first()->get('codec_type');
@@ -74,11 +77,13 @@ class CodecMapper
         $this->forcedSubtitleCodec = $subtitle;
     }
 
-    public function forceQp(int $qp) {
+    public function forceQp(int $qp)
+    {
         $this->forcedQp = $qp;
     }
 
-    public function resetIndices() {
+    public function resetIndices()
+    {
         $this->videoIndex = 0;
         $this->audioIndex = 0;
         $this->subtitleIndex = 0;
@@ -87,7 +92,7 @@ class CodecMapper
     private function cleanCommands(): static
     {
         $commands = ['-vcodec', '-acodec', '-qp'];
-        foreach($commands as $command) {
+        foreach ($commands as $command) {
             if ($index = $this->cmds->search($command)) {
                 $this->cmds->splice($index, 2);
             }
@@ -110,7 +115,8 @@ class CodecMapper
         $this->currentVideoCodec = $codec;
         $cmds->push($codec);
         if ($codec !== 'copy') {
-            $cmds->push('-qp:v:' . $streamId);
+            $param = Str::contains($codec, ['vaapi', 'nvenc']) ? 'qp' : 'crf';
+            $cmds->push(sprintf('-%s:v:%d', $param, $streamId));
             $qp = $this->forcedQp ?? ($stream['config']['qp'] ?? $this->getDefaultCodec($this->videoCodecs)->qp);
             $cmds->push($qp);
         }
