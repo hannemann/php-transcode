@@ -24,6 +24,10 @@ build::
 run-dev::
 	./vendor/bin/sail npm run development
 
+build-assets::
+	rm -f ./public/hot
+	./vendor/bin/sail npm run build
+
 run-dev-watch::
 	./vendor/bin/sail npm run watch
 
