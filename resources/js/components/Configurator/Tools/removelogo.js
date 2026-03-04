@@ -31,10 +31,11 @@ export const requestRemovelogo = async function (model) {
         m.header = "Removelogo";
         m.classList.add("no-shadow");
         const d = document.createElement("dialogue-removelogo");
-        d.video = {
-            ...this.streams.filter((s) => s.codec_type === TYPE_VIDEO)?.[0],
-            duration: parseFloat(this.format.duration),
-        };
+
+        d.video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);
+        ({ width: d.video.width, height: d.video.height } = d.outputDimensions);
+        d.video.duration = parseFloat(this.format.duration);
+
         d.path = this.item.path;
         d.filterIndex = model.filterIndex;
         requestAnimationFrame(() => {

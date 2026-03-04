@@ -12,14 +12,11 @@ export const requestFillborders = async function (model) {
         m.classList.add("no-shadow");
         const d = document.createElement("dialogue-fillborders");
         d.filterIndex = model.filterIndex;
+
         d.video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);
-        const dim = d.outputDimensions;
-        d.video = {
-            ...d.video,
-            duration: parseFloat(this.format.duration),
-            width: dim.width,
-            height: dim.height,
-        };
+        ({ width: d.video.width, height: d.video.height } = d.outputDimensions);
+        d.video.duration = parseFloat(this.format.duration);
+
         d.path = this.item.path;
         d.model = model;
         requestAnimationFrame(() => {

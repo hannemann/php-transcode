@@ -19,10 +19,11 @@ export const clipper = async function () {
     m.classList.add("no-shadow");
     const d = document.createElement("dialogue-clipper");
     d.setClips(clips.getTimestamps());
-    d.video = {
-        ...this.streams.filter((s) => s.codec_type === TYPE_VIDEO)?.[0],
-        duration: parseFloat(this.format.duration),
-    };
+
+    d.video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);
+    ({ width: d.video.width, height: d.video.height } = d.outputDimensions);
+    d.video.duration = parseFloat(this.format.duration);
+
     d.path = this.item.path;
     requestAnimationFrame(() => (d.markers = this.chapters));
     m.appendChild(d);

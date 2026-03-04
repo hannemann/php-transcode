@@ -12,10 +12,11 @@ export const requestDelogo = async function (model) {
     try {
         m.header = "Delogo";
         m.classList.add("no-shadow");
-        d.video = {
-            ...this.streams.filter((s) => s.codec_type === TYPE_VIDEO)?.[0],
-            duration: parseFloat(this.format.duration),
-        };
+
+        d.video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);
+        ({ width: d.video.width, height: d.video.height } = d.outputDimensions);
+        d.video.duration = parseFloat(this.format.duration);
+
         d.path = this.item.path;
         d.filterIndex = model.filterIndex;
         d.configurator = this;

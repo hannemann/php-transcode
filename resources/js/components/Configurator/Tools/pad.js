@@ -7,15 +7,11 @@ export const requestPad = async function (type, id = NaN, data = null) {
         m.classList.add("no-shadow");
         const d = document.createElement("dialogue-pad");
         d.filterIndex = id;
+
         d.video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);
-        const dim = d.outputDimensions;
-        d.video = {
-            ...d.video,
-            duration: parseFloat(this.format.duration),
-            width: dim.width,
-            height: dim.height,
-            display_aspect_ratio: `${dim.width}:${dim.height}`,
-        };
+        ({ width: d.video.width, height: d.video.height } = d.outputDimensions);
+        d.video.duration = parseFloat(this.format.duration);
+
         d.path = this.item.path;
         d.type = type;
         requestAnimationFrame(() => {
