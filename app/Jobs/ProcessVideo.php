@@ -45,8 +45,7 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
 
     public int $tries = 1;
 
-    //TODO: should be config option
-    public int $timeout = 3600;
+    public int $timeout = 0;
 
     private bool $hasFailed = false;
 
@@ -61,6 +60,7 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
         string $path,
         FFMpegActionRequest $request
     ) {
+        $this->timeout = config('laravel-ffmpeg.timeout');
         $this->type = $type;
         $this->path = $path;
         $this->disk = $disk;
@@ -83,7 +83,8 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
         $this->current_queue_id = $currentQueue->getKey();
     }
 
-    public function getQueueId() {
+    public function getQueueId()
+    {
         return $this->current_queue_id;
     }
 
@@ -101,7 +102,7 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
                 'start' => gmdate('Y-m-d\TH:i:s\Z'),
             ]);
             FFMpegProgress::dispatch('queue.progress');
-            switch($this->type) {
+            switch ($this->type) {
                 case 'concat':
                     switch ($this->requestData['container']) {
                         case 'mp4':
@@ -171,7 +172,7 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
     {
         $this->hasFailed = true;
         $message = $exception->getMessage();
-        if ($exception instanceOf EncodingException) {
+        if ($exception instanceof EncodingException) {
             $command = $exception->getCommand();
             $errorLog = $exception->getErrorOutput();
             $message = sprintf("%s\n\n%s", $command, $errorLog);

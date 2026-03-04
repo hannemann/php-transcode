@@ -46,7 +46,7 @@ return [
             'driver' => 'database',
             'table' => 'jobs',
             'queue' => 'default',
-            'retry_after' => 3600,
+            'retry_after' => config('laravel-ffmpeg.timeout') + 100,
             'after_commit' => false,
         ],
 
@@ -54,7 +54,7 @@ return [
             'driver' => 'database',
             'table' => 'jobs',
             'queue' => 'default',
-            'retry_after' => 3600,
+            'retry_after' => config('laravel-ffmpeg.timeout') + 100,
             'after_commit' => false,
         ],
 
