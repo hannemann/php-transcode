@@ -60,7 +60,7 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
         string $path,
         FFMpegActionRequest $request
     ) {
-        $this->timeout = config('laravel-ffmpeg.timeout');
+        $this->timeout = config('transcode.timeout');
         $this->type = $type;
         $this->path = $path;
         $this->disk = $disk;

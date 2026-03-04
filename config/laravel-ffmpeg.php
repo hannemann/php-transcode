@@ -10,7 +10,7 @@ return [
         'binaries' => env('FFPROBE_BINARIES', '/usr/bin/ffprobe'),
     ],
 
-    'timeout' => env('FFPROCESS_TIMEOUT', 10800),
+    'timeout' => config('aaa-defaults.transcode.timeout'),
 
     'enable_logging' => true,
 

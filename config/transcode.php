@@ -69,6 +69,7 @@ $preferredAudioCodecs = [
 ];
 
 return [
+    'timeout' => config('aaa-defaults.transcode.timeout'),
     'vaapiDevice' => env('VAAPI_DEVICE', '/dev/dri/renderD128'),
     'videoCodecs' => json_decode(env('VIDEO_CODECS', json_encode($videoCodecs))),
     'audioCodecs' => json_decode(env('AUDIO_CODECS', json_encode($audioCodecs))),
