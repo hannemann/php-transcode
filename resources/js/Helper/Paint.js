@@ -28,7 +28,7 @@ export default class Paint {
      * @returns {Painterro}
      */
     static init(saveHandler, closeHandler) {
-        paintArea.innerHTML = STATUS_CSS;
+        paintArea.innerHTML = `<style>${STATUS_CSS}</style>`;
         document.body.insertBefore(
             paintArea,
             document.querySelector("transcoder-toast"),
@@ -128,7 +128,7 @@ export default class Paint {
     }
 }
 
-const STATUS_CSS = html` <style>
+const STATUS_CSS = css`
     #painterro-paintarea button[title="White-Pixels"] {
         min-width: 100px;
         position: relative;
@@ -149,4 +149,4 @@ const STATUS_CSS = html` <style>
             color: var(--clr-text-error);
         }
     }
-</style>`;
+`;
