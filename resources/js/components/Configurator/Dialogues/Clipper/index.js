@@ -171,67 +171,71 @@ class Clipper extends VideoEditor {
     }
 }
 
-Clipper.template = html`
-    ${EDITOR_CSS}
-    <style>
-        .status {
-            div:has(.nav) {
-                .nav.move {
-                    display: revert;
-                }
+const CSS = css`
+    .status {
+        div:has(.nav) {
+            .nav.move {
+                display: revert;
             }
+        }
 
-            .time div {
-                &.btn-add,
-                &.btn-remove {
-                    display: revert;
-                }
+        .time div {
+            &.btn-add,
+            &.btn-remove {
+                display: revert;
             }
         }
-        .indicator .clip {
-            position: absolute;
-            inset-block: 0;
-            background: hsla(
-                var(--hue-success) var(--sat-alert) var(--lit-alert) / 0.5
-            );
-            z-index: 1;
-        }
-        .help,
-        .clips {
-            font-size: 0.75rem;
-            white-space: nowrap;
-        }
-        .help {
-            grid-area: left;
-        }
-        .help dl {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            grid-column-gap: 0.5rem;
-        }
-        .help dd {
-            margin: 0;
-        }
-        .clips {
-            grid-area: right;
-            display: grid;
-            grid-template-columns: 1fr;
-            grid-auto-rows: min-content;
-            overflow-y: auto;
-            grid-row-gap: 0.25rem;
-            justify-self: end;
-        }
-        .clips .clip:nth-child(odd) {
-            background: var(--clr-bg-100);
-        }
-        .clips .clip .timestamp {
-            cursor: pointer;
-            padding: 0.125rem;
-        }
-        .clips .clip .timestamp.active {
-            background: var(--clr-bg-200);
-            color: var(--clr-enlightened);
-        }
+    }
+    .indicator .clip {
+        position: absolute;
+        inset-block: 0;
+        background: hsla(
+            var(--hue-success) var(--sat-alert) var(--lit-alert) / 0.5
+        );
+        z-index: 1;
+    }
+    .help,
+    .clips {
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
+    .help {
+        grid-area: left;
+    }
+    .help dl {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-column-gap: 0.5rem;
+    }
+    .help dd {
+        margin: 0;
+    }
+    .clips {
+        grid-area: right;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-auto-rows: min-content;
+        overflow-y: auto;
+        grid-row-gap: 0.25rem;
+        justify-self: end;
+    }
+    .clips .clip:nth-child(odd) {
+        background: var(--clr-bg-100);
+    }
+    .clips .clip .timestamp {
+        cursor: pointer;
+        padding: 0.125rem;
+    }
+    .clips .clip .timestamp.active {
+        background: var(--clr-bg-200);
+        color: var(--clr-enlightened);
+    }
+`;
+
+Clipper.template = html`
+    <style>
+        ${EDITOR_CSS}
+        ${CSS}
     </style>
     ${EDITOR_TEMPLATE}
     <div class="help">

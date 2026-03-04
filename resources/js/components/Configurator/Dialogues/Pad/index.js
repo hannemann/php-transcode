@@ -135,8 +135,6 @@ class Pad extends VideoEditor {
 }
 
 const STYLES = css`
-    ${EDITOR_CSS.replace("<style>", "").replace("</style>", "")}
-
     .frame {
         /* padding-inline: calc(((1920px - 846px) / 2) / var(--ratio));
          padding-block: calc(((1080px - 712px) / 2) / var(--ratio)); */
@@ -233,6 +231,7 @@ const STYLES = css`
 
 Pad.template = html`
 <style>
+    ${EDITOR_CSS}
     ${STYLES}
 </style>
 ${EDITOR_TEMPLATE}

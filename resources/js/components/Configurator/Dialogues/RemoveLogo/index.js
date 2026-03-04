@@ -126,36 +126,40 @@ class RemoveLogo extends VideoEditor {
     }
 }
 
+const CSS = css`
+    :host {
+        position: relative;
+    }
+    .info {
+        grid-area: left;
+        display: grid;
+        grid-auto-rows: min-content;
+        gap: 0.5rem;
+        font-size: 0.75rem;
+        p {
+            max-width: 150px;
+            margin: 0;
+        }
+    }
+    theme-button::part(button) {
+        min-width: 150px;
+    }
+    .toggle-aspect {
+        display: none;
+    }
+    .actions {
+        grid-area: right;
+        display: grid;
+        justify-items: end;
+        gap: 0.5rem;
+        grid-auto-rows: min-content;
+    }
+`;
+
 RemoveLogo.template = html`
-    ${EDITOR_CSS}
     <style>
-        :host {
-            position: relative;
-        }
-        .info {
-            grid-area: left;
-            display: grid;
-            grid-auto-rows: min-content;
-            gap: 0.5rem;
-            font-size: 0.75rem;
-            p {
-                max-width: 150px;
-                margin: 0;
-            }
-        }
-        theme-button::part(button) {
-            min-width: 150px;
-        }
-        .toggle-aspect {
-            display: none;
-        }
-        .actions {
-            grid-area: right;
-            display: grid;
-            justify-items: end;
-            gap: 0.5rem;
-            grid-auto-rows: min-content;
-        }
+        ${EDITOR_CSS}
+        ${CSS}
     </style>
     ${EDITOR_TEMPLATE}
     <div class="info">

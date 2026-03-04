@@ -494,16 +494,14 @@ class Cropper extends VideoEditor {
     }
 }
 
-Cropper.template = html`
-${EDITOR_CSS}
-<style>
+const CSS = css`
     .toggle-aspect {
         display: none;
     }
     .crop {
         box-sizing: border-box;
         grid-area: frame;
-        border: 0 solid hsla(0 50% 50% / .5);
+        border: 0 solid hsla(0 50% 50% / 0.5);
         justify-self: center;
         cursor: crosshair;
         position: relative;
@@ -519,12 +517,13 @@ ${EDITOR_CSS}
         background-blend-mode: lighten;
     }
 
-    .info, .settings {
+    .info,
+    .settings {
         grid-area: left;
         display: grid;
         grid-auto-rows: min-content;
-        gap: .5rem;
-        font-size: .75rem;
+        gap: 0.5rem;
+        font-size: 0.75rem;
         white-space: nowrap;
         width: 250px;
     }
@@ -534,22 +533,22 @@ ${EDITOR_CSS}
     }
     fieldset {
         border: 2px solid var(--clr-bg-200);
-        padding: .5rem;
+        padding: 0.5rem;
         background: var(--clr-bg-100);
         display: flex;
         flex-direction: column;
-        gap: .5rem;
+        gap: 0.5rem;
         border-radius: 0.25rem;
     }
     legend {
         background: var(--clr-bg-0);
-        padding: .25rem;
+        padding: 0.25rem;
         border-radius: 0.25rem;
     }
     label {
         display: flex;
         justify-content: space-between;
-        gap: .5rem;
+        gap: 0.5rem;
     }
     input {
         accent-color: var(--clr-enlightened);
@@ -567,8 +566,8 @@ ${EDITOR_CSS}
     .info .error {
         white-space: normal;
         background: hsl(var(--hue-error) var(--sat-alert) var(--lit-alert));
-        padding: .5rem;
-        border-radius: .25rem;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
     }
     .height-error .height-warning {
         opacity: 1;
@@ -580,7 +579,7 @@ ${EDITOR_CSS}
     .help dl {
         display: grid;
         grid-template-columns: auto 1fr;
-        grid-column-gap: .5rem;
+        grid-column-gap: 0.5rem;
     }
     .help dd {
         margin: 0;
@@ -588,6 +587,12 @@ ${EDITOR_CSS}
     :host > theme-button {
         justify-self: end;
     }
+`;
+
+Cropper.template = html`
+<style>
+    ${EDITOR_CSS}
+    ${CSS}
 </style>
 ${EDITOR_TEMPLATE}
 <div data-ref="cropOverlay" class="crop">

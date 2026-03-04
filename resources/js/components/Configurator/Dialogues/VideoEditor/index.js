@@ -583,7 +583,7 @@ class VideoEditor extends HTMLElement {
     }
 }
 
-export const EDITOR_CSS = html`<style>
+export const EDITOR_CSS = css`
     :host {
         --thumbnail-height: ${THUMBNAIL_HEIGHT + 16}px;
         display: grid;
@@ -765,7 +765,7 @@ export const EDITOR_CSS = html`<style>
             width: 1px;
         }
     }
-</style>`;
+`;
 
 export const EDITOR_TEMPLATE = html` <img class="frame" />
     <theme-button class="toggle-aspect"></theme-button>
