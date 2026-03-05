@@ -76,7 +76,7 @@ class Transcode extends AbstractAction
                 $this->format->setAccelerationFramework(h264_vaapi::ACCEL_VAAPI);
             }
 
-            if ($this->format->getAccelerationFramework() && $isSingleClip) {
+            if ($this->format->getAccelerationFramework() === h264_vaapi::ACCEL_VAAPI && $isSingleClip) {
                 $filters->push('format=nv12');
                 $filters->push('hwupload');
             }

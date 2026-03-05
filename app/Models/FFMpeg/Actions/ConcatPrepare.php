@@ -7,6 +7,7 @@ use App\Models\Video\File;
 use Illuminate\Support\Collection;
 use App\Jobs\ProcessVideo;
 use App\Models\FFMpeg\Actions\Helper\Hardware;
+use App\Models\FFMpeg\Format\Video\h264_vaapi;
 
 /**
  * @property h264_vaapi $format
@@ -45,14 +46,11 @@ class ConcatPrepare extends AbstractAction
         } elseif (Hardware::supportsVaapi()) {
             $this->codecMapper->forceCodec('hevc_vaapi', 'flac');
             $this->format->setAccelerationFramework(Format::ACCEL_VAAPI);
+            $filters->push('format=nv12');
+            $filters->push('hwupload');
         } else {
             $this->codecMapper->forceCodec('libx264', 'flac');
             $this->codecMapper->forcePreset('ultrafast');
-        }
-
-        if ($this->format->getAccelerationFramework()) {
-            $filters->push('format=nv12');
-            $filters->push('hwupload');
         }
 
         if ($filters->isNotEmpty()) {
