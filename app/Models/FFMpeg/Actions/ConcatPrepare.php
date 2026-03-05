@@ -6,6 +6,7 @@ use App\Models\FFMpeg\Format\Video\h264_vaapi as Format;
 use App\Models\Video\File;
 use Illuminate\Support\Collection;
 use App\Jobs\ProcessVideo;
+use App\Models\FFMpeg\Actions\Helper\Hardware;
 
 /**
  * @property h264_vaapi $format
@@ -30,23 +31,23 @@ class ConcatPrepare extends AbstractAction
         $this->configureAudio();
         $this->codecMapper = new Helper\CodecMapper($this->codecConfig, $this->streams, $this->video, $this->audio, $this->subtitle);
         $this->codecMapper->forceCodec(null, 'flac');
+        $this->codecMapper->forceQp(self::PREPARE_QP);
         $this->outputMapper = new Helper\OutputMapper($this->codecConfig, $this->video, $this->audio, $this->subtitle);
         $this->mediaExporter = $this->media->export();
 
         $filters = collect([]);
         $this->codecMapper->execute(collect([]));
         $this->codecMapper->resetIndices();
-        
-        if (strpos($this->codecMapper->currentVideoCodec, 'nvenc') !== false) {
+
+        if (Hardware::supportsCuda()) {
             $this->codecMapper->forceCodec('hevc_nvenc', 'flac');
-            $this->codecMapper->forceQp(self::PREPARE_QP);
             $this->format->setAccelerationFramework(Format::ACCEL_CUDA);
-        }
-        
-        if (strpos($this->codecMapper->currentVideoCodec, 'vaapi') !== false) {
+        } elseif (Hardware::supportsVaapi()) {
             $this->codecMapper->forceCodec('hevc_vaapi', 'flac');
-            $this->codecMapper->forceQp(self::PREPARE_QP);
             $this->format->setAccelerationFramework(Format::ACCEL_VAAPI);
+        } else {
+            $this->codecMapper->forceCodec('libx264', 'flac');
+            $this->codecMapper->forcePreset('ultrafast');
         }
 
         if ($this->format->getAccelerationFramework()) {
