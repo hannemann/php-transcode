@@ -53,14 +53,12 @@ export default class Paint {
                 {
                     name: "White-Extractor",
                     // English comments:
-                    // Use an iconUrl (Data-URL) as specified in the readme.
-                    // Painterro might not support raw SVG strings in customTools.
+                    // Using Base64 encoded SVG for the icon.
                     iconUrl: `data:image/svg+xml;base64,${btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black"><path d="M15,3H12V6H15V3M19,3H16V6H19V3M15,7H12V10H15V7M19,7H16V10H19V7M11,3H8V6H11V3M7,3H4V6H7V3M11,7H8V10H11V7M7,7H4V10H7V7M21,11V21H3V11H21M19,19V13H5V19H19Z"/></svg>')}`,
                     callBack: () => {
                         // English comments:
-                        // Since Painterro doesn't pass the instance to the callBack
-                        // in this mode, we use our static reference.
-                        Paint.extractWhitePixels(Paint.Painterro);
+                        // This triggers the dialog which then uses Paint.extractWhitePixels
+                        Paint.openExtractWhiteDialog();
                     },
                 },
             ],
@@ -108,23 +106,92 @@ export default class Paint {
         );
     }
 
-    /**
-     * Extraktion: Erkennt Logo-Pixel durch lokalen Kontrast,
-     * erzeugt einen 1-Pixel Halo und erzwingt reinweiße Maskenpixel.
-     */
-    static extractWhitePixels(p) {
+    static openExtractWhiteDialog() {
+        if (document.getElementById("painterro-settings-dialog")) return;
+
+        const ctx = Paint.canvas.getContext("2d");
+        Paint.originalImageData = ctx.getImageData(
+            0,
+            0,
+            Paint.canvas.width,
+            Paint.canvas.height,
+        );
+
+        const dialog = document.createElement("div");
+        dialog.id = "painterro-settings-dialog";
+        dialog.innerHTML = `
+        <div id="dialog-header">Filter Einstellungen</div>
+        <label>Schwellwert: <input type="range" id="threshold" min="20" max="250" value="140"></label><br>
+        <label>Halo (Radius): <input type="range" id="halo" min="0" max="2" value="1"></label>
+        <button id="close-settings" style="display:block; margin-top:15px; width:100%;">Fertig</button>
+    `;
+        document.body.appendChild(dialog);
+
+        // --- DRAGGABLE NUR ÜBER HEADER ---
+        const header = document.getElementById("dialog-header");
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        header.onmousedown = (e) => {
+            isDragging = true;
+            offsetX = e.clientX - dialog.offsetLeft;
+            offsetY = e.clientY - dialog.offsetTop;
+        };
+
+        document.onmousemove = (e) => {
+            if (!isDragging) return;
+            dialog.style.left = e.clientX - offsetX + "px";
+            dialog.style.top = e.clientY - offsetY + "px";
+            dialog.style.transform = "none";
+        };
+
+        document.onmouseup = () => (isDragging = false);
+        // --- ENDE ---
+
+        // Live-Update Logik
+        const update = () => {
+            const threshold = parseInt(
+                document.getElementById("threshold").value,
+            );
+            const radius = parseInt(document.getElementById("halo").value);
+            Paint.extractWhitePixels(Paint.Painterro, threshold, radius);
+        };
+
+        document.getElementById("threshold").oninput = update;
+        document.getElementById("halo").oninput = update;
+        document.getElementById("close-settings").onclick = () =>
+            dialog.remove();
+    }
+
+    static extractWhitePixels(p, threshold = 140, radius = 1) {
         if (!p) return;
         const canvas = Paint.canvas;
         const ctx = canvas.getContext("2d");
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
-        const width = canvas.width;
-        const height = canvas.height;
 
+        // 1. Sicherheit: Originaldaten initialisieren, falls noch nicht vorhanden
+        if (!Paint.originalImageData) {
+            Paint.originalImageData = ctx.getImageData(
+                0,
+                0,
+                canvas.width,
+                canvas.height,
+            );
+        }
+
+        // 2. Kopie der Originaldaten erstellen, damit wir die Vorschau zerstörungsfrei berechnen
+        const tempImageData = new ImageData(
+            new Uint8ClampedArray(Paint.originalImageData.data),
+            Paint.originalImageData.width,
+            Paint.originalImageData.height,
+        );
+
+        const data = tempImageData.data;
+        const width = tempImageData.width;
+        const height = tempImageData.height;
         const buffer = new Uint8ClampedArray(data);
         const detectionMask = new Uint8Array(width * height);
 
-        // SCHRITT A: Adaptive Detektion (lokaler Kontrast)
+        // A: Adaptive Detektion
         for (let y = 1; y < height - 1; y++) {
             for (let x = 1; x < width - 1; x++) {
                 const i = (y * width + x) * 4;
@@ -136,7 +203,6 @@ export default class Paint {
                 let neighborLum = 0;
                 for (let ny = -1; ny <= 1; ny++) {
                     for (let nx = -1; nx <= 1; nx++) {
-                        if (nx === 0 && ny === 0) continue;
                         const ni = ((y + ny) * width + (x + nx)) * 4;
                         neighborLum +=
                             0.299 * buffer[ni] +
@@ -146,47 +212,47 @@ export default class Paint {
                 }
                 neighborLum /= 8;
 
-                if (lum - neighborLum > 10 || lum > 140) {
+                if (lum - neighborLum > threshold / 10 || lum > threshold) {
                     detectionMask[y * width + x] = 1;
                 }
             }
         }
 
-        // SCHRITT B: Halo erzeugen (in detectionMask speichern)
-        const radius = 1;
-        const finalMask = new Uint8Array(detectionMask); // Kopie für Halo-Berechnung
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                if (detectionMask[y * width + x] === 1) continue;
-                for (let ny = -radius; ny <= radius; ny++) {
-                    for (let nx = -radius; nx <= radius; nx++) {
-                        const ty = y + ny,
-                            tx = x + nx;
-                        if (
-                            tx >= 0 &&
-                            tx < width &&
-                            ty >= 0 &&
-                            ty < height &&
-                            detectionMask[ty * width + tx] === 1
-                        ) {
-                            finalMask[y * width + x] = 1;
-                            break;
+        // B: Halo erzeugen
+        const finalMask = new Uint8Array(detectionMask);
+        if (radius > 0) {
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    if (detectionMask[y * width + x] === 1) continue;
+                    for (let ny = -radius; ny <= radius; ny++) {
+                        for (let nx = -radius; nx <= radius; nx++) {
+                            const ty = y + ny,
+                                tx = x + nx;
+                            if (
+                                tx >= 0 &&
+                                tx < width &&
+                                ty >= 0 &&
+                                ty < height &&
+                                detectionMask[ty * width + tx] === 1
+                            ) {
+                                finalMask[y * width + x] = 1;
+                                break;
+                            }
                         }
                     }
                 }
             }
         }
 
-        // SCHRITT C: Auf Canvas anwenden (Binär: Schwarz oder Weiß)
+        // C: Auf tempImageData anwenden
         for (let i = 0; i < data.length; i += 4) {
             const isWhite = finalMask[i / 4] === 1;
-            data[i] = isWhite ? 255 : 0; // R
-            data[i + 1] = isWhite ? 255 : 0; // G
-            data[i + 2] = isWhite ? 255 : 0; // B
-            data[i + 3] = 255; // Alpha immer deckend
+            data[i] = data[i + 1] = data[i + 2] = isWhite ? 255 : 0;
+            data[i + 3] = 255;
         }
 
-        ctx.putImageData(imageData, 0, 0);
+        // Hier wird nun explizit ein korrektes ImageData-Objekt übergeben
+        ctx.putImageData(tempImageData, 0, 0);
     }
 
     /**
@@ -242,5 +308,31 @@ const STATUS_CSS = css`
         &.load-warning::after {
             color: var(--clr-text-error);
         }
+    }
+
+    #painterro-settings-dialog {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 99999;
+        background: #2a2a2a;
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #444;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        color: white;
+        font-family: sans-serif;
+        width: 250px;
+    }
+
+    #dialog-header {
+        cursor: move;
+        padding: 5px 0 15px 0;
+        font-weight: bold;
+        border-bottom: 1px solid #555;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
     }
 `;
