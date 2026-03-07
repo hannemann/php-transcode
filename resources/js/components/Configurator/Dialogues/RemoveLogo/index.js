@@ -46,6 +46,7 @@ class RemoveLogo extends VideoEditor {
         super.bindListeners();
         this.toggleType = this.toggleType.bind(this);
         this.paint = this.paint.bind(this);
+        this.paintMask = this.paintMask.bind(this);
     }
 
     addListeners() {
@@ -53,6 +54,7 @@ class RemoveLogo extends VideoEditor {
         document.addEventListener("keydown", this.handleKeyDown);
         document.addEventListener("keyup", this.handleKeyUp);
         this.paintButton.addEventListener("click", this.paint);
+        this.paintMaskButton.addEventListener("click", this.paintMask);
         this.typeButton.addEventListener("click", this.toggleType);
     }
 
@@ -61,12 +63,11 @@ class RemoveLogo extends VideoEditor {
         document.removeEventListener("keydown", this.handleKeyDown);
         document.removeEventListener("keyup", this.handleKeyUp);
         this.paintButton.removeEventListener("click", this.paint);
+        this.paintMaskButton.removeEventListener("click", this.paintMask);
         this.typeButton.removeEventListener("click", this.toggleType);
     }
 
     paint() {
-        this.imageType = IMAGE_TYPE_MASK;
-        this.updateFrameUrl();
         Paint.init(
             async (image) => {
                 await saveCustomMask(image, this.path);
@@ -76,6 +77,12 @@ class RemoveLogo extends VideoEditor {
                 this.updateFrameUrl();
             },
         ).show(this.image.src);
+    }
+
+    paintMask() {
+        this.imageType = IMAGE_TYPE_MASK;
+        this.updateFrameUrl();
+        this.paint();
     }
 
     toggleType() {
@@ -111,6 +118,10 @@ class RemoveLogo extends VideoEditor {
 
     get paintButton() {
         return this.shadowRoot.querySelector(".paint-button");
+    }
+
+    get paintMaskButton() {
+        return this.shadowRoot.querySelector(".paint-mask-button");
     }
 
     get typeButton() {
@@ -170,6 +181,7 @@ RemoveLogo.template = html`
     <div class="actions">
         <theme-button class="toggle-type">${IMAGE_TYPE_ORIGINAL}</theme-button>
         <theme-button class="paint-button">Paint</theme-button>
+        <theme-button class="paint-mask-button">Paint on Mask</theme-button>
     </div>
 `;
 

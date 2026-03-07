@@ -50,6 +50,19 @@ export default class Paint {
                     iconUrl: Paint.statusFakeIcon,
                     callback: () => {},
                 },
+                {
+                    name: "White-Extractor",
+                    // English comments:
+                    // Use an iconUrl (Data-URL) as specified in the readme.
+                    // Painterro might not support raw SVG strings in customTools.
+                    iconUrl: `data:image/svg+xml;base64,${btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black"><path d="M15,3H12V6H15V3M19,3H16V6H19V3M15,7H12V10H15V7M19,7H16V10H19V7M11,3H8V6H11V3M7,3H4V6H7V3M11,7H8V10H11V7M7,7H4V10H7V7M21,11V21H3V11H21M19,19V13H5V19H19Z"/></svg>')}`,
+                    callBack: () => {
+                        // English comments:
+                        // Since Painterro doesn't pass the instance to the callBack
+                        // in this mode, we use our static reference.
+                        Paint.extractWhitePixels(Paint.Painterro);
+                    },
+                },
             ],
             onChange: () => {
                 const indicator = paintArea.querySelector(
@@ -93,6 +106,87 @@ export default class Paint {
         return ((whitePixels / (canvas.width * canvas.height)) * 100).toFixed(
             2,
         );
+    }
+
+    /**
+     * Extraktion: Erkennt Logo-Pixel durch lokalen Kontrast,
+     * erzeugt einen 1-Pixel Halo und erzwingt reinweiße Maskenpixel.
+     */
+    static extractWhitePixels(p) {
+        if (!p) return;
+        const canvas = Paint.canvas;
+        const ctx = canvas.getContext("2d");
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const width = canvas.width;
+        const height = canvas.height;
+
+        const buffer = new Uint8ClampedArray(data);
+        const detectionMask = new Uint8Array(width * height);
+
+        // SCHRITT A: Adaptive Detektion (lokaler Kontrast)
+        for (let y = 1; y < height - 1; y++) {
+            for (let x = 1; x < width - 1; x++) {
+                const i = (y * width + x) * 4;
+                const lum =
+                    0.299 * buffer[i] +
+                    0.587 * buffer[i + 1] +
+                    0.114 * buffer[i + 2];
+
+                let neighborLum = 0;
+                for (let ny = -1; ny <= 1; ny++) {
+                    for (let nx = -1; nx <= 1; nx++) {
+                        if (nx === 0 && ny === 0) continue;
+                        const ni = ((y + ny) * width + (x + nx)) * 4;
+                        neighborLum +=
+                            0.299 * buffer[ni] +
+                            0.587 * buffer[ni + 1] +
+                            0.114 * buffer[ni + 2];
+                    }
+                }
+                neighborLum /= 8;
+
+                if (lum - neighborLum > 10 || lum > 140) {
+                    detectionMask[y * width + x] = 1;
+                }
+            }
+        }
+
+        // SCHRITT B: Halo erzeugen (in detectionMask speichern)
+        const radius = 1;
+        const finalMask = new Uint8Array(detectionMask); // Kopie für Halo-Berechnung
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                if (detectionMask[y * width + x] === 1) continue;
+                for (let ny = -radius; ny <= radius; ny++) {
+                    for (let nx = -radius; nx <= radius; nx++) {
+                        const ty = y + ny,
+                            tx = x + nx;
+                        if (
+                            tx >= 0 &&
+                            tx < width &&
+                            ty >= 0 &&
+                            ty < height &&
+                            detectionMask[ty * width + tx] === 1
+                        ) {
+                            finalMask[y * width + x] = 1;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // SCHRITT C: Auf Canvas anwenden (Binär: Schwarz oder Weiß)
+        for (let i = 0; i < data.length; i += 4) {
+            const isWhite = finalMask[i / 4] === 1;
+            data[i] = isWhite ? 255 : 0; // R
+            data[i + 1] = isWhite ? 255 : 0; // G
+            data[i + 2] = isWhite ? 255 : 0; // B
+            data[i + 3] = 255; // Alpha immer deckend
+        }
+
+        ctx.putImageData(imageData, 0, 0);
     }
 
     /**
