@@ -23,14 +23,75 @@ import {
     }
  */
 class Dialogue extends AbstractModal {
+    #mainContainer;
+    #isDragging = false;
+    #startX;
+    #startY;
+
+    constructor() {
+        super();
+        this.handleMouseDown = this.handleMouseDown.bind(this);
+        this.handleMouseMove = this.handleMouseMove.bind(this);
+        this.handleMouseUp = this.handleMouseUp.bind(this);
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+
+        this.headerNode.addEventListener("pointerdown", this.handleMouseDown);
+        this.addEventListener("pointermove", this.handleMouseMove);
+        this.addEventListener("pointerup", this.handleMouseUp);
+    }
+
+    disconnecteCallback() {
+        super.disconnecteCallback();
+
+        this.headerNode.removeEventListener(
+            "pointerdown",
+            this.handleMouseDown,
+        );
+        this.removeEventListener("pointermove", this.handleMouseMove);
+        this.removeEventListener("pointerup", this.handleMouseUp);
+    }
+
+    handleMouseDown(e) {
+        this.#isDragging = true;
+        this.#startX = e.clientX - this.mainContainer.offsetLeft;
+        this.#startY = e.clientY - this.mainContainer.offsetTop;
+        this.headerNode.style.cursor = "grabbing";
+        e.preventDefault();
+    }
+
+    handleMouseMove(e) {
+        if (!this.#isDragging) return;
+        this.mainContainer.style.left = `${e.clientX - this.#startX}px`;
+        this.mainContainer.style.top = `${e.clientY - this.#startY}px`;
+    }
+
+    handleMouseUp() {
+        this.#isDragging = false;
+        this.headerNode.style.cursor = "move";
+    }
+
     open() {
         return this.promise;
     }
+
+    get mainContainer() {
+        return (this.#mainContainer ??= this.shadowRoot.querySelector("main"));
+    }
 }
+
+const CSS = css`
+    main {
+        position: absolute;
+    }
+`;
 
 Dialogue.template = html`
     <style>
         ${MODAL_BASE_CSS}
+        ${CSS}
     </style>
     ${MODAL_TEMPLATE_BEGIN}
     <slot></slot>

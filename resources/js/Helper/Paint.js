@@ -51,14 +51,10 @@ export default class Paint {
                     callback: () => {},
                 },
                 {
-                    name: "White-Extractor",
-                    // English comments:
-                    // Using Base64 encoded SVG for the icon.
-                    iconUrl: `data:image/svg+xml;base64,${btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black"><path d="M15,3H12V6H15V3M19,3H16V6H19V3M15,7H12V10H15V7M19,7H16V10H19V7M11,3H8V6H11V3M7,3H4V6H7V3M11,7H8V10H11V7M7,7H4V10H7V7M21,11V21H3V11H21M19,19V13H5V19H19Z"/></svg>')}`,
+                    name: "Filter Logo Pixels",
+                    iconUrl: Paint.filterLogoPixelsIcon,
                     callBack: () => {
-                        // English comments:
-                        // This triggers the dialog which then uses Paint.extractWhitePixels
-                        Paint.openExtractWhiteDialog();
+                        Paint.openFilterLogoPixelsDialog();
                     },
                 },
             ],
@@ -106,8 +102,8 @@ export default class Paint {
         );
     }
 
-    static openExtractWhiteDialog() {
-        if (document.getElementById("painterro-settings-dialog")) return;
+    static openFilterLogoPixelsDialog() {
+        if (document.getElementById("logofilter-settings-dialog")) return;
 
         const ctx = Paint.canvas.getContext("2d");
         Paint.originalImageData = ctx.getImageData(
@@ -117,53 +113,31 @@ export default class Paint {
             Paint.canvas.height,
         );
 
-        const dialog = document.createElement("div");
-        dialog.id = "painterro-settings-dialog";
-        dialog.innerHTML = `
-        <div id="dialog-header">Filter Einstellungen</div>
-        <label>Schwellwert: <input type="range" id="threshold" min="20" max="250" value="140"></label><br>
-        <label>Halo (Radius): <input type="range" id="halo" min="0" max="2" value="1"></label>
-        <button id="close-settings" style="display:block; margin-top:15px; width:100%;">Fertig</button>
-    `;
+        const dialog = document.createElement("modal-dialogue");
+        dialog.header = "Filter Logo Settings";
+        dialog.id = "logofilter-settings-dialog";
+        dialog.innerHTML = Paint.dialogTemplate;
         document.body.appendChild(dialog);
 
-        // --- DRAGGABLE NUR ÜBER HEADER ---
-        const header = document.getElementById("dialog-header");
-        let isDragging = false;
-        let offsetX, offsetY;
+        const thresholdInput = dialog.querySelector("#threshold");
+        const valThreshold = dialog.querySelector("#val-threshold");
+        const haloInput = dialog.querySelector("#halo");
+        const valHalo = dialog.querySelector("#val-halo");
 
-        header.onmousedown = (e) => {
-            isDragging = true;
-            offsetX = e.clientX - dialog.offsetLeft;
-            offsetY = e.clientY - dialog.offsetTop;
-        };
-
-        document.onmousemove = (e) => {
-            if (!isDragging) return;
-            dialog.style.left = e.clientX - offsetX + "px";
-            dialog.style.top = e.clientY - offsetY + "px";
-            dialog.style.transform = "none";
-        };
-
-        document.onmouseup = () => (isDragging = false);
-        // --- ENDE ---
-
-        // Live-Update Logik
         const update = () => {
-            const threshold = parseInt(
-                document.getElementById("threshold").value,
-            );
-            const radius = parseInt(document.getElementById("halo").value);
-            Paint.extractWhitePixels(Paint.Painterro, threshold, radius);
+            const threshold = parseInt(thresholdInput.value);
+            const radius = parseInt(haloInput.value);
+            valThreshold.innerText = threshold;
+            valHalo.innerText = radius;
+            Paint.filterLogoPixels(Paint.Painterro, threshold, radius);
         };
 
-        document.getElementById("threshold").oninput = update;
-        document.getElementById("halo").oninput = update;
-        document.getElementById("close-settings").onclick = () =>
-            dialog.remove();
+        thresholdInput.oninput = update;
+        haloInput.oninput = update;
+        update();
     }
 
-    static extractWhitePixels(p, threshold = 140, radius = 1) {
+    static filterLogoPixels(p, threshold = 140, radius = 1) {
         if (!p) return;
         const canvas = Paint.canvas;
         const ctx = canvas.getContext("2d");
@@ -280,6 +254,10 @@ export default class Paint {
         return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
     }
 
+    static get filterLogoPixelsIcon() {
+        return `data:image/svg+xml;base64,${btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black"><path d="M15,3H12V6H15V3M19,3H16V6H19V3M15,7H12V10H15V7M19,7H16V10H19V7M11,3H8V6H11V3M7,3H4V6H7V3M11,7H8V10H11V7M7,7H4V10H7V7M21,11V21H3V11H21M19,19V13H5V19H19Z"/></svg>')}`;
+    }
+
     /**
      * obtain canvas element
      */
@@ -310,29 +288,69 @@ const STATUS_CSS = css`
         }
     }
 
-    #painterro-settings-dialog {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+    #logofilter-settings-dialog {
         z-index: 99999;
-        background: #2a2a2a;
-        border-radius: 8px;
-        padding: 15px;
-        border: 1px solid #444;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-        color: white;
-        font-family: sans-serif;
-        width: 250px;
     }
+`;
 
-    #dialog-header {
-        cursor: move;
-        padding: 5px 0 15px 0;
-        font-weight: bold;
-        border-bottom: 1px solid #555;
+const EXTRACT_WHITE_CSS = css`
+    .slider-container {
         margin-bottom: 15px;
-        display: flex;
-        justify-content: space-between;
+
+        .label {
+            font-size: 12px;
+            color: #aaa;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 11px;
+            color: #888;
+
+            input {
+                flex: 1;
+                cursor: pointer;
+            }
+
+            .current-value {
+                text-align: center;
+                font-size: 13px;
+                margin-top: 5px;
+                color: var(--clr-bg-400); /* Oder eine deiner Akzentfarben */
+            }
+        }
     }
+`;
+
+/**
+ * Dialog Template Definition (Außerhalb der Klasse)
+ */
+Paint.dialogTemplate = html`
+    <style>
+        ${EXTRACT_WHITE_CSS}
+    </style>
+    <div class="slider-container">
+        <span class="label">Schwellwert</span>
+        <div class="slider-row">
+            <span>20</span>
+            <input type="range" id="threshold" min="20" max="250" value="140" />
+            <span>250</span>
+        </div>
+        <div class="current-value">
+            Wert: <span id="val-threshold">140</span>
+        </div>
+    </div>
+    <div class="slider-container">
+        <span class="label">Halo (Radius)</span>
+        <div class="slider-row">
+            <span>0</span>
+            <input type="range" id="halo" min="0" max="2" value="1" />
+            <span>2</span>
+        </div>
+        <div class="current-value">Wert: <span id="val-halo">1</span></div>
+    </div>
 `;
