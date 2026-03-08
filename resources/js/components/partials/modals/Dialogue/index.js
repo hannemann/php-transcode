@@ -43,9 +43,7 @@ class Dialogue extends AbstractModal {
         this.addEventListener("pointerup", this.handleMouseUp);
     }
 
-    disconnecteCallback() {
-        super.disconnecteCallback();
-
+    disconnectedCallback() {
         this.headerNode.removeEventListener(
             "pointerdown",
             this.handleMouseDown,

@@ -19,6 +19,14 @@ const ID = "painterro-paintarea";
 const paintArea = document.createElement("div");
 paintArea.id = ID;
 
+const debounce = (fn, delay) => {
+    let timeoutId;
+    return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fn(...args), delay);
+    };
+};
+
 export default class Paint {
     static Painterro;
 
@@ -55,6 +63,9 @@ export default class Paint {
                     iconUrl: Paint.filterLogoPixelsIcon,
                     callBack: () => {
                         Paint.openFilterLogoPixelsDialog();
+                        Paint.Painterro.closeActiveTool(
+                            Paint.Painterro.activeTool,
+                        );
                     },
                 },
             ],
@@ -102,7 +113,14 @@ export default class Paint {
         );
     }
 
-    static openFilterLogoPixelsDialog() {
+    /**
+     * Initializes the filter logo pixels dialog.
+     * Captures the current canvas state as a non-destructive original,
+     * injects the filter configuration UI into the modal-dialogue component,
+     * and sets up live-preview bindings for threshold and halo parameters.
+     * @returns {void}
+     */
+    static async openFilterLogoPixelsDialog() {
         if (document.getElementById("logofilter-settings-dialog")) return;
 
         const ctx = Paint.canvas.getContext("2d");
@@ -132,27 +150,43 @@ export default class Paint {
             Paint.filterLogoPixels(Paint.Painterro, threshold, radius);
         };
 
-        thresholdInput.oninput = update;
-        haloInput.oninput = update;
-        update();
+        const debouncedUpdate = debounce(update, 100);
+
+        try {
+            thresholdInput.addEventListener("input", debouncedUpdate);
+            haloInput.addEventListener("input", debouncedUpdate);
+            update();
+
+            await dialog.open();
+        } catch (error) {
+            if (error === "cancel") {
+                if (Paint.originalImageData) {
+                    ctx.putImageData(Paint.originalImageData, 0, 0);
+                }
+            }
+        } finally {
+            if (Paint.originalImageData) {
+                Paint.originalImageData = null;
+            }
+            thresholdInput.removeEventListener("input", debouncedUpdate);
+            haloInput.removeEventListener("input", debouncedUpdate);
+        }
     }
 
+    /**
+     * Applies a non-destructive logo filter to the canvas based on local contrast detection.
+     * Extracts white pixels to form a mask and applies a dilation (halo) effect.
+     * @param {Object} p - The Painterro instance or current paint context.
+     * @param {number} [threshold=140] - The sensitivity threshold for logo pixel detection (0-255).
+     * @param {number} [radius=1] - The dilation radius to create a halo around detected edges.
+     * @returns {void}
+     */
     static filterLogoPixels(p, threshold = 140, radius = 1) {
         if (!p) return;
         const canvas = Paint.canvas;
         const ctx = canvas.getContext("2d");
 
-        // 1. Sicherheit: Originaldaten initialisieren, falls noch nicht vorhanden
-        if (!Paint.originalImageData) {
-            Paint.originalImageData = ctx.getImageData(
-                0,
-                0,
-                canvas.width,
-                canvas.height,
-            );
-        }
-
-        // 2. Kopie der Originaldaten erstellen, damit wir die Vorschau zerstörungsfrei berechnen
+        // 1. Create a copy of the original data to calculate the preview non-destructively
         const tempImageData = new ImageData(
             new Uint8ClampedArray(Paint.originalImageData.data),
             Paint.originalImageData.width,
@@ -165,7 +199,7 @@ export default class Paint {
         const buffer = new Uint8ClampedArray(data);
         const detectionMask = new Uint8Array(width * height);
 
-        // A: Adaptive Detektion
+        // A: Adaptive Detection
         for (let y = 1; y < height - 1; y++) {
             for (let x = 1; x < width - 1; x++) {
                 const i = (y * width + x) * 4;
@@ -192,7 +226,7 @@ export default class Paint {
             }
         }
 
-        // B: Halo erzeugen
+        // B: create white halo around detected pixels
         const finalMask = new Uint8Array(detectionMask);
         if (radius > 0) {
             for (let y = 0; y < height; y++) {
@@ -218,14 +252,14 @@ export default class Paint {
             }
         }
 
-        // C: Auf tempImageData anwenden
+        // C: apply to tempImageData
         for (let i = 0; i < data.length; i += 4) {
             const isWhite = finalMask[i / 4] === 1;
             data[i] = data[i + 1] = data[i + 2] = isWhite ? 255 : 0;
             data[i + 3] = 255;
         }
 
-        // Hier wird nun explizit ein korrektes ImageData-Objekt übergeben
+        // write image data to canvas context
         ctx.putImageData(tempImageData, 0, 0);
     }
 
@@ -307,50 +341,50 @@ const EXTRACT_WHITE_CSS = css`
         .slider-row {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 11px;
-            color: #888;
+            gap: 0.5rem;
+            font-size: 0.65rem;
 
             input {
                 flex: 1;
                 cursor: pointer;
             }
+        }
 
-            .current-value {
-                text-align: center;
-                font-size: 13px;
-                margin-top: 5px;
-                color: var(--clr-bg-400); /* Oder eine deiner Akzentfarben */
-            }
+        .current-value {
+            text-align: center;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
         }
     }
 `;
 
 /**
- * Dialog Template Definition (Außerhalb der Klasse)
+ * Dialogue Template Definition
  */
 Paint.dialogTemplate = html`
     <style>
         ${EXTRACT_WHITE_CSS}
     </style>
     <div class="slider-container">
-        <span class="label">Schwellwert</span>
+        <span class="label">Threshold</span>
         <div class="slider-row">
             <span>20</span>
             <input type="range" id="threshold" min="20" max="250" value="140" />
             <span>250</span>
         </div>
         <div class="current-value">
-            Wert: <span id="val-threshold">140</span>
+            <span id="val-threshold">140</span>
         </div>
     </div>
     <div class="slider-container">
-        <span class="label">Halo (Radius)</span>
+        <span class="label">Dilation (Radius)</span>
         <div class="slider-row">
             <span>0</span>
             <input type="range" id="halo" min="0" max="2" value="1" />
             <span>2</span>
         </div>
-        <div class="current-value">Wert: <span id="val-halo">1</span></div>
+        <div class="current-value">
+            <span id="val-halo">1</span>
+        </div>
     </div>
 `;
