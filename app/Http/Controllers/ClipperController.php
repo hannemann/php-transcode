@@ -6,10 +6,11 @@ use App\Http\Requests\Clipper\ImageRequest;
 use App\Models\FFMpeg\Clipper\Image;
 use Illuminate\Support\Facades\Response as ResponseFacade;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Http\JsonResponse;
 
 class ClipperController extends Controller
 {
-    public function image(ImageRequest $request, string $path):? Response
+    public function image(ImageRequest $request, string $path): ?Response
     {
         try {
             return ResponseFacade::stream(function () use ($path, $request) {
@@ -23,5 +24,17 @@ class ClipperController extends Controller
             ], 500);
         }
         return null;
+    }
+
+    public function thumbnails(string $path, int $count): JsonResponse
+    {
+        try {
+            $thumbs = Image::createThumbnails('recordings', $path, (int)$count);
+            return response()->json($thumbs, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => sprintf($e->getMessage())
+            ], 500);
+        }
     }
 }

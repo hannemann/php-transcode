@@ -39,7 +39,7 @@ use Illuminate\Support\Arr;
 Route::get('/', fn() => view('home', ['ds' => DIRECTORY_SEPARATOR]));
 
 Route::get('/file-picker/{subdir?}', function (?string $subdir = null) {
-    
+
     try {
         $items = FilePicker::root('recordings')::getItems($subdir);
         FilePickerEvent::dispatch($items, $subdir ?? 'root');
@@ -49,7 +49,6 @@ Route::get('/file-picker/{subdir?}', function (?string $subdir = null) {
             'message' => $e->getMessage(),
         ], 500);
     }
-
 })->where('subdir', '(.*)');
 
 Route::delete('/file-picker/{path}', function (string $path) {
@@ -59,7 +58,6 @@ Route::delete('/file-picker/{path}', function (string $path) {
     } else {
         throw new DeleteNoneInternalException();
     }
-
 })->where('path', '(.*)');
 
 Route::post('/concat/{path?}', [ConcatController::class, 'concat'])->where('path', '(.*)');
@@ -74,15 +72,16 @@ Route::post('/removelogo/{path}', [RemovelogoController::class, 'removelogo'])->
 Route::get('/removelogo/{path}', [RemovelogoController::class, 'logomask'])->where('path', '(.*)');
 Route::get('/removelogoImage/{path}', [RemovelogoController::class, 'image'])->where('path', '(.*)');
 Route::delete('/removelogoImage/{path}', [RemovelogoController::class, 'deleteMasks'])->where('path', '(.*)');
-Route::post('/kill', fn () => KillFFMpeg::execute());
+Route::post('/kill', fn() => KillFFMpeg::execute());
 Route::get('/image/{path}', [ClipperController::class, 'image'])->where('path', '(.*)');
+Route::get('/thumbnails/{path}/{count}', [ClipperController::class, 'thumbnails'])->where('path', '(.*)');
 Route::get('/stream-playlist/{path}.m3u8', [PlayerController::class, 'playlist'])->where('path', '(.*)');
 Route::get('/stream-segment/{path}', [PlayerController::class, 'segment'])->where('path', '(.*)');
 Route::post('/stream/{path}', [PlayerController::class, 'stream'])->where('path', '(.*)');
 Route::delete('/stream/{path}', [PlayerController::class, 'cleanup'])->where('path', '(.*)');
 
 Route::get('/streams/{path?}', function (?string $path = null) {
-    
+
     try {
         $media = VideoFile::getMedia('recordings', $path);
         $probe = FFMpeg\Driver\FFProbeDriver::create(Arr::dot(config('laravel-ffmpeg')), null);
@@ -110,11 +109,10 @@ Route::get('/streams/{path?}', function (?string $path = null) {
             'message' => $e->getMessage(),
         ], 500);
     }
-
 })->where('path', '(.*)');
 
 Route::get('/clips/{path?}', function (FFMpegActionRequest $request, ?string $path = null) {
-    
+
     try {
         $clips = Settings::getSettings($path)['clips'];
         BroadcastClips::dispatch($clips);
@@ -124,11 +122,10 @@ Route::get('/clips/{path?}', function (FFMpegActionRequest $request, ?string $pa
             'message' => $e->getMessage(),
         ], 500);
     }
-
 })->where('path', '(.*)');
 
 Route::get('/textviewer/{path}', function (string $path) {
-    
+
     TextViewer::dispatch('recordings', $path);
 })->where('path', '(.*)');
 

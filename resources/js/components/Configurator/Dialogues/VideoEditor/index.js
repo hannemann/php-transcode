@@ -3,12 +3,18 @@ import { Iconify } from "@/components/lib";
 import { VTime } from "../../../../Helper/Time";
 import { handleKeyDown, handleKeyUp } from "./mixins/handleKey";
 import ConfiguratorHelper from "../../../../Helper/Configurator";
+import { Request } from "../../../Request";
 
 const THUMBNAIL_HEIGHT = 30;
+
+document.addEventListener("configurator-show", (e) => {
+    VideoEditor.thumbs = [];
+});
 
 class VideoEditor extends HTMLElement {
     #markers = [];
     raw = [];
+    static thumbs = [];
 
     constructor() {
         super();
@@ -244,18 +250,26 @@ class VideoEditor extends HTMLElement {
         this.indicatorCurrent.style.left = `min(${percentage}%, 100% - 1px`;
     }
 
-    addThumbnails() {
+    async addThumbnails() {
         let i = 1;
         const count = Math.floor(
             this.indicator.offsetWidth / (THUMBNAIL_HEIGHT * (4 / 3)),
         );
-        const fr = this.duration / (count + 2);
-        do {
+
+        if (!VideoEditor.thumbs.length) {
+            this.indicator.classList.remove("finished");
+            const response = await Request.get(
+                `/thumbnails/${encodeURIComponent(this.path)}/${count}`,
+            );
+            VideoEditor.thumbs = await response.json();
+        }
+
+        for (let thumb of VideoEditor.thumbs) {
             const img = document.createElement("img");
-            const timestamp = this.timestamp(fr * i);
-            img.src = `${this.baseThumbUrl}${timestamp}&width=${THUMBNAIL_HEIGHT * (4 / 3)}&height=${THUMBNAIL_HEIGHT}`;
+            img.src = thumb;
             this.indicator.appendChild(img);
-        } while (i++ <= count);
+        }
+        this.indicator.classList.add("finished");
     }
 
     handleIndicatorClick(e) {
@@ -722,6 +736,14 @@ export const EDITOR_CSS = css`
         align-content: center;
         justify-items: center;
         z-index: 0;
+
+        animation: breathing-pulse 1.5s infinite alternate ease-in-out;
+
+        &.finished {
+            animation: none;
+            opacity: 1;
+            transform: scale(1);
+        }
     }
     .indicator img {
         max-width: 100%;
@@ -763,6 +785,21 @@ export const EDITOR_CSS = css`
             background-color: white;
             height: 100%;
             width: 1px;
+        }
+    }
+
+    @keyframes breathing-pulse {
+        0% {
+            transform: scale(0.99);
+            opacity: 0.7;
+        }
+        50% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        100% {
+            transform: scale(0.99);
+            opacity: 0.7;
         }
     }
 `;
