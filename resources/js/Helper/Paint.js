@@ -158,13 +158,17 @@ export default class Paint {
             update();
 
             await dialog.open();
+            Paint.Painterro.worklog.captureState(false);
         } catch (error) {
             if (error === "cancel") {
                 if (Paint.originalImageData) {
                     ctx.putImageData(Paint.originalImageData, 0, 0);
                 }
+            } else {
+                console.error(error);
             }
         } finally {
+            Paint.Painterro.params.onChange();
             if (Paint.originalImageData) {
                 Paint.originalImageData = null;
             }
@@ -261,6 +265,7 @@ export default class Paint {
 
         // write image data to canvas context
         ctx.putImageData(tempImageData, 0, 0);
+        Paint.Painterro.params.onChange();
     }
 
     /**
@@ -289,7 +294,9 @@ export default class Paint {
     }
 
     static get filterLogoPixelsIcon() {
-        return `data:image/svg+xml;base64,${btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black"><path d="M15,3H12V6H15V3M19,3H16V6H19V3M15,7H12V10H15V7M19,7H16V10H19V7M11,3H8V6H11V3M7,3H4V6H7V3M11,7H8V10H11V7M7,7H4V10H7V7M21,11V21H3V11H21M19,19V13H5V19H19Z"/></svg>')}`;
+        const svg =
+            '<svg xmlns="http://www.w3.org/2000/svg" fill="${COLOR_SCHEME.controlContent}" viewBox="0 0 24 24"><path d="M15,3H12V6H15V3M19,3H16V6H19V3M15,7H12V10H15V7M19,7H16V10H19V7M11,3H8V6H11V3M7,3H4V6H7V3M11,7H8V10H11V7M7,7H4V10H7V7M21,11V21H3V11H21M19,19V13H5V19H19Z"/></svg>';
+        return `data:image/svg+xml;base64,${btoa(svg)}`;
     }
 
     /**
@@ -301,24 +308,52 @@ export default class Paint {
 }
 
 const STATUS_CSS = css`
-    #painterro-paintarea button[title="White-Pixels"] {
-        min-width: 100px;
-        position: relative;
-        cursor: default;
-        pointer-events: none;
+    #painterro-paintarea {
+        button:has([src*="data:image/svg+xml"]) {
+            position: relative;
 
-        &::after {
-            content: attr(data-white);
-            position: absolute;
-            inset: 0;
-            display: grid;
-            place-content: center;
-            color: var(--clr-text-success);
-            font-size: 13px;
+            img {
+                display: none;
+            }
+
+            &::after {
+                content: "";
+                display: inline-block;
+                width: 14px;
+                aspect-ratio: 1;
+                background-color: var(--clr-text-0);
+
+                -webkit-mask-image: url(${Paint.filterLogoPixelsIcon});
+                mask-image: url(${Paint.filterLogoPixelsIcon});
+
+                -webkit-mask-repeat: no-repeat;
+                mask-repeat: no-repeat;
+                -webkit-mask-position: center;
+                mask-position: center;
+                -webkit-mask-size: contain;
+                mask-size: contain;
+            }
         }
 
-        &.load-warning::after {
-            color: var(--clr-text-error);
+        button[title="White-Pixels"] {
+            min-width: 100px;
+            position: relative;
+            cursor: default;
+            pointer-events: none;
+
+            &::after {
+                content: attr(data-white);
+                position: absolute;
+                inset: 0;
+                display: grid;
+                place-content: center;
+                color: var(--clr-text-success);
+                font-size: 13px;
+            }
+
+            &.load-warning::after {
+                color: var(--clr-text-error);
+            }
         }
     }
 
