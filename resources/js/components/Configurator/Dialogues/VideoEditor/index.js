@@ -266,7 +266,7 @@ class VideoEditor extends HTMLElement {
 
         for (let thumb of VideoEditor.thumbs) {
             const img = document.createElement("img");
-            img.src = thumb;
+            img.src = `${thumb}?c=${performance.now()}`;
             this.indicator.appendChild(img);
         }
         this.indicator.classList.add("finished");
