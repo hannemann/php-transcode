@@ -257,11 +257,13 @@ class VideoEditor extends HTMLElement {
         );
 
         if (!VideoEditor.thumbs.length) {
+            console.time("Thumbnail generation: ");
             this.indicator.classList.remove("finished");
             const response = await Request.get(
-                `/thumbnails/${encodeURIComponent(this.path)}/${count}`,
+                `/thumbnails/${encodeURIComponent(this.path)}/${this.duration.seconds}/${count}`,
             );
             VideoEditor.thumbs = await response.json();
+            console.timeEnd("Thumbnail generation: ");
         }
 
         for (let thumb of VideoEditor.thumbs) {

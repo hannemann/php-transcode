@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Clipper\ImageRequest;
 use App\Models\FFMpeg\Clipper\Image;
+use App\Models\FFMpeg\Clipper\Thumbnails;
 use Illuminate\Support\Facades\Response as ResponseFacade;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Http\JsonResponse;
@@ -26,10 +27,10 @@ class ClipperController extends Controller
         return null;
     }
 
-    public function thumbnails(string $path, int $count): JsonResponse
+    public function thumbnails(string $path, string $duration, int $count): JsonResponse
     {
         try {
-            $thumbs = Image::createThumbnails('recordings', $path, (int)$count);
+            $thumbs = Thumbnails::createThumbnails('recordings', $path, (float)$duration, (int)$count);
             return response()->json($thumbs, 200);
         } catch (\Exception $e) {
             return response()->json([

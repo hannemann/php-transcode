@@ -21,63 +21,115 @@ class Image
      * @param int $count The number of thumbnails to generate.
      * @return array A list of relative paths for the generated thumbnails.
      */
+    /**
+     * Generate thumbnails in parallel batches for maximum speed on multi-core CPUs.
+     */
+    /**
+     * Generate thumbnails in parallel batches using all available CPU power.
+     *
+     * @param string $disk Source video disk
+     * @param string $path Path to the video file
+     * @param int $count Total number of thumbnails
+     * @return array List of public URLs
+     */
     public static function createThumbnails(string $disk, string $path, int $count = 50)
     {
-        // Access the source disk for the video file
         $sourceStorage = Storage::disk($disk);
         $fullInputPath = $sourceStorage->path($path);
-
-        // Access the public disk for storing the thumbnails
         $publicStorage = Storage::disk('public');
-        $thumbFolderName = 'thumbs';
 
-        // Determine video duration via FFprobe
+        $videoHash = md5($fullInputPath);
+        $thumbFolderName = 'thumbs/' . $videoHash;
+
         $duration = static::getVideoDuration($fullInputPath);
-        if ($duration <= 0) {
-            return [];
-        }
+        if ($duration <= 0) return [];
 
-        // Prepare the thumbnail directory in the public storage
-        if ($publicStorage->exists($thumbFolderName)) {
-            $publicStorage->deleteDirectory($thumbFolderName);
-        }
+        if ($publicStorage->exists($thumbFolderName)) $publicStorage->deleteDirectory($thumbFolderName);
         $publicStorage->makeDirectory($thumbFolderName);
 
         $fullOutputPath = $publicStorage->path($thumbFolderName);
-        $ffmpeg = FFMpegDriver::create();
 
-        // Generate thumbnails using a fast-seek loop for performance
-        for ($i = 0; $i < $count; $i++) {
-            $timestamp = ($duration / $count) * $i;
-            $index = str_pad($i + 1, 3, '0', STR_PAD_LEFT);
+        // Parallel processing setup
+        $numProcesses = 5; // Strategic choice for an 8-core CPU
+        $itemsPerBatch = ceil($count / $numProcesses);
+        $processes = [];
 
-            $args = [
+        for ($p = 0; $p < $numProcesses; $p++) {
+            $startIdx = $p * $itemsPerBatch;
+            $endIdx = min($startIdx + $itemsPerBatch, $count);
+
+            if ($startIdx >= $count) break;
+
+            // Base arguments for maximum speed
+            $batchArgs = [
                 '-y',
-                '-ss',
-                (string)$timestamp, // Fast-seek: jump directly to the keyframe
-                '-i',
-                $fullInputPath,
-                '-frames:v',
-                '1',          // Extract exactly one frame
-                '-vf',
-                'scale=40:30',      // Thumbnail size
-                '-q:v',
-                '10',              // JPEG quality (1-31 scale)
-                "{$fullOutputPath}/thumb_{$index}.jpg"
+                '-hide_banner',
+                '-loglevel',
+                'error',
+                '-noautorotate' // Skip metadata rotation check
             ];
 
-            try {
-                $ffmpeg->command($args);
-            } catch (\Exception $e) {
-                \Log::error("FFmpeg Loop Error at {$timestamp}s: " . $e->getMessage());
-                continue;
+            // Phase 1: FAST-SEEK Inputs
+            for ($i = $startIdx; $i < $endIdx; $i++) {
+                $timestamp = ($duration / $count) * $i;
+                $batchArgs[] = '-ss';
+                $batchArgs[] = (string)$timestamp;
+                $batchArgs[] = '-i';
+                $batchArgs[] = $fullInputPath;
             }
+
+            // Phase 2: Mappings and Stream-Stripping
+            for ($i = $startIdx; $i < $endIdx; $i++) {
+                $localIdx = $i - $startIdx;
+                $globalIdx = str_pad($i + 1, 3, '0', STR_PAD_LEFT);
+
+                $batchArgs[] = '-map';
+                $batchArgs[] = "{$localIdx}:v:0";
+                $batchArgs[] = '-frames:v';
+                $batchArgs[] = '1';
+
+                // THE OPTIMIZATION: Strip everything but video
+                $batchArgs[] = '-an'; // No Audio
+                $batchArgs[] = '-sn'; // No Subtitles
+                $batchArgs[] = '-dn'; // No Data-streams
+
+                $batchArgs[] = '-vf';
+                $batchArgs[] = 'scale=40:30';
+                $batchArgs[] = '-q:v';
+                $batchArgs[] = '10';
+                $batchArgs[] = "{$fullOutputPath}/thumb_{$globalIdx}.jpg";
+            }
+
+            // Trigger background execution
+            $processes[] = self::runBackgroundFFmpeg($batchArgs);
         }
 
-        // Return the list of relative paths for browser access
-        return array_map(function ($file) {
-            return '/storage/thumbs/' . basename($file);
-        }, $publicStorage->files($thumbFolderName));
+        // Wait for all parallel batches to complete
+        foreach ($processes as $proc) {
+            while (proc_get_status($proc)['running']) {
+                usleep(5000); // 5ms polling for ultra-low latency
+            }
+            proc_close($proc);
+        }
+
+        return array_map(fn($file) => '/storage/thumbs/' . $videoHash . '/' . basename($file), $publicStorage->files($thumbFolderName));
+    }
+
+    /**
+     * Execute FFmpeg as a non-blocking background process.
+     */
+    private static function runBackgroundFFmpeg(array $args)
+    {
+        // Escaping all arguments for secure shell execution
+        $command = 'ffmpeg ' . implode(' ', array_map('escapeshellarg', $args));
+
+        $descriptorspec = [
+            0 => ["pipe", "r"], // stdin
+            1 => ["pipe", "w"], // stdout
+            2 => ["pipe", "w"]  // stderr
+        ];
+
+        return proc_open($command, $descriptorspec, $pipes);
     }
 
     /**
