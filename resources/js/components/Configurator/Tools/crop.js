@@ -1,34 +1,39 @@
 import { TYPE_VIDEO } from "../Streams";
 
-export const requestCrop = async function (type, id = NaN, data = null) {
+export const requestCrop = async function (id = NaN, data = null) {
     try {
         const m = document.createElement("modal-window");
+        const d = document.createElement("dialogue-cropper");
+
         m.header = "Cropper";
         m.classList.add("no-shadow");
-        const d = document.createElement("dialogue-cropper");
         d.filterIndex = id;
 
         d.video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);
         ({ width: d.video.width, height: d.video.height } = d.outputDimensions);
         d.video.duration = parseFloat(this.format.duration);
-
         d.path = this.item.path;
-        d.type = type;
+
+        d.addEventListener(
+            "cropper-initialized",
+            () => {
+                d.aspectRatio = `${d.video.width}:${d.video.height}`;
+            },
+            { once: true },
+        );
+
         requestAnimationFrame(() => {
-            d.crop = this.crop;
             d.markers = this.clips;
-            d.mirror = false;
-            d.width = d.video.width;
-            d.height = d.video.height;
-            d.replaceBlackBorders = true;
-            if (id !== null && data) {
-                d.mirror = data.mirror;
-                d.replaceBlackBorders = data.replaceBlackBorders;
-                d.mirror = data.mirror;
+            if (!isNaN(id) && data) {
                 d.addEventListener(
                     "cropper-updated",
                     () => {
-                        d.applyFilterData(data);
+                        d.crop = {
+                            x: data.cx,
+                            y: data.cy,
+                            w: data.cw,
+                            h: data.ch,
+                        };
                     },
                     { once: true },
                 );
@@ -41,24 +46,22 @@ export const requestCrop = async function (type, id = NaN, data = null) {
         );
         await m.open();
         console.info(
-            "Crop video file %s to %dx%d at %d/%d and scale to %d pixel height with an aspect-ratio of %s",
+            "Crop video file %s to %dx%d at %d/%d",
             this.item.path,
-            d.crop.cw,
-            d.crop.ch,
-            d.crop.cx,
-            d.crop.cy,
-            d.crop.height,
-            d.crop.aspect,
+            d.crop.w,
+            d.crop.h,
+            d.crop.x,
+            d.crop.y,
         );
         this.crop = d.crop;
         const filterData = {
-            cw: d.crop.cw,
-            ch: d.crop.ch,
-            cx: d.crop.cx,
-            cy: d.crop.cy,
+            cw: d.crop.w,
+            ch: d.crop.h,
+            cx: d.crop.x,
+            cy: d.crop.y,
             filterType: "crop",
         };
-        if (id !== null && data) {
+        if (!isNaN(id) && data) {
             this.filterGraph[id] = filterData;
         } else {
             this.filterGraph.push(filterData);

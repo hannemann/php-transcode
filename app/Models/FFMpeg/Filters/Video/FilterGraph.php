@@ -66,7 +66,7 @@ class FilterGraph
                     $this->filters->push($this->getDeinterlaceFilter($setting));
                     break;
                 case self::FILTER_TYPE_CROP:
-                    $this->filters->push(CropCPU::getFilterString($setting));
+                    $this->filters->push(Crop::getFilterString($setting));
                     break;
                 case self::FILTER_TYPE_DELOGO:
                     $this->filters->push($this->getDelogoFilter($setting));

@@ -43,7 +43,7 @@ class Filter extends HTMLElement {
                 requestDelogo.call(this.configurator, filterData);
                 break;
             case "crop":
-                requestCrop.call(this.configurator, "cpu", idx, filterData);
+                requestCrop.call(this.configurator, idx, filterData);
                 break;
             case "removeLogo":
                 requestRemovelogo.call(this.configurator, filterData);
