@@ -12,6 +12,10 @@ export const requestDelogo = async function (model) {
     try {
         m.header = "Delogo";
         m.classList.add("no-shadow");
+        m.confirmCancelMessage = {
+            header: "Cancel Delogo",
+            message: "All changes will be lost!",
+        };
 
         d.video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);
         ({ width: d.video.width, height: d.video.height } = d.outputDimensions);

@@ -3,6 +3,10 @@ import { ICON_STACK_CSS } from "../../Icons/Stack.css";
 
 class AbstractModal extends HTMLElement {
     static cancelable = true;
+    /**
+     * @type {Object.<header: String, message: String>|null}
+     */
+    confirmCancel = "";
 
     constructor() {
         super();
@@ -87,7 +91,23 @@ class AbstractModal extends HTMLElement {
         this.resolve();
     }
 
-    cancelAction() {
+    async cancelAction() {
+        if (this.confirmCancelMessage) {
+            const m = document.createElement("modal-confirm");
+            m.header = this.confirmCancelMessage.header;
+            m.content = this.confirmCancelMessage.message;
+            document.body.appendChild(m);
+            try {
+                await m.confirm();
+                this.reject("cancel");
+            } catch (error) {
+                if (error !== "cancel") {
+                    console.error(error);
+                }
+            } finally {
+                return;
+            }
+        }
         this.reject("cancel");
     }
 
