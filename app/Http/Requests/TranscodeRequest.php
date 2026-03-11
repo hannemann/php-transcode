@@ -45,7 +45,7 @@ class TranscodeRequest extends FFMpegActionRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
-            $rule = new MaskCoverage($this->route('path'), $this->input('filterGraph'));
+            $rule = new MaskCoverage($this->route('path'), $this->input('filterGraph') ?? []);
 
             $rule->validate(
                 'mask',

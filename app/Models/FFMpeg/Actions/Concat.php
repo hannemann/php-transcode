@@ -9,6 +9,7 @@ use App\Models\FFMpeg\Format\Video\RemuxTS;
 use FFMpeg\Coordinate\TimeCode;
 use App\Models\FFMpeg\Filters\Video\ConcatDurationDummy;
 use App\Jobs\ProcessVideo;
+use App\Models\Video\File;
 
 class Concat extends AbstractAction
 {
@@ -21,13 +22,14 @@ class Concat extends AbstractAction
 
     public function execute(?ProcessVideo $job = null)
     {
+        $this->media = File::getMedia($this->disk, $this->path);
         $this->job = $job;
         $files = $this->getVideoFiles();
         $this->input = $this->getConcatInput($files);
         $this->mediaExporter = FFMpeg::fromDisk($this->disk)
             ->open($files[0])
             ->export()
-            ->addFilter(new ConcatDurationDummy(new TimeCode(0,0,0,0), $this->getConcatDuration($files)));
+            ->addFilter(new ConcatDurationDummy(new TimeCode(0, 0, 0, 0), $this->getConcatDuration($files)));
         $this->export();
     }
 
@@ -36,17 +38,18 @@ class Concat extends AbstractAction
         $collection = collect(FilePicker::root($this->disk)::getFiles(dirname($this->path)))
             ->map([FilePicker::class, 'getFileData']);
 
-        return $collection->filter(function($item) {
+        return $collection->filter(function ($item) {
             return strpos($item['mime'], 'video') === 0 &&
                 in_array($item['name'], $this->requestData['files']);
         })->pluck('path')->sort()->toArray();
     }
 
-    private function getConcatInput(array $files): string {
+    private function getConcatInput(array $files): string
+    {
         /** @var Illuminate\Filesystem\FilesystemAdapter $disk */
         $disk = Storage::disk($this->disk);
-        $pathPrefix = rtrim($disk()->getConfig()['root'], DIRECTORY_SEPARATOR);
-        return 'concat:' . collect($files)->map(function($file) use ($pathPrefix) {
+        $pathPrefix = rtrim($disk->getConfig()['root'], DIRECTORY_SEPARATOR);
+        return 'concat:' . collect($files)->map(function ($file) use ($pathPrefix) {
             return $pathPrefix . DIRECTORY_SEPARATOR . ltrim($file, DIRECTORY_SEPARATOR);
         })->implode('|');
     }
@@ -54,7 +57,7 @@ class Concat extends AbstractAction
     private function getConcatDuration(array $files): TimeCode
     {
         $durationInSeconds = 0;
-        foreach($files as $file) {
+        foreach ($files as $file) {
             $media = FFMpeg::fromDisk($this->disk)->open($file);
             $durationInSeconds += $media->getDurationInMiliseconds() / 1000;
         }
@@ -73,9 +76,9 @@ class Concat extends AbstractAction
         $cmds->push($this->input);
         $cmds->push('-c');
         $cmds->push('copy');
-        foreach($this->requestData['streams'] as $stream) {
-            $cmds->push('-map', sprintf('0:%d', $stream));
-        }
+        // foreach ($this->requestData['streams'] as $stream) {
+        //     $cmds->push('-map', sprintf('0:%d', $stream));
+        // }
         $cmds->push($file);
         return [$cmds->all()];
     }

@@ -15,7 +15,6 @@ class ConcatRequest extends RemuxRequest
             'files.*' => 'required|string',
             'streams' => 'required|array',
             'streams.*' => 'required|int',
-            'replaceBlackBorders' => 'required|boolean'
         ];
     }
 }
