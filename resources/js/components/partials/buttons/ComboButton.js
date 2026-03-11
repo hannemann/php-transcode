@@ -36,15 +36,17 @@ class ComboButton extends HTMLElement {
         this.button = importNode.querySelector("button");
         this.dropdown = importNode.querySelector(".dropdown");
         this.label = importNode.querySelector(".label");
-        this.options = this.querySelectorAll("option");
+        this.options = [...this.querySelectorAll("option")];
         this.dummyOption = importNode.querySelector('[part="option"]');
         this.dummyOptionHover = importNode.querySelector(
             '[part="option-hover"]',
         );
         this.btnToggle = importNode.querySelector(".toggle");
-        this.selectedIndex = this.options.length - 1;
+        const idx = this.options.findIndex((o) => o.selected);
+        this.selectedIndex = idx > -1 ? idx : this.options.length - 1;
         this.value = this.options[this.selectedIndex].value;
-        this.label.innerText = this.options[this.selectedIndex].textContent;
+        this.label.innerText =
+            this.options[this.selectedIndex].textContent.trim();
 
         DomHelper.appendShadow.call(this, importNode);
         return this;
@@ -131,9 +133,9 @@ class ComboButton extends HTMLElement {
     }
 
     set value(value) {
-        const option = [...this.options].find((o) => o.value === value);
+        const option = this.options.find((o) => o.value === value);
         if (!option) return;
-        this.selectedIndex = [...this.options].findIndex((o) => o === option);
+        this.selectedIndex = this.options.findIndex((o) => o === option);
         this.label.innerText = option.textContent;
         this.dispatchEvent(new CustomEvent("change"));
     }

@@ -33,7 +33,8 @@ class VideoEditor extends HTMLElement {
         requestAnimationFrame(() => {
             this.addListeners();
             this.initImages();
-            this.aspectRatio = this.video.display_aspect_ratio;
+            this.aspectRatio =
+                this.aspectRatio || this.video.display_aspect_ratio;
             Iconify.scan(this.shadowRoot);
         });
     }

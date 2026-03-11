@@ -11,6 +11,7 @@ export const requestPad = async function (type, id = NaN, data = null) {
         d.video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);
         ({ width: d.video.width, height: d.video.height } = d.outputDimensions);
         d.video.duration = parseFloat(this.format.duration);
+        d.aspectRatio = `${d.video.width}:${d.video.height}`;
 
         d.path = this.item.path;
         d.type = type;

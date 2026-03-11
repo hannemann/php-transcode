@@ -1,6 +1,40 @@
 import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
+import { COMBO_BUTTON_CSS } from "@/components/partials";
+
+const KEY_ACTIONS = {
+    // resize
+    ArrowRight: (ed, d) => ed.resizeBox(d, 0),
+    ArrowLeft: (ed, d) => ed.resizeBox(-d, 0),
+    ArrowUp: (ed, d) => ed.resizeBox(0, -d),
+    ArrowDown: (ed, d) => ed.resizeBox(0, d),
+
+    // move (Ctrl)
+    "ctrl+ArrowRight": (ed, d) => ed.moveBox(d, 0),
+    "ctrl+ArrowLeft": (ed, d) => ed.moveBox(-d, 0),
+    "ctrl+ArrowUp": (ed, d) => ed.moveBox(0, -d),
+    "ctrl+ArrowDown": (ed, d) => ed.moveBox(0, d),
+};
+
+const INPUT_ACTIONS = {
+    standards: (pad, target) => (pad.canvasHeight = target.value),
+    top: (pad, target) => (pad.top = target.value),
+    left: (pad, target) => (pad.left = target.value),
+    width: (pad, target) => (pad.canvasWidth = target.value),
+    height: (pad, target) => (pad.canvasHeight = target.value),
+    "aspect-x": (pad, target) => (pad.aspectX = target.value),
+    "aspect-y": (pad, target) => (pad.aspectY = target.value),
+};
 
 class Pad extends VideoEditor {
+    #inputStandards;
+    #inputWidth;
+    #inputHeight;
+    #inputTop;
+    #inputLeft;
+    #inputColor;
+    #inputAspectX;
+    #inputAspectY;
+
     connectedCallback() {
         super.connectedCallback();
     }
@@ -11,13 +45,20 @@ class Pad extends VideoEditor {
 
     addListeners() {
         super.addListeners();
+        this.inputStandards.addEventListener("change", this);
     }
 
     removeListeners() {
         super.removeListeners();
     }
 
-    handleEvents(e) {
+    handleEvent(e) {
+        if (e.type === "change") {
+            const action = INPUT_ACTIONS[e.currentTarget.dataset.ref];
+            if (action) {
+                action(this, e.currentTarget);
+            }
+        }
         if (e.type === "keydown") {
             if (e.key === "ArrowRight") {
                 e.preventDefault();
@@ -68,90 +109,164 @@ class Pad extends VideoEditor {
         this.color = pad.color;
     }
 
-    get videoImageRatio() {
-        const scaleRatio = this.image.naturalWidth / this.image.offsetWidth;
-        return (this.image.offsetWidth / this.imageRect.width) * scaleRatio;
-    }
-
-    get imageRect() {
-        return this.image.getBoundingClientRect();
-    }
-
     get canvasWidth() {
-        return parseInt(this.inputWidth.value);
+        return Number(
+            getComputedStyle(this.image).getPropertyValue("--canvas-w"),
+        );
     }
 
     set canvasWidth(value) {
-        value = value instanceof InputEvent ? value.target.value : value;
-        this.inputWidth.value = parseInt(value);
+        this.image.style.setProperty("--canvas-w", Number(value));
     }
 
     get canvasHeight() {
-        return parseInt(this.inputHeight.value);
+        return Number(
+            getComputedStyle(this.image).getPropertyValue("--canvas-h"),
+        );
     }
 
     set canvasHeight(value) {
-        value = value instanceof InputEvent ? value.target.value : value;
-        this.inputHeight.value = parseInt(value);
+        this.image.style.setProperty("--canvas-h", Number(value));
     }
 
     get top() {
-        return parseInt(this.inputTop.value);
+        return Number(
+            getComputedStyle(this.image).getPropertyValue("--offset-y"),
+        );
     }
 
     set top(value) {
-        value = value instanceof InputEvent ? value.target.value : value;
-        this.inputTop.value = parseInt(value);
+        this.image.style.setProperty("--offset-y", Number(value));
     }
 
     get left() {
-        return parseInt(this.inputLeft.value);
+        return Number(
+            getComputedStyle(this.image).getPropertyValue("--offset-x"),
+        );
     }
 
     set left(value) {
-        value = value instanceof InputEvent ? value.target.value : value;
-        this.inputLeft.value = parseInt(value);
+        this.image.style.setProperty("--offset-x", Number(value));
+    }
+
+    get color() {
+        return getComputedStyle(this.image).getPropertyValue("--color-bg");
+    }
+
+    set color(value) {
+        this.image.style.setProperty("--color-bg", String(value));
+    }
+
+    get aspectX() {
+        return Number(this.aspectX.value);
+    }
+
+    set aspectX(value) {}
+
+    get aspectY() {
+        return Number(this.aspectY.value);
+    }
+
+    set aspectY(value) {}
+
+    get inputStandards() {
+        return (this.#inputStandards ??= this.shadowRoot.querySelector(
+            '[data-ref="standards"]',
+        ));
     }
 
     get inputWidth() {
-        return this.shadowRoot.querySelector('[data-ref="width"]');
+        return (this.#inputWidth ??=
+            this.shadowRoot.querySelector('[data-ref="width"]'));
     }
 
     get inputHeight() {
-        return this.shadowRoot.querySelector('[data-ref="height"]');
+        return (this.#inputHeight ??= this.shadowRoot.querySelector(
+            '[data-ref="height"]',
+        ));
     }
 
     get inputTop() {
-        return this.shadowRoot.querySelector('[data-ref="top"]');
+        return (this.#inputTop ??=
+            this.shadowRoot.querySelector('[data-ref="top"]'));
     }
 
     get inputLeft() {
-        return this.shadowRoot.querySelector('[data-ref="left"]');
+        return (this.#inputLeft ??=
+            this.shadowRoot.querySelector('[data-ref="left"]'));
     }
 
     get inputColor() {
-        return this.shadowRoot.querySelector('[data-ref="color"]');
+        return (this.#inputColor ??=
+            this.shadowRoot.querySelector('[data-ref="color"]'));
+    }
+
+    get inputAspectX() {
+        return (this.#inputAspectX ??= this.shadowRoot.querySelector(
+            '[data-ref="aspect-x"]',
+        ));
+    }
+
+    get inputAspectY() {
+        return (this.#inputAspectY ??= this.shadowRoot.querySelector(
+            '[data-ref="aspect-y"]',
+        ));
     }
 }
 
 const STYLES = css`
+    :host {
+        grid-template-columns: auto 1fr 1fr;
+    }
     .frame {
-        /* padding-inline: calc(((1920px - 846px) / 2) / var(--ratio));
-         padding-block: calc(((1080px - 712px) / 2) / var(--ratio)); */
-        --ratio: 1.5;
+        --color-bg: black;
+        grid-column: span 2;
+
+        /* 1. Das "Spielfeld" festlegen */
+        /*width: 100%; /* Oder was auch immer die Breite vorgibt */
+        /*aspect-ratio: var(--aspect-x, 16) / var(--aspect-y, 9); /* Entspricht 1920x1080 */
         box-sizing: border-box;
-        width: calc(846px / var(--ratio));
-        height: calc(712px / var(--ratio));
-        border: solid black;
-        /*border-inline-width: calc(((1920px - 846px) / 2) / var(--ratio));*/
+        display: block;
+        background-color: var(--color-bg);
+
+        /* 2. Die logischen Koordinaten als CSS-Variablen */
+        --canvas-w: 1920; /* 16:9 */
+        --canvas-w: 1440; /*  4:3 */
+        --canvas-h: 1080;
+        --img-w: 632;
+        --img-h: 649;
+        --offset-x: 200;
+        --offset-y: 100;
+
+        /* 3. Padding berechnen (Prozentual zum Canvas) */
+        /* Da Padding-Top/Bottom in % sich auf die Breite beziehen, 
+       nutzen wir einen Trick für die vertikale Positionierung */
+        padding-left: calc(var(--offset-x) / var(--canvas-w) * 100%);
+        padding-top: calc(
+            var(--offset-y) / var(--canvas-h) *
+                (100% / (var(--canvas-w) / var(--canvas-h)))
+        );
+
+        /* 4. Größe des Bild-Inhalts einschränken */
+        /* Wir berechnen, wie viel Platz das Bild im Vergleich zum Canvas einnimmt */
+        padding-right: calc(
+            (var(--canvas-w) - var(--img-w) - var(--offset-x)) /
+                var(--canvas-w) * 100%
+        );
+        padding-bottom: calc(
+            (var(--canvas-h) - var(--img-h) - var(--offset-y)) /
+                var(--canvas-h) * (100% / (var(--canvas-w) / var(--canvas-h)))
+        );
+
+        /* 5. Bild einpassen */
+        object-fit: fill;
     }
 
     .toggle-aspect {
         display: none;
     }
 
-    .info,
-    .settings {
+    .info {
         grid-area: left;
         display: grid;
         grid-auto-rows: min-content;
@@ -159,10 +274,6 @@ const STYLES = css`
         font-size: 0.75rem;
         white-space: nowrap;
         width: 250px;
-    }
-    .settings {
-        grid-area: right;
-        justify-self: end;
     }
     fieldset {
         border: 2px solid var(--clr-bg-200);
@@ -231,6 +342,7 @@ const STYLES = css`
 
 Pad.template = html`
 <style>
+    ${COMBO_BUTTON_CSS}
     ${EDITOR_CSS}
     ${STYLES}
 </style>
@@ -247,13 +359,21 @@ ${EDITOR_TEMPLATE}
             <dd>Set upper left</dd>
         </dl>
     </div>
-    <div class="warning height-warning" title="For best results height should be dividable by 16">
-        <span class="iconify" data-icon="mdi-alert-outline"></span>
-    </div>
-</div>
-<div class="settings">
     <fieldset>
-        <legend>Cancas:</legend>
+        <legend>Canvas:</legend>
+        <label>
+            <span>Color</span>
+            <input type="color" data-ref="color" value="#000000">
+        </label>
+        <label>
+            <span>Standards:</span>
+            <combo-button data-ref="standards">
+                <option value="1080p" selected="selected">1080p</option>
+                <option value="720p">720p</option>
+                <option value="576p">576p</option>
+                <option value="480p">480p</option>
+            </combo-button>
+        </label>
         <label>
             <span>Width</span>
             <input type="number" data-ref="width">
@@ -262,9 +382,16 @@ ${EDITOR_TEMPLATE}
             <span>Height</span>
             <input type="number" data-ref="height">
         </label>
+    </fieldset>
+    <fieldset>
+        <legend>Canvas Aspect Ratio</legend>
         <label>
-            <span>Color</span>
-            <input type="color" data-ref="color" value="#000000">
+            <theme-button data-ref="16:9">16:9</theme-button>
+            <theme-button data-ref="4:3">4:3</theme-button>
+        </label>
+        <label>
+            <input type="number" data-ref="aspect-x">:
+            <input type="number" data-ref="aspect-y">
         </label>
     </fieldset>
     <fieldset>
