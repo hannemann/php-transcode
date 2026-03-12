@@ -16,6 +16,11 @@ const KEY_ACTIONS = {
 };
 
 const INPUT_ACTIONS = {
+    /**
+     *
+     * @param {Pad} pad
+     * @param {HTMLElement} target
+     */
     standards: (pad, target) => {
         pad.canvasWidth = target.value.split(":").shift();
         pad.canvasHeight = target.value.split(":").pop();
@@ -124,6 +129,7 @@ class Pad extends VideoEditor {
 
     set canvasWidth(value) {
         this.image.style.setProperty("--canvas-w", Number(value));
+        this.inputWidth.value = this.canvasWidth;
     }
 
     get canvasHeight() {
@@ -134,6 +140,7 @@ class Pad extends VideoEditor {
 
     set canvasHeight(value) {
         this.image.style.setProperty("--canvas-h", Number(value));
+        this.inputHeight.value = this.canvasHeight;
     }
 
     get top() {
@@ -221,24 +228,36 @@ const STYLES = css`
         --offset-x: 200;
         --offset-y: 100;
 
+        --display-w: min(calc(var(--canvas-w) * 1px), 100%);
+        --display-h: min(
+            calc(var(--canvas-h) * 1px),
+            calc((100% * var(--canvas-w)) / var(--canvas-h))
+        );
+
+        max-width: var(--display-w);
+        max-height: var(--display-h);
+
         /* 3. Padding berechnen (Prozentual zum Canvas) */
         /* Da Padding-Top/Bottom in % sich auf die Breite beziehen, 
        nutzen wir einen Trick für die vertikale Positionierung */
-        padding-left: calc(var(--offset-x) / var(--canvas-w) * 100%);
+        padding-left: calc(
+            var(--offset-x) / var(--canvas-w) * var(--display-w)
+        );
         padding-top: calc(
             var(--offset-y) / var(--canvas-h) *
-                (100% / (var(--canvas-w) / var(--canvas-h)))
+                (var(--display-h) / (var(--canvas-w) / var(--canvas-h)))
         );
 
         /* 4. Größe des Bild-Inhalts einschränken */
         /* Wir berechnen, wie viel Platz das Bild im Vergleich zum Canvas einnimmt */
         padding-right: calc(
             (var(--canvas-w) - var(--img-w) - var(--offset-x)) /
-                var(--canvas-w) * 100%
+                var(--canvas-w) * var(--display-w)
         );
         padding-bottom: calc(
             (var(--canvas-h) - var(--img-h) - var(--offset-y)) /
-                var(--canvas-h) * (100% / (var(--canvas-w) / var(--canvas-h)))
+                var(--canvas-h) *
+                (var(--display-h) / (var(--canvas-w) / var(--canvas-h)))
         );
 
         /* 5. Bild einpassen */
