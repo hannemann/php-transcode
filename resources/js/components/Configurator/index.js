@@ -641,9 +641,9 @@ TranscodeConfigurator.template = html`
                     <option value="deinterlace:cpu:instantOpen">
                         Deinterlace
                     </option>
-                    <option value="pad:cpu:instantOpen">Pad</option>
-                    <option value="crop:instantOpen">Crop (CPU)</option>
-                    <option value="scale:cpu:instantOpen">Scale (CPU)</option>
+                    <option value="pad:instantOpen">Pad</option>
+                    <option value="crop:instantOpen">Crop</option>
+                    <option value="scale:cpu:instantOpen">Scale</option>
                     <option value="delogo:instantOpen">DeLogo</option>
                     <option value="removelogo:instantOpen">RemoveLogo</option>
                     <option value="fillborders:instantOpen" selected>

@@ -1,6 +1,6 @@
 import { TYPE_VIDEO } from "../Streams";
 
-export const requestPad = async function (type, id = NaN, data = null) {
+export const requestPad = async function (id = NaN, data = null) {
     try {
         const m = document.createElement("modal-window");
         m.header = "Pad Video";
@@ -16,7 +16,6 @@ export const requestPad = async function (type, id = NaN, data = null) {
         d.imgHeight = d.video.height;
 
         d.path = this.item.path;
-        d.type = type;
         requestAnimationFrame(() => {
             d.pad = this.pad || {
                 color: "#000000",

@@ -24,6 +24,7 @@ const INPUT_ACTIONS = {
     standards: (pad, target) => {
         pad.canvasWidth = target.value.split(":").shift();
         pad.canvasHeight = target.value.split(":").pop();
+        pad.centerImage();
     },
     top: (pad, target) => (pad.top = target.value),
     left: (pad, target) => (pad.left = target.value),
@@ -41,6 +42,7 @@ class Pad extends VideoEditor {
     #inputTop;
     #inputLeft;
     #inputColor;
+    #centerButton;
 
     #isDragging;
     #startX;
@@ -59,6 +61,14 @@ class Pad extends VideoEditor {
             );
         });
         this.#imageSizeObserver.observe(this.image);
+
+        // Initiales Zentrieren, falls noch keine Position gesetzt ist
+        // Wir warten kurz, damit die DOM-Werte bereit sind
+        requestAnimationFrame(() => {
+            if (this.left === 0 && this.top === 0) {
+                this.centerImage();
+            }
+        });
     }
 
     disconnectedCallback() {
@@ -71,6 +81,7 @@ class Pad extends VideoEditor {
         this.startDrag = this.startDrag.bind(this);
         this.onDrag = this.onDrag.bind(this);
         this.stopDrag = this.stopDrag.bind(this);
+        this.centerImage = this.centerImage.bind(this);
     }
 
     addListeners() {
@@ -85,6 +96,8 @@ class Pad extends VideoEditor {
         this.image.addEventListener("mousedown", this.startDrag);
         window.addEventListener("mousemove", this.onDrag);
         window.addEventListener("mouseup", this.stopDrag);
+
+        this.centerButton.addEventListener("click", this.centerImage);
     }
 
     removeListeners() {
@@ -99,6 +112,13 @@ class Pad extends VideoEditor {
         this.image.removeEventListener("mousedown", this.startDrag);
         window.removeEventListener("mousemove", this.onDrag);
         window.removeEventListener("mouseup", this.stopDrag);
+
+        this.centerButton.removeEventListener("click", this.centerImage);
+    }
+
+    centerImage() {
+        this.left = Math.round((this.canvasWidth - this.imgWidth) / 2);
+        this.top = Math.round((this.canvasHeight - this.imgHeight) / 2);
     }
 
     startDrag(e) {
@@ -287,6 +307,12 @@ class Pad extends VideoEditor {
         return (this.#inputColor ??=
             this.shadowRoot.querySelector('[data-ref="color"]'));
     }
+
+    get centerButton() {
+        return (this.#centerButton ??= this.shadowRoot.querySelector(
+            '[data-ref="center"]',
+        ));
+    }
 }
 
 const STYLES = css`
@@ -473,6 +499,10 @@ ${EDITOR_TEMPLATE}
         <label>
             <span>Left</span>
             <input type="number" data-ref="left">
+        </label>
+        <label>
+            <span>Center</span>
+            <theme-button data-ref="center">Center</theme-button>
         </label>
     </fieldset>
 </div>

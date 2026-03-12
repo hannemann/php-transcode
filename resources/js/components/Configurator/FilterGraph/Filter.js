@@ -2,6 +2,7 @@ import { DomHelper } from "../../../Helper/Dom.js";
 import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 import CARD_CSS from "../CardCss";
 import { requestCrop } from "../Tools/crop.js";
+import { requestPad } from "../Tools/pad.js";
 import { requestDelogo } from "../Tools/delogo.js";
 import { requestRemovelogo } from "../Tools/removelogo.js";
 import { requestFillborders } from "../Tools/fillborders.js";
@@ -44,6 +45,9 @@ class Filter extends HTMLElement {
                 break;
             case "crop":
                 requestCrop.call(this.configurator, idx, filterData);
+                break;
+            case "pad":
+                requestPad.call(this.configurator, idx, filterData);
                 break;
             case "removeLogo":
                 requestRemovelogo.call(this.configurator, filterData);
