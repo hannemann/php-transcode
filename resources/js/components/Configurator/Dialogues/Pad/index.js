@@ -16,11 +16,15 @@ const KEY_ACTIONS = {
 };
 
 const INPUT_ACTIONS = {
-    standards: (pad, target) => (pad.canvasHeight = target.value),
+    standards: (pad, target) => {
+        pad.canvasWidth = target.value.split(":").shift();
+        pad.canvasHeight = target.value.split(":").pop();
+    },
     top: (pad, target) => (pad.top = target.value),
     left: (pad, target) => (pad.left = target.value),
     width: (pad, target) => (pad.canvasWidth = target.value),
     height: (pad, target) => (pad.canvasHeight = target.value),
+    color: (pad, target) => (pad.color = target.value),
     "aspect-x": (pad, target) => (pad.aspectX = target.value),
     "aspect-y": (pad, target) => (pad.aspectY = target.value),
 };
@@ -32,8 +36,6 @@ class Pad extends VideoEditor {
     #inputTop;
     #inputLeft;
     #inputColor;
-    #inputAspectX;
-    #inputAspectY;
 
     connectedCallback() {
         super.connectedCallback();
@@ -46,6 +48,11 @@ class Pad extends VideoEditor {
     addListeners() {
         super.addListeners();
         this.inputStandards.addEventListener("change", this);
+        this.inputWidth.addEventListener("change", this);
+        this.inputHeight.addEventListener("change", this);
+        this.inputTop.addEventListener("change", this);
+        this.inputLeft.addEventListener("change", this);
+        this.inputColor.addEventListener("change", this);
     }
 
     removeListeners() {
@@ -157,18 +164,6 @@ class Pad extends VideoEditor {
         this.image.style.setProperty("--color-bg", String(value));
     }
 
-    get aspectX() {
-        return Number(this.aspectX.value);
-    }
-
-    set aspectX(value) {}
-
-    get aspectY() {
-        return Number(this.aspectY.value);
-    }
-
-    set aspectY(value) {}
-
     get inputStandards() {
         return (this.#inputStandards ??= this.shadowRoot.querySelector(
             '[data-ref="standards"]',
@@ -199,18 +194,6 @@ class Pad extends VideoEditor {
     get inputColor() {
         return (this.#inputColor ??=
             this.shadowRoot.querySelector('[data-ref="color"]'));
-    }
-
-    get inputAspectX() {
-        return (this.#inputAspectX ??= this.shadowRoot.querySelector(
-            '[data-ref="aspect-x"]',
-        ));
-    }
-
-    get inputAspectY() {
-        return (this.#inputAspectY ??= this.shadowRoot.querySelector(
-            '[data-ref="aspect-y"]',
-        ));
     }
 }
 
@@ -368,10 +351,10 @@ ${EDITOR_TEMPLATE}
         <label>
             <span>Standards:</span>
             <combo-button data-ref="standards">
-                <option value="1080p" selected="selected">1080p</option>
-                <option value="720p">720p</option>
-                <option value="576p">576p</option>
-                <option value="480p">480p</option>
+                <option value="1920:1080" selected="selected">1080p</option>
+                <option value="1280:720">720p</option>
+                <option value="1024:576">576p</option>
+                <option value="768:480">480p</option>
             </combo-button>
         </label>
         <label>
@@ -381,17 +364,6 @@ ${EDITOR_TEMPLATE}
         <label>
             <span>Height</span>
             <input type="number" data-ref="height">
-        </label>
-    </fieldset>
-    <fieldset>
-        <legend>Canvas Aspect Ratio</legend>
-        <label>
-            <theme-button data-ref="16:9">16:9</theme-button>
-            <theme-button data-ref="4:3">4:3</theme-button>
-        </label>
-        <label>
-            <input type="number" data-ref="aspect-x">:
-            <input type="number" data-ref="aspect-y">
         </label>
     </fieldset>
     <fieldset>

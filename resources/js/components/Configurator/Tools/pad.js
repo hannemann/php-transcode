@@ -18,8 +18,8 @@ export const requestPad = async function (type, id = NaN, data = null) {
         requestAnimationFrame(() => {
             d.pad = this.pad || {
                 color: "#000000",
-                cw: d.video.width,
-                ch: d.video.height,
+                cw: [768, 1024, 1280, 1920].find((s) => s >= d.video.width),
+                ch: [480, 576, 720, 1080].find((s) => s >= d.video.height),
                 cx: 0,
                 cy: 0,
             };
