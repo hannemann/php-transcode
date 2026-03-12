@@ -12,6 +12,8 @@ export const requestPad = async function (type, id = NaN, data = null) {
         ({ width: d.video.width, height: d.video.height } = d.outputDimensions);
         d.video.duration = parseFloat(this.format.duration);
         d.aspectRatio = `${d.video.width}:${d.video.height}`;
+        d.imgWidth = d.video.width;
+        d.imgHeight = d.video.height;
 
         d.path = this.item.path;
         d.type = type;

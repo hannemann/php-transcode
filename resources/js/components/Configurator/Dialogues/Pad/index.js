@@ -42,12 +42,21 @@ class Pad extends VideoEditor {
     #inputLeft;
     #inputColor;
 
+    #isDragging;
+    #startX;
+    #startY;
+    #startLeft;
+    #startTop;
+
     connectedCallback() {
         super.connectedCallback();
     }
 
     bindListeners() {
         super.bindListeners();
+        this.startDrag = this.startDrag.bind(this);
+        this.onDrag = this.onDrag.bind(this);
+        this.stopDrag = this.stopDrag.bind(this);
     }
 
     addListeners() {
@@ -58,10 +67,66 @@ class Pad extends VideoEditor {
         this.inputTop.addEventListener("change", this);
         this.inputLeft.addEventListener("change", this);
         this.inputColor.addEventListener("change", this);
+
+        this.image.addEventListener("mousedown", this.startDrag);
+        window.addEventListener("mousemove", this.onDrag);
+        window.addEventListener("mouseup", this.stopDrag);
     }
 
     removeListeners() {
         super.removeListeners();
+        this.inputStandards.removeEventListener("change", this);
+        this.inputWidth.removeEventListener("change", this);
+        this.inputHeight.removeEventListener("change", this);
+        this.inputTop.removeEventListener("change", this);
+        this.inputLeft.removeEventListener("change", this);
+        this.inputColor.removeEventListener("change", this);
+
+        this.image.removeEventListener("mousedown", this.startDrag);
+        window.removeEventListener("mousemove", this.onDrag);
+        window.removeEventListener("mouseup", this.stopDrag);
+    }
+
+    startDrag(e) {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        this.#isDragging = true;
+        this.#startX = e.clientX;
+        this.#startY = e.clientY;
+        this.#startLeft = this.left;
+        this.#startTop = this.top;
+        this.image.style.cursor = "grabbing";
+    }
+
+    onDrag(e) {
+        if (!this.#isDragging) return;
+        e.preventDefault();
+
+        const rect = this.image.getBoundingClientRect();
+
+        const factorX = this.canvasWidth / rect.width;
+        const factorY = this.canvasHeight / rect.height;
+
+        const deltaX = (e.clientX - this.#startX) * factorX;
+        const deltaY = (e.clientY - this.#startY) * factorY;
+
+        // 1. Neue Werte vorläufig berechnen
+        let newLeft = Math.round(this.#startLeft + deltaX);
+        let newTop = Math.round(this.#startTop + deltaY);
+
+        // 2. Grenzen berechnen
+        // Das Bild darf nicht aus dem Canvas herausgeschoben werden
+        const maxLeft = this.canvasWidth - this.imgWidth;
+        const maxTop = this.canvasHeight - this.imgHeight;
+
+        // 3. Werte begrenzen
+        this.left = Math.max(0, Math.min(newLeft, maxLeft));
+        this.top = Math.max(0, Math.min(newTop, maxTop));
+    }
+
+    stopDrag() {
+        this.#isDragging = false;
+        this.image.style.cursor = "crosshair";
     }
 
     handleEvent(e) {
@@ -85,18 +150,6 @@ class Pad extends VideoEditor {
                 e.preventDefault();
             }
         }
-    }
-
-    setDimensions() {
-        this.shadowRoot.querySelector('[data-type="wh"]').innerText =
-            `${this.width}px x${this.height}px`;
-        return this;
-    }
-
-    setPosition() {
-        this.shadowRoot.querySelector('[data-type="xy"]').innerText =
-            `Top: ${this.top}, Left: ${this.left}`;
-        return this;
     }
 
     applyFilterData(data) {
@@ -151,6 +204,7 @@ class Pad extends VideoEditor {
 
     set top(value) {
         this.image.style.setProperty("--offset-y", Number(value));
+        this.inputTop.value = this.left;
     }
 
     get left() {
@@ -161,6 +215,7 @@ class Pad extends VideoEditor {
 
     set left(value) {
         this.image.style.setProperty("--offset-x", Number(value));
+        this.inputLeft.value = this.left;
     }
 
     get color() {
@@ -169,6 +224,22 @@ class Pad extends VideoEditor {
 
     set color(value) {
         this.image.style.setProperty("--color-bg", String(value));
+    }
+
+    get imgWidth() {
+        return Number(getComputedStyle(this.image).getPropertyValue("--img-w"));
+    }
+
+    set imgWidth(value) {
+        this.image.style.setProperty("--img-w", Number(value));
+    }
+
+    get imgHeight() {
+        return Number(getComputedStyle(this.image).getPropertyValue("--img-h"));
+    }
+
+    set imgHeight(value) {
+        this.image.style.setProperty("--img-h", Number(value));
     }
 
     get inputStandards() {
@@ -213,20 +284,20 @@ const STYLES = css`
         grid-column: span 2;
 
         /* 1. Das "Spielfeld" festlegen */
-        /*width: 100%; /* Oder was auch immer die Breite vorgibt */
-        /*aspect-ratio: var(--aspect-x, 16) / var(--aspect-y, 9); /* Entspricht 1920x1080 */
         box-sizing: border-box;
         display: block;
         background-color: var(--color-bg);
 
-        /* 2. Die logischen Koordinaten als CSS-Variablen */
-        --canvas-w: 1920; /* 16:9 */
-        --canvas-w: 1440; /*  4:3 */
+        /* 2. Die logischen Koordinaten als CSS-Variablen * /
+        --canvas-w: 1920; /* 16:9 * /
+        --canvas-w: 1440; /*  4:3 * /
         --canvas-h: 1080;
         --img-w: 632;
         --img-h: 649;
         --offset-x: 200;
-        --offset-y: 100;
+        --offset-y: 100;*/
+
+        aspect-ratio: var(--canvas-w) / var(--canvas-h);
 
         --display-w: min(calc(var(--canvas-w) * 1px), 100%);
         --display-h: min(
@@ -234,8 +305,8 @@ const STYLES = css`
             calc((100% * var(--canvas-w)) / var(--canvas-h))
         );
 
-        max-width: var(--display-w);
-        max-height: var(--display-h);
+        max-width: min(100%, var(--display-w));
+        max-height: min(100%, var(--display-h));
 
         /* 3. Padding berechnen (Prozentual zum Canvas) */
         /* Da Padding-Top/Bottom in % sich auf die Breite beziehen, 
