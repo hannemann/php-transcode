@@ -21,9 +21,8 @@ export class FillBorders extends FilterModel {
     type = "cpu";
 
     /**
-     *
-     * @param {Number} filterIndex
-     * @param {FillBordersData} options
+     * @param {Number} [filterIndex]
+     * @param {FillBordersData} [options]
      */
     constructor(
         filterIndex = null,

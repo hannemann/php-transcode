@@ -73,7 +73,7 @@ class ComboButton extends HTMLElement {
                 e.target.tagName === "OPTION" &&
                 path.indexOf(this.wrapper) > -1
             ) {
-                this.setValue(e);
+                e.target.disabled || this.setValue(e);
             }
             this.wrapper.remove();
             this.noScroll.remove();

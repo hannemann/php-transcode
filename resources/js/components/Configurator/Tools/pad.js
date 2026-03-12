@@ -1,63 +1,38 @@
 import { TYPE_VIDEO } from "../Streams";
+import { Pad } from "../../../Models/Filters/Pad";
 
-export const requestPad = async function (id = NaN, data = null) {
+export const requestPad = async function (model) {
+    if (!model) {
+        model = new Pad();
+    }
     try {
         const m = document.createElement("modal-window");
         m.header = "Pad Video";
         m.classList.add("no-shadow");
         const d = document.createElement("dialogue-pad");
-        d.filterIndex = id;
+        d.filterIndex = model.filterIndex;
 
         d.video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);
         ({ width: d.video.width, height: d.video.height } = d.outputDimensions);
         d.video.duration = parseFloat(this.format.duration);
-        d.aspectRatio = `${d.video.width}:${d.video.height}`;
-        d.imgWidth = d.video.width;
-        d.imgHeight = d.video.height;
 
+        if (!model.ch) {
+            model.proposeStandard(d.video.height);
+            d.isNew = true;
+        }
+        d.pad = model;
         d.path = this.item.path;
-        requestAnimationFrame(() => {
-            d.pad = this.pad || {
-                color: "#000000",
-                cw: [768, 1024, 1280, 1920].find((s) => s >= d.video.width),
-                ch: [480, 576, 720, 1080].find((s) => s >= d.video.height),
-                cx: 0,
-                cy: 0,
-            };
-            d.markers = this.clips;
-            d.width = d.video.width;
-            d.height = d.video.height;
-            if (id !== null && data) {
-                d.addEventListener(
-                    "cropper-updated",
-                    () => {
-                        d.applyFilterData(data);
-                    },
-                    { once: true },
-                );
-            }
-        });
+
         m.appendChild(d);
         document.body.insertBefore(
             m,
             document.querySelector("transcoder-toast"),
         );
         await m.open();
-        console.info(
-            "Place video file %s %dx%d on %s canvas at %d/%d",
-            this.item.path,
-            d.pad.cw,
-            d.pad.ch,
-            d.color,
-            d.pad.cx,
-            d.pad.cy,
-        );
-        this.pad = d.pad;
-        const filterData = { ...d.pad, ...{ filterType: "pad" } };
-        if (id !== null && data) {
-            this.filterGraph[id] = filterData;
-        } else {
-            this.filterGraph.push(filterData);
+        logInfo(this.item.path, model);
+        this.pad = model;
+        if (isNaN(parseInt(model.filterIndex))) {
+            this.filterGraph.push(model);
         }
         this.saveSettings();
     } catch (error) {
@@ -65,4 +40,16 @@ export const requestPad = async function (id = NaN, data = null) {
             console.error(error);
         }
     }
+};
+
+const logInfo = function (path, model) {
+    console.info(
+        "Place video file %s %dx%d on %s canvas at %d/%d",
+        path,
+        model.cw,
+        model.ch,
+        model.color,
+        model.cx,
+        model.cy,
+    );
 };

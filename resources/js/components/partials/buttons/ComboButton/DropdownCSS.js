@@ -9,7 +9,7 @@ export default css`
         padding-inline: 0.5rem;
         text-align: right;
     }
-    .combo-button-dropdown option:hover {
+    .combo-button-dropdown option:not([disabled]):hover {
         background: var(--clr-bg-200);
         text-shadow:
             0 0 5px var(--clr-enlightened-glow),

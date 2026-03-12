@@ -1,19 +1,10 @@
 import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
 import { COMBO_BUTTON_CSS } from "@/components/partials";
-
-const KEY_ACTIONS = {
-    // resize
-    ArrowRight: (ed, d) => ed.resizeBox(d, 0),
-    ArrowLeft: (ed, d) => ed.resizeBox(-d, 0),
-    ArrowUp: (ed, d) => ed.resizeBox(0, -d),
-    ArrowDown: (ed, d) => ed.resizeBox(0, d),
-
-    // move (Ctrl)
-    "ctrl+ArrowRight": (ed, d) => ed.moveBox(d, 0),
-    "ctrl+ArrowLeft": (ed, d) => ed.moveBox(-d, 0),
-    "ctrl+ArrowUp": (ed, d) => ed.moveBox(0, -d),
-    "ctrl+ArrowDown": (ed, d) => ed.moveBox(0, d),
-};
+import { Pad as Model } from "../../../../Models/Filters/Pad";
+import {
+    getStandardByHeight,
+    VIDEO_STANDARDS,
+} from "../../../../Models/VideoStandards";
 
 const INPUT_ACTIONS = {
     /**
@@ -21,15 +12,7 @@ const INPUT_ACTIONS = {
      * @param {Pad} pad
      * @param {HTMLElement} target
      */
-    standards: (pad, target) => {
-        pad.canvasWidth = target.value.split(":").shift();
-        pad.canvasHeight = target.value.split(":").pop();
-        pad.centerImage();
-        pad.image.style.setProperty(
-            "--imageBorderSizeInline",
-            `${Math.round(pad.image.getBoundingClientRect().width)}px`,
-        );
-    },
+    standards: (pad, target) => pad.applyStandard(target),
     top: (pad, target) => (pad.top = target.value),
     left: (pad, target) => (pad.left = target.value),
     width: (pad, target) => (pad.canvasWidth = target.value),
@@ -40,6 +23,11 @@ const INPUT_ACTIONS = {
 };
 
 class Pad extends VideoEditor {
+    /**
+     * @type {Model}
+     */
+    #model;
+
     #inputStandards;
     #inputWidth;
     #inputHeight;
@@ -56,8 +44,15 @@ class Pad extends VideoEditor {
 
     #imageSizeObserver;
 
+    isNew = false;
+
     connectedCallback() {
         super.connectedCallback();
+
+        this.imgWidth = this.video.width;
+        this.imgHeight = this.video.height;
+        this.aspectRatio = `${this.video.width}:${this.video.height}`;
+
         this.#imageSizeObserver = new ResizeObserver((entries) => {
             this.image.style.setProperty(
                 "--imageBorderSizeInline",
@@ -69,7 +64,22 @@ class Pad extends VideoEditor {
         // Initiales Zentrieren, falls noch keine Position gesetzt ist
         // Wir warten kurz, damit die DOM-Werte bereit sind
         requestAnimationFrame(() => {
-            if (this.left === 0 && this.top === 0) {
+            const standard = getStandardByHeight(this.video.height);
+            if (standard) {
+                this.inputStandards.value = standard[0];
+            }
+
+            VIDEO_STANDARDS.forEach((data, name) => {
+                const disable =
+                    data.width < this.video.width ||
+                    data.height < this.video.height;
+                const option = this.inputStandards.querySelector(
+                    `option[value="${name}"]`,
+                );
+                option?.toggleAttribute("disabled", disable);
+            });
+
+            if (this.isNew) {
                 this.centerImage();
             }
         });
@@ -90,6 +100,10 @@ class Pad extends VideoEditor {
 
     addListeners() {
         super.addListeners();
+
+        document.addEventListener("keydown", this.handleKeyDown);
+        document.addEventListener("keyup", this.handleKeyUp);
+
         this.inputStandards.addEventListener("change", this);
         this.inputWidth.addEventListener("change", this);
         this.inputHeight.addEventListener("change", this);
@@ -106,6 +120,10 @@ class Pad extends VideoEditor {
 
     removeListeners() {
         super.removeListeners();
+
+        document.removeEventListener("keydown", this.handleKeyDown);
+        document.removeEventListener("keyup", this.handleKeyUp);
+
         this.inputStandards.removeEventListener("change", this);
         this.inputWidth.removeEventListener("change", this);
         this.inputHeight.removeEventListener("change", this);
@@ -174,26 +192,25 @@ class Pad extends VideoEditor {
                 action(this, e.currentTarget);
             }
         }
-        if (e.type === "keydown") {
-            if (e.key === "ArrowRight") {
-                e.preventDefault();
-            }
-            if (e.key === "ArrowLeft") {
-                e.preventDefault();
-            }
-            if (e.key === "ArrowDown") {
-                e.preventDefault();
-            }
-            if (e.key === "ArrowUp") {
-                e.preventDefault();
-            }
-        }
     }
 
-    applyFilterData(data) {
-        this.pad = data;
+    async applyStandard(target) {
+        const standard = VIDEO_STANDARDS.get(target.value);
+        this.canvasWidth = standard.width;
+        this.canvasHeight = standard.height;
+        this.applyInlineBorderSize();
     }
 
+    applyInlineBorderSize() {
+        this.image.style.setProperty(
+            "--imageBorderSizeInline",
+            `${Math.round(this.image.getBoundingClientRect().width)}px`,
+        );
+    }
+
+    /**
+     * @return {Model}
+     */
     get pad() {
         return {
             cw: this.canvasWidth,
@@ -204,12 +221,16 @@ class Pad extends VideoEditor {
         };
     }
 
-    set pad(pad) {
-        this.canvasWidth = pad.cw;
-        this.canvasHeight = pad.ch;
-        this.left = pad.cx;
-        this.top = pad.cy;
-        this.color = pad.color;
+    /**
+     * @param {Model} model
+     */
+    set pad(model) {
+        this.#model = model;
+        this.canvasWidth = model.cw;
+        this.canvasHeight = model.ch;
+        this.left = model.cx;
+        this.top = model.cy;
+        this.color = model.color;
     }
 
     get canvasWidth() {
@@ -220,7 +241,9 @@ class Pad extends VideoEditor {
 
     set canvasWidth(value) {
         this.image.style.setProperty("--canvas-w", Number(value));
-        this.inputWidth.value = this.canvasWidth;
+        this.inputWidth.value = Number(value);
+        this.#model.cw = Number(value);
+        this.applyInlineBorderSize();
     }
 
     get canvasHeight() {
@@ -231,7 +254,9 @@ class Pad extends VideoEditor {
 
     set canvasHeight(value) {
         this.image.style.setProperty("--canvas-h", Number(value));
-        this.inputHeight.value = this.canvasHeight;
+        this.inputHeight.value = Number(value);
+        this.#model.ch = Number(value);
+        this.applyInlineBorderSize();
     }
 
     get top() {
@@ -243,6 +268,7 @@ class Pad extends VideoEditor {
     set top(value) {
         this.image.style.setProperty("--offset-y", Number(value));
         this.inputTop.value = Number(value);
+        this.#model.cy = Number(value);
     }
 
     get left() {
@@ -254,6 +280,7 @@ class Pad extends VideoEditor {
     set left(value) {
         this.image.style.setProperty("--offset-x", Number(value));
         this.inputLeft.value = Number(value);
+        this.#model.cx = Number(value);
     }
 
     get color() {
@@ -262,6 +289,8 @@ class Pad extends VideoEditor {
 
     set color(value) {
         this.image.style.setProperty("--color-bg", String(value));
+        this.inputColor.value = String(value);
+        this.#model.color = String(value);
     }
 
     get imgWidth() {
@@ -479,10 +508,9 @@ ${EDITOR_TEMPLATE}
         <label>
             <span>Standards:</span>
             <combo-button data-ref="standards">
-                <option value="1920:1080" selected="selected">1080p</option>
-                <option value="1280:720">720p</option>
-                <option value="1024:576">576p</option>
-                <option value="768:480">480p</option>
+                <option value="1080p" selected="selected">1080p</option>
+                <option value="720p">720p</option>
+                <option value="576p">576p</option>
             </combo-button>
         </label>
         <label>
