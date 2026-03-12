@@ -204,7 +204,7 @@ class Pad extends VideoEditor {
 
     set top(value) {
         this.image.style.setProperty("--offset-y", Number(value));
-        this.inputTop.value = this.left;
+        this.inputTop.value = Number(value);
     }
 
     get left() {
@@ -215,7 +215,7 @@ class Pad extends VideoEditor {
 
     set left(value) {
         this.image.style.setProperty("--offset-x", Number(value));
-        this.inputLeft.value = this.left;
+        this.inputLeft.value = Number(value);
     }
 
     get color() {
