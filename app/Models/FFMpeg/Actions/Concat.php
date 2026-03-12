@@ -50,15 +50,25 @@ class Concat extends AbstractAction
         $disk = Storage::disk($this->disk);
         $pathPrefix = rtrim($disk->getConfig()['root'], DIRECTORY_SEPARATOR);
 
-        // 1. Die Map-Funktion darf nur den inneren Teil (Pfad) formatieren
+        // 1. Inhalt der Liste generieren
         $fileListContent = collect($files)->map(function ($file) use ($pathPrefix) {
+            // Pfad für FFmpeg: absolute Pfade innerhalb der Datei sind am sichersten
             $fullPath = $pathPrefix . DIRECTORY_SEPARATOR . ltrim($file, DIRECTORY_SEPARATOR);
-            // Hier nutzen wir einfache Quotes für FFmpeg
-            return "file '" . $fullPath . "'";
-        })->implode('\\n'); // Verbinde alles mit einem Newline-Literal
+            return "file '" . str_replace("'", "'\\''", $fullPath) . "'";
+        })->implode("\n"); // Echtes Newline für die Datei
 
-        // 2. Das sprintf muss die gesamte Liste in doppelte Anführungszeichen setzen
-        return sprintf("<(echo -e \"%s\")", $fileListContent);
+        // 2. Zielpfad für die Concat-Datei ermitteln (Verzeichnis der ersten Datei)
+        $firstFile = $files[0];
+        $directory = dirname($firstFile);
+
+        // Eindeutiger Dateiname im selben Verzeichnis
+        $concatFileName = $directory . DIRECTORY_SEPARATOR . bin2hex(random_bytes(8)) . '.concat.txt';
+
+        // 3. Datei über den Laravel Storage schreiben
+        $disk->put($concatFileName, $fileListContent);
+
+        // 4. Den absoluten Pfad für FFmpeg zurückgeben
+        return $pathPrefix . DIRECTORY_SEPARATOR . ltrim($concatFileName, DIRECTORY_SEPARATOR);
     }
 
     private function getConcatDuration(array $files): TimeCode
@@ -81,11 +91,9 @@ class Concat extends AbstractAction
         $cmds->push('-y');
         $cmds->push('-hide_banner');
         $cmds->push('-f');
-        $cmds->push('-concat');
+        $cmds->push('concat');
         $cmds->push('-safe');
-        $cmds->push('-0');
-        $cmds->push('-protocol_whitelist');
-        $cmds->push('pipe,file');
+        $cmds->push('0');
         $cmds->push('-i');
         $cmds->push($this->input);
         $cmds->push('-c');
