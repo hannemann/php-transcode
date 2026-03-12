@@ -49,9 +49,16 @@ class Concat extends AbstractAction
         /** @var Illuminate\Filesystem\FilesystemAdapter $disk */
         $disk = Storage::disk($this->disk);
         $pathPrefix = rtrim($disk->getConfig()['root'], DIRECTORY_SEPARATOR);
-        return 'concat:' . collect($files)->map(function ($file) use ($pathPrefix) {
-            return $pathPrefix . DIRECTORY_SEPARATOR . ltrim($file, DIRECTORY_SEPARATOR);
-        })->implode('|');
+
+        // 1. Die Map-Funktion darf nur den inneren Teil (Pfad) formatieren
+        $fileListContent = collect($files)->map(function ($file) use ($pathPrefix) {
+            $fullPath = $pathPrefix . DIRECTORY_SEPARATOR . ltrim($file, DIRECTORY_SEPARATOR);
+            // Hier nutzen wir einfache Quotes für FFmpeg
+            return "file '" . $fullPath . "'";
+        })->implode('\\n'); // Verbinde alles mit einem Newline-Literal
+
+        // 2. Das sprintf muss die gesamte Liste in doppelte Anführungszeichen setzen
+        return sprintf("<(echo -e \"%s\")", $fileListContent);
     }
 
     private function getConcatDuration(array $files): TimeCode
@@ -72,6 +79,13 @@ class Concat extends AbstractAction
         $file = array_pop($commands[0]);
         $cmds = collect([]);
         $cmds->push('-y');
+        $cmds->push('-hide_banner');
+        $cmds->push('-f');
+        $cmds->push('-concat');
+        $cmds->push('-safe');
+        $cmds->push('-0');
+        $cmds->push('-protocol_whitelist');
+        $cmds->push('pipe,file');
         $cmds->push('-i');
         $cmds->push($this->input);
         $cmds->push('-c');
