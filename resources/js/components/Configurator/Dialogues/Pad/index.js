@@ -48,8 +48,22 @@ class Pad extends VideoEditor {
     #startLeft;
     #startTop;
 
+    #imageSizeObserver;
+
     connectedCallback() {
         super.connectedCallback();
+        this.#imageSizeObserver = new ResizeObserver((entries) => {
+            this.image.style.setProperty(
+                "--imageBorderSizeInline",
+                `${Math.round(entries[0].borderBoxSize[0].inlineSize)}px`,
+            );
+        });
+        this.#imageSizeObserver.observe(this.image);
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        this.#imageSizeObserver.disconnect();
     }
 
     bindListeners() {
@@ -284,6 +298,8 @@ const STYLES = css`
         grid-column: span 2;
 
         /* 1. Das "Spielfeld" festlegen */
+        /*width: 100%; /* Oder was auch immer die Breite vorgibt */
+        /*aspect-ratio: var(--aspect-x, 16) / var(--aspect-y, 9); /* Entspricht 1920x1080 */
         box-sizing: border-box;
         display: block;
         background-color: var(--color-bg);
@@ -295,40 +311,32 @@ const STYLES = css`
         --img-w: 632;
         --img-h: 649;
         --offset-x: 200;
-        --offset-y: 100;*/
+        --offset-y: 100;
+        */
 
-        aspect-ratio: var(--canvas-w) / var(--canvas-h);
-
-        --display-w: min(calc(var(--canvas-w) * 1px), 100%);
-        --display-h: min(
-            calc(var(--canvas-h) * 1px),
-            calc((100% * var(--canvas-w)) / var(--canvas-h))
-        );
-
-        max-width: min(100%, var(--display-w));
-        max-height: min(100%, var(--display-h));
+        --padding-percent: min(var(--imageBorderSizeInline), 100%);
 
         /* 3. Padding berechnen (Prozentual zum Canvas) */
         /* Da Padding-Top/Bottom in % sich auf die Breite beziehen, 
        nutzen wir einen Trick für die vertikale Positionierung */
         padding-left: calc(
-            var(--offset-x) / var(--canvas-w) * var(--display-w)
+            var(--offset-x) / var(--canvas-w) * var(--padding-percent)
         );
         padding-top: calc(
             var(--offset-y) / var(--canvas-h) *
-                (var(--display-h) / (var(--canvas-w) / var(--canvas-h)))
+                (var(--padding-percent) / (var(--canvas-w) / var(--canvas-h)))
         );
 
         /* 4. Größe des Bild-Inhalts einschränken */
         /* Wir berechnen, wie viel Platz das Bild im Vergleich zum Canvas einnimmt */
         padding-right: calc(
             (var(--canvas-w) - var(--img-w) - var(--offset-x)) /
-                var(--canvas-w) * var(--display-w)
+                var(--canvas-w) * var(--padding-percent)
         );
         padding-bottom: calc(
             (var(--canvas-h) - var(--img-h) - var(--offset-y)) /
                 var(--canvas-h) *
-                (var(--display-h) / (var(--canvas-w) / var(--canvas-h)))
+                (var(--padding-percent) / (var(--canvas-w) / var(--canvas-h)))
         );
 
         /* 5. Bild einpassen */
