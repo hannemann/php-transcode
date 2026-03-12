@@ -25,6 +25,10 @@ const INPUT_ACTIONS = {
         pad.canvasWidth = target.value.split(":").shift();
         pad.canvasHeight = target.value.split(":").pop();
         pad.centerImage();
+        pad.image.style.setProperty(
+            "--imageBorderSizeInline",
+            `${Math.round(pad.image.getBoundingClientRect().width)}px`,
+        );
     },
     top: (pad, target) => (pad.top = target.value),
     left: (pad, target) => (pad.left = target.value),
