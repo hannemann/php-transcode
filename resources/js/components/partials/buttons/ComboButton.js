@@ -136,7 +136,7 @@ class ComboButton extends HTMLElement {
         const option = this.options.find((o) => o.value === value);
         if (!option) return;
         this.selectedIndex = this.options.findIndex((o) => o === option);
-        this.label.innerText = option.textContent;
+        this.label.innerText = option.textContent.trim();
         this.dispatchEvent(new CustomEvent("change"));
     }
 }
