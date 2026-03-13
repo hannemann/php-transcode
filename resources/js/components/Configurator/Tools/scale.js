@@ -5,11 +5,15 @@ export const requestScale = async function (type) {
     const m = document.createElement("modal-dialogue");
     m.header = "Scale";
     const d = m.appendChild(document.createElement("dialogue-scale"));
-    const video = this.streams.filter((s) => s.codec_type === TYPE_VIDEO)?.[0];
+
+    d.video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);
+    ({ width: d.video.width, height: d.video.height } = d.outputDimensions);
+    d.video.duration = parseFloat(this.format.duration);
+
     document.body.appendChild(m);
-    if (video) {
-        d.aspectRatio = video.display_aspect_ratio;
-        d.height = video.height;
+    if (d.video) {
+        d.aspectRatio = d.video.display_aspect_ratio;
+        d.height = d.video.height;
         d.calculateWidth();
     }
     try {

@@ -5,10 +5,10 @@ const DEFAULT_HEIGHT = 576;
 const DEFAULT_ASPECT = "4:3";
 
 import { VALID_ASPECT_RATIOS } from "../Streams/Video";
+import { VideoEditor } from "./VideoEditor";
 
-class Scale extends HTMLElement {
+class Scale extends VideoEditor {
     connectedCallback() {
-        DomHelper.initDom.call(this);
         this.initElements().initListeners().addListeners();
         this.aspectRatio = DEFAULT_ASPECT;
         this.width = DEFAULT_WIDTH;
@@ -26,6 +26,7 @@ class Scale extends HTMLElement {
         this.inputHeight = shadow.querySelector('input[placeholder="Height"]');
         this.input43 = shadow.querySelector('input[value="4:3"]');
         this.input169 = shadow.querySelector('input[value="16:9"]');
+        this.inputKeep = shadow.querySelector('input[value="keep"]');
         return this;
     }
 
@@ -46,6 +47,7 @@ class Scale extends HTMLElement {
         this.inputHeight.addEventListener("input", this.handleSize);
         this.input43.addEventListener("change", this.handleAspectRatio);
         this.input169.addEventListener("change", this.handleAspectRatio);
+        this.inputKeep.addEventListener("change", this.handleAspectRatio);
         return this;
     }
 
@@ -58,6 +60,7 @@ class Scale extends HTMLElement {
         this.inputHeight.removeEventListener("input", this.handleSize);
         this.input43.removeEventListener("change", this.handleAspectRatio);
         this.input169.removeEventListener("change", this.handleAspectRatio);
+        this.inputKeep.removeEventListener("change", this.handleAspectRatio);
     }
 
     calculateWidth() {
@@ -87,19 +90,28 @@ class Scale extends HTMLElement {
     }
 
     handleAspectRatio(e) {
-        this.aspectRatio = e.currentTarget.value;
+        if (e.currentTarget.value === "keep") {
+            this.aspectRatio = `${this.video.width}:${this.video.height}`;
+        } else {
+            this.aspectRatio = e.currentTarget.value;
+        }
         this.calculateWidth();
     }
 
     get aspectRatio() {
-        const ratios = [this.input43, this.input169];
-        return ratios.find((i) => i.checked)?.value;
+        const ratios = [this.input43, this.input169, this.inputKeep];
+        return ratios.find((i) => i.checked)?.dataset.value;
     }
 
     set aspectRatio(value) {
-        if (!VALID_ASPECT_RATIOS.includes(value)) return;
-        const ratios = [this.input43, this.input169];
-        const input = ratios.find((i) => i.value === value);
+        let input;
+        if (!VALID_ASPECT_RATIOS.includes(value)) {
+            input = this.inputKeep;
+        } else {
+            const ratios = [this.input43, this.input169];
+            input = ratios.find((i) => i.value === value);
+        }
+        input.dataset.value = value;
         input && (input.checked = true);
     }
 
@@ -185,6 +197,10 @@ Scale.template = html`
         <label>
             <span>16:9</span>
             <input type="radio" name="aspect" value="16:9" />
+        </label>
+        <label>
+            <span>Keep</span>
+            <input type="radio" name="aspect" value="keep" />
         </label>
     </fieldset>
 `;
