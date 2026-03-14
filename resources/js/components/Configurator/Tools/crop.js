@@ -1,17 +1,27 @@
 import { TYPE_VIDEO } from "../Streams";
+import { Crop } from "../../../Models/Filters/Crop";
 
-export const requestCrop = async function (id = NaN, data = null) {
+/**
+ * @param {Crop} model
+ */
+export const requestCrop = async function (model) {
+    if (!model) {
+        model = new Crop();
+    }
+
     try {
         const m = document.createElement("modal-window");
         const d = document.createElement("dialogue-cropper");
 
         m.header = "Cropper";
         m.classList.add("no-shadow");
-        d.filterIndex = id;
+        d.filterIndex = model.filterIndex;
 
         d.video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);
         ({ width: d.video.width, height: d.video.height } = d.outputDimensions);
         d.video.duration = parseFloat(this.format.duration);
+
+        d.crop = model;
         d.path = this.item.path;
 
         d.addEventListener(
@@ -22,49 +32,16 @@ export const requestCrop = async function (id = NaN, data = null) {
             { once: true },
         );
 
-        requestAnimationFrame(() => {
-            d.markers = this.clips;
-            if (!isNaN(id) && data) {
-                d.addEventListener(
-                    "cropper-updated",
-                    () => {
-                        d.crop = {
-                            x: data.cx,
-                            y: data.cy,
-                            w: data.cw,
-                            h: data.ch,
-                        };
-                    },
-                    { once: true },
-                );
-            }
-        });
         m.appendChild(d);
         document.body.insertBefore(
             m,
             document.querySelector("transcoder-toast"),
         );
         await m.open();
-        console.info(
-            "Crop video file %s to %dx%d at %d/%d",
-            this.item.path,
-            d.crop.w,
-            d.crop.h,
-            d.crop.x,
-            d.crop.y,
-        );
-        this.crop = d.crop;
-        const filterData = {
-            cw: d.crop.w,
-            ch: d.crop.h,
-            cx: d.crop.x,
-            cy: d.crop.y,
-            filterType: "crop",
-        };
-        if (!isNaN(id) && data) {
-            this.filterGraph[id] = filterData;
-        } else {
-            this.filterGraph.push(filterData);
+        logInfo(this.item.path, model);
+        this.crop = model;
+        if (isNaN(parseInt(model.filterIndex))) {
+            this.filterGraph.push(model);
         }
         this.saveSettings();
     } catch (error) {
@@ -72,4 +49,15 @@ export const requestCrop = async function (id = NaN, data = null) {
             console.error(error);
         }
     }
+};
+
+const logInfo = function (path, model) {
+    console.info(
+        "Crop video file %s to %dx%d at %d/%d",
+        path,
+        model.cw,
+        model.ch,
+        model.cx,
+        model.cy,
+    );
 };

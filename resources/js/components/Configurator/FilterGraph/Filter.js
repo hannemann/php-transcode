@@ -44,7 +44,7 @@ class Filter extends HTMLElement {
                 requestDelogo.call(this.configurator, filterData);
                 break;
             case "crop":
-                requestCrop.call(this.configurator, idx, filterData);
+                requestCrop.call(this.configurator, filterData);
                 break;
             case "pad":
                 requestPad.call(this.configurator, filterData);

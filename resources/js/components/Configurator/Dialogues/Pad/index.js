@@ -212,13 +212,7 @@ class Pad extends VideoEditor {
      * @return {Model}
      */
     get pad() {
-        return {
-            cw: this.canvasWidth,
-            ch: this.canvasHeight,
-            cx: this.left,
-            cy: this.top,
-            color: this.color,
-        };
+        return this.#model;
     }
 
     /**

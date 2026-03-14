@@ -7,9 +7,10 @@ export const requestPad = async function (model) {
     }
     try {
         const m = document.createElement("modal-window");
+        const d = document.createElement("dialogue-pad");
+
         m.header = "Pad Video";
         m.classList.add("no-shadow");
-        const d = document.createElement("dialogue-pad");
         d.filterIndex = model.filterIndex;
 
         d.video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);

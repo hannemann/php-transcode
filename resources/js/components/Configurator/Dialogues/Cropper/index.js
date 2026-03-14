@@ -1,8 +1,10 @@
 import { VideoEditor, EDITOR_TEMPLATE, EDITOR_CSS } from "../VideoEditor";
+import { Crop as Model } from "../../../../Models/Filters/Crop";
 
 class Cropper extends VideoEditor {
     video = null;
     zoomed = 0; // 0: none, 1: top-left, 2: bottom-right
+    #model;
 
     connectedCallback() {
         super.connectedCallback();
@@ -23,10 +25,10 @@ class Cropper extends VideoEditor {
 
     initCrop() {
         // Initialer Ausschnitt: Vollbild, falls nichts gesetzt
-        if (!this.cropOffsetBottom)
-            this.cropOffsetBottom = this.image.naturalHeight;
-        if (!this.cropOffsetRight)
-            this.cropOffsetRight = this.image.naturalWidth;
+        this.cropOffsetTop ??= 0;
+        this.cropOffsetLeft ??= 0;
+        this.cropOffsetBottom ??= this.image.naturalHeight;
+        this.cropOffsetRight ??= this.image.naturalWidth;
         this.updateCropBox();
         this.dispatchEvent(new CustomEvent("cropper-initialized"));
         this.cropImage.style.aspectRatio = this.aspectRatio.replace(":", "/");
@@ -53,11 +55,8 @@ class Cropper extends VideoEditor {
         this.cropImage.style.backgroundImage = `${this.gradients},url("${this.image.src}")`;
 
         // Anzeige der aktuellen Werte aktualisieren
-        const cw = this.cropOffsetRight - this.cropOffsetLeft;
-        const ch = this.cropOffsetBottom - this.cropOffsetTop;
-
-        this.displayWH.innerText = `${cw} x ${ch}`;
-        this.displayXY.innerText = `${this.cropOffsetLeft} , ${this.cropOffsetTop}`;
+        this.displayXY.innerText = `${this.#model.cx} , ${this.#model.cy}`;
+        this.displayWH.innerText = `${this.#model.cw} x ${this.#model.ch}`;
 
         this.dispatchEvent(new CustomEvent("cropper-updated"));
     }
@@ -158,22 +157,17 @@ class Cropper extends VideoEditor {
     }
 
     /**
-     * Getter/Setter für das Filter-Modell
+     * @return {Model}
      */
     get crop() {
-        return {
-            x: this.cropOffsetLeft,
-            y: this.cropOffsetTop,
-            w: this.cropOffsetRight - this.cropOffsetLeft,
-            h: this.cropOffsetBottom - this.cropOffsetTop,
-        };
+        return this.#model;
     }
 
-    set crop(data) {
-        this.cropOffsetLeft = data.x ?? 0;
-        this.cropOffsetTop = data.y ?? 0;
-        this.cropOffsetRight = (data.x ?? 0) + (data.w ?? this.video.width);
-        this.cropOffsetBottom = (data.y ?? 0) + (data.h ?? this.video.height);
+    /**
+     * @param {Model} model
+     */
+    set crop(model) {
+        this.#model = model;
     }
 
     /* Element Accessors */
@@ -187,30 +181,46 @@ class Cropper extends VideoEditor {
         return this.shadowRoot.querySelector('[data-type="xy"]');
     }
 
-    /* Model-Proxy (Dataset als State-Speicher) */
-    get cropOffsetTop() {
-        return Number(this.dataset.top) || 0;
-    }
+    // --- TOP / BOTTOM (Y-Achse) ---
     set cropOffsetTop(v) {
-        this.dataset.top = v;
+        const currentBottom = this.cropOffsetBottom; // Den aktuellen Endpunkt halten
+        this.#model.cy = v;
+        if (currentBottom !== null) {
+            this.#model.ch = Math.max(0, currentBottom - v);
+        }
     }
-    get cropOffsetLeft() {
-        return Number(this.dataset.left) || 0;
+    get cropOffsetTop() {
+        return this.#model.cy;
     }
-    set cropOffsetLeft(v) {
-        this.dataset.left = v;
+
+    set cropOffsetBottom(v) {
+        // v ist die absolute Y-Koordinate der unteren Kante
+        this.#model.ch = Math.max(0, v - this.#model.cy);
     }
     get cropOffsetBottom() {
-        return Number(this.dataset.bottom) || 0;
+        if (this.#model.ch === null) return null;
+        return this.#model.cy + this.#model.ch; // Absolute Position
     }
-    set cropOffsetBottom(v) {
-        this.dataset.bottom = v;
+
+    // --- LEFT / RIGHT (X-Achse) ---
+    set cropOffsetLeft(v) {
+        const currentRight = this.cropOffsetRight; // Den aktuellen Endpunkt halten
+        this.#model.cx = v;
+        if (currentRight !== null) {
+            this.#model.cw = Math.max(0, currentRight - v);
+        }
+    }
+    get cropOffsetLeft() {
+        return this.#model.cx;
+    }
+
+    set cropOffsetRight(v) {
+        // v ist die absolute X-Koordinate der rechten Kante
+        this.#model.cw = Math.max(0, v - this.#model.cx);
     }
     get cropOffsetRight() {
-        return Number(this.dataset.right) || 0;
-    }
-    set cropOffsetRight(v) {
-        this.dataset.right = v;
+        if (this.#model.cw === null) return null;
+        return this.#model.cx + this.#model.cw; // Absolute Position
     }
 }
 
