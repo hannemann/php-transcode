@@ -127,44 +127,28 @@ class VideoEditor extends HTMLElement {
         this.btnMove.addEventListener("click", this.toggleMoveMode);
 
         this.btnPrevFrame.addEventListener("pointerdown", this.prevFrame);
-        this.btnPrevFrame.addEventListener("pointerup", this.handleNavUp);
         this.btnNextFrame.addEventListener("pointerdown", this.nextFrame);
-        this.btnNextFrame.addEventListener("pointerup", this.handleNavUp);
 
         this.btnRew500.addEventListener("pointerdown", this.rew500);
-        this.btnRew500.addEventListener("pointerup", this.handleNavUp);
         this.btnFfw500.addEventListener("pointerdown", this.ffw500);
-        this.btnFfw500.addEventListener("pointerup", this.handleNavUp);
 
         this.btnRew1000.addEventListener("pointerdown", this.rew1000);
-        this.btnRew1000.addEventListener("pointerup", this.handleNavUp);
         this.btnFfw1000.addEventListener("pointerdown", this.ffw1000);
-        this.btnFfw1000.addEventListener("pointerup", this.handleNavUp);
 
         this.btnRew2000.addEventListener("pointerdown", this.rew2000);
-        this.btnRew2000.addEventListener("pointerup", this.handleNavUp);
         this.btnFfw2000.addEventListener("pointerdown", this.ffw2000);
-        this.btnFfw2000.addEventListener("pointerup", this.handleNavUp);
 
         this.btnRew5000.addEventListener("pointerdown", this.rew5000);
-        this.btnRew5000.addEventListener("pointerup", this.handleNavUp);
         this.btnFfw5000.addEventListener("pointerdown", this.ffw5000);
-        this.btnFfw5000.addEventListener("pointerup", this.handleNavUp);
 
         this.btnRew1m.addEventListener("pointerdown", this.rew1m);
-        this.btnRew1m.addEventListener("pointerup", this.handleNavUp);
         this.btnFfw1m.addEventListener("pointerdown", this.ffw1m);
-        this.btnFfw1m.addEventListener("pointerup", this.handleNavUp);
 
         this.btnRew5m.addEventListener("pointerdown", this.rew5m);
-        this.btnRew5m.addEventListener("pointerup", this.handleNavUp);
         this.btnFfw5m.addEventListener("pointerdown", this.ffw5m);
-        this.btnFfw5m.addEventListener("pointerup", this.handleNavUp);
 
         this.btnRew10m.addEventListener("pointerdown", this.rew10m);
-        this.btnRew10m.addEventListener("pointerup", this.handleNavUp);
         this.btnFfw10m.addEventListener("pointerdown", this.ffw10m);
-        this.btnFfw10m.addEventListener("pointerup", this.handleNavUp);
     }
 
     removeListeners() {
@@ -181,44 +165,28 @@ class VideoEditor extends HTMLElement {
         this.btnMove.removeEventListener("click", this.toggleMoveMode);
 
         this.btnPrevFrame.removeEventListener("pointerdown", this.prevFrame);
-        this.btnPrevFrame.removeEventListener("pointerup", this.handleNavUp);
         this.btnNextFrame.removeEventListener("pointerdown", this.nextFrame);
-        this.btnNextFrame.removeEventListener("pointerup", this.handleNavUp);
 
         this.btnRew500.removeEventListener("pointerdown", this.rew500);
-        this.btnRew500.removeEventListener("pointerup", this.handleNavUp);
         this.btnFfw500.removeEventListener("pointerdown", this.ffw500);
-        this.btnFfw500.removeEventListener("pointerup", this.handleNavUp);
 
         this.btnRew1000.removeEventListener("pointerdown", this.rew1000);
-        this.btnRew1000.removeEventListener("pointerup", this.handleNavUp);
         this.btnFfw1000.removeEventListener("pointerdown", this.ffw1000);
-        this.btnFfw1000.removeEventListener("pointerup", this.handleNavUp);
 
         this.btnRew2000.removeEventListener("pointerdown", this.rew2000);
-        this.btnRew2000.removeEventListener("pointerup", this.handleNavUp);
         this.btnFfw2000.removeEventListener("pointerdown", this.ffw2000);
-        this.btnFfw2000.removeEventListener("pointerup", this.handleNavUp);
 
         this.btnRew5000.removeEventListener("pointerdown", this.rew5000);
-        this.btnRew5000.removeEventListener("pointerup", this.handleNavUp);
         this.btnFfw5000.removeEventListener("pointerdown", this.ffw5000);
-        this.btnFfw5000.removeEventListener("pointerup", this.handleNavUp);
 
         this.btnRew1m.removeEventListener("pointerdown", this.rew1m);
-        this.btnRew1m.removeEventListener("pointerup", this.handleNavUp);
         this.btnFfw1m.removeEventListener("pointerdown", this.ffw1m);
-        this.btnFfw1m.removeEventListener("pointerup", this.handleNavUp);
 
         this.btnRew5m.removeEventListener("pointerdown", this.rew5m);
-        this.btnRew5m.removeEventListener("pointerup", this.handleNavUp);
         this.btnFfw5m.removeEventListener("pointerdown", this.ffw5m);
-        this.btnFfw5m.removeEventListener("pointerup", this.handleNavUp);
 
         this.btnRew10m.removeEventListener("pointerdown", this.rew10m);
-        this.btnRew10m.removeEventListener("pointerup", this.handleNavUp);
         this.btnFfw10m.removeEventListener("pointerdown", this.ffw10m);
-        this.btnFfw10m.removeEventListener("pointerup", this.handleNavUp);
 
         this.indicator.querySelectorAll("markers").forEach((m) => {
             m.removeEventListener("click", this.setCurrentPosByMarker);
@@ -373,6 +341,9 @@ class VideoEditor extends HTMLElement {
     }
 
     handleNavDown(e) {
+        document.addEventListener("pointerup", this.handleNavUp, {
+            once: true,
+        });
         this.pInterval = setInterval(() => this.handleKeyDown(e), 50);
     }
 
