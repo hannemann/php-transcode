@@ -15,16 +15,10 @@ use App\Models\FFMpeg\Actions\Transcode;
 use App\Models\FFMpeg\Actions\RemuxTS;
 use App\Models\FFMpeg\Actions\RemuxMP4;
 use App\Models\FFMpeg\Actions\RemuxMKV;
-use App\Models\FFMpeg\Actions\Scale;
 use App\Models\FFMpeg\Actions\ConcatPrepare;
-use App\Models\FFMpeg\Actions\Crop;
-use App\Models\FFMpeg\Actions\DelogoCPU;
-use App\Models\FFMpeg\Actions\RemovelogoCPU;
 use Throwable;
 use App\Models\CurrentQueue;
 use App\Models\FFMpeg\Actions\ConcatMP4;
-use App\Models\FFMpeg\Actions\ScaleCPU;
-use App\Models\FFMpeg\Actions\CropCPU;
 use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 
 class ProcessVideo implements ShouldQueue //, ShouldBeUnique
@@ -115,24 +109,6 @@ class ProcessVideo implements ShouldQueue //, ShouldBeUnique
                     break;
                 case 'transcode':
                     $model = Transcode::class;
-                    break;
-                case 'scale':
-                    $model = Scale::class;
-                    break;
-                case 'ScaleCPU':
-                    $model = ScaleCPU::class;
-                    break;
-                case 'crop':
-                    $model = Crop::class;
-                    break;
-                case 'cropCPU':
-                    $model = CropCPU::class;
-                    break;
-                case 'delogoCPU':
-                    $model = DelogoCPU::class;
-                    break;
-                case 'removelogoCPU':
-                    $model = RemovelogoCPU::class;
                     break;
                 case 'prepare':
                     $model = ConcatPrepare::class;

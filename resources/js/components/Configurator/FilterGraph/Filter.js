@@ -6,6 +6,7 @@ import { requestPad } from "../Tools/pad.js";
 import { requestDelogo } from "../Tools/delogo.js";
 import { requestRemovelogo } from "../Tools/removelogo.js";
 import { requestFillborders } from "../Tools/fillborders.js";
+import { requestScale } from "../Tools/scale.js";
 import { VTime } from "../../../Helper/Time.js";
 import { saveCustomMask } from "../Dialogues/RemoveLogo/index.js";
 import Paint from "../../../Helper/Paint.js";
@@ -54,6 +55,9 @@ class Filter extends HTMLElement {
                 break;
             case "fillborders":
                 requestFillborders.call(this.configurator, filterData);
+                break;
+            case "scale":
+                requestScale.call(this.configurator, filterData);
                 break;
         }
     }

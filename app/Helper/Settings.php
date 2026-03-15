@@ -4,15 +4,15 @@ namespace App\Helper;
 
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\UnableToReadFile;
-use App\Models\FFMpeg\Actions\RemovelogoCPU;
+use App\Models\FFMpeg\Filters\Video\Removelogo;
 
 class Settings
 {
     public static function decorateStreams(string $path, array $streams): array
     {
         $settings = static::getSettings($path);
-        foreach($settings['streams'] as $streamSetting) {
-            foreach($streams as $key => /* @var Stream */$stream) {
+        foreach ($settings['streams'] as $streamSetting) {
+            foreach ($streams as $key => /* @var Stream */ $stream) {
                 if ($stream->get('index') === $streamSetting['id']) {
                     if ($stream->get('codec_type') === 'video') {
                         $streamSetting['config']['aspectRatio'] = $streamSetting['config']['aspectRatio'] ?? $stream->get('display_aspect_ratio');
@@ -40,7 +40,6 @@ class Settings
                 return $settings;
             }
             return ['clips' => [], 'streams' => []];
-            
         } catch (UnableToReadFile $e) {
             return ['clips' => [], 'streams' => []];
         }
@@ -62,7 +61,7 @@ class Settings
 
         $hasRemoveLogo = collect($data['filterGraph'])->firstWhere('filterType', 'removeLogo');
         if (!$hasRemoveLogo) {
-            RemovelogoCPU::deleteMasks($path);
+            Removelogo::deleteMasks($path);
         }
 
         $out = json_encode($data,  JSON_PRETTY_PRINT |  JSON_UNESCAPED_SLASHES);

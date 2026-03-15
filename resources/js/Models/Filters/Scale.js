@@ -1,18 +1,17 @@
 import { FilterModel } from "./FilterModel";
 
 /**
- * @typedef {Object} CropData
+ * @typedef {Object} ScaleData
  * @property {Number} [filterIndex]     idx of filter in filterGraph array
- * @property {String} [filterType]      crop
- * @property {Number} [cw]              width
- * @property {Number} [ch]              height
- * @property {Number} [cy]              top
- * @property {Number} [cx]              left
+ * @property {String} [filterType]      scale
+ * @property {Number} [width]           width
+ * @property {Number} [height]          height
+ * @property {String} [aspect]          aspect ratio
  */
 
-const filterType = "crop";
+const filterType = "scale";
 
-export class Crop extends FilterModel {
+export class Scale extends FilterModel {
     filterType = filterType;
 
     /**
@@ -21,14 +20,13 @@ export class Crop extends FilterModel {
      */
     constructor(
         filterIndex = null,
-        { cw = null, ch = null, cy = null, cx = null } = {},
+        { width = null, height = null, aspect = null } = {},
     ) {
         super();
         this.filterIndex = filterIndex;
-        this.cw = cw;
-        this.ch = ch;
-        this.cx = cx;
-        this.cy = cy;
+        this.width = width;
+        this.height = height;
+        this.aspect = aspect;
     }
 
     /**
@@ -39,10 +37,9 @@ export class Crop extends FilterModel {
         return {
             filterIndex: this.filterIndex,
             filterType: this.filterType,
-            cw: this.cw,
-            ch: this.ch,
-            cx: this.cx,
-            cy: this.cy,
+            width: this.width,
+            height: this.height,
+            aspect: this.aspect,
         };
     }
 }

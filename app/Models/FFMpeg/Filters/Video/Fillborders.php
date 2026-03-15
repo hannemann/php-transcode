@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Models\FFMpeg\Actions;
+namespace App\Models\FFMpeg\Filters\Video;
 
-use FFMpeg\Format\Video\X264 as Format;
 use FFMpeg\Coordinate\TimeCode;
 
-class Fillborders extends AbstractAction
+class Fillborders
 {
     const VALID_MODES = [
         'smear',
@@ -22,10 +21,6 @@ class Fillborders extends AbstractAction
     const TEMPLATE_FILTER = 'fillborders=top=%d:right=%d:bottom=%d:left=%d:mode=%s';
     const TEMPLATE_ENABLE = 'enable=\'between(t,%f,%f)\'';
     const TEMPLATE_COLOR = 'color=%s';
-
-    protected string $filenameAffix = 'fillborders';
-    protected string $filenameSuffix = 'mkv';
-    protected string $formatClass = Format::class;
 
     public static function getFilterString($data, ?string $timestamp = null): string
     {

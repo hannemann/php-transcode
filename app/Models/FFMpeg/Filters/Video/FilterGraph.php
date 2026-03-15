@@ -4,12 +4,11 @@ namespace App\Models\FFMpeg\Filters\Video;
 
 use App\Helper\Settings;
 use Illuminate\Support\Collection;
-use App\Models\FFMpeg\Actions\CropCPU;
-use App\Models\FFMpeg\Actions\ScaleCPU;
-use App\Models\FFMpeg\Actions\DelogoCPU;
-use App\Models\FFMpeg\Actions\Fillborders;
-use App\Models\FFMpeg\Actions\RemovelogoCPU;
+use App\Models\FFMpeg\Filters\Video\Removelogo;
+use App\Models\FFMpeg\Filters\Video\Delogo;
+use App\Models\FFMpeg\Filters\Video\Fillborders;
 use App\Models\FFMpeg\Filters\Video\Pad;
+use App\Models\FFMpeg\Filters\Video\Scale;
 use App\Models\FFMpeg\Filters\Video\Crop;
 
 class FilterGraph
@@ -58,7 +57,7 @@ class FilterGraph
 
             switch ($setting['filterType']) {
                 case self::FILTER_TYPE_SCALE:
-                    $this->filters->push($this->getScaleFilter($setting));
+                    $this->filters->push(Scale::getFilterString($setting['width'], $setting['height']));
                     $this->width = $setting['width'];
                     $this->height = $setting['height'];
                     break;
@@ -68,17 +67,17 @@ class FilterGraph
                 case self::FILTER_TYPE_CROP:
                     $this->filters->push(Crop::getFilterString($setting));
                     break;
+                case self::FILTER_TYPE_PAD:
+                    $this->filters->push(Pad::getFilterString($setting));
+                    break;
                 case self::FILTER_TYPE_DELOGO:
-                    $this->filters->push($this->getDelogoFilter($setting));
+                    $this->filters->push(Delogo::getFilterString($setting, $this->timestamp));
                     break;
                 case self::FILTER_TYPE_FILLBORDERS:
-                    $this->filters->push($this->getFillbordersFilter($setting));
+                    $this->filters->push(Fillborders::getFilterString($setting, $this->timestamp));
                     break;
                 case self::FILTER_TYPE_REMOVELOGO:
                     $this->filters->push($this->getRemoveLogoFilter($setting));
-                    break;
-                case self::FILTER_TYPE_PAD:
-                    $this->filters->push(Pad::getFilterString($setting));
                     break;
             }
             return $this->filters->last();
@@ -95,24 +94,9 @@ class FilterGraph
         return $this->graph;
     }
 
-    private function getScaleFilter(array $settings): string
-    {
-        return ScaleCPU::getFilterString($settings['width'], $settings['height']);
-    }
-
     private function getDeinterlaceFilter(array $settings): string
     {
         return 'bwdif=mode=send_field:parity=auto:deint=all';
-    }
-
-    private function getDelogoFilter(array $settings): string
-    {
-        return DelogoCPU::getFilterString($settings, $this->timestamp);
-    }
-
-    private function getFillbordersFilter(array $settings): string
-    {
-        return Fillborders::getFilterString($settings, $this->timestamp);
     }
 
     private function getRemoveLogoFilter(array $settings): string
@@ -120,8 +104,8 @@ class FilterGraph
         $width = $this->width ? $this->width : $settings['w'];
         $height = $this->height ? $this->height : $settings['h'];
 
-        return RemovelogoCPU::getFilterString(
-            RemovelogoCPU::getBitMap($this->disk, $this->path, $settings['timestamp'], $width, $height, $this->filters->join(','))
+        return Removelogo::getFilterString(
+            Removelogo::getBitMap($this->disk, $this->path, $settings['timestamp'], $width, $height, $this->filters->join(','))
         );
     }
 }

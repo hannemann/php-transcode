@@ -9,7 +9,7 @@ use App\Models\FFMpeg\Filters\Video\FilterGraph;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Collection;
 use App\Exceptions\VideoEditor\InvalidMaskCoverageException;
-use App\Models\FFMpeg\Actions\RemovelogoCPU;
+use App\Models\FFMpeg\Filters\Video\Removelogo;
 
 class Image
 {
@@ -118,9 +118,9 @@ class Image
     public static function getLogoMaskFullnameByPath(string $path): ?string
     {
 
-        $customMask = RemovelogoCPU::getCustomMaskPath($path);
+        $customMask = Removelogo::getCustomMaskPath($path);
 
-        if (RemovelogoCPU::hasCustomMask($customMask)) {
+        if (Removelogo::hasCustomMask($customMask)) {
             return sprintf(
                 '%s/%s',
                 config('filesystems.disks.recordings.root'),

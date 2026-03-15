@@ -2,40 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\RemovelogoRequest;
 use App\Http\Requests\RemoveLogoCustomMaskUploadRequest;
 use App\Http\Requests\Clipper\ImageRequest;
 use App\Models\FFMpeg\Clipper\Image;
 use Illuminate\Support\Facades\Response as ResponseFacade;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Http\JsonResponse;
-use App\Jobs\ProcessVideo;
-use App\Models\FFMpeg\Actions\RemovelogoCPU;
-use Illuminate\Support\Facades\Storage;
-use App\Models\FFMpeg\Filters\Video\FilterGraph;
+use App\Models\FFMpeg\Filters\Video\Removelogo;
 
 class RemovelogoController extends Controller
 {
-    public function removelogo(RemovelogoRequest $request, string $path):? JsonResponse
-    {
-        try {
-            $type = $request->input('type');
-            if ($type === 'vaapi') {
-            // (new Removelogo('recordings', $path, 0, $request->input()))->execute();
-            ProcessVideo::dispatch('removelogo', 'recordings', $path, $request);
-        } elseif ($type === 'cpu') {
-            // (new RemovelogoCPU('recordings', $path, 0, $request->input()))->execute();
-            ProcessVideo::dispatch('removelogoCPU', 'recordings', $path, $request);
-        }
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => sprintf($e->getMessage())
-            ], 500);
-        }
-        return null;
-    }
-
-    public function image(ImageRequest $request, string $path):? Response
+    public function image(ImageRequest $request, string $path): ?Response
     {
         try {
             return ResponseFacade::stream(function () use ($path, $request) {
@@ -72,9 +49,10 @@ class RemovelogoController extends Controller
         return response()->file($imagePath);
     }
 
-    public function deleteMasks(string $path) {
+    public function deleteMasks(string $path)
+    {
         try {
-            RemovelogoCPU::deleteMasks($path);
+            Removelogo::deleteMasks($path);
             $status = 200;
             $message = 'Masks deleted';
         } catch (\Exception $e) {

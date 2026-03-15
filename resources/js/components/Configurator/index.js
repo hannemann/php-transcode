@@ -643,7 +643,7 @@ TranscodeConfigurator.template = html`
                     </option>
                     <option value="pad:instantOpen">Pad</option>
                     <option value="crop:instantOpen">Crop</option>
-                    <option value="scale:cpu:instantOpen">Scale</option>
+                    <option value="scale:instantOpen">Scale</option>
                     <option value="delogo:instantOpen">DeLogo</option>
                     <option value="removelogo:instantOpen">RemoveLogo</option>
                     <option value="fillborders:instantOpen" selected>

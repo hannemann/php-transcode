@@ -1,36 +1,32 @@
-import { DomHelper } from "../../../Helper/Dom";
+import { Scale as Model } from "../../../../Models/Filters/Scale";
 
-const DEFAULT_WIDTH = 720;
-const DEFAULT_HEIGHT = 576;
-const DEFAULT_ASPECT = "4:3";
-
-import { VALID_ASPECT_RATIOS } from "../Streams/Video";
-import { VideoEditor } from "./VideoEditor";
+import { VALID_ASPECT_RATIOS } from "../../Streams/Video";
+import { VideoEditor } from "../VideoEditor";
 
 class Scale extends VideoEditor {
+    /**
+     * @type {Model}
+     */
+    #model;
+
+    #btn1080;
+    #btn720;
+    #btn576;
+    #inputWidth;
+    #inputHeight;
+    #input43;
+    #input169;
+    #inputKeep;
+
     connectedCallback() {
-        this.initElements().initListeners().addListeners();
-        this.aspectRatio = DEFAULT_ASPECT;
-        this.width = DEFAULT_WIDTH;
-        this.height = DEFAULT_HEIGHT;
-        this.calculateWidth();
+        this.bindListeners();
+        requestAnimationFrame(() => {
+            this.addListeners();
+            this.calculateWidth();
+        });
     }
 
-    initElements() {
-        const shadow = this.shadowRoot;
-        this.btn1080 = shadow.querySelector('theme-button[data-height="1080"]');
-        this.btn720 = shadow.querySelector('theme-button[data-height="720"]');
-        this.btn576 = shadow.querySelector('theme-button[data-height="576"]');
-        this.btn480 = shadow.querySelector('theme-button[data-height="480"]');
-        this.inputWidth = shadow.querySelector('input[placeholder="Width"]');
-        this.inputHeight = shadow.querySelector('input[placeholder="Height"]');
-        this.input43 = shadow.querySelector('input[value="4:3"]');
-        this.input169 = shadow.querySelector('input[value="16:9"]');
-        this.inputKeep = shadow.querySelector('input[value="keep"]');
-        return this;
-    }
-
-    initListeners() {
+    bindListeners() {
         this.handleWidth = this.handleWidth.bind(this);
         this.handleHeight = this.handleHeight.bind(this);
         this.handleSize = this.handleSize.bind(this);
@@ -42,7 +38,6 @@ class Scale extends VideoEditor {
         this.btn1080.addEventListener("click", this.handleSize);
         this.btn720.addEventListener("click", this.handleSize);
         this.btn576.addEventListener("click", this.handleSize);
-        this.btn480.addEventListener("click", this.handleSize);
         this.inputWidth.addEventListener("input", this.handleSize);
         this.inputHeight.addEventListener("input", this.handleSize);
         this.input43.addEventListener("change", this.handleAspectRatio);
@@ -55,7 +50,6 @@ class Scale extends VideoEditor {
         this.btn1080.removeEventListener("click", this.handleSize);
         this.btn720.removeEventListener("click", this.handleSize);
         this.btn576.removeEventListener("click", this.handleSize);
-        this.btn480.removeEventListener("click", this.handleSize);
         this.inputWidth.removeEventListener("input", this.handleSize);
         this.inputHeight.removeEventListener("input", this.handleSize);
         this.input43.removeEventListener("change", this.handleAspectRatio);
@@ -98,9 +92,25 @@ class Scale extends VideoEditor {
         this.calculateWidth();
     }
 
+    /**
+     * @param {Model} model
+     */
+    set scale(model) {
+        this.#model = model;
+        this.inputWidth.value = Number(model.width);
+        this.inputHeight.value = Number(model.height);
+        this.aspectRatio = model.aspect;
+    }
+
+    /**
+     * @returns {Model}
+     */
+    get scale() {
+        return this.#model;
+    }
+
     get aspectRatio() {
-        const ratios = [this.input43, this.input169, this.inputKeep];
-        return ratios.find((i) => i.checked)?.dataset.value;
+        return this.#model.aspect;
     }
 
     set aspectRatio(value) {
@@ -111,64 +121,112 @@ class Scale extends VideoEditor {
             const ratios = [this.input43, this.input169];
             input = ratios.find((i) => i.value === value);
         }
-        input.dataset.value = value;
-        input && (input.checked = true);
+        if (input) {
+            this.#model.aspect = value;
+            input.checked = true;
+        }
     }
 
     get width() {
-        return Number(this.inputWidth.value);
+        return this.#model.width;
     }
 
     set width(value) {
+        this.#model.width = Number(value);
         this.inputWidth.value = value;
     }
 
     get height() {
-        return Number(this.inputHeight.value);
+        return this.#model.height;
     }
 
     set height(value) {
+        this.#model.height = Number(value);
         this.inputHeight.value = value;
+    }
+
+    get btn1080() {
+        return (this.#btn1080 ??= this.shadowRoot.querySelector(
+            'theme-button[data-height="1080"]',
+        ));
+    }
+    get btn720() {
+        return (this.#btn720 ??= this.shadowRoot.querySelector(
+            'theme-button[data-height="720"]',
+        ));
+    }
+    get btn576() {
+        return (this.#btn576 ??= this.shadowRoot.querySelector(
+            'theme-button[data-height="576"]',
+        ));
+    }
+    get inputWidth() {
+        return (this.#inputWidth ??= this.shadowRoot.querySelector(
+            'input[placeholder="Width"]',
+        ));
+    }
+    get inputHeight() {
+        return (this.#inputHeight ??= this.shadowRoot.querySelector(
+            'input[placeholder="Height"]',
+        ));
+    }
+    get input43() {
+        return (this.#input43 ??=
+            this.shadowRoot.querySelector('input[value="4:3"]'));
+    }
+    get input169() {
+        return (this.#input169 ??= this.shadowRoot.querySelector(
+            'input[value="16:9"]',
+        ));
+    }
+    get inputKeep() {
+        return (this.#inputKeep ??= this.shadowRoot.querySelector(
+            'input[value="keep"]',
+        ));
     }
 }
 
+const CSS = css`
+    :host {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    fieldset {
+        border: 2px solid var(--clr-bg-200);
+        padding: 1rem;
+        background: var(--clr-bg-100);
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        border-radius: 0.25rem;
+
+        div.flex-h {
+            display: flex;
+            gap: 0.5rem;
+        }
+    }
+    legend {
+        background: var(--clr-bg-0);
+        padding: 0.25rem;
+        border-radius: 0.25rem;
+    }
+    label {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+    input {
+        accent-color: var(--clr-enlightened);
+    }
+    input:checked {
+        box-shadow: 0 0 10px 3px var(--clr-enlightened-glow);
+    }
+`;
+
 Scale.template = html`
     <style>
-        :host {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        fieldset {
-            border: 2px solid var(--clr-bg-200);
-            padding: 1rem;
-            background: var(--clr-bg-100);
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            border-radius: 0.25rem;
-
-            div.flex-h {
-                display: flex;
-                gap: 0.5rem;
-            }
-        }
-        legend {
-            background: var(--clr-bg-0);
-            padding: 0.25rem;
-            border-radius: 0.25rem;
-        }
-        label {
-            display: flex;
-            justify-content: space-between;
-            gap: 0.5rem;
-        }
-        input {
-            accent-color: var(--clr-enlightened);
-        }
-        input:checked {
-            box-shadow: 0 0 10px 3px var(--clr-enlightened-glow);
-        }
+        ${CSS}
     </style>
     <fieldset>
         <legend>Standard:</legend>
@@ -176,7 +234,6 @@ Scale.template = html`
             <theme-button data-height="1080">1080p</theme-button>
             <theme-button data-height="720">720p</theme-button>
             <theme-button data-height="576">576p</theme-button>
-            <theme-button data-height="480">480p</theme-button>
         </div>
     </fieldset>
     <fieldset>
