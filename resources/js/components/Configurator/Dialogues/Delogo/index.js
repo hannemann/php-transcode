@@ -405,13 +405,18 @@ export class DeLogo extends VideoEditor {
      */
     async copyItem(idx) {
         const src = this.configurator.filterGraph[idx];
-        const dest = structuredClone(src);
-        dest.filterIndex = this.configurator.filterGraph.getProposedFilterIndex(
-            Delogo.filterType,
-        );
+        const clone = structuredClone(src);
+        const filterIndex =
+            this.configurator.filterGraph.getProposedFilterIndex(
+                Delogo.filterType,
+            );
 
-        dest.between.from = new VTime(this.current).seconds;
-        dest.between.to = new VTime(this.current).seconds;
+        clone.between.from = new VTime(this.current).seconds;
+        clone.between.to = new VTime(
+            this.current + (src.between.to - src.between.from),
+        ).seconds;
+
+        const dest = new Delogo(filterIndex, clone);
 
         this.configurator.filterGraph.splice(dest.filterIndex, 0, dest);
 
