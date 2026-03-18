@@ -301,10 +301,18 @@ export class DeLogo extends VideoEditor {
      * set between from value to model and update ui
      */
     setBetweenFrom() {
+        const from = this.model.between.from;
+        const to = this.model.between.to;
+        const delta = to && from && to > from ? to - from : 0;
+
         this.model.between.from = this.timestamp();
+        this.model.between.to = new VTime(
+            this.model.between.from + new VTime(delta),
+        );
         this.betweenFrom = this.model.between.from?.getCutpoint(
             this.clipsConfig,
         );
+        this.betweenTo = this.model.between.to?.getCutpoint(this.clipsConfig);
     }
 
     /**

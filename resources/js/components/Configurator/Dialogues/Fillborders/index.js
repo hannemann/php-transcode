@@ -463,11 +463,25 @@ class Fillborders extends VideoEditor {
     }
 
     set from(value) {
+        const from = this.model.between.from;
+        const to = this.model.between.to;
+        const delta = to && from && to > from ? to - from : 0;
+
         this.model.between.from = new VTime(value);
-        const node = this.shadowRoot.querySelector('span[data-ref="from"]');
+        this.model.between.to = new VTime(
+            this.model.between.from + new VTime(delta),
+        );
+
+        let node = this.shadowRoot.querySelector('span[data-ref="from"]');
         node.dataset.raw = this.model.between.from.milliseconds || "";
         node.innerText = value
             ? this.model.between.from.getCutpoint(this.clipsConfig)
+            : "";
+
+        node = this.shadowRoot.querySelector('span[data-ref="to"]');
+        node.dataset.raw = this.model.between.to.milliseconds || "";
+        node.innerText = value
+            ? this.model.between.to.getCutpoint(this.clipsConfig)
             : "";
     }
 
