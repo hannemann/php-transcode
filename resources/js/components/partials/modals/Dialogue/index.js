@@ -41,6 +41,17 @@ class Dialogue extends AbstractModal {
         this.headerNode.addEventListener("pointerdown", this.handleMouseDown);
         this.addEventListener("pointermove", this.handleMouseMove);
         this.addEventListener("pointerup", this.handleMouseUp);
+
+        const slot = this.shadowRoot.querySelector("slot");
+        const main = this.shadowRoot.querySelector("main");
+
+        slot.addEventListener("slotchange", () => {
+            const isAuto = slot
+                .assignedElements()
+                .some((el) => el.classList.contains("auto-width"));
+
+            main.dataset.autoWidth = isAuto.toString();
+        });
     }
 
     disconnectedCallback() {

@@ -14,6 +14,7 @@ use FFMpeg\FFProbe\DataMapping\Stream;
 
 use Alchemy\BinaryDriver\Listeners\DebugListener;
 use App\Events\FFMpegOut;
+use App\Helper\Settings;
 use App\Jobs\ProcessVideo;
 use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 use FFMpeg\Format\Video\DefaultVideo;
@@ -96,7 +97,7 @@ class AbstractAction
     protected function saveCommand(array $commands): array
     {
         $binary = $this->driver->getConfiguration()->get('ffmpeg.binaries');
-        $command = collect($commands)->map(function($command) use ($binary) {
+        $command = collect($commands)->map(function ($command) use ($binary) {
             return collect($command)->prepend($binary)->implode(' ');
         })->implode("\n");
         CurrentQueue::where('id', $this->current_queue_id)->update([
@@ -124,13 +125,20 @@ class AbstractAction
      */
     public function getOutputFilename(): string
     {
+        $filename = Settings::getSettings($this->path)['outFile'];
+        if (!$filename) {
+            $filename = sprintf(
+                '%s.%s.%s',
+                sha1($this->path),
+                $this->filenameAffix,
+                $this->filenameSuffix
+            );
+        }
         $path = rtrim(dirname($this->path), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         return sprintf(
-            '%s%s.%s.%s',
+            '%s%s',
             $path,
-            sha1($this->path),
-            $this->filenameAffix,
-            $this->filenameSuffix
+            $filename
         );
     }
 
@@ -150,16 +158,17 @@ class AbstractAction
             'remaining' => $remaining,
             'rate' => $rate,
         ]);
-        
+
         FFMpegProgress::dispatch('queue.progress');
 
-        if ($percentage === 100 ||
+        if (
+            $percentage === 100 ||
             !$this->outputFileExists &&
             FilePicker::root('recordings')::disk()->exists($this->getOutputFilename())
         ) {
             $this->outputFileExists = true;
             $items = FilePicker::root('recordings')::getItems(dirname($this->path));
-            $items = $items->map(function($item) {
+            $items = $items->map(function ($item) {
                 $item['in_progress'] = $item['name'] === basename($this->getOutputFilename());
                 return $item;
             });

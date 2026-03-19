@@ -31,3 +31,26 @@ VIDEO_STANDARDS.set("1080p", {
 export const getStandardByHeight = function (height) {
     return [...VIDEO_STANDARDS].find(([key, value]) => value.height >= height);
 };
+
+export const VIDEO_EXTENSIONS = [
+    "mkv",
+    "mp4",
+    "m4v",
+    "avi",
+    "mov",
+    "flv",
+    "wmv",
+    "webm",
+    "mpg",
+    "mpeg",
+    "ogv",
+    "3gp",
+    "3g2",
+    "asf",
+    "mts",
+    "m2ts",
+    "vob",
+    "qt",
+    "divx",
+    "xvid",
+];

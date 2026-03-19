@@ -94,7 +94,8 @@ Route::get('/streams/{path?}', function (?string $path = null) {
             Settings::getSettings($path)['removeLogo'] ?? [],
             Settings::getSettings($path)['delogo'] ?? [],
             Settings::getSettings($path)['filterGraph'] ?? [],
-            $chapters->chapters
+            $chapters->chapters,
+            Settings::getSettings($path)['outFile'] ?? '',
         );
     } catch (\Exception $e) {
         return response()->json([

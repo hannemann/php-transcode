@@ -203,6 +203,10 @@ const MODAL_BASE_CSS = css`
         border: var(--window-border);
         border-radius: 0.5rem;
         padding: 1rem;
+
+        &[data-auto-width="true"] {
+            max-width: none;
+        }
     }
     header {
         font-weight: bold;

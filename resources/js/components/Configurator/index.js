@@ -14,6 +14,7 @@ import "./Dialogues/Delogo";
 import "./Dialogues/RemoveLogo";
 import "./Dialogues/Fillborders";
 import "./Dialogues/Pad";
+import "./Dialogues/OutFilename";
 import { toolProxy } from "./Tools";
 import { DomHelper } from "../../Helper/Dom";
 import { FilterGraph } from "../../Models/Filters/FilterGraph";
@@ -228,6 +229,7 @@ class TranscodeConfigurator extends HTMLElement {
         this.fillborders = ws.fillborders ?? {};
         this.filterGraph = ws.filterGraph ?? [];
         this.chapters = ws.chapters ?? [];
+        this.outFile = ws.outFile ?? "";
         this.show();
     }
 
@@ -449,6 +451,7 @@ class TranscodeConfigurator extends HTMLElement {
             removeLogo: this.removeLogo,
             delogo: this.delogo,
             filterGraph: this.filterGraph,
+            outFile: this.outFile,
         };
     }
 
@@ -648,6 +651,9 @@ TranscodeConfigurator.template = html`
                     <option value="removelogo:instantOpen">RemoveLogo</option>
                     <option value="fillborders:instantOpen" selected>
                         Fillborders
+                    </option>
+                    <option value="outFileName:instantOpen" selected>
+                        Output Filename
                     </option>
                 </combo-button>
                 <theme-button class="btn-clipper">

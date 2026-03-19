@@ -10,6 +10,7 @@ import { requestDeinterlace } from "./deinterlace.js";
 import { requestFillborders } from "./fillborders.js";
 import { requestChaptersKeep } from "./chaptersKeep.js";
 import { requestPad } from "./pad.js";
+import { requestOutFileName } from "./outFileName.js";
 
 export const toolProxy = async function (e) {
     const args = e.target.value.split(":");
@@ -54,6 +55,9 @@ export const toolProxy = async function (e) {
             break;
         case "pad":
             requestPad.apply(this, args);
+            break;
+        case "outFileName":
+            requestOutFileName.apply(this, args);
             break;
     }
 };
