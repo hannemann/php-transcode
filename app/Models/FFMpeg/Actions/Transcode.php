@@ -9,6 +9,7 @@ use App\Models\FFMpeg\Format\Video\h264_vaapi;
 use App\Models\Video\File;
 use FFMpeg\Coordinate\TimeCode;
 use App\Jobs\ProcessVideo;
+use App\Helper\Settings;
 
 /**
  * @property h264_vaapi $format
@@ -153,5 +154,27 @@ class Transcode extends AbstractAction
             $percentage = round(100 / $this->clipDuration * $processed);
         }
         return $percentage;
+    }
+
+    /**
+     * obtain output filename
+     */
+    public function getOutputFilename(): string
+    {
+        $filename = Settings::getSettings($this->path)['outFile'];
+        if (!$filename) {
+            $filename = sprintf(
+                '%s.%s.%s',
+                sha1($this->path),
+                $this->filenameAffix,
+                $this->filenameSuffix
+            );
+        }
+        $path = rtrim(dirname($this->path), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        return sprintf(
+            '%s%s',
+            $path,
+            $filename
+        );
     }
 }

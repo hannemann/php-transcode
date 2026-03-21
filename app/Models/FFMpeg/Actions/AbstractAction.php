@@ -14,7 +14,6 @@ use FFMpeg\FFProbe\DataMapping\Stream;
 
 use Alchemy\BinaryDriver\Listeners\DebugListener;
 use App\Events\FFMpegOut;
-use App\Helper\Settings;
 use App\Jobs\ProcessVideo;
 use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 use FFMpeg\Format\Video\DefaultVideo;
@@ -125,20 +124,13 @@ class AbstractAction
      */
     public function getOutputFilename(): string
     {
-        $filename = Settings::getSettings($this->path)['outFile'];
-        if (!$filename) {
-            $filename = sprintf(
-                '%s.%s.%s',
-                sha1($this->path),
-                $this->filenameAffix,
-                $this->filenameSuffix
-            );
-        }
         $path = rtrim(dirname($this->path), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         return sprintf(
-            '%s%s',
+            '%s%s.%s.%s',
             $path,
-            $filename
+            sha1($this->path),
+            $this->filenameAffix,
+            $this->filenameSuffix
         );
     }
 
