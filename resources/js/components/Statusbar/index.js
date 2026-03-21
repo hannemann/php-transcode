@@ -113,12 +113,24 @@ class Statusbar extends HTMLElement {
     }
 
     toggleDetail() {
-        const detail = this.sectionDetail.classList.contains("hidden");
-        this.classList.toggle("detail", detail);
-        this.iconShort.classList.toggle("hidden", detail);
-        this.iconDetail.classList.toggle("hidden", !detail);
-        this.sectionDetail.classList.toggle("hidden", !detail);
-        this.requestProgress();
+        const showDetail = this.sectionDetail.classList.contains("hidden");
+        this.classList.toggle("detail", showDetail);
+        this.iconShort.classList.toggle("hidden", showDetail);
+        this.iconDetail.classList.toggle("hidden", !showDetail);
+        this.sectionDetail.classList.toggle("hidden", !showDetail);
+
+        if (showDetail) {
+            this.requestProgress();
+        } else {
+            this.sectionDetail.addEventListener(
+                "transitionend",
+                () => {
+                    this.sectionDetail.style.width = "";
+                    this.sectionDetail.replaceChildren();
+                },
+                { once: true },
+            );
+        }
     }
 
     requestProgress() {
@@ -131,7 +143,8 @@ class Statusbar extends HTMLElement {
         const hasItems = Boolean(queue.length);
         this.dataset.hasItems = hasItems.toString();
         if (!hasItems) {
-            this.sectionDetail.classList.add("hidden");
+            this.toggleDetail();
+            return;
         }
         let current = queue.filter((q) => q.state === STATE_RUNNING);
         let pending = queue.filter((q) => q.state === STATE_PENDING);
@@ -143,29 +156,34 @@ class Statusbar extends HTMLElement {
         this.classList.toggle("running", current.length > 0);
         this.handleTimer(current);
 
-        this.sectionDetail.querySelectorAll("*").forEach((n) => n.remove());
+        if (this.sectionDetail.classList.contains("hidden")) return;
 
+        const newItems = [];
         if (pending.length) {
             let node = document.createElement("status-progress-pending");
             node.items = pending;
-            this.sectionDetail.appendChild(node);
+            newItems.push(node);
         }
         if (current.length) {
             const node = document.createElement("status-progress-current");
             node.item = current[0];
             node.statusbar = this;
-            this.sectionDetail.appendChild(node);
+            newItems.push(node);
         }
         if (failed.length) {
             const node = document.createElement("status-progress-failed");
             node.items = failed;
-            this.sectionDetail.appendChild(node);
+            newItems.push(node);
         }
         if (done.length) {
             const node = document.createElement("status-progress-done");
             node.items = done;
-            this.sectionDetail.appendChild(node);
+            newItems.push(node);
         }
+        this.sectionDetail.replaceChildren(...newItems);
+        requestAnimationFrame(() => {
+            this.sectionDetail.style.width = `${this.sectionDetail.offsetWidth}px`;
+        });
     }
 
     handleTimer(current) {
@@ -302,6 +320,7 @@ const CSS = css`
         background: var(--clr-bg-150);
         border: 2px var(--clr-bg-200);
         box-shadow: 0 0 7vw 0 var(--clr-shadow-0);
+        box-sizing: border-box;
         border-top-left-radius: 0.5rem;
         padding: 0.5rem;
         display: flex;

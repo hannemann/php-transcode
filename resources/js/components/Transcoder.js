@@ -125,11 +125,8 @@ customElements.define("ffmpeg-transcoder", Transcoder);
 
 TODO:
 
-- add pad filter
-- cleanup crop filter
 - metadata of streams (is standard, language, ...)
-- remove filter actions (replaced by filter grapgh)
 - sorting of streams
-- cpu encoding
+- remove laravel-ffmpeg library
 
 */
