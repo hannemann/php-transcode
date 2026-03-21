@@ -58,6 +58,10 @@
         var(--hue-error) calc(var(--clr-base-sat) + 40%)
             calc(var(--clr-base-lit) + 60%)
     );
+    --clr-text-warn: hsl(
+        var(--hue-warning) calc(var(--clr-base-sat) + 40%)
+            calc(var(--clr-base-lit) + 60%)
+    );
 
     --clr-text-200-inverse: var(--clr-bg-0);
 

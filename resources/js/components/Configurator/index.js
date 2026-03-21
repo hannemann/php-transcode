@@ -1,11 +1,15 @@
 import { Iconify } from "@/components/lib";
 import { Request } from "@/components/Request";
+import { toolProxy } from "./Tools";
+import { DomHelper } from "../../Helper/Dom";
+import FileHelper from "../../Helper/File";
+import { FilterGraph } from "../../Models/Filters/FilterGraph";
 import { COMBO_BUTTON_CSS } from "@/components/partials";
+import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 import "./Streams";
 import "./Clips";
 import "./Format";
 import "./FilterGraph";
-import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 import "./Dialogues/Scale";
 import "./Dialogues/Concat";
 import "./Dialogues/Clipper";
@@ -15,9 +19,6 @@ import "./Dialogues/RemoveLogo";
 import "./Dialogues/Fillborders";
 import "./Dialogues/Pad";
 import "./Dialogues/OutFilename";
-import { toolProxy } from "./Tools";
-import { DomHelper } from "../../Helper/Dom";
-import { FilterGraph } from "../../Models/Filters/FilterGraph";
 
 const WS_CHANNEL = "Transcode.Config";
 class TranscodeConfigurator extends HTMLElement {
@@ -35,6 +36,7 @@ class TranscodeConfigurator extends HTMLElement {
     initDom() {
         const importNode = DomHelper.fromTemplate.call(this);
         this.main = importNode.querySelector("main");
+        this.displayOutFile = importNode.querySelector('[data-ref="outfile"]');
         this.infoNode = importNode.querySelector(".info");
         this.streamsSection = this.infoNode.querySelector("section");
         this.streamConfig = importNode.querySelector(
@@ -375,9 +377,23 @@ class TranscodeConfigurator extends HTMLElement {
 
         if (skipUpdates) return;
 
+        this.outFile = this.outFile;
         this.format = this.format;
         this.filterGraph = this.filterGraph.reindex();
         this.streams = this.streams;
+    }
+
+    get outFile() {
+        return this.displayOutFile.textContent;
+    }
+
+    set outFile(value) {
+        this.displayOutFile.textContent = value;
+        let fileName = this.item.path?.split("/").pop();
+        this.displayOutFile.classList.toggle(
+            "warn",
+            fileName && FileHelper.guessFileName(fileName) !== value,
+        );
     }
 
     get format() {
@@ -514,12 +530,22 @@ const CSS = css`
     }
     main h1 {
         display: flex;
-        align-items: center;
+        align-items: baseline;
         justify-content: space-between;
         padding: 0;
         margin: 0 0 var(--rel-gutter-100) 0;
         font-size: 1.75rem;
         user-select: none;
+        gap: 0.5rem;
+
+        [data-ref="outfile"] {
+            flex-grow: 1;
+            font-size: var(--font-size-100);
+
+            &.warn {
+                color: var(--clr-text-warn);
+            }
+        }
     }
     main h1 div {
         cursor: pointer;
@@ -586,7 +612,7 @@ const CSS = css`
 
 const HEADING = html`
     <h1>
-        Transcode
+        Transcode <span data-ref="outfile"></span>
         <div class="icon-stack btn-hide">
             <span class="iconify" data-icon="mdi-close"></span>
             <span class="iconify hover" data-icon="mdi-close"></span>

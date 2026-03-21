@@ -1,5 +1,5 @@
 import { VideoEditor } from "../VideoEditor";
-import { VIDEO_EXTENSIONS } from "../../../../Models/VideoStandards";
+import FileHelper from "../../../../Helper/File";
 
 class OutFileName extends VideoEditor {
     #fileNameInput;
@@ -13,7 +13,7 @@ class OutFileName extends VideoEditor {
         requestAnimationFrame(() => {
             this.btnGuess = this.shadowRoot.querySelector('[data-ref="guess"]');
             this.addListeners();
-            this.handleEvent();
+            if (!this.fileName) this.handleEvent();
         });
     }
 
@@ -26,31 +26,9 @@ class OutFileName extends VideoEditor {
         this.btnGuess.removeEventListener("click", this);
     }
 
-    handleEvent(e) {
+    handleEvent() {
         let fileName = this.path.split("/").pop();
-        const hasEpisode = this.hasEpisode(fileName);
-        if (hasEpisode) {
-            const { episode, title, ext } = hasEpisode.groups;
-            fileName = `${episode}.${title}.${ext}`;
-        } else {
-            fileName = fileName
-                .replace(/---/g, " - ")
-                .replace(/([^\s])-([^\s])/g, "$1 $2");
-        }
-        this.fileName = fileName;
-    }
-
-    /**
-     * detect episode descriptor
-     * @param {String} filename
-     * @returns
-     */
-    hasEpisode(filename) {
-        const episode = "(?<episode>S[0-9]{2}E[0-9]{2})";
-        const title = "(?<title>.*)";
-        const ext = `\.(?<ext>(${VIDEO_EXTENSIONS.join("|")}))`;
-        const reg = new RegExp(`.*${episode}(?:-*)${title}${ext}$`);
-        return filename.match(reg);
+        this.fileName = FileHelper.guessFileName(fileName);
     }
 
     get fileNameInput() {

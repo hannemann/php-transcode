@@ -6,6 +6,7 @@ export const requestOutFileName = async function () {
         m.header = "Output Filename";
 
         d.path = this.item.path;
+        d.fileName = this.outFile;
 
         document.body.appendChild(m);
         m.appendChild(d);

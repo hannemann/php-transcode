@@ -51,6 +51,7 @@ class Settings
         if (isset($data['asTemplate'])) {
             $asTemplate = $data['asTemplate'];
             unset($data['asTemplate']);
+            $data['outFile'] = '';
         }
         $data['file'] = $path;
         $data['copy'] = [
