@@ -223,8 +223,9 @@ const MODAL_BASE_CSS = css`
     }
     footer {
         padding: 0.5rem;
-        display: flex;
-        justify-content: flex-end;
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        align-content: center;
         gap: 0.5rem;
     }
     button {
@@ -271,6 +272,7 @@ const MODAL_TEMPLATE_BEGIN = html`
 const MODAL_TEMPLATE_END = html`
     </section>
     <footer>
+        <slot name="footer-content"><div></div></slot>
         <theme-button data-type="cancel">Cancel</theme-button>
         <theme-button data-type="ok">OK</theme-button>
     </footer>

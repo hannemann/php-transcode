@@ -22,6 +22,7 @@ class VideoEditor extends HTMLElement {
     }
 
     connectedCallback() {
+        this.parentNode.insertAdjacentHTML("beforeend", BUTTONS_TEMPLATE);
         this.bindListeners();
         this.fps =
             this.video.avg_frame_rate.split("/")[0] /
@@ -479,7 +480,7 @@ class VideoEditor extends HTMLElement {
     }
 
     get btnMove() {
-        return this.shadowRoot.querySelector(".status .nav.move");
+        return this.parentNode.querySelector(".nav-btns .move");
     }
 
     get btnAspect() {
@@ -495,79 +496,79 @@ class VideoEditor extends HTMLElement {
     }
 
     get btnPrevFrame() {
-        return this.shadowRoot.querySelector(".prev-frame");
+        return this.parentNode.querySelector(".nav-btns .prev-frame");
     }
 
     get btnNextFrame() {
-        return this.shadowRoot.querySelector(".next-frame");
+        return this.parentNode.querySelector(".nav-btns .next-frame");
     }
 
     get btnRew500() {
-        return this.shadowRoot.querySelector(".rew-500");
+        return this.parentNode.querySelector(".nav-btns .rew-500");
     }
 
     get btnFfw500() {
-        return this.shadowRoot.querySelector(".ffw-500");
+        return this.parentNode.querySelector(".nav-btns .ffw-500");
     }
 
     get btnRew1000() {
-        return this.shadowRoot.querySelector(".rew-1000");
+        return this.parentNode.querySelector(".nav-btns .rew-1000");
     }
 
     get btnFfw1000() {
-        return this.shadowRoot.querySelector(".ffw-1000");
+        return this.parentNode.querySelector(".nav-btns .ffw-1000");
     }
 
     get btnRew2000() {
-        return this.shadowRoot.querySelector(".rew-2000");
+        return this.parentNode.querySelector(".nav-btns .rew-2000");
     }
 
     get btnFfw2000() {
-        return this.shadowRoot.querySelector(".ffw-2000");
+        return this.parentNode.querySelector(".nav-btns .ffw-2000");
     }
 
     get btnRew5000() {
-        return this.shadowRoot.querySelector(".rew-5000");
+        return this.parentNode.querySelector(".nav-btns .rew-5000");
     }
 
     get btnFfw5000() {
-        return this.shadowRoot.querySelector(".ffw-5000");
+        return this.parentNode.querySelector(".nav-btns .ffw-5000");
     }
 
     get btnAdd() {
-        return this.shadowRoot.querySelector(".btn-add");
+        return this.parentNode.querySelector(".nav-btns .btn-add");
     }
 
     get btnRemove() {
-        return this.shadowRoot.querySelector(".btn-remove");
+        return this.parentNode.querySelector(".nav-btns .btn-remove");
     }
 
     get btnRew1m() {
-        return this.shadowRoot.querySelector(".rew-1m");
+        return this.parentNode.querySelector(".nav-btns .rew-1m");
     }
 
     get btnFfw1m() {
-        return this.shadowRoot.querySelector(".ffw-1m");
+        return this.parentNode.querySelector(".nav-btns .ffw-1m");
     }
 
     get btnRew5m() {
-        return this.shadowRoot.querySelector(".rew-5m");
+        return this.parentNode.querySelector(".nav-btns .rew-5m");
     }
 
     get btnFfw5m() {
-        return this.shadowRoot.querySelector(".ffw-5m");
+        return this.parentNode.querySelector(".nav-btns .ffw-5m");
     }
 
     get btnRew10m() {
-        return this.shadowRoot.querySelector(".rew-10m");
+        return this.parentNode.querySelector(".nav-btns .rew-10m");
     }
 
     get btnFfw10m() {
-        return this.shadowRoot.querySelector(".ffw-10m");
+        return this.parentNode.querySelector(".nav-btns .ffw-10m");
     }
 
     get timeDisplay() {
-        return this.shadowRoot.querySelector(".time span");
+        return this.parentNode.querySelector(".status .time span");
     }
 }
 
@@ -584,7 +585,6 @@ export const EDITOR_CSS = css`
             min-content max-content;
         grid-template-areas:
             "left frame right"
-            "status status status"
             "thumbnails thumbnails thumbnails";
         grid-column-gap: 0.5rem;
         height: 100%;
@@ -607,55 +607,6 @@ export const EDITOR_CSS = css`
         text-shadow:
             0 0 5px var(--clr-enlightened-glow),
             0 0 10px var(--clr-enlightened-glow);
-    }
-    .status {
-        grid-area: status;
-        display: grid;
-        grid-auto-flow: column;
-        grid-template-columns: repeat(3, 1fr);
-        width: 100%;
-        max-width: 100rem;
-        justify-self: center;
-
-        .time {
-            display: flex;
-            justify-content: space-between;
-            gap: 1rem;
-
-            div {
-                cursor: pointer;
-
-                &.btn-add,
-                &.btn-remove {
-                    display: none;
-                }
-            }
-        }
-
-        div {
-            justify-self: start;
-
-            &.time {
-                justify-self: center;
-            }
-        }
-
-        div:has(.nav) {
-            display: flex;
-            gap: 0.5rem;
-            .nav {
-                cursor: pointer;
-                user-select: none;
-
-                &.move {
-                    display: none;
-                }
-            }
-
-            &:not(:first-child) {
-                justify-self: end;
-            }
-        }
     }
     .indicator {
         grid-area: thumbnails;
@@ -780,11 +731,79 @@ export const EDITOR_CSS = css`
 
 export const EDITOR_TEMPLATE = html` <img class="frame" />
     <theme-button class="toggle-aspect"></theme-button>
+    <div class="indicator">
+        <div class="current"></div>
+    </div>`;
+
+const BUTTONS_CSS = css`
+    div[slot="footer-content"] {
+        display: grid;
+        gap: 0.25rem;
+
+        .nav-btns {
+            display: flex;
+            gap: 1rem;
+
+            > div {
+                display: flex;
+                gap: 0.5rem;
+
+                > div {
+                    user-select: none;
+                    min-width: 1rem;
+                    text-align: center;
+                    padding: 0.125rem;
+                    cursor: pointer;
+                    background: var(--clr-bg-100);
+                    color: var(--clr-text-100);
+                    border: 2px solid var(--clr-bg-200);
+                    transition-property:
+                        text-shadow, box-shadow, border-color, background-color;
+                    transition-timing-function: ease-out;
+                    transition-duration: var(--transition-medium);
+
+                    &:hover,
+                    &.move[data-active] {
+                        background: var(--clr-bg-200);
+                        color: var(--clr-enlightened);
+                        text-shadow:
+                            0 0 5px var(--clr-enlightened-glow),
+                            0 0 10px var(--clr-enlightened-glow);
+                        border-color: var(--clr-enlightened);
+                        box-shadow:
+                            0 0 20px 0 var(--clr-enlightened-glow),
+                            0 0 10px 0 inset var(--clr-enlightened-glow);
+                    }
+                }
+
+                &.clipper-only {
+                    display: none;
+                }
+            }
+        }
+    }
+`;
+let BUTTONS_TEMPLATE = html`<div slot="footer-content">
+    <style>
+        ${BUTTONS_CSS}
+    </style>
     <div class="status">
-        <div>
+        <div class="time">
+            <span></span>
+        </div>
+    </div>
+    <div class="nav-btns">
+        <div class="clipper-only">
+            <div class="btn-add">+</div>
+        </div>
+        <div class="clipper-only">
             <div class="nav move">Move Marker</div>
+        </div>
+        <div>
             <div class="nav prev-frame">-1f</div>
             <div class="nav next-frame">+1f</div>
+        </div>
+        <div>
             <div class="nav rew-500">-0.5s</div>
             <div class="nav ffw-500">+0.5s</div>
             <div class="nav rew-1000">-1s</div>
@@ -794,11 +813,6 @@ export const EDITOR_TEMPLATE = html` <img class="frame" />
             <div class="nav rew-5000">-5s</div>
             <div class="nav ffw-5000">+5s</div>
         </div>
-        <div class="time">
-            <div class="btn-add">+</div>
-            <span></span>
-            <div class="btn-remove">-</div>
-        </div>
         <div>
             <div class="nav rew-1m">-1m</div>
             <div class="nav ffw-1m">+1m</div>
@@ -807,9 +821,10 @@ export const EDITOR_TEMPLATE = html` <img class="frame" />
             <div class="nav rew-10m">-10m</div>
             <div class="nav ffw-10m">+10m</div>
         </div>
+        <div class="clipper-only">
+            <div class="btn-remove">-</div>
+        </div>
     </div>
-    <div class="indicator">
-        <div class="current"></div>
-    </div>`;
+</div>`;
 
 export { VideoEditor };

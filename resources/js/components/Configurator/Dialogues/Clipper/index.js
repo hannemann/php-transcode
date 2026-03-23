@@ -6,6 +6,9 @@ class Clipper extends VideoEditor {
 
     connectedCallback() {
         super.connectedCallback();
+        this.parentNode
+            .querySelectorAll(".clipper-only")
+            .forEach((c) => c.classList.remove("clipper-only"));
         requestAnimationFrame(() => {
             this.calculateClips();
         });
