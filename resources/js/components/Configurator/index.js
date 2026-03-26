@@ -3,6 +3,7 @@ import { Request } from "@/components/Request";
 import { toolProxy } from "./Tools";
 import { DomHelper } from "../../Helper/Dom";
 import FileHelper from "../../Helper/File";
+import { Enable } from "../../Models/Filters/Filters/Enable";
 import { FilterGraph } from "../../Models/Filters/FilterGraph";
 import { COMBO_BUTTON_CSS } from "@/components/partials";
 import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
@@ -440,6 +441,8 @@ class TranscodeConfigurator extends HTMLElement {
     }
 
     set filterGraph(value) {
+        // flush enable cache
+        Enable.clearCache();
         this.#filterGraph = new FilterGraph(value);
         const tag = "transcode-configurator-filter-graph";
         this.streamsSection.querySelector(tag)?.remove();

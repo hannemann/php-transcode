@@ -21,6 +21,10 @@ class FilterGraph extends HTMLElement {
                     node.dataset.id = k;
                     node.configurator = this.configurator;
                     node.filterData = v;
+                    node.groupColor =
+                        this.configurator.filterGraph.getGroupColor(
+                            v.between?.linkId,
+                        );
                     return node;
                 }),
             );

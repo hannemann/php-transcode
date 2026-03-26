@@ -7,21 +7,56 @@ import { VTime } from "../../../Helper/Time";
  */
 
 export class Enable {
+    static #cache = new Map();
+
     #from;
     #to;
+    linkId = null; // Speichert die Verknüpfungs-ID
+
     /**
-     * @param {Number} [from]   start time in seconds
-     * @param {Number} [to]     end time in seconds
+     * Creates a new Enable instance.
+     * Note: For shared/linked instances, use Enable.getOrCreate() instead.
+     *
+     * @param {Number|null} [from=null] - Start time in seconds.
+     * @param {Number|null} [to=null]   - End time in seconds.
+     * @param {String|null} [linkId=null] - Optional ID to identify linked filter timings.
      */
-    constructor(from = null, to = null) {
+    constructor(from = null, to = null, linkId = null) {
         this.from = from;
         this.to = to;
+        this.linkId = linkId;
+    }
+
+    /**
+     * Factory method to manage shared instances via a static cache.
+     *
+     * @param {String|null} linkId - The connection ID
+     * @param {Number} from - Fallback start time if new instance is created
+     * @param {Number} to - Fallback end time if new instance is created
+     * @returns {Enable} Returns a cached instance if linkId exists, otherwise a new one
+     */
+    static getOrCreate(linkId, from, to) {
+        if (!linkId) return new Enable(from, to);
+
+        if (!this.#cache.has(linkId)) {
+            this.#cache.set(linkId, new Enable(from, to, linkId));
+        }
+        return this.#cache.get(linkId);
+    }
+
+    /**
+     * Clears the internal cache.
+     * Call this when switching projects to avoid memory leaks or ID collisions.
+     */
+    static clearCache() {
+        this.#cache.clear();
     }
 
     toJSON() {
         return {
             from: this.from.seconds,
             to: this.to.seconds,
+            linkId: this.linkId,
         };
     }
 

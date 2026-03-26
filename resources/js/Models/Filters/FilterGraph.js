@@ -5,6 +5,7 @@ import { FillBorders } from "./FillBorders";
 import { Scale } from "./Scale";
 import { Pad } from "./Pad";
 import { RemoveLogo } from "./RemoveLogo";
+import { Enable } from "./Filters/Enable";
 
 const modelMap = {
     crop: Crop,
@@ -23,6 +24,16 @@ const modelMap = {
  */
 const mapFilterModel = function (item, idx) {
     if (item instanceof FilterModel) return item;
+
+    // Falls das Raw-Objekt eine linkId hat, nutze den Cache
+    if (item.between && item.between.linkId) {
+        item.between = Enable.getOrCreate(
+            item.between.linkId,
+            item.between.from,
+            item.between.to,
+        );
+    }
+
     if (modelMap[item.filterType]) {
         item = new modelMap[item.filterType](idx, item);
     }
@@ -105,4 +116,84 @@ export class FilterGraph extends Array {
     getLastOfType(type) {
         return this.findLast((f) => f.filterType === type);
     }
+
+    linkEnable(filters) {
+        if (filters.length < 2) return;
+
+        // Erzeuge eine neue ID für diese Gruppe
+        const newGroupId = crypto.randomUUID();
+
+        // Nimm die Zeiten vom ersten markierten Filter als Basis
+        const masterFrom = filters[0].between.from.seconds;
+        const masterTo = filters[0].between.to.seconds;
+
+        // Erstelle das Master-Objekt im Cache
+        const sharedEnable = Enable.getOrCreate(
+            newGroupId,
+            masterFrom,
+            masterTo,
+        );
+
+        // Weise es allen Filtern zu
+        filters.forEach((f) => {
+            f.between = sharedEnable;
+        });
+    }
+
+    /**
+     * Unlinks a filter from a shared timing group.
+     * The filter keeps its current time values but gets a unique 'Enable' instance.
+     *
+     * @param {FilterModel} filter - The filter model to decouple.
+     * @returns {FilterModel} The decoupled filter model.
+     */
+    unlinkEnable(filter) {
+        if (!filter.between || !filter.between.linkId) {
+            return filter; // Not linked, nothing to do
+        }
+
+        // Extract current seconds to create a fresh, independent instance
+        const fromSec = filter.between.from.seconds;
+        const toSec = filter.between.to.seconds;
+
+        // Assign a new Enable instance without a linkId (bypassing the cache)
+        filter.between = new Enable(fromSec, toSec, null);
+
+        return filter;
+    }
+
+    /**
+     * Finds all filters that share the same linkId.
+     * Useful for highlighting linked filters in the UI.
+     *
+     * @param {String} linkId - The ID to search for.
+     * @returns {FilterModel[]} Array of filters belonging to the same timing group.
+     */
+    getEnableGroupMembers(linkId) {
+        if (!linkId) return [];
+        return this.filter((f) => f.between && f.between.linkId === linkId);
+    }
+
+    clearEnableCache() {
+        Enable.clearCache();
+    }
+
+    /**
+     * Generates a consistent HSL color based on a string ID.
+     * @param {String} str - The linkId to hash.
+     * @returns {String} CSS HSL color string.
+     */
+    getGroupColor = (str) => {
+        if (!str) return "";
+
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+
+        // Use the hash to get a degree between 0 and 360
+        const hue = Math.abs(hash % 360);
+        // Fixed saturation and lightness for better UI consistency
+        return `hsl(${hue}, 70%, 50%)`;
+    };
 }

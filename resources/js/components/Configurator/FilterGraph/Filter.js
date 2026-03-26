@@ -188,6 +188,10 @@ class Filter extends HTMLElement {
     set description(value) {
         this.labelDescription.innerText = value;
     }
+
+    set groupColor(color) {
+        this.style.setProperty("--group-color", color);
+    }
 }
 
 const CSS = css`
@@ -196,6 +200,7 @@ const CSS = css`
         justify-content: space-between;
         align-items: center;
         gap: 0.5rem;
+        border-left: 4px solid var(--group-color, transparent);
 
         &:has(.error) {
             background-color: hsl(from var(--clr-bg-150) var(--hue-error) s l);

@@ -448,6 +448,9 @@ export class DeLogo extends VideoEditor {
      */
     createItem(item) {
         const node = document.createElement("delogo-filter-item");
+        node.groupColor = this.configurator.filterGraph.getGroupColor(
+            item.between.linkId,
+        );
         node.clipsConfig = this.clipsConfig;
         node.totalDuration = new VTime(this.configurator.clips.totalDuration);
         node.model = item;

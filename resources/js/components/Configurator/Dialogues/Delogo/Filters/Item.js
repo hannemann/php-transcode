@@ -178,6 +178,10 @@ class DelogoItem extends HTMLElement {
             '[data-ref="btn-close"]',
         ));
     }
+
+    set groupColor(color) {
+        this.style.setProperty("--group-color", color);
+    }
 }
 
 const STYLES = css`
@@ -185,6 +189,7 @@ const STYLES = css`
         background: var(--clr-bg-100);
         color: var(--clr-text-100);
         border: 2px solid var(--clr-bg-200);
+        border-left-color: var(--group-color, var(--clr-bg-200));
         padding-inline: 0.5rem;
         transition-property:
             text-shadow, box-shadow, border-color, background-color;
@@ -206,6 +211,7 @@ const STYLES = css`
                 0 0 5px var(--clr-enlightened-glow),
                 0 0 10px var(--clr-enlightened-glow);
             border-color: var(--clr-enlightened);
+            border-left-color: var(--group-color, var(--clr-enlightened));
             box-shadow:
                 0 0 20px 0 var(--clr-enlightened-glow),
                 0 0 10px 0 inset var(--clr-enlightened-glow);

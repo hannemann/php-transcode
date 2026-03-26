@@ -3,15 +3,15 @@ import { Enable } from "./Filters/Enable";
 
 /**
  * @typedef {Object} FillBordersData
- * @property {Number} [filterIndex]     idx of filter in filterGraph array
- * @property {String} [filterType]      delogo
- * @property {String} [color]           color
- * @property {String} [mode]            mode
- * @property {Number} [top]             top height
- * @property {Number} [right]           right width
- * @property {Number} [bottom]          bottom height
- * @property {Number} [left]            left width
- * @property {EnableData} [between]     enable between
+ * @property {Number} [filterIndex]             idx of filter in filterGraph array
+ * @property {String} [filterType]              fillborders
+ * @property {String} [color]                   color
+ * @property {String} [mode]                    mode
+ * @property {Number} [top]                     top height
+ * @property {Number} [right]                   right width
+ * @property {Number} [bottom]                  bottom height
+ * @property {Number} [left]                    left width
+ * @property {EnableData|Enable} [between]      enable between
  */
 
 const filterType = "fillborders";
@@ -33,7 +33,7 @@ export class FillBorders extends FilterModel {
             right = null,
             bottom = null,
             left = null,
-            between: { from = null, to = null } = {},
+            between = null,
         } = {},
     ) {
         super();
@@ -44,7 +44,11 @@ export class FillBorders extends FilterModel {
         this.right = right;
         this.bottom = bottom;
         this.left = left;
-        this.between = new Enable(from, to);
+        if (between instanceof Enable) {
+            this.between = between;
+        } else {
+            this.between = new Enable(between?.from, between?.to);
+        }
     }
 
     /**
