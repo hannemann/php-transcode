@@ -1,12 +1,18 @@
 import { FilterModel } from "./FilterModel";
+import { Crop } from "./Crop";
 import { Delogo } from "./Delogo";
-import { RemoveLogo } from "./RemoveLogo";
 import { FillBorders } from "./FillBorders";
+import { Scale } from "./Scale";
+import { Pad } from "./Pad";
+import { RemoveLogo } from "./RemoveLogo";
 
 const modelMap = {
+    crop: Crop,
     delogo: Delogo,
-    removeLogo: RemoveLogo,
     fillborders: FillBorders,
+    scale: Scale,
+    pad: Pad,
+    removeLogo: RemoveLogo,
 };
 
 /**
