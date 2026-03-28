@@ -7,6 +7,7 @@ import signal
 import logging
 import argparse
 import pysher
+import urllib.request
 from pathlib import Path
 from dotenv import load_dotenv
 from gi import require_version
@@ -40,8 +41,6 @@ def setup_logging(debug_enabled):
         if not debug_enabled:
             logger.setLevel(logging.WARNING)
             logger.propagate = False
-        else:
-            logger.setLevel(logging.DEBUG)
 
 # Parse CLI Arguments
 parser = argparse.ArgumentParser(description="FFMpeg Transcoder AppIndicator")
@@ -53,6 +52,10 @@ REVERB_KEY = os.getenv('REVERB_APP_KEY', '1')
 REVERB_HOST = os.getenv('REVERB_HOST', '127.0.0.1')
 REVERB_PORT = int(os.getenv('REVERB_PORT', 8079))
 REVERB_SCHEME = os.getenv('REVERB_SCHEME', 'http')
+
+# API Config
+API_PORT = 8078
+API_BASE_URL = f"{REVERB_SCHEME}://{REVERB_HOST}:{API_PORT}"
 
 env_debug = os.getenv('DEBUG_MODE', 'false').lower() == 'true'
 DEBUG_ACTIVE = args.debug or env_debug
@@ -92,17 +95,31 @@ class TranscoderMonitor:
     def on_connected(self, data):
         logging.info("WebSocket connection successful.")
         GLib.idle_add(self.indicator.set_label, " 🟢 Online", "")
+        
+        # Subscribe to channel
         channel = self.pusher.subscribe("FFMpegProgress")
         channel.bind("App\\Events\\FFMpegProgress", self.on_event)
+
+        # Trigger initial progress push from backend
+        self.trigger_initial_sync()
+
+    def trigger_initial_sync(self):
+        """ Fires a GET request to /progress to trigger an initial WS broadcast. """
+        url = f"{API_BASE_URL}/progress"
+        logging.info(f"Triggering initial sync: GET {url}")
+        try:
+            # We don't need the response body, just the trigger
+            req = urllib.request.Request(url, method='GET')
+            with urllib.request.urlopen(req, timeout=5) as response:
+                logging.debug(f"Initial sync trigger status: {response.getcode()}")
+        except Exception as e:
+            logging.error(f"Failed to trigger initial sync: {e}")
 
     def on_error(self, data):
         logging.error(f"WebSocket connection error: {data}")
         GLib.idle_add(self.indicator.set_label, " 🔴 Offline", "")
 
     def on_event(self, payload):
-        if DEBUG_ACTIVE:
-            logging.debug(f"Incoming Payload: {payload}")
-        
         try:
             data = json.loads(payload)
             queue = data.get('queue', [])
@@ -110,13 +127,29 @@ class TranscoderMonitor:
         except Exception as e:
             logging.error(f"Event parsing error: {e}")
 
-    def _get_display_name(self, item):
-        """ Returns the full path string. """
-        full_path = item.get('path')
-        return str(full_path) if full_path else "Unknown Item"
+    def handle_item_click(self, widget, item):
+        state = item.get('state')
+        item_id = item.get('id')
+        
+        if state == 'running':
+            url = f"{API_BASE_URL}/kill"
+            method = 'POST'
+        else:
+            url = f"{API_BASE_URL}/progress/{item_id}"
+            method = 'DELETE'
+
+        logging.info(f"Action: {method} {url} for item {item_id}")
+        
+        try:
+            req = urllib.request.Request(url, method=method)
+            req.add_header('Accept', 'application/json')
+            req.add_header('X-Requested-With', 'XMLHttpRequest')
+            with urllib.request.urlopen(req, timeout=5) as response:
+                logging.info(f"API Response: {response.getcode()}")
+        except Exception as e:
+            logging.error(f"API Request failed: {e}")
 
     def update_ui(self, queue):
-        """ Rebuilds the menu dynamically """
         for child in self.menu.get_children():
             self.menu.remove(child)
 
@@ -133,11 +166,10 @@ class TranscoderMonitor:
             self.menu.append(header)
             
             for item in items:
-                name = self._get_display_name(item)
+                name = item.get('path', 'Unknown Path')
                 pct = item.get('percentage', 0)
                 
                 if is_running:
-                    # Percentage moved to the right
                     label_text = f"  {name}    {pct}%"
                 elif title == "Failed":
                     label_text = f"  {name} (Failed at {pct}%)"
@@ -145,25 +177,22 @@ class TranscoderMonitor:
                     label_text = f"  {name}"
 
                 m_item = Gtk.MenuItem(label=label_text)
-                m_item.set_sensitive(False)
+                m_item.connect("activate", self.handle_item_click, item)
                 self.menu.append(m_item)
             
             self.menu.append(Gtk.SeparatorMenuItem())
 
-        # Build sections in order
         add_section("Current", running, is_running=True)
         add_section("Failed", failed)
         add_section("Pending", pending)
         add_section("Done", done)
 
-        # Quit Button
         item_quit = Gtk.MenuItem(label="Quit Monitor")
         item_quit.connect("activate", Gtk.main_quit)
         self.menu.append(item_quit)
 
         self.menu.show_all()
 
-        # Update Tray Icon Label
         if running:
             current_pct = running[0].get('percentage', 0)
             self.indicator.set_label(f" {current_pct}%", "")
