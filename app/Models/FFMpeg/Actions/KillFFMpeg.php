@@ -23,13 +23,11 @@ class KillFFMpeg
     private static function getProcess(string $path): ?string
     {
         $filename = Settings::getSettings($path)['outFile'];
-        if (!$filename) {
-            $filename = sha1($path);
-        }
+        $sha = sha1($path);
         $driver = PsDriver::load(config('process.binaries.ps'));
         $processList = collect(explode("\n", $driver->command(['-axo', 'pid,command'])));
-        $idx = $processList->search(function ($item) use ($filename) {
-            return Str::containsAll($item, ['ffmpeg', $filename]);
+        $idx = $processList->search(function ($item) use ($sha, $filename) {
+            return Str::contains($item, 'ffmpeg') && Str::contains($item, collect([$sha, $filename])->filter()->toArray());
         });
         return $idx ? explode(' ', trim($processList[$idx]))[0] : null;
     }
