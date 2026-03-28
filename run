@@ -15,4 +15,6 @@ trap "cleanup" SIGINT SIGTERM SIGKILL
 
 [ -f run.d/pre-start ] && run.d/pre-start 
 
+#make run
+
 docker-compose up -d && docker-compose logs --tail=10 -f

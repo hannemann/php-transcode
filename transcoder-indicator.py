@@ -1,103 +1,176 @@
 #!/usr/bin/env python3
-import sys
+# -*- coding: utf-8 -*-
+
+import os
 import json
 import signal
-import pysher
 import logging
+import argparse
+import pysher
+from pathlib import Path
+from dotenv import load_dotenv
 from gi import require_version
 
+# Ensure GTK 3 and Ayatana are used
 require_version('Gtk', '3.0')
 require_version('AyatanaAppIndicator3', '0.1')
 
 from gi.repository import AyatanaAppIndicator3 as appindicator
 from gi.repository import Gtk, GLib
 
-# --- DEBUG LOGGING ---
-# Das hier zeigt uns interne Pysher-Vorgänge
-root = logging.getLogger()
-root.setLevel(logging.INFO)
-ch = logging.StreamHandler(sys.stdout)
-root.addHandler(ch)
+# --- CONFIGURATION LOADING ---
+env_path = Path(__file__).parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
-# --- CONFIG AUS DEINER REVERB PHP ---
-APP_KEY = "1"  # Laut deiner Config 'key' => env(..., 1)
-HOST = "127.0.0.1"
-PORT = 8079
-CHANNEL_NAME = "FFMpegProgress"
-# Wichtig: Laravel broadcastet den Event-Namen meist inkl. Namespace
-EVENT_NAME = "App\\Events\\FFMpegProgress" 
+def setup_logging(debug_enabled):
+    """ Strictly configure logging for minimal terminal noise. """
+    log_level = logging.DEBUG if debug_enabled else logging.INFO
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+
+    logging.basicConfig(
+        level=log_level,
+        format='%(asctime)s [%(levelname)s] %(message)s',
+        handlers=[logging.StreamHandler()]
+    )
+    
+    noisy_loggers = ['pysher', 'websocket', 'urllib3', 'asyncio']
+    for logger_name in noisy_loggers:
+        logger = logging.getLogger(logger_name)
+        if not debug_enabled:
+            logger.setLevel(logging.WARNING)
+            logger.propagate = False
+        else:
+            logger.setLevel(logging.DEBUG)
+
+# Parse CLI Arguments
+parser = argparse.ArgumentParser(description="FFMpeg Transcoder AppIndicator")
+parser.add_argument('--debug', action='store_true', help='Enable debug logging')
+args = parser.parse_args()
+
+# Load Environment Variables
+REVERB_KEY = os.getenv('REVERB_APP_KEY', '1')
+REVERB_HOST = os.getenv('REVERB_HOST', '127.0.0.1')
+REVERB_PORT = int(os.getenv('REVERB_PORT', 8079))
+REVERB_SCHEME = os.getenv('REVERB_SCHEME', 'http')
+
+env_debug = os.getenv('DEBUG_MODE', 'false').lower() == 'true'
+DEBUG_ACTIVE = args.debug or env_debug
+
+setup_logging(DEBUG_ACTIVE)
 
 class TranscoderMonitor:
     def __init__(self):
         self.indicator = appindicator.Indicator.new(
-            "transcoder-monitor",
+            "laravel-transcoder-monitor",
             "media-optical",
             appindicator.IndicatorCategory.APPLICATION_STATUS
         )
         self.indicator.set_status(appindicator.IndicatorStatus.ACTIVE)
         self.indicator.set_label(" ⏳ Connecting...", "")
         
-        self.setup_menu()
+        self.menu = Gtk.Menu()
+        self.indicator.set_menu(self.menu)
+        
         self.connect_ws()
 
-    def setup_menu(self):
-        menu = Gtk.Menu()
-        item = Gtk.MenuItem(label="Quit")
-        item.connect("activate", Gtk.main_quit)
-        menu.append(item)
-        menu.show_all()
-        self.indicator.set_menu(menu)
-
     def connect_ws(self):
-        # Reverb verhält sich wie ein Pusher-Server
-        self.pusher = pysher.Pusher(
-            key=APP_KEY,
-            custom_host=HOST,
-            port=PORT,
-            secure=False
-        )
-
-        # Verbindungsevents loggen
-        self.pusher.connection.bind('pusher:connection_established', self.on_connected)
-        self.pusher.connection.bind('pusher:connection_error', self.on_error)
-        
-        print(f"[*] Versuche Verbindung zu {HOST}:{PORT} mit Key '{APP_KEY}'...")
-        self.pusher.connect()
+        logging.info(f"Connecting to Reverb at {REVERB_HOST}:{REVERB_PORT}")
+        try:
+            self.pusher = pysher.Pusher(
+                key=REVERB_KEY,
+                custom_host=REVERB_HOST,
+                port=REVERB_PORT,
+                secure=(REVERB_SCHEME == 'https')
+            )
+            self.pusher.connection.bind('pusher:connection_established', self.on_connected)
+            self.pusher.connection.bind('pusher:connection_error', self.on_error)
+            self.pusher.connect()
+        except Exception as e:
+            logging.error(f"Failed to initialize WebSocket: {e}")
 
     def on_connected(self, data):
-        print("[OK] Verbindung zum Reverb-Server steht!")
+        logging.info("WebSocket connection successful.")
         GLib.idle_add(self.indicator.set_label, " 🟢 Online", "")
-        
-        # Channel abonnieren
-        self.channel = self.pusher.subscribe(CHANNEL_NAME)
-        print(f"[*] Channel '{CHANNEL_NAME}' abonniert.")
-        
-        # Event binden
-        self.channel.bind(EVENT_NAME, self.on_event)
-        print(f"[*] Lausche auf Event: {EVENT_NAME}")
+        channel = self.pusher.subscribe("FFMpegProgress")
+        channel.bind("App\\Events\\FFMpegProgress", self.on_event)
 
     def on_error(self, data):
-        print(f"[ERROR] Websocket Fehler: {data}")
-        GLib.idle_add(self.indicator.set_label, " 🔴 WS Error", "")
+        logging.error(f"WebSocket connection error: {data}")
+        GLib.idle_add(self.indicator.set_label, " 🔴 Offline", "")
 
     def on_event(self, payload):
-        print(f"\n[EVENT GEFEUERT] Rohdaten: {payload}")
+        if DEBUG_ACTIVE:
+            logging.debug(f"Incoming Payload: {payload}")
+        
         try:
             data = json.loads(payload)
-            # Da dein Event 'public $queue' hat, liegt es direkt im JSON
             queue = data.get('queue', [])
-            GLib.idle_add(self.process_queue, queue)
+            GLib.idle_add(self.update_ui, queue)
         except Exception as e:
-            print(f" Fehler beim Parsen: {e}")
+            logging.error(f"Event parsing error: {e}")
 
-    def process_queue(self, queue):
+    def _get_display_name(self, item):
+        """ Returns the full path string. """
+        full_path = item.get('path')
+        return str(full_path) if full_path else "Unknown Item"
+
+    def update_ui(self, queue):
+        """ Rebuilds the menu dynamically """
+        for child in self.menu.get_children():
+            self.menu.remove(child)
+
         running = [q for q in queue if q.get('state') == 'running']
+        pending = [q for q in queue if q.get('state') == 'pending']
+        failed  = [q for q in queue if q.get('state') == 'failed']
+        done    = [q for q in queue if q.get('state') == 'done']
+
+        def add_section(title, items, is_running=False):
+            if not items: return
+            
+            header = Gtk.MenuItem(label=f" {title}")
+            header.set_sensitive(False)
+            self.menu.append(header)
+            
+            for item in items:
+                name = self._get_display_name(item)
+                pct = item.get('percentage', 0)
+                
+                if is_running:
+                    # Percentage moved to the right
+                    label_text = f"  {name}    {pct}%"
+                elif title == "Failed":
+                    label_text = f"  {name} (Failed at {pct}%)"
+                else:
+                    label_text = f"  {name}"
+
+                m_item = Gtk.MenuItem(label=label_text)
+                m_item.set_sensitive(False)
+                self.menu.append(m_item)
+            
+            self.menu.append(Gtk.SeparatorMenuItem())
+
+        # Build sections in order
+        add_section("Current", running, is_running=True)
+        add_section("Failed", failed)
+        add_section("Pending", pending)
+        add_section("Done", done)
+
+        # Quit Button
+        item_quit = Gtk.MenuItem(label="Quit Monitor")
+        item_quit.connect("activate", Gtk.main_quit)
+        self.menu.append(item_quit)
+
+        self.menu.show_all()
+
+        # Update Tray Icon Label
         if running:
-            item = running[0]
-            p = item.get('percentage', 0)
-            self.indicator.set_label(f" ⚙️ {p}%", "")
+            current_pct = running[0].get('percentage', 0)
+            self.indicator.set_label(f" {current_pct}%", "")
+            self.indicator.set_icon_full("media-playback-start", "Transcoding")
         else:
-            self.indicator.set_label(" 🟢 Idle", "")
+            self.indicator.set_label(" 🟢 Online", "")
+            self.indicator.set_icon_full("media-optical", "Idle")
 
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal.SIG_DFL)
