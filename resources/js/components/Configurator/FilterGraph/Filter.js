@@ -24,7 +24,7 @@ class Filter extends HTMLElement {
     connectedCallback() {
         document.addEventListener("clips-updated", this.handleClipsLoaded);
         this.btnDelete.addEventListener("click", this.handleDelete);
-        this.labelFilterType.addEventListener("click", this.handleModify);
+        this.btnEdit.addEventListener("click", this.handleModify);
         requestAnimationFrame(() => {
             this.description = this.updateDescription();
             Iconify.scan(this.shadowRoot);
@@ -34,7 +34,7 @@ class Filter extends HTMLElement {
     disconnectedCallback() {
         document.removeEventListener("clips-updated", this.handleClipsLoaded);
         this.btnDelete.removeEventListener("click", this.handleDelete);
-        this.labelFilterType.removeEventListener("click", this.handleModify);
+        this.btnEdit.removeEventListener("click", this.handleModify);
     }
 
     handleModify(e) {
@@ -67,8 +67,22 @@ class Filter extends HTMLElement {
     }
 
     async handleDelete(e) {
-        this.configurator.filterGraph.splice(parseInt(this.dataset.id), 1);
-        await this.configurator.saveSettings();
+        try {
+            const m = document.createElement("modal-confirm");
+            m.header = "Delete Filter";
+            m.content = "Are you sure?";
+            document.body.appendChild(m);
+            await m.confirm();
+            this.configurator.filterGraph.splice(parseInt(this.dataset.id), 1);
+            await this.configurator.saveSettings();
+        } catch (error) {
+            if (error !== "cancel") {
+                console.error(
+                    "Critical error during filter delete operation:",
+                    error,
+                );
+            }
+        }
     }
 
     updateDescription() {
@@ -149,6 +163,10 @@ class Filter extends HTMLElement {
         return this.shadowRoot.querySelector(".description");
     }
 
+    get btnEdit() {
+        return this.shadowRoot.querySelector(".btn-edit");
+    }
+
     get btnDelete() {
         return this.shadowRoot.querySelector(".btn-delete");
     }
@@ -195,6 +213,15 @@ class Filter extends HTMLElement {
 }
 
 const CSS = css`
+    :host {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    :host([data-immutable]) .icon-stack {
+        pointer-events: none;
+        opacity: 0.6;
+    }
     section {
         display: flex;
         justify-content: space-between;
@@ -205,32 +232,31 @@ const CSS = css`
         &:has(.error) {
             background-color: hsl(from var(--clr-bg-150) var(--hue-error) s l);
         }
-    }
-    .item {
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-        flex-grow: 1;
+        .item {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-grow: 1;
 
-        &:has(img[src]) {
-            justify-content: space-between;
+            &:has(img[src]) {
+                justify-content: space-between;
 
-            span:last-of-type {
-                flex-grow: 1;
+                span:last-of-type {
+                    flex-grow: 1;
+                }
+            }
+
+            img[src] {
+                max-height: 2rem;
+                cursor: pointer;
+            }
+
+            img:not([src]) {
+                display: none;
             }
         }
-
-        img[src] {
-            max-height: 2rem;
-            cursor: pointer;
-        }
-
-        img:not([src]) {
-            display: none;
-        }
     }
-    .icon-stack,
-    .filterType {
+    .icon-stack {
         cursor: pointer;
     }
 `;
@@ -247,11 +273,17 @@ Filter.template = html`
             <span class="description"></span>
             <img data-type="logomask" />
         </div>
+    </section>
+    <div class="btns">
+        <div class="icon-stack btn-edit">
+            <span class="iconify" data-icon="mdi-pencil-outline"></span>
+            <span class="iconify hover" data-icon="mdi-pencil-outline"></span>
+        </div>
         <div class="icon-stack btn-delete">
             <span class="iconify" data-icon="mdi-close"></span>
             <span class="iconify hover" data-icon="mdi-close"></span>
         </div>
-    </section>
+    </div>
 `;
 
 customElements.define("transcode-configurator-filter", Filter);
