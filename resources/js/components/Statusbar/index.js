@@ -22,9 +22,30 @@ class Statusbar extends HTMLElement {
     rate = "";
     remaining = "";
 
+    static get observedAttributes() {
+        return ["class"];
+    }
+
     connectedCallback() {
         DomHelper.initDom.call(this);
         this.initElements().initListeners().addListeners().initWebSocket();
+    }
+
+    /**
+     * @param {string} name - The name of the changed attribute
+     * @param {string|null} oldValue - The previous value
+     * @param {string|null} newValue - The new value
+     */
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (oldValue === newValue) return; // Skip if value didn't actually change
+
+        switch (name) {
+            case "class":
+                if (this.classList.contains("running")) {
+                    this.out = "Process started, waiting for progress...";
+                }
+                break;
+        }
     }
 
     initElements() {
