@@ -103,9 +103,11 @@ class FilterGraph
     {
         $width = $this->width ? $this->width : $settings['w'];
         $height = $this->height ? $this->height : $settings['h'];
+        $filenameSuffix = $settings['fileId'] ?? '';
 
         return Removelogo::getFilterString(
-            Removelogo::getBitMap($this->disk, $this->path, $settings['timestamp'], $width, $height, $this->filters->join(','))
+            Removelogo::getBitMap($this->disk, $this->path, $settings['timestamp'], $width, $height, $filenameSuffix, $this->filters->join(',')),
+            $settings
         );
     }
 }

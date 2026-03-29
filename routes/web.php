@@ -61,7 +61,7 @@ Route::post('/concat/{path?}', [ConcatController::class, 'concat'])->where('path
 Route::post('/remux/{path}', [RemuxController::class, 'remux'])->where('path', '(.*)')->where('container', '(mp4|mkv|ts)');
 Route::post('/transcode/{path}', [TranscodeController::class, 'transcode'])->where('path', '(.*)');
 Route::post('/settings/{path}', [TranscodeController::class, 'saveSettings'])->where('path', '(.*)');
-Route::post('/removelogoCustomMask/{path}', [RemovelogoController::class, 'saveCustomMask'])->where('path', '(.*)');
+Route::post('/removelogoCustomMask/{path}/{fileId}', [RemovelogoController::class, 'saveCustomMask'])->where('path', '(.*)')->where('fileId', '(.*)');
 Route::get('/removelogo/{path}', [RemovelogoController::class, 'logomask'])->where('path', '(.*)');
 Route::get('/removelogoImage/{path}', [RemovelogoController::class, 'image'])->where('path', '(.*)');
 Route::delete('/removelogoImage/{path}', [RemovelogoController::class, 'deleteMasks'])->where('path', '(.*)');

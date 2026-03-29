@@ -9,6 +9,7 @@ import { VTime } from "../../Helper/Time";
  * @property {String} [timestamp]         time coord in format 00:00:00.000
  * @property {Number} [w]                 width
  * @property {Number} [h]                 height
+ * @property {String} [fileId]            uuid
  * @property {EnableData} [between]       enable between
  */
 
@@ -30,6 +31,7 @@ export class RemoveLogo extends FilterModel {
             h = null,
             timestamp = null,
             between: { from = null, to = null } = {},
+            fileId = null,
         } = {},
     ) {
         super();
@@ -38,6 +40,7 @@ export class RemoveLogo extends FilterModel {
         this.w = w;
         this.h = h;
         this.between = new Enable(from, to);
+        this.fileId = fileId || crypto.randomUUID();
     }
 
     /**
@@ -53,6 +56,7 @@ export class RemoveLogo extends FilterModel {
             w: this.w,
             h: this.h,
             between: this.between,
+            fileId: this.fileId,
         };
     }
 

@@ -29,10 +29,10 @@ class RemovelogoController extends Controller
         return null;
     }
 
-    public function saveCustomMask(RemoveLogoCustomMaskUploadRequest $request, string $path): JsonResponse
+    public function saveCustomMask(RemoveLogoCustomMaskUploadRequest $request, string $path, string $fileId): JsonResponse
     {
         try {
-            Image::createLogoMaskFromDataURL($path, $request->input('image'));
+            Image::createLogoMaskFromDataURL($path, $request->input('image'), $fileId);
             return response()->json([
                 'message' => 'Image uploaded successfully'
             ], 200);

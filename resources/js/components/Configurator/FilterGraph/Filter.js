@@ -187,6 +187,7 @@ class Filter extends HTMLElement {
                         await saveCustomMask(
                             image,
                             this.configurator.item.path,
+                            filterData.fileId,
                         );
                     },
                     () => {

@@ -75,10 +75,10 @@ class Image
         return FFMpegDriver::create(null, Arr::dot(config('laravel-ffmpeg')))->command($args);
     }
 
-    public static function createLogoMask(string $disk, string $path, string $timestamp, ?int $width = null, ?int $height = null, ?string $withFilters = ''): string
+    public static function createLogoMask(string $disk, string $path, string $timestamp, string $filenameSuffix, ?int $width = null, ?int $height = null, ?string $withFilters = ''): string
     {
-        $filename = self::getLogoMaskFilename($path, $timestamp);
-        $fullName = self::getLogoMaskFullname($disk, $path, $timestamp);
+        $filename = self::getLogoMaskFilename($path, $timestamp, $filenameSuffix);
+        $fullName = self::getLogoMaskFullname($disk, $path, $timestamp, $filenameSuffix);
 
         if (!Storage::disk($disk)->exists($filename)) {
             $args = static::getLogomaskArgs($disk, $path, $timestamp, $width, $height, $withFilters);
@@ -88,9 +88,9 @@ class Image
         return $fullName;
     }
 
-    public static function createLogoMaskFromDataURL(string $path, string $imageBase64): void
+    public static function createLogoMaskFromDataURL(string $path, string $imageBase64, string $fileId): void
     {
-        $imageName = 'logomask.png';
+        $imageName = $fileId . '.logomask.png';
 
         $base64Data = preg_replace('/^data:[^,]*,/', '', $imageBase64);
         $decodedData = base64_decode($base64Data);
@@ -131,30 +131,31 @@ class Image
             $removeLogo = $filterGraph->getSettings()->firstWhere('filterType', 'removeLogo');
             if (!$removeLogo) return null;
             $timestamp = $removeLogo['timestamp'];
+            $filenameSuffix = $removeLogo['fileId'] ?? '';
             // force filterGraph execution
             (string)$filterGraph;
-            return self::getLogoMaskFullname('recordings', $path, $timestamp);
+            return self::getLogoMaskFullname('recordings', $path, $timestamp, $filenameSuffix);
         }
     }
 
-    public static function getLogoMaskFilename(string $path, string $timestamp): string
+    public static function getLogoMaskFilename(string $path, string $timestamp, string $filenameSuffix): string
     {
         return sprintf(
             '%s%s%s%s',
             dirname($path),
             DIRECTORY_SEPARATOR,
-            sha1($path . $timestamp),
+            $filenameSuffix ?? sha1($path . $timestamp),
             '.logomask.png'
         );
     }
 
-    public static function getLogoMaskFullname(string $disk, string $path, string $timestamp): string
+    public static function getLogoMaskFullname(string $disk, string $path, string $timestamp, string $filenameSuffix): string
     {
         return sprintf(
             '%s%s%s',
             config('filesystems.disks.' . $disk . '.root'),
             DIRECTORY_SEPARATOR,
-            self::getLogoMaskFilename($path, $timestamp)
+            self::getLogoMaskFilename($path, $timestamp, $filenameSuffix)
         );
     }
 

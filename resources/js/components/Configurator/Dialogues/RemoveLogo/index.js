@@ -8,7 +8,7 @@ import { RemoveLogo as Model } from "../../../../Models/Filters/RemoveLogo";
 const IMAGE_TYPE_ORIGINAL = "Original";
 const IMAGE_TYPE_MASK = "Mask";
 
-export const saveCustomMask = async function (image, path) {
+export const saveCustomMask = async function (image, path, fileId) {
     const nonBlackPercent = Paint.getWhitePixelPercent();
     if (nonBlackPercent > 10) {
         const m = document.createElement("modal-confirm");
@@ -21,7 +21,7 @@ export const saveCustomMask = async function (image, path) {
         image: image.asDataURL("image/png"),
     };
     const result = await Request.post(
-        `/removelogoCustomMask/${encodeURIComponent(path)}`,
+        `/removelogoCustomMask/${encodeURIComponent(path)}/${fileId}`,
         data,
     );
     const response = await result.json();
@@ -70,7 +70,7 @@ class RemoveLogo extends VideoEditor {
     paint() {
         Paint.init(
             async (image) => {
-                await saveCustomMask(image, this.path);
+                await saveCustomMask(image, this.path, this.#model.fileId);
             },
             () => {
                 this.imageType = IMAGE_TYPE_ORIGINAL;

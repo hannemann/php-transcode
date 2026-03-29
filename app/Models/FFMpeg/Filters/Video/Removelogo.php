@@ -9,8 +9,9 @@ use Illuminate\Support\Facades\File as FileFacade;
 class Removelogo
 {
     const TEMPLATE_FILTER = 'removelogo=filename=%s';
+    const TEMPLATE_ENABLE = 'enable=\'between(t,%f,%f)\'';
 
-    public static function getBitMap(string $disk, string $path, string $timestamp, string $w, string $h, ?string $withFilters = ''): string
+    public static function getBitMap(string $disk, string $path, string $timestamp, string $w, string $h, $filenameSuffix, ?string $withFilters = ''): string
     {
         $customMask = self::getCustomMaskPath($path);
 
@@ -25,6 +26,7 @@ class Removelogo
                 $disk,
                 $path,
                 $timestamp,
+                $filenameSuffix,
                 $w,
                 $h,
                 $withFilters
@@ -32,12 +34,19 @@ class Removelogo
         }
     }
 
-    public static function getFilterString(string $bitmap): string
+    public static function getFilterString(string $bitmap, array $data): string
     {
-        return sprintf(
+        $filter = collect([]);
+        $filter->push(sprintf(
             self::TEMPLATE_FILTER,
             escapeshellarg(addcslashes($bitmap, "',:\\"))
-        );
+        ));
+
+        if ($data['between']['from'] && $data['between']['to']) {
+            $filter->push(sprintf(self::TEMPLATE_ENABLE, $data['between']['from'], $data['between']['to']));
+        }
+
+        return $filter->join(':');
     }
 
     public static function getCustomMaskPath(string $path): string
