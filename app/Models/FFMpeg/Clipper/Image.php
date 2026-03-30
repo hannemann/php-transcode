@@ -75,10 +75,10 @@ class Image
         return FFMpegDriver::create(null, Arr::dot(config('laravel-ffmpeg')))->command($args);
     }
 
-    public static function createLogoMask(string $disk, string $path, string $timestamp, string $filenameSuffix, ?int $width = null, ?int $height = null, ?string $withFilters = ''): string
+    public static function createLogoMask(string $disk, string $path, string $timestamp, string $fileId, ?int $width = null, ?int $height = null, ?string $withFilters = ''): string
     {
-        $filename = self::getLogoMaskFilename($path, $timestamp, $filenameSuffix);
-        $fullName = self::getLogoMaskFullname($disk, $path, $timestamp, $filenameSuffix);
+        $filename = self::getLogoMaskFilename($path, $timestamp, $fileId);
+        $fullName = self::getLogoMaskFullname($disk, $path, $timestamp, $fileId);
 
         if (!Storage::disk($disk)->exists($filename)) {
             $args = static::getLogomaskArgs($disk, $path, $timestamp, $width, $height, $withFilters);
@@ -115,10 +115,10 @@ class Image
         Storage::disk('recordings')->put($targetPath, $imageData);
     }
 
-    public static function getLogoMaskFullnameByPath(string $path): ?string
+    public static function getLogoMaskFullnameByPath(string $path, string $fileId): ?string
     {
 
-        $customMask = Removelogo::getCustomMaskPath($path);
+        $customMask = Removelogo::getCustomMaskPath($path, $fileId);
 
         if (Removelogo::hasCustomMask($customMask)) {
             return sprintf(
@@ -128,34 +128,34 @@ class Image
             );
         } else {
             $filterGraph = new FilterGraph('recordings', $path);
-            $removeLogo = $filterGraph->getSettings()->firstWhere('filterType', 'removeLogo');
+            $removeLogo = $filterGraph->getSettings()->where('filterType', 'removeLogo')->firstWhere('fileId', $fileId);
             if (!$removeLogo) return null;
             $timestamp = $removeLogo['timestamp'];
-            $filenameSuffix = $removeLogo['fileId'] ?? '';
+            $fileId = $removeLogo['fileId'] ?? '';
             // force filterGraph execution
             (string)$filterGraph;
-            return self::getLogoMaskFullname('recordings', $path, $timestamp, $filenameSuffix);
+            return self::getLogoMaskFullname('recordings', $path, $timestamp, $fileId);
         }
     }
 
-    public static function getLogoMaskFilename(string $path, string $timestamp, string $filenameSuffix): string
+    public static function getLogoMaskFilename(string $path, string $timestamp, string $fileId): string
     {
         return sprintf(
             '%s%s%s%s',
             dirname($path),
             DIRECTORY_SEPARATOR,
-            $filenameSuffix ?? sha1($path . $timestamp),
+            $fileId ?? sha1($path . $timestamp),
             '.logomask.png'
         );
     }
 
-    public static function getLogoMaskFullname(string $disk, string $path, string $timestamp, string $filenameSuffix): string
+    public static function getLogoMaskFullname(string $disk, string $path, string $timestamp, string $fileId): string
     {
         return sprintf(
             '%s%s%s',
             config('filesystems.disks.' . $disk . '.root'),
             DIRECTORY_SEPARATOR,
-            self::getLogoMaskFilename($path, $timestamp, $filenameSuffix)
+            self::getLogoMaskFilename($path, $timestamp, $fileId)
         );
     }
 

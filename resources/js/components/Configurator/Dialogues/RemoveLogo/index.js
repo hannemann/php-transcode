@@ -40,8 +40,29 @@ class RemoveLogo extends VideoEditor {
     /**
      * @type {Model}
      */
-    #model;
+    model;
     raw = [-1];
+
+    connectedCallback() {
+        super.connectedCallback();
+        requestAnimationFrame(() => {
+            this.current = this.model.timestamp.milliseconds || 0;
+            this.width = parseInt(this.video.width);
+            this.height = parseInt(this.video.height);
+            this.updateImages();
+            this.image.addEventListener(
+                "load",
+                () => {
+                    this.from = this.model.between.from;
+                    this.to = this.model.between.to;
+                    this.dispatchEvent(new CustomEvent("removologo-loaded"));
+                },
+                {
+                    once: true,
+                },
+            );
+        });
+    }
 
     bindListeners() {
         super.bindListeners();
@@ -94,7 +115,7 @@ class RemoveLogo extends VideoEditor {
     paint() {
         Paint.init(
             async (image) => {
-                await saveCustomMask(image, this.path, this.#model.fileId);
+                await saveCustomMask(image, this.path, this.model.fileId);
             },
             () => {
                 this.imageType = IMAGE_TYPE_ORIGINAL;
@@ -118,12 +139,6 @@ class RemoveLogo extends VideoEditor {
         this.updateFrameUrl();
     }
 
-    updateModel() {
-        this.#model.timestamp = this.timestamp();
-        this.#model.w = this.video.width;
-        this.#model.h = this.video.height;
-    }
-
     /**
      *
      * @param {MouseEvent} e
@@ -145,16 +160,6 @@ class RemoveLogo extends VideoEditor {
             ref = ref.replace("btn-del-", "");
         }
         this[ref] = value;
-    }
-
-    set model(model) {
-        this.#model = model;
-        this.current = model.timestamp.milliseconds || 0;
-        this.updateImages();
-    }
-
-    get model() {
-        return this.#model;
     }
 
     get baseThumbUrl() {

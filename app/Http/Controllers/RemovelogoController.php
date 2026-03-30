@@ -43,9 +43,9 @@ class RemovelogoController extends Controller
         }
     }
 
-    public function logomask(string $path)
+    public function logomask(string $path, string $fileId)
     {
-        $imagePath = Image::getLogoMaskFullnameByPath($path);
+        $imagePath = Image::getLogoMaskFullnameByPath($path, $fileId);
         return response()->file($imagePath);
     }
 

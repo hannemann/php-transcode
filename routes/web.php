@@ -62,7 +62,7 @@ Route::post('/remux/{path}', [RemuxController::class, 'remux'])->where('path', '
 Route::post('/transcode/{path}', [TranscodeController::class, 'transcode'])->where('path', '(.*)');
 Route::post('/settings/{path}', [TranscodeController::class, 'saveSettings'])->where('path', '(.*)');
 Route::post('/removelogoCustomMask/{path}/{fileId}', [RemovelogoController::class, 'saveCustomMask'])->where('path', '(.*)')->where('fileId', '(.*)');
-Route::get('/removelogo/{path}', [RemovelogoController::class, 'logomask'])->where('path', '(.*)');
+Route::get('/removelogo/{path}/{fileId}', [RemovelogoController::class, 'logomask'])->where('path', '(.*)')->where('fileId', '(.*)');
 Route::get('/removelogoImage/{path}', [RemovelogoController::class, 'image'])->where('path', '(.*)');
 Route::delete('/removelogoImage/{path}', [RemovelogoController::class, 'deleteMasks'])->where('path', '(.*)');
 Route::post('/kill', fn() => KillFFMpeg::execute());

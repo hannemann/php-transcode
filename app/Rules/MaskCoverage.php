@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Rules;
 
 use Closure;
@@ -9,10 +10,11 @@ use App\Models\FFMpeg\Filters\Video\FilterGraph;
 
 class MaskCoverage implements ValidationRule
 {
-    private string $path = ''; 
+    private string $path = '';
     private array $filterGraph;
 
-    public function __construct(string $path, array $filterGraph) {
+    public function __construct(string $path, array $filterGraph)
+    {
         $this->path = $path;
         $this->filterGraph = $filterGraph;
     }
@@ -21,12 +23,14 @@ class MaskCoverage implements ValidationRule
     {
         try {
 
-            $hasRemoveLogo = collect($this->filterGraph)->firstWhere('filterType', 'removeLogo');
-            if ($hasRemoveLogo) {
-                $imagePath = Image::getLogoMaskFullnameByPath($this->path);
-                if ($imagePath) {
-                    Image::getNonBlackPercentage($imagePath);
-                }
+            $removeLogo = collect($this->filterGraph)->where('filterType', 'removeLogo');
+            if ($removeLogo->count() > 0) {
+                $removeLogo->each(function ($filter) {
+                    $imagePath = Image::getLogoMaskFullnameByPath($this->path, $filter['fileId']);
+                    if ($imagePath) {
+                        Image::getNonBlackPercentage($imagePath);
+                    }
+                });
             }
         } catch (InvalidMaskCoverageException $e) {
             $fail($e->getMessage());

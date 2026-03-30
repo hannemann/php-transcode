@@ -35,7 +35,7 @@ export class RemoveLogo extends FilterModel {
         } = {},
     ) {
         super();
-        this.filterIndex = filterIndex || this.filterIndex;
+        this.filterIndex = filterIndex;
         this.timestamp = timestamp;
         this.w = w;
         this.h = h;

@@ -40,16 +40,7 @@ export const requestFillborders = async function (model) {
         await m.open();
         model.mode = d.mode;
         model.color = d.color;
-        console.info(
-            "Fillborders on video file %s: top: %d, right: %d, bottom: %d, left: %d, mode: %s, color: %s",
-            this.item.path,
-            model.top,
-            model.right,
-            model.bottom,
-            model.left,
-            model.mode ?? "n/a",
-            model.color ?? "n/a",
-        );
+        logInfo(this.item.path, model);
         this.fillborders = model;
         if (isNaN(parseInt(model.filterIndex))) {
             this.filterGraph.push(model);
@@ -60,4 +51,17 @@ export const requestFillborders = async function (model) {
             console.error(error);
         }
     }
+};
+
+const logInfo = function (path, model) {
+    console.info(
+        "Fillborders on video file %s: top: %d, right: %d, bottom: %d, left: %d, mode: %s, color: %s",
+        path,
+        model.top,
+        model.right,
+        model.bottom,
+        model.left,
+        model.mode ?? "n/a",
+        model.color ?? "n/a",
+    );
 };

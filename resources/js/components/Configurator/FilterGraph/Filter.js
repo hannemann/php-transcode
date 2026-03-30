@@ -86,6 +86,30 @@ class Filter extends HTMLElement {
     }
 
     updateDescription() {
+        const clips = this.configurator.clips;
+        let from;
+        let to;
+        if (this.filterData.between) {
+            from = new VTime(this.filterData.between?.from * 1000);
+            to = new VTime(this.filterData.between?.to * 1000);
+            const duration = new VTime(clips.totalDuration);
+            if (from.date) {
+                const ts = VTime.calcCut(clips.clips, from.milliseconds);
+                from = new VTime(ts);
+                if (from >= duration) {
+                    this.itemNode.classList.add("error");
+                    this.itemNode.dataset.fromError = "out-of-range";
+                }
+            }
+            if (to.date) {
+                to = new VTime(VTime.calcCut(clips.clips, to.milliseconds));
+                if (to >= duration) {
+                    this.itemNode.classList.add("error");
+                    this.itemNode.dataset.toError = "out-of-range";
+                }
+            }
+        }
+
         if (this.filterData.filterType === "crop") {
             if (this.filterData.replaceBlackBorders) {
                 return `replace borders${this.filterData.mirror ? " (mirrored)" : ""}`;
@@ -95,28 +119,9 @@ class Filter extends HTMLElement {
             return `${this.filterData.width} x ${this.filterData.height}`;
         }
         if (this.filterData.filterType === "removeLogo") {
-            return `${this.filterData.timestamp}`;
+            return `${from.toString()} - ${to.toString()}, ${new VTime(this.filterData.timestamp).getCutpoint(clips.clips)}`;
         }
         if (this.filterData.filterType === "fillborders") {
-            let from = new VTime(this.filterData.between?.from * 1000);
-            let to = new VTime(this.filterData.between?.to * 1000);
-            const clips = this.configurator.clips;
-            const duration = new VTime(clips.totalDuration);
-            if (from.date) {
-                const ts = VTime.calcCut(clips.clips, from.milliseconds);
-                from = new VTime(ts);
-                if (from >= duration) {
-                    this.itemNode.classList.add("error");
-                    this.itemNode.dataset.fromError = "out-of-range";
-                }
-            }
-            if (to.date) {
-                to = new VTime(VTime.calcCut(clips.clips, to.milliseconds));
-                if (to >= duration) {
-                    this.itemNode.classList.add("error");
-                    this.itemNode.dataset.toError = "out-of-range";
-                }
-            }
             return (
                 `${from.toString()} - ${to.toString()}, ` +
                 `Top: ${this.filterData.top}px, ` +
@@ -126,26 +131,6 @@ class Filter extends HTMLElement {
             );
         }
         if (this.filterData.filterType === "delogo") {
-            let from = new VTime(this.filterData.between?.from * 1000);
-            let to = new VTime(this.filterData.between?.to * 1000);
-            const clips = this.configurator.clips;
-            const duration = new VTime(clips.totalDuration);
-            if (from.date) {
-                const ts = VTime.calcCut(clips.clips, from.milliseconds);
-                from = new VTime(ts);
-                if (from >= duration) {
-                    this.itemNode.classList.add("error");
-                    this.itemNode.dataset.fromError = "out-of-range";
-                }
-            }
-            if (to.date) {
-                to = new VTime(VTime.calcCut(clips.clips, to.milliseconds));
-                if (to >= duration) {
-                    this.itemNode.classList.add("error");
-                    this.itemNode.dataset.toError = "out-of-range";
-                }
-            }
-
             return `${from.toString()} - ${to.toString()}, Top: ${this.filterData.y}px, Left: ${this.filterData.x}px, ${this.filterData.w}px x ${this.filterData.h}px`;
         }
         return "";
@@ -180,7 +165,9 @@ class Filter extends HTMLElement {
         this.labelFilterType.setAttribute("value", filterData.filterType);
         this.labelFilterType.innerText = `${this.dataset.id}. ${filterData.filterType}`;
         if (filterData.filterType === "removeLogo") {
-            this.logoMaskImage.src = `/removelogo/${this.configurator.item.path}?${performance.now()}`;
+            const src = () =>
+                `/removelogo/${this.configurator.item.path}/${filterData.fileId}?${performance.now()}`;
+            this.logoMaskImage.src = src();
             this.logoMaskImage.addEventListener("click", () => {
                 Paint.init(
                     async (image) => {
@@ -191,7 +178,7 @@ class Filter extends HTMLElement {
                         );
                     },
                     () => {
-                        this.logoMaskImage.src = `/removelogo/${this.configurator.item.path}?${performance.now()}`;
+                        this.logoMaskImage.src = src();
                     },
                 ).show(this.logoMaskImage.src);
             });

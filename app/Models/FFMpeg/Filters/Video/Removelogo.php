@@ -11,9 +11,9 @@ class Removelogo
     const TEMPLATE_FILTER = 'removelogo=filename=%s';
     const TEMPLATE_ENABLE = 'enable=\'between(t,%f,%f)\'';
 
-    public static function getBitMap(string $disk, string $path, string $timestamp, string $w, string $h, $filenameSuffix, ?string $withFilters = ''): string
+    public static function getBitMap(string $disk, string $path, string $timestamp, string $w, string $h, $fileId, ?string $withFilters = ''): string
     {
-        $customMask = self::getCustomMaskPath($path);
+        $customMask = self::getCustomMaskPath($path, $fileId);
 
         if (self::hasCustomMask($customMask)) {
             return sprintf(
@@ -26,7 +26,7 @@ class Removelogo
                 $disk,
                 $path,
                 $timestamp,
-                $filenameSuffix,
+                $fileId,
                 $w,
                 $h,
                 $withFilters
@@ -49,13 +49,13 @@ class Removelogo
         return $filter->join(':');
     }
 
-    public static function getCustomMaskPath(string $path): string
+    public static function getCustomMaskPath(string $path, string $fileId): string
     {
         return sprintf(
             '%s%s%s',
             dirname($path),
             DIRECTORY_SEPARATOR,
-            'logomask.png'
+            $fileId . '.logomask.png'
         );
     }
 

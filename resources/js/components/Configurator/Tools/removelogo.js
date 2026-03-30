@@ -1,33 +1,12 @@
 import { RemoveLogo } from "../../../Models/Filters/RemoveLogo";
 import { TYPE_VIDEO } from "../Streams";
+import { VTime } from "../../../Helper/Time";
 
 export const requestRemovelogo = async function (model) {
-    model = model || new RemoveLogo(this.filterGraph.length);
-    const presentRemoveLogo = RemoveLogo.configurator.filterGraph.find(
-        (f) => f.filterType === model.filterType,
-    );
-    const isPresentRemoveLogo =
-        RemoveLogo.configurator.filterGraph.indexOf(model) > -1;
-
-    if (presentRemoveLogo && !isPresentRemoveLogo) {
-        const m = document.createElement("modal-confirm");
-        m.header = "Replace existing filter?";
-        m.content = "RemoveLogo filter can only be applied once.";
-        document.body.appendChild(m);
-        try {
-            await m.confirm();
-            this.filterGraph[model.filterIndex] = { filterType: null };
-            await this.saveSettings();
-            console.log("Replace removeLogo filter confirmed");
-        } catch (error) {
-            console.log("Replace removeLogo filter canceled");
-            return;
-        }
-    }
+    model = model || new RemoveLogo();
 
     try {
         const m = document.createElement("modal-window");
-        m.canCancel = false;
         m.header = "Removelogo";
         m.classList.add("no-shadow");
         const d = document.createElement("dialogue-removelogo");
@@ -38,11 +17,9 @@ export const requestRemovelogo = async function (model) {
 
         d.path = this.item.path;
         d.filterIndex = model.filterIndex;
+        d.model = model;
         requestAnimationFrame(() => {
             d.markers = this.clips;
-            if (d.filterIndex !== null && model) {
-                d.model = model;
-            }
         });
         m.appendChild(d);
         document.body.insertBefore(
@@ -50,16 +27,14 @@ export const requestRemovelogo = async function (model) {
             document.querySelector("transcoder-toast"),
         );
         await m.open();
-        d.updateModel();
-        console.info(
-            "Removelogo video file %s. Create logomask at timestamp %s, width: %s, height: %s",
-            this.item.path,
-            model.timestamp,
-            model.w,
-            model.h,
-        );
+
+        model.timestamp = new VTime(d.current).coord;
+        model.w = d.width;
+        model.h = d.height;
+
+        logInfo(this.item.path, model);
         this.removeLogo = model;
-        if (!isPresentRemoveLogo) {
+        if (isNaN(parseInt(model.filterIndex))) {
             this.filterGraph.push(model);
         }
         this.saveSettings();
@@ -68,4 +43,16 @@ export const requestRemovelogo = async function (model) {
             console.error(error);
         }
     }
+};
+
+const logInfo = function (path, model) {
+    console.info(
+        "Removelogo video file %s. Create logomask at timestamp %s, width: %s, height: %s, Enable between %s, %s",
+        path,
+        model.timestamp,
+        model.w,
+        model.h,
+        model.between.from,
+        model.between.to,
+    );
 };

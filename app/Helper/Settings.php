@@ -60,8 +60,8 @@ class Settings
             })->join("\n") . "\n",
         ];
 
-        $hasRemoveLogo = collect($data['filterGraph'])->firstWhere('filterType', 'removeLogo');
-        if (!$hasRemoveLogo) {
+        $hasRemoveLogo = collect($data['filterGraph'])->where('filterType', 'removeLogo');
+        if ($hasRemoveLogo->count() === 0) {
             Removelogo::deleteMasks($path);
         }
 
