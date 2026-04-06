@@ -107,7 +107,8 @@ class FilterGraph
 
         return Removelogo::getFilterString(
             Removelogo::getBitMap($this->disk, $this->path, $settings['timestamp'], $width, $height, $fileId, $this->filters->join(',')),
-            $settings
+            $settings,
+            $this->timestamp
         );
     }
 }

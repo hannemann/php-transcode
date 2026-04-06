@@ -127,6 +127,20 @@ TODO:
 
 - metadata of streams (is standard, language, ...)
 - sorting of streams
-- remove laravel-ffmpeg library
+- show all removelogo filters on image
+- transcode editor images to see result before encoding
+
+- Audio Analyse:
+
+ffprobe -hide_banner -v error -read_intervals 00:02:20.620%+1 -i "Die-Maske-des-Zorro-(1998).mkv" -select_streams a:0 -show_frames -show_entries frame=pts_time,channels,channel_layout -of json
+ffprobe -hide_banner -v error -read_intervals 02:07:27.441%+1 -i "Die-Maske-des-Zorro-(1998).mkv" -select_streams a:0 -show_frames -show_entries frame=pts_time,channels,channel_layout -of json
+
+- Werbe Detektor:
+
+ffprobe -v error -i Spider-Man_-Across-the-Spider-Verse-\(2023\).mkv   -select_streams a:0 -show_frames   -show_entries frame=pts_time,channel_layout   -of json |   jq '.frames | reduce .[] as $item ([]; 
+    if length == 0 or .[-1].channel_layout != $item.channel_layout 
+    then . + [$item] 
+    else . 
+    end)'
 
 */

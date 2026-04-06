@@ -8,6 +8,8 @@ use Illuminate\Support\Arr;
 use App\Models\FFMpeg\Filters\Video\FilterGraph;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use App\Exceptions\VideoEditor\InvalidMaskCoverageException;
 use App\Models\FFMpeg\Filters\Video\Removelogo;
 
@@ -33,15 +35,13 @@ class Image
 
         $filters = collect([]);
 
+        $hasScale = false;
         if ($filtered) {
             $filterGraph = (string)new FilterGraph($disk, $path, $timestamp, $currentFilter);
             if ($filterGraph) {
+                $hasScale = Str::contains($filterGraph, 'scale=');
                 $filters->push((string)$filterGraph);
             }
-        }
-
-        if ($width || $height) {
-            $filters->push(sprintf('scale=w=%d:h=%d', $width ?? -1, $height ?? -1));
         }
 
         if ($filters->isNotEmpty()) {
@@ -49,9 +49,18 @@ class Image
             $args[] = $filters->join(',');
         }
 
-        $args[] = $out;
+        if (!$hasScale && ($width || $height)) {
+            $filters->push(sprintf('scale=w=%d:h=%d', $width ?? -1, $height ?? -1));
+        }
 
-        return FFMpegDriver::create(null, Arr::dot(config('laravel-ffmpeg')))->command($args);
+        $args[] = $out;
+        $driver = FFMpegDriver::create(null, Arr::dot(config('laravel-ffmpeg')));
+
+        // $binary = $driver->getConfiguration()->get('ffmpeg.binaries');
+        // $command = collect($args)->prepend($binary)->implode(' ');
+        // Log::info($command);
+
+        return $driver->command($args);
     }
 
     public static function saveImage(string $disk, string $path, string $timestamp, ?int $width = null, ?int $height = null, $affix = 'image'): string

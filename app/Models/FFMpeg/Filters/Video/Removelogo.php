@@ -2,6 +2,7 @@
 
 namespace App\Models\FFMpeg\Filters\Video;
 
+use App\Models\FFMpeg\Actions\Helper\VTime;
 use App\Models\FFMpeg\Clipper\Image;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File as FileFacade;
@@ -34,7 +35,7 @@ class Removelogo
         }
     }
 
-    public static function getFilterString(string $bitmap, array $data): string
+    public static function getFilterString(string $bitmap, array $data, ?string $atTimestamp = ''): string
     {
         $filter = collect([]);
         $filter->push(sprintf(
@@ -43,7 +44,17 @@ class Removelogo
         ));
 
         if ($data['between']['from'] && $data['between']['to']) {
-            $filter->push(sprintf(self::TEMPLATE_ENABLE, $data['between']['from'], $data['between']['to']));
+            $from = (float) $data['between']['from'];
+            $to = (float) $data['between']['to'];
+
+            if ($atTimestamp) {
+                $atSeconds = collect(explode(':', $atTimestamp))
+                    ->reduce(VTime::reduceCoord(...), 0);
+
+                $from = max(0, $from - $atSeconds);
+                $to = max(0, $to - $atSeconds);
+            }
+            $filter->push(sprintf(self::TEMPLATE_ENABLE, $from, $to));
         }
 
         return $filter->join(':');
