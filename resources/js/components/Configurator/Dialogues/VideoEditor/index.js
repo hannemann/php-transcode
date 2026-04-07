@@ -282,7 +282,7 @@ class VideoEditor extends HTMLElement {
         return VTime.calcCut(clips, this.current);
     }
 
-    updateFrameUrl() {
+    updateFrameUrl(cacheBuster = null) {
         const filterIndex = parseInt(this.filterIndex);
         const params = ["filtered=1"];
         if (!isNaN(filterIndex)) {
@@ -292,6 +292,9 @@ class VideoEditor extends HTMLElement {
             const dim = this.outputDimensions;
             params.push(`height=${dim.height}`);
             params.push(`width=${dim.width}`);
+        }
+        if (cacheBuster) {
+            params.push(cacheBuster);
         }
         this.frameUrl = `${this.baseUrl}${this.timestamp()}&${params.join("&")}`;
     }

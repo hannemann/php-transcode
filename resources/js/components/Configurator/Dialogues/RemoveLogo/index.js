@@ -67,6 +67,7 @@ class RemoveLogo extends VideoEditor {
     bindListeners() {
         super.bindListeners();
         this.toggleType = this.toggleType.bind(this);
+        this.toggleShowFiltered = this.toggleShowFiltered.bind(this);
         this.paint = this.paint.bind(this);
         this.paintMask = this.paintMask.bind(this);
         this.handleFromTo = this.handleFromTo.bind(this);
@@ -79,6 +80,10 @@ class RemoveLogo extends VideoEditor {
         this.paintButton.addEventListener("click", this.paint);
         this.paintMaskButton.addEventListener("click", this.paintMask);
         this.typeButton.addEventListener("click", this.toggleType);
+        this.showFilteredButton.addEventListener(
+            "click",
+            this.toggleShowFiltered,
+        );
 
         this.coordsDisplay
             .querySelector('[data-ref="from"]')
@@ -99,6 +104,10 @@ class RemoveLogo extends VideoEditor {
         this.paintButton.removeEventListener("click", this.paint);
         this.paintMaskButton.removeEventListener("click", this.paintMask);
         this.typeButton.removeEventListener("click", this.toggleType);
+        this.showFilteredButton.removeEventListener(
+            "click",
+            this.toggleShowFiltered,
+        );
 
         this.btnFrom.removeEventListener("click", this.handleFromTo);
         this.btnTo.removeEventListener("click", this.handleFromTo);
@@ -137,6 +146,17 @@ class RemoveLogo extends VideoEditor {
             this.imageType = IMAGE_TYPE_ORIGINAL;
         }
         this.updateFrameUrl();
+    }
+
+    toggleShowFiltered() {
+        if (this.filterIndex !== this.model.filterIndex) {
+            this.filterIndex = this.model.filterIndex;
+            this.showFilteredButton.classList.remove("active");
+        } else {
+            this.filterIndex = this.filterIndex + 1;
+            this.showFilteredButton.classList.add("active");
+        }
+        this.updateFrameUrl(performance.now());
     }
 
     /**
@@ -182,6 +202,10 @@ class RemoveLogo extends VideoEditor {
 
     get typeButton() {
         return this.shadowRoot.querySelector(".toggle-type");
+    }
+
+    get showFilteredButton() {
+        return this.shadowRoot.querySelector(".toggle-filter");
     }
 
     get imageType() {
@@ -401,6 +425,7 @@ RemoveLogo.template = html`
         <fieldset class="actions">
             <legend>Actions:</legend>
             <div>
+                <theme-button class="toggle-filter">Show Filtered</theme-button>
                 <theme-button class="toggle-type"
                     >${IMAGE_TYPE_ORIGINAL}</theme-button
                 >

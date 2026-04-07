@@ -63,7 +63,8 @@ ThemeButton.template = html`
         button:focus-visible {
             outline: none;
         }
-        button:hover {
+        button:hover,
+        :host(.active) button {
             background: var(--clr-bg-200);
             color: var(--clr-enlightened);
             text-shadow:
