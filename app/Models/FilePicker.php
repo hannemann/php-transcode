@@ -49,6 +49,9 @@ class FilePicker
      */
     public static function getFileData(string $item): array
     {
+        $partSha1 = "^[a-f0-9]{40}\.[a-z0-9.]+";
+        $partSettings = "\.settings\.json";
+        $partLogomask = "(?:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.|^)logomask\.png";
         return array_merge(
             static::getBaseData($item),
             [
@@ -56,7 +59,7 @@ class FilePicker
                 'mime' => static::getMimeType($item),
                 'size' => FileHelper::fileSizeH((int)static::disk()->size($item)),
                 'lastModified' => static::disk()->lastModified($item),
-                'internal' => preg_match('/(^[a-f0-9]{40}\.[a-z0-9.]+|.settings.json|^logomask.png)$/', basename($item))
+                'internal' => preg_match("/(^$partSha1|$partSettings|$partLogomask)$/", basename($item))
             ]
         );
     }
