@@ -142,8 +142,10 @@ class RemoveLogo extends VideoEditor {
     toggleType() {
         if (this.imageType === IMAGE_TYPE_ORIGINAL) {
             this.imageType = IMAGE_TYPE_MASK;
+            this.typeButton.classList.add("active");
         } else {
             this.imageType = IMAGE_TYPE_ORIGINAL;
+            this.typeButton.classList.remove("active");
         }
         this.updateFrameUrl();
     }
@@ -153,8 +155,13 @@ class RemoveLogo extends VideoEditor {
             this.filterIndex = this.model.filterIndex;
             this.showFilteredButton.classList.remove("active");
         } else {
+            if (isNaN(parseInt(this.model.filterIndex))) {
+                this.configurator.filterGraph.push(this.model);
+            }
+            this.model.timestamp = this.current;
             this.filterIndex = this.filterIndex + 1;
             this.showFilteredButton.classList.add("active");
+            this.configurator.saveSettings();
         }
         this.updateFrameUrl(performance.now());
     }
@@ -180,6 +187,30 @@ class RemoveLogo extends VideoEditor {
             ref = ref.replace("btn-del-", "");
         }
         this[ref] = value;
+    }
+
+    /**
+     * update image url
+     * also update zoomimage utl
+     */
+    updateFrameUrl() {
+        this.image.addEventListener(
+            "load",
+            () => {
+                let src;
+                if (isNaN(parseInt(this.model.filterIndex))) {
+                    src = this.image.src.replace(
+                        "/image/",
+                        "/removelogoImage/",
+                    );
+                } else {
+                    src = `/removelogo/${this.configurator.item.path}/${this.model.fileId}?${performance.now()}`;
+                }
+                this.maskThumb.src = src;
+            },
+            { once: true },
+        );
+        super.updateFrameUrl();
     }
 
     get baseThumbUrl() {
@@ -284,6 +315,10 @@ class RemoveLogo extends VideoEditor {
     get btnDelTo() {
         return this.shadowRoot.querySelector('[data-ref="btn-del-to"]');
     }
+
+    get maskThumb() {
+        return this.shadowRoot.querySelector('[data-ref="mask-thumb"]');
+    }
 }
 
 const CSS = css`
@@ -313,6 +348,7 @@ const CSS = css`
         white-space: nowrap;
         width: 250px;
 
+        .display-options,
         .actions {
             & > div {
                 display: grid;
@@ -324,6 +360,18 @@ const CSS = css`
                     min-width: 150px;
                 }
             }
+
+            & > span {
+                white-space: initial;
+
+                &.warning {
+                    color: var(--clr-text-warn);
+                }
+            }
+        }
+
+        [data-ref="mask-thumb"] {
+            max-width: 100%;
         }
 
         fieldset {
@@ -422,13 +470,27 @@ RemoveLogo.template = html`
                 </div>
             </label>
         </fieldset>
-        <fieldset class="actions">
-            <legend>Actions:</legend>
+        <fieldset class="display-options">
+            <legend>Display:</legend>
             <div>
-                <theme-button class="toggle-filter">Show Filtered</theme-button>
+                <img data-ref="mask-thumb" />
+            </div>
+            <div>
                 <theme-button class="toggle-type"
                     >${IMAGE_TYPE_ORIGINAL}</theme-button
                 >
+            </div>
+            <div>
+                <theme-button class="toggle-filter">Show Filtered</theme-button>
+            </div>
+            <span class="warning">
+                Filter will be saved first. Takes a long time if mask contains
+                to many white pixels
+            </span>
+        </fieldset>
+        <fieldset class="actions">
+            <legend>Actions:</legend>
+            <div>
                 <theme-button class="paint-button">Paint</theme-button>
                 <theme-button class="paint-mask-button"
                     >Paint on Mask</theme-button

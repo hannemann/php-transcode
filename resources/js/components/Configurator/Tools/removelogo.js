@@ -15,8 +15,11 @@ export const requestRemovelogo = async function (model) {
         ({ width: d.video.width, height: d.video.height } = d.outputDimensions);
         d.video.duration = parseFloat(this.format.duration);
 
+        model.w = d.video.width;
+        model.h = d.video.height;
         d.path = this.item.path;
         d.filterIndex = model.filterIndex;
+        d.configurator = this;
         d.model = model;
         requestAnimationFrame(() => {
             d.markers = this.clips;
@@ -28,9 +31,7 @@ export const requestRemovelogo = async function (model) {
         );
         await m.open();
 
-        model.timestamp = new VTime(d.current).coord;
-        model.w = d.width;
-        model.h = d.height;
+        model.timestamp = d.current;
 
         logInfo(this.item.path, model);
         this.removeLogo = model;
