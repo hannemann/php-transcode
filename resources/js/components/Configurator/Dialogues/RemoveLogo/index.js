@@ -56,10 +56,6 @@ class RemoveLogo extends VideoEditor {
             this.current = this.model.timestamp.milliseconds || 0;
             this.width = parseInt(this.video.width);
             this.height = parseInt(this.video.height);
-            this.btnTogglePreview.toggleAttribute(
-                "disabled",
-                !this.model.hasFilterIndex,
-            );
             this.isSaved = this.model.hasFilterIndex;
             this.updateImages();
             this.image.addEventListener(
@@ -68,21 +64,30 @@ class RemoveLogo extends VideoEditor {
                     this.from = this.model.between.from;
                     this.to = this.model.between.to;
                     this.dispatchEvent(new CustomEvent("removologo-loaded"));
-                    console.log("Image loaded", this.maskThumb.src);
-                    if (this.model.hasFilterIndex) {
-                        this.maskThumb.addEventListener(
-                            "load",
-                            () => {
+                    console.log("Image loaded", this.image.src);
+                    this.maskThumb.addEventListener(
+                        "load",
+                        () => {
+                            console.log("Mask loaded", this.maskThumb.src);
+                            this.btnToggleType.disabled = false;
+                            this.btnEditMask.disabled = false;
+                            this.btnSaveMask.disabled = false;
+                            this.btnTogglePreview.toggleAttribute(
+                                "disabled",
+                                !this.isSaved,
+                            );
+                            this.btnDeleteMask.disabled = false;
+                            if (this.model.hasFilterIndex) {
                                 Paint.checkImage = this.maskThumb;
                                 this.model.originalMaskData =
                                     Paint.checkWhitePixelCanvas.toDataURL(
                                         "image/png",
                                     );
                                 Paint.clearPaintArea();
-                            },
-                            { once: true },
-                        );
-                    }
+                            }
+                        },
+                        { once: true },
+                    );
                 },
                 {
                     once: true,
@@ -97,6 +102,7 @@ class RemoveLogo extends VideoEditor {
         this.togglePreview = this.togglePreview.bind(this);
         this.paint = this.paint.bind(this);
         this.save = this.save.bind(this);
+        this.deleteMask = this.deleteMask.bind(this);
         this.handleFromTo = this.handleFromTo.bind(this);
     }
 
@@ -104,10 +110,12 @@ class RemoveLogo extends VideoEditor {
         super.addListeners();
         document.addEventListener("keydown", this.handleKeyDown);
         document.addEventListener("keyup", this.handleKeyUp);
+        this.btnEditMask.addEventListener("click", this.paint);
         this.maskThumb.addEventListener("click", this.paint);
         this.btnToggleType.addEventListener("click", this.toggleType);
         this.btnTogglePreview.addEventListener("click", this.togglePreview);
-        this.btnSave.addEventListener("click", this.save);
+        this.btnSaveMask.addEventListener("click", this.save);
+        this.btnDeleteMask.addEventListener("click", this.deleteMask);
 
         this.coordsDisplay
             .querySelector('[data-ref="from"]')
@@ -125,10 +133,12 @@ class RemoveLogo extends VideoEditor {
         super.removeListeners();
         document.removeEventListener("keydown", this.handleKeyDown);
         document.removeEventListener("keyup", this.handleKeyUp);
+        this.btnEditMask.removeEventListener("click", this.paint);
         this.maskThumb.removeEventListener("click", this.paint);
         this.btnToggleType.removeEventListener("click", this.toggleType);
         this.btnTogglePreview.removeEventListener("click", this.togglePreview);
-        this.btnSave.removeEventListener("click", this.save);
+        this.btnSaveMask.removeEventListener("click", this.save);
+        this.btnDeleteMask.removeEventListener("click", this.deleteMask);
 
         this.btnFrom.removeEventListener("click", this.handleFromTo);
         this.btnTo.removeEventListener("click", this.handleFromTo);
@@ -167,15 +177,12 @@ class RemoveLogo extends VideoEditor {
         } finally {
             Paint.clearPaintArea();
             this.updateFrameUrl();
-            this.btnTogglePreview.toggleAttribute(
-                "disabled",
-                !this.model.hasFilterIndex,
-            );
+            this.btnTogglePreview.toggleAttribute("disabled", !this.isSaved);
             return result;
         }
     }
 
-    async newMask() {
+    async deleteMask() {
         const path = this.path;
         const fileId = this.model.fileId;
         const response = await Request.delete(
@@ -195,6 +202,7 @@ class RemoveLogo extends VideoEditor {
             "/removelogoImage/",
         );
         this.isSaved = false;
+        this.btnTogglePreview.toggleAttribute("disabled", !this.isSaved);
     }
 
     paint() {
@@ -213,30 +221,40 @@ class RemoveLogo extends VideoEditor {
                 this.updateFrameUrl();
                 this.btnTogglePreview.toggleAttribute(
                     "disabled",
-                    !this.model.hasFilterIndex,
+                    !this.isSaved,
                 );
             },
         ).show(this.maskThumb.src);
     }
 
     toggleType() {
-        if (this.imageType === IMAGE_TYPE_ORIGINAL) {
-            this.imageType = IMAGE_TYPE_MASK;
+        if (!this.btnToggleType.classList.contains("active")) {
             this.btnToggleType.classList.add("active");
         } else {
-            this.imageType = IMAGE_TYPE_ORIGINAL;
             this.btnToggleType.classList.remove("active");
         }
         this.updateFrameUrl();
     }
 
-    togglePreview() {
+    async togglePreview() {
         if (this.filterIndex !== this.model.filterIndex) {
             this.filterIndex = this.model.filterIndex;
             this.btnTogglePreview.classList.remove("active");
         } else {
-            this.filterIndex = this.model.filterIndex + 1;
-            this.btnTogglePreview.classList.add("active");
+            try {
+                Paint.checkImage = this.maskThumb;
+                const nonBlackPercent = Paint.getWhitePixelPercent();
+                Paint.clearPaintArea();
+                if (nonBlackPercent > 10) {
+                    throw new Error(
+                        await alertWhitePixelError(nonBlackPercent),
+                    );
+                }
+                this.filterIndex = this.model.filterIndex + 1;
+                this.btnTogglePreview.classList.add("active");
+            } catch (error) {
+                console.error(error);
+            }
         }
         this.updateFrameUrl(performance.now());
     }
@@ -290,17 +308,9 @@ class RemoveLogo extends VideoEditor {
     }
 
     get baseUrl() {
-        return this.imageType === IMAGE_TYPE_ORIGINAL
+        return !this.btnToggleType.classList.contains("active")
             ? super.baseUrl
             : `/removelogoImage/${encodeURIComponent(this.path)}?timestamp=`;
-    }
-
-    get imageType() {
-        return this.btnToggleType.innerText;
-    }
-
-    set imageType(value) {
-        this.btnToggleType.innerText = value;
     }
 
     get coordsDisplay() {
@@ -373,15 +383,23 @@ class RemoveLogo extends VideoEditor {
     }
 
     get btnToggleType() {
-        return this.shadowRoot.querySelector(".toggle-type");
+        return this.shadowRoot.querySelector('[data-ref="btn-toggle-type"]');
     }
 
     get btnTogglePreview() {
-        return this.shadowRoot.querySelector(".toggle-preview");
+        return this.shadowRoot.querySelector('[data-ref="btn-preview-mask"]');
     }
 
-    get btnSave() {
-        return this.shadowRoot.querySelector("theme-button.save");
+    get btnSaveMask() {
+        return this.shadowRoot.querySelector('[data-ref="btn-save-mask"]');
+    }
+
+    get btnEditMask() {
+        return this.shadowRoot.querySelector('[data-ref="btn-edit-mask"]');
+    }
+
+    get btnDeleteMask() {
+        return this.shadowRoot.querySelector('[data-ref="btn-delete-mask"]');
     }
 
     get maskThumb() {
@@ -442,9 +460,20 @@ const CSS = css`
             }
         }
 
+        .mask-actions {
+            display: flex;
+            gap: 0.5rem;
+
+            [data-ref^="btn-"] {
+                cursor: pointer;
+                font-size: 1rem;
+            }
+        }
+
         [data-ref="mask-thumb"] {
             width: 100%;
             aspect-ratio: 16 / 9;
+            cursor: pointer;
         }
 
         fieldset {
@@ -544,22 +573,88 @@ RemoveLogo.template = html`
             </label>
         </fieldset>
         <fieldset class="display-options">
-            <legend>Display:</legend>
+            <legend>Logomask:</legend>
             <div>
-                <img data-ref="mask-thumb" />
+                <div class="mask-actions">
+                    <button
+                        class="icon-stack"
+                        data-ref="btn-toggle-type"
+                        title="Toggle Image Type"
+                        disabled="disabled"
+                    >
+                        <span
+                            class="iconify inactive"
+                            data-icon="mdi-toggle-switch-off-outline"
+                        ></span>
+                        <span
+                            class="iconify hover"
+                            data-icon="mdi-toggle-switch-off-outline"
+                        ></span>
+                        <span
+                            class="iconify active"
+                            data-icon="mdi-toggle-switch-outline"
+                        ></span>
+                    </button>
+                    <button
+                        class="icon-stack"
+                        data-ref="btn-edit-mask"
+                        title="Edit Mask"
+                        disabled="disabled"
+                    >
+                        <span
+                            class="iconify"
+                            data-icon="mdi-pencil-outline"
+                        ></span>
+                        <span
+                            class="iconify hover"
+                            data-icon="mdi-pencil-outline"
+                        ></span>
+                    </button>
+                    <button
+                        class="icon-stack"
+                        data-ref="btn-save-mask"
+                        title="Save Mask"
+                        disabled="disabled"
+                    >
+                        <span
+                            class="iconify"
+                            data-icon="mdi-content-save-outline"
+                        ></span>
+                        <span
+                            class="iconify hover"
+                            data-icon="mdi-content-save-outline"
+                        ></span>
+                    </button>
+                    <button
+                        class="icon-stack"
+                        data-ref="btn-preview-mask"
+                        title="Toggle Preview"
+                        disabled="disabled"
+                    >
+                        <span
+                            class="iconify"
+                            data-icon="mdi-eye-outline"
+                        ></span>
+                        <span
+                            class="iconify hover"
+                            data-icon="mdi-eye-outline"
+                        ></span>
+                    </button>
+                    <button
+                        class="icon-stack"
+                        data-ref="btn-delete-mask"
+                        title="Delete Mask"
+                        disabled="disabled"
+                    >
+                        <span class="iconify" data-icon="mdi-close"></span>
+                        <span
+                            class="iconify hover"
+                            data-icon="mdi-close"
+                        ></span>
+                    </button>
+                </div>
+                <img data-ref="mask-thumb" title="Edit Mask" />
             </div>
-            <div>
-                <theme-button class="toggle-type"
-                    >${IMAGE_TYPE_ORIGINAL}</theme-button
-                >
-            </div>
-            <div class="preview-btns">
-                <theme-button class="save">Save</theme-button>
-                <theme-button class="toggle-preview">Preview</theme-button>
-            </div>
-            <span class="warning">
-                Preview takes a long time if mask contains to many white pixels
-            </span>
         </fieldset>
     </div>
 `;
