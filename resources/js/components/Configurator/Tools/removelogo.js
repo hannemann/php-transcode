@@ -2,7 +2,9 @@ import { RemoveLogo } from "../../../Models/Filters/RemoveLogo";
 import { TYPE_VIDEO } from "../Streams";
 import { FilterGraph } from "../../../Models/Filters/FilterGraph";
 import { Request } from "../../Request";
-import { STATE_INFO } from "../../Toast";
+import { STATE_INFO, STATE_ERROR } from "../../Toast";
+import Paint from "../../../Helper/Paint";
+import { alertWhitePixelError } from "../Dialogues/RemoveLogo";
 
 export const requestRemovelogo = async function (model) {
     const backup = JSON.stringify(this.filterGraph);
@@ -12,8 +14,17 @@ export const requestRemovelogo = async function (model) {
         const m = document.createElement("modal-window");
         m.header = "Removelogo";
         m.classList.add("no-shadow");
-        const d = document.createElement("dialogue-removelogo");
 
+        m.confirmBeforeAction = async () => {
+            Paint.checkImage = d.maskThumb;
+            const nonBlackPercent = Paint.getWhitePixelPercent();
+            Paint.clearPaintArea();
+            if (nonBlackPercent > 10) {
+                throw new Error(await alertWhitePixelError(nonBlackPercent));
+            }
+        };
+
+        const d = document.createElement("dialogue-removelogo");
         d.video = this.streams.find((s) => s.codec_type === TYPE_VIDEO);
         ({ width: d.video.width, height: d.video.height } = d.outputDimensions);
         d.video.duration = parseFloat(this.format.duration);
@@ -38,14 +49,10 @@ export const requestRemovelogo = async function (model) {
 
         logInfo(this.item.path, model);
         this.removeLogo = model;
-        // if (isNaN(parseInt(model.filterIndex))) {
-        //     this.filterGraph.push(model);
-        // }
-        // await this.saveSettings();
-        const result = await d.save();
-        if (!result) {
-            throw new Error("Too much white");
+        if (isNaN(parseInt(model.filterIndex))) {
+            this.filterGraph.push(model);
         }
+        await this.saveSettings();
     } catch (error) {
         // 1. Silent Rollback: User actively clicked "Cancel" or pressed "Escape"
         if (error === "cancel") {

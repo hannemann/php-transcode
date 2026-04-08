@@ -9,14 +9,19 @@ import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 const IMAGE_TYPE_ORIGINAL = "Original";
 const IMAGE_TYPE_MASK = "Mask";
 
+export const alertWhitePixelError = async (percentage) => {
+    const message = `${Math.round(percentage)}% is too much white`;
+    const m = document.createElement("modal-alert");
+    m.innerText = message;
+    document.body.appendChild(m);
+    await m.alert();
+    return message;
+};
+
 export const saveCustomMask = async function (image, path, fileId) {
     const nonBlackPercent = Paint.getWhitePixelPercent();
     if (nonBlackPercent > 10) {
-        const m = document.createElement("modal-alert");
-        m.innerText = `${Math.round(nonBlackPercent)}% is too much white`;
-        document.body.appendChild(m);
-        await m.alert();
-        return false;
+        throw new Error(await alertWhitePixelError(nonBlackPercent));
     } else {
         const data = {
             image: image.asDataURL("image/png"),
@@ -34,7 +39,6 @@ export const saveCustomMask = async function (image, path, fileId) {
                 },
             }),
         );
-        return true;
     }
 };
 
@@ -69,16 +73,12 @@ class RemoveLogo extends VideoEditor {
                         this.maskThumb.addEventListener(
                             "load",
                             () => {
-                                const canvas = document.createElement("canvas");
-                                const ctx = canvas.getContext("2d");
-                                canvas.style.display = "none";
-                                canvas.width = this.video.width;
-                                canvas.height = this.video.height;
-                                Paint.paintArea.append(canvas);
-                                ctx.drawImage(this.maskThumb, 0, 0);
+                                Paint.checkImage = this.maskThumb;
                                 this.model.originalMaskData =
-                                    canvas.toDataURL("image/png");
-                                Paint.paintArea.innerHTML = "";
+                                    Paint.checkWhitePixelCanvas.toDataURL(
+                                        "image/png",
+                                    );
+                                Paint.clearPaintArea();
                             },
                             { once: true },
                         );
@@ -143,39 +143,29 @@ class RemoveLogo extends VideoEditor {
     }
 
     async save() {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        canvas.style.display = "none";
-        canvas.width = this.video.width;
-        canvas.height = this.video.height;
-        Paint.paintArea.append(canvas);
-        ctx.drawImage(this.maskThumb, 0, 0);
-
+        const canvas = Paint.checkWhitePixelCanvas;
+        Paint.checkImage = this.maskThumb;
         let result;
         try {
-            result = await saveCustomMask(
+            await saveCustomMask(
                 {
                     asDataURL: () => canvas.toDataURL("image/png"),
                 },
                 this.path,
                 this.model.fileId,
             );
-            if (result) {
-                if (!this.model.hasFilterIndex) {
-                    this.configurator.filterGraph.push(this.model);
-                }
-                this.configurator.filterGraph.reindex();
-                this.model.timestamp = this.current;
-                await this.configurator.saveSettings();
-                this.filterIndex = this.model.filterIndex;
-                this.isSaved = true;
+            if (!this.model.hasFilterIndex) {
+                this.configurator.filterGraph.push(this.model);
             }
+            this.configurator.filterGraph.reindex();
+            this.model.timestamp = this.current;
+            await this.configurator.saveSettings();
+            this.filterIndex = this.model.filterIndex;
+            this.isSaved = true;
         } catch (error) {
-            if (error !== "cancel") {
-                console.error(error);
-            }
+            console.error(error);
         } finally {
-            Paint.paintArea.innerHTML = "";
+            Paint.clearPaintArea();
             this.updateFrameUrl();
             this.btnTogglePreview.toggleAttribute(
                 "disabled",

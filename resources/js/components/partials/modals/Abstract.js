@@ -87,8 +87,17 @@ class AbstractModal extends HTMLElement {
         this.classList.add("fade-out");
     }
 
-    confirmAction() {
-        this.resolve();
+    async confirmAction() {
+        try {
+            if (
+                this.confirmBeforeAction?.constructor?.name === "AsyncFunction"
+            ) {
+                await this.confirmBeforeAction();
+            }
+            this.resolve();
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     async cancelAction() {

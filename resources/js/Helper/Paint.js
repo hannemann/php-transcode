@@ -146,9 +146,7 @@ export default class Paint {
                 if ("function" === typeof closeHandler) {
                     await closeHandler();
                 }
-                Paint.paintArea.innerHTML = "";
-                console.log(Paint.canvas);
-                // document.body.removeChild(paintArea);
+                Paint.clearPaintArea();
             },
             saveHandler: function (image, callback) {
                 Paint.save.call(this, saveHandler, image, callback);
@@ -350,6 +348,33 @@ export default class Paint {
             callback(success);
             success && Paint.Painterro.close();
         }
+    }
+
+    static clearPaintArea() {
+        Paint.paintArea.innerHTML = "";
+    }
+
+    static get checkWhitePixelCanvas() {
+        let canvas = Paint.paintArea.querySelector(
+            "canvas[data-white-pixel-check]",
+        );
+        if (canvas) return canvas;
+        canvas = document.createElement("canvas");
+        canvas.dataset.whitePixelCheck = "";
+        canvas.style.display = "none";
+        Paint.paintArea.append(canvas);
+        return canvas;
+    }
+
+    /**
+     * @param {HTMLImageElement} image
+     */
+    static set checkImage(image) {
+        const canvas = Paint.checkWhitePixelCanvas;
+        const ctx = canvas.getContext("2d");
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        ctx.drawImage(image, 0, 0);
     }
 
     /**
