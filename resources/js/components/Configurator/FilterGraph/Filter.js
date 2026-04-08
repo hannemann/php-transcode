@@ -10,6 +10,8 @@ import { requestScale } from "../Tools/scale.js";
 import { VTime } from "../../../Helper/Time.js";
 import { saveCustomMask } from "../Dialogues/RemoveLogo/index.js";
 import Paint from "../../../Helper/Paint.js";
+import { Request } from "../../Request/index.js";
+import { STATE_INFO } from "../../Toast/index.js";
 
 class Filter extends HTMLElement {
     constructor() {
@@ -74,6 +76,22 @@ class Filter extends HTMLElement {
             document.body.appendChild(m);
             await m.confirm();
             this.configurator.filterGraph.splice(parseInt(this.dataset.id), 1);
+            if (this.filterData.filterType === "removeLogo") {
+                const path = this.configurator.item.path;
+                const fileId = this.filterData.fileId;
+                const response = await Request.delete(
+                    `/removelogoImage/${path}/${fileId}`,
+                );
+                const result = await response.json();
+                document.dispatchEvent(
+                    new CustomEvent("toast", {
+                        detail: {
+                            message: result.message,
+                            type: STATE_INFO,
+                        },
+                    }),
+                );
+            }
             await this.configurator.saveSettings();
         } catch (error) {
             if (error !== "cancel") {

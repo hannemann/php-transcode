@@ -32,4 +32,8 @@ export class FilterModel {
     get isActive() {
         return FilterModel.configurator.filterIndex === this.filterIndex;
     }
+
+    get hasFilterIndex() {
+        return !isNaN(parseInt(this.filterIndex));
+    }
 }

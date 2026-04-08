@@ -1,15 +1,35 @@
 import { DomHelper } from "../../../../Helper/Dom";
 
 class ThemeButton extends HTMLElement {
+    static get observedAttributes() {
+        return ["disabled"];
+    }
+
     connectedCallback() {
         DomHelper.initDom.call(this);
         this.button = this.shadowRoot.querySelector("button");
+        this.disabled = this.hasAttribute("disabled");
 
         requestAnimationFrame(() => {
             this.disabled =
                 this.hasAttribute("disabled") || this.deferredDisable;
             delete this.deferredDisable;
         });
+    }
+
+    /**
+     * @param {string} name - The name of the changed attribute
+     * @param {string|null} oldValue - The previous value
+     * @param {string|null} newValue - The new value
+     */
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (oldValue === newValue) return; // Skip if value didn't actually change
+
+        switch (name) {
+            case "disabled":
+                this.disabled = this.hasAttribute("disabled");
+                break;
+        }
     }
     focus() {
         requestAnimationFrame(() => {
@@ -48,6 +68,7 @@ const CSS = css`
         display: flex;
         align-items: center;
         gap: 0.5rem;
+        width: 100%;
         border: 2px solid var(--clr-bg-200);
         transition-property:
             text-shadow, box-shadow, border-color, background-color;

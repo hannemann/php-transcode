@@ -49,12 +49,12 @@ class RemovelogoController extends Controller
         return response()->file($imagePath);
     }
 
-    public function deleteMasks(string $path)
+    public function deleteMask(string $path, string $fileId)
     {
         try {
-            Removelogo::deleteMasks($path);
+            Removelogo::deleteMask($path, $fileId);
             $status = 200;
-            $message = 'Masks deleted';
+            $message = 'Mask deleted';
         } catch (\Exception $e) {
             $status = 500;
             $message = sprintf($e->getMessage());

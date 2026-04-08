@@ -64,7 +64,7 @@ Route::post('/settings/{path}', [TranscodeController::class, 'saveSettings'])->w
 Route::post('/removelogoCustomMask/{path}/{fileId}', [RemovelogoController::class, 'saveCustomMask'])->where('path', '(.*)')->where('fileId', '(.*)');
 Route::get('/removelogo/{path}/{fileId}', [RemovelogoController::class, 'logomask'])->where('path', '(.*)')->where('fileId', '(.*)');
 Route::get('/removelogoImage/{path}', [RemovelogoController::class, 'image'])->where('path', '(.*)');
-Route::delete('/removelogoImage/{path}', [RemovelogoController::class, 'deleteMasks'])->where('path', '(.*)');
+Route::delete('/removelogoImage/{path}/{fileId}', [RemovelogoController::class, 'deleteMask'])->where('path', '(.*)')->where('fileId', '(.*)');
 Route::post('/kill', fn() => KillFFMpeg::execute());
 Route::get('/image/{path}', [ClipperController::class, 'image'])->where('path', '(.*)');
 Route::get('/thumbnails/{path}/{duration}/{count}', [ClipperController::class, 'thumbnails'])->where('path', '(.*)');

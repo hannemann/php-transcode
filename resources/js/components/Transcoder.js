@@ -127,7 +127,7 @@ TODO:
 
 - metadata of streams (is standard, language, ...)
 - sorting of streams
-- show all removelogo filters on image
+- add save btn to removelogo ui and disable show filtered btn until saved
 - transcode editor images to see result before encoding
 
 - Audio Analyse:

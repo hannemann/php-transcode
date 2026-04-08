@@ -1,10 +1,12 @@
-import './Loading.js'
+import "./Loading.js";
 
-const LoadEvent = new CustomEvent('loading', {detail: true})
-const LoadReadyEvent = new CustomEvent('loading', {detail: false})
-const CSRF_TOKEN = document.head.querySelector("[name~=csrf-token][content]").content;
+const LoadEvent = new CustomEvent("loading", { detail: true });
+const LoadReadyEvent = new CustomEvent("loading", { detail: false });
+const CSRF_TOKEN = document.head.querySelector(
+    "[name~=csrf-token][content]",
+).content;
 
-let requests = 0
+let requests = 0;
 
 const BASE_HEADERS = {
     "Content-Type": "application/json",
@@ -60,6 +62,7 @@ class Request {
                 let error = await response.json();
                 throw new Error(error.message);
             }
+            return response;
         } catch (error) {
             Request.error = error;
         } finally {
@@ -90,10 +93,10 @@ class Request {
                     message: error,
                     type: "error",
                 },
-            })
+            }),
         );
         throw error;
     }
 }
 
-export { Request }
+export { Request };

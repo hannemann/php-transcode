@@ -3,8 +3,9 @@
 namespace App\Helper;
 
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use League\Flysystem\UnableToReadFile;
-use App\Models\FFMpeg\Filters\Video\Removelogo;
+use App\Models\FFMpeg\Clipper\Image;
 
 class Settings
 {
@@ -60,10 +61,13 @@ class Settings
             })->join("\n") . "\n",
         ];
 
-        $hasRemoveLogo = collect($data['filterGraph'])->where('filterType', 'removeLogo');
-        if ($hasRemoveLogo->count() === 0) {
-            Removelogo::deleteMasks($path);
-        }
+        $removeLogo = collect($data['filterGraph'])->where('filterType', 'removeLogo');
+        $removeLogo->each(function ($filter) use ($path) {
+            $imagePath = Image::getLogoMaskFullnameByPath($path, $filter['fileId']);
+            if ($imagePath) {
+                Image::getNonBlackPercentage($imagePath);
+            }
+        });
 
         $out = json_encode($data,  JSON_PRETTY_PRINT |  JSON_UNESCAPED_SLASHES);
         $filename = Settings::getSettingsFilename($path);

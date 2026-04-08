@@ -12,28 +12,30 @@ const IMAGE_TYPE_MASK = "Mask";
 export const saveCustomMask = async function (image, path, fileId) {
     const nonBlackPercent = Paint.getWhitePixelPercent();
     if (nonBlackPercent > 10) {
-        const m = document.createElement("modal-confirm");
-        m.header = "Too much white";
-        m.content = `FFMpeg will have a really hard time masking ${Math.round(nonBlackPercent)}% of the video. Proceed?`;
+        const m = document.createElement("modal-alert");
+        m.innerText = `${Math.round(nonBlackPercent)}% is too much white`;
         document.body.appendChild(m);
-        await m.confirm();
+        await m.alert();
+        return false;
+    } else {
+        const data = {
+            image: image.asDataURL("image/png"),
+        };
+        const response = await Request.post(
+            `/removelogoCustomMask/${encodeURIComponent(path)}/${fileId}`,
+            data,
+        );
+        const result = await response.json();
+        document.dispatchEvent(
+            new CustomEvent("toast", {
+                detail: {
+                    message: result.message,
+                    type: STATE_INFO,
+                },
+            }),
+        );
+        return true;
     }
-    const data = {
-        image: image.asDataURL("image/png"),
-    };
-    const result = await Request.post(
-        `/removelogoCustomMask/${encodeURIComponent(path)}/${fileId}`,
-        data,
-    );
-    const response = await result.json();
-    document.dispatchEvent(
-        new CustomEvent("toast", {
-            detail: {
-                message: response.message,
-                type: STATE_INFO,
-            },
-        }),
-    );
 };
 
 class RemoveLogo extends VideoEditor {
@@ -42,6 +44,7 @@ class RemoveLogo extends VideoEditor {
      */
     model;
     raw = [-1];
+    isSaved = false;
 
     connectedCallback() {
         super.connectedCallback();
@@ -49,6 +52,11 @@ class RemoveLogo extends VideoEditor {
             this.current = this.model.timestamp.milliseconds || 0;
             this.width = parseInt(this.video.width);
             this.height = parseInt(this.video.height);
+            this.btnTogglePreview.toggleAttribute(
+                "disabled",
+                !this.model.hasFilterIndex,
+            );
+            this.isSaved = this.model.hasFilterIndex;
             this.updateImages();
             this.image.addEventListener(
                 "load",
@@ -56,6 +64,25 @@ class RemoveLogo extends VideoEditor {
                     this.from = this.model.between.from;
                     this.to = this.model.between.to;
                     this.dispatchEvent(new CustomEvent("removologo-loaded"));
+                    console.log("Image loaded", this.maskThumb.src);
+                    if (this.model.hasFilterIndex) {
+                        this.maskThumb.addEventListener(
+                            "load",
+                            () => {
+                                const canvas = document.createElement("canvas");
+                                const ctx = canvas.getContext("2d");
+                                canvas.style.display = "none";
+                                canvas.width = this.video.width;
+                                canvas.height = this.video.height;
+                                Paint.paintArea.append(canvas);
+                                ctx.drawImage(this.maskThumb, 0, 0);
+                                this.model.originalMaskData =
+                                    canvas.toDataURL("image/png");
+                                Paint.paintArea.innerHTML = "";
+                            },
+                            { once: true },
+                        );
+                    }
                 },
                 {
                     once: true,
@@ -67,9 +94,9 @@ class RemoveLogo extends VideoEditor {
     bindListeners() {
         super.bindListeners();
         this.toggleType = this.toggleType.bind(this);
-        this.toggleShowFiltered = this.toggleShowFiltered.bind(this);
+        this.togglePreview = this.togglePreview.bind(this);
         this.paint = this.paint.bind(this);
-        this.paintMask = this.paintMask.bind(this);
+        this.save = this.save.bind(this);
         this.handleFromTo = this.handleFromTo.bind(this);
     }
 
@@ -77,13 +104,10 @@ class RemoveLogo extends VideoEditor {
         super.addListeners();
         document.addEventListener("keydown", this.handleKeyDown);
         document.addEventListener("keyup", this.handleKeyUp);
-        this.paintButton.addEventListener("click", this.paint);
-        this.paintMaskButton.addEventListener("click", this.paintMask);
-        this.typeButton.addEventListener("click", this.toggleType);
-        this.showFilteredButton.addEventListener(
-            "click",
-            this.toggleShowFiltered,
-        );
+        this.maskThumb.addEventListener("click", this.paint);
+        this.btnToggleType.addEventListener("click", this.toggleType);
+        this.btnTogglePreview.addEventListener("click", this.togglePreview);
+        this.btnSave.addEventListener("click", this.save);
 
         this.coordsDisplay
             .querySelector('[data-ref="from"]')
@@ -101,13 +125,10 @@ class RemoveLogo extends VideoEditor {
         super.removeListeners();
         document.removeEventListener("keydown", this.handleKeyDown);
         document.removeEventListener("keyup", this.handleKeyUp);
-        this.paintButton.removeEventListener("click", this.paint);
-        this.paintMaskButton.removeEventListener("click", this.paintMask);
-        this.typeButton.removeEventListener("click", this.toggleType);
-        this.showFilteredButton.removeEventListener(
-            "click",
-            this.toggleShowFiltered,
-        );
+        this.maskThumb.removeEventListener("click", this.paint);
+        this.btnToggleType.removeEventListener("click", this.toggleType);
+        this.btnTogglePreview.removeEventListener("click", this.togglePreview);
+        this.btnSave.removeEventListener("click", this.save);
 
         this.btnFrom.removeEventListener("click", this.handleFromTo);
         this.btnTo.removeEventListener("click", this.handleFromTo);
@@ -121,47 +142,111 @@ class RemoveLogo extends VideoEditor {
         this.btnDelTo.removeEventListener("click", this.handleFromTo);
     }
 
+    async save() {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.style.display = "none";
+        canvas.width = this.video.width;
+        canvas.height = this.video.height;
+        Paint.paintArea.append(canvas);
+        ctx.drawImage(this.maskThumb, 0, 0);
+
+        let result;
+        try {
+            result = await saveCustomMask(
+                {
+                    asDataURL: () => canvas.toDataURL("image/png"),
+                },
+                this.path,
+                this.model.fileId,
+            );
+            if (result) {
+                if (!this.model.hasFilterIndex) {
+                    this.configurator.filterGraph.push(this.model);
+                }
+                this.configurator.filterGraph.reindex();
+                this.model.timestamp = this.current;
+                await this.configurator.saveSettings();
+                this.filterIndex = this.model.filterIndex;
+                this.isSaved = true;
+            }
+        } catch (error) {
+            if (error !== "cancel") {
+                console.error(error);
+            }
+        } finally {
+            Paint.paintArea.innerHTML = "";
+            this.updateFrameUrl();
+            this.btnTogglePreview.toggleAttribute(
+                "disabled",
+                !this.model.hasFilterIndex,
+            );
+            return result;
+        }
+    }
+
+    async newMask() {
+        const path = this.path;
+        const fileId = this.model.fileId;
+        const response = await Request.delete(
+            `/removelogoImage/${path}/${fileId}`,
+        );
+        const result = await response.json();
+        document.dispatchEvent(
+            new CustomEvent("toast", {
+                detail: {
+                    message: result.message,
+                    type: STATE_INFO,
+                },
+            }),
+        );
+        this.maskThumb.src = this.image.src.replace(
+            "/image/",
+            "/removelogoImage/",
+        );
+        this.isSaved = false;
+    }
+
     paint() {
         Paint.init(
             async (image) => {
                 await saveCustomMask(image, this.path, this.model.fileId);
+                this.model.timestamp = this.current;
+                if (!this.model.hasFilterIndex) {
+                    this.configurator.filterGraph.push(this.model);
+                }
+                await this.configurator.saveSettings();
+                this.filterIndex = this.model.filterIndex;
+                this.isSaved = true;
             },
             () => {
-                this.imageType = IMAGE_TYPE_ORIGINAL;
                 this.updateFrameUrl();
+                this.btnTogglePreview.toggleAttribute(
+                    "disabled",
+                    !this.model.hasFilterIndex,
+                );
             },
-        ).show(this.image.src);
-    }
-
-    paintMask() {
-        this.imageType = IMAGE_TYPE_MASK;
-        this.updateFrameUrl();
-        this.paint();
+        ).show(this.maskThumb.src);
     }
 
     toggleType() {
         if (this.imageType === IMAGE_TYPE_ORIGINAL) {
             this.imageType = IMAGE_TYPE_MASK;
-            this.typeButton.classList.add("active");
+            this.btnToggleType.classList.add("active");
         } else {
             this.imageType = IMAGE_TYPE_ORIGINAL;
-            this.typeButton.classList.remove("active");
+            this.btnToggleType.classList.remove("active");
         }
         this.updateFrameUrl();
     }
 
-    toggleShowFiltered() {
+    togglePreview() {
         if (this.filterIndex !== this.model.filterIndex) {
             this.filterIndex = this.model.filterIndex;
-            this.showFilteredButton.classList.remove("active");
+            this.btnTogglePreview.classList.remove("active");
         } else {
-            if (isNaN(parseInt(this.model.filterIndex))) {
-                this.configurator.filterGraph.push(this.model);
-            }
-            this.model.timestamp = this.current;
-            this.filterIndex = this.filterIndex + 1;
-            this.showFilteredButton.classList.add("active");
-            this.configurator.saveSettings();
+            this.filterIndex = this.model.filterIndex + 1;
+            this.btnTogglePreview.classList.add("active");
         }
         this.updateFrameUrl(performance.now());
     }
@@ -191,26 +276,23 @@ class RemoveLogo extends VideoEditor {
 
     /**
      * update image url
-     * also update zoomimage utl
+     * also update thumbnail url
      */
-    updateFrameUrl() {
+    async updateFrameUrl(cacheBuster = null) {
         this.image.addEventListener(
             "load",
             () => {
-                let src;
-                if (isNaN(parseInt(this.model.filterIndex))) {
-                    src = this.image.src.replace(
-                        "/image/",
-                        "/removelogoImage/",
-                    );
-                } else {
-                    src = `/removelogo/${this.configurator.item.path}/${this.model.fileId}?${performance.now()}`;
-                }
-                this.maskThumb.src = src;
+                this.updateThumb();
             },
             { once: true },
         );
-        super.updateFrameUrl();
+        super.updateFrameUrl(cacheBuster);
+    }
+
+    updateThumb() {
+        this.maskThumb.src = !this.isSaved
+            ? this.image.src.replace("/image/", "/removelogoImage/")
+            : `/removelogo/${this.configurator.item.path}/${this.model.fileId}?${performance.now()}`;
     }
 
     get baseThumbUrl() {
@@ -223,28 +305,12 @@ class RemoveLogo extends VideoEditor {
             : `/removelogoImage/${encodeURIComponent(this.path)}?timestamp=`;
     }
 
-    get paintButton() {
-        return this.shadowRoot.querySelector(".paint-button");
-    }
-
-    get paintMaskButton() {
-        return this.shadowRoot.querySelector(".paint-mask-button");
-    }
-
-    get typeButton() {
-        return this.shadowRoot.querySelector(".toggle-type");
-    }
-
-    get showFilteredButton() {
-        return this.shadowRoot.querySelector(".toggle-filter");
-    }
-
     get imageType() {
-        return this.typeButton.innerText;
+        return this.btnToggleType.innerText;
     }
 
     set imageType(value) {
-        this.typeButton.innerText = value;
+        this.btnToggleType.innerText = value;
     }
 
     get coordsDisplay() {
@@ -316,6 +382,18 @@ class RemoveLogo extends VideoEditor {
         return this.shadowRoot.querySelector('[data-ref="btn-del-to"]');
     }
 
+    get btnToggleType() {
+        return this.shadowRoot.querySelector(".toggle-type");
+    }
+
+    get btnTogglePreview() {
+        return this.shadowRoot.querySelector(".toggle-preview");
+    }
+
+    get btnSave() {
+        return this.shadowRoot.querySelector("theme-button.save");
+    }
+
     get maskThumb() {
         return this.shadowRoot.querySelector('[data-ref="mask-thumb"]');
     }
@@ -355,10 +433,6 @@ const CSS = css`
                 justify-items: end;
                 gap: 0.5rem;
                 grid-auto-rows: min-content;
-
-                theme-button::part(button) {
-                    min-width: 150px;
-                }
             }
 
             & > span {
@@ -370,8 +444,17 @@ const CSS = css`
             }
         }
 
+        .preview-btns {
+            grid-template-columns: 1fr 1fr;
+
+            theme-button {
+                width: 100%;
+            }
+        }
+
         [data-ref="mask-thumb"] {
-            max-width: 100%;
+            width: 100%;
+            aspect-ratio: 16 / 9;
         }
 
         fieldset {
@@ -480,22 +563,13 @@ RemoveLogo.template = html`
                     >${IMAGE_TYPE_ORIGINAL}</theme-button
                 >
             </div>
-            <div>
-                <theme-button class="toggle-filter">Show Filtered</theme-button>
+            <div class="preview-btns">
+                <theme-button class="save">Save</theme-button>
+                <theme-button class="toggle-preview">Preview</theme-button>
             </div>
             <span class="warning">
-                Filter will be saved first. Takes a long time if mask contains
-                to many white pixels
+                Preview takes a long time if mask contains to many white pixels
             </span>
-        </fieldset>
-        <fieldset class="actions">
-            <legend>Actions:</legend>
-            <div>
-                <theme-button class="paint-button">Paint</theme-button>
-                <theme-button class="paint-mask-button"
-                    >Paint on Mask</theme-button
-                >
-            </div>
         </fieldset>
     </div>
 `;

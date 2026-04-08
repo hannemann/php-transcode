@@ -1,8 +1,11 @@
 import { RemoveLogo } from "../../../Models/Filters/RemoveLogo";
 import { TYPE_VIDEO } from "../Streams";
-import { VTime } from "../../../Helper/Time";
+import { FilterGraph } from "../../../Models/Filters/FilterGraph";
+import { Request } from "../../Request";
+import { STATE_INFO } from "../../Toast";
 
 export const requestRemovelogo = async function (model) {
+    const backup = JSON.stringify(this.filterGraph);
     model = model || new RemoveLogo();
 
     try {
@@ -35,14 +38,56 @@ export const requestRemovelogo = async function (model) {
 
         logInfo(this.item.path, model);
         this.removeLogo = model;
-        if (isNaN(parseInt(model.filterIndex))) {
-            this.filterGraph.push(model);
+        // if (isNaN(parseInt(model.filterIndex))) {
+        //     this.filterGraph.push(model);
+        // }
+        // await this.saveSettings();
+        const result = await d.save();
+        if (!result) {
+            throw new Error("Too much white");
         }
-        this.saveSettings();
     } catch (error) {
-        if (error !== "cancel") {
-            console.error(error);
+        // 1. Silent Rollback: User actively clicked "Cancel" or pressed "Escape"
+        if (error === "cancel") {
+            console.info("Rolling back changes.");
         }
+        // 2. Error Rollback: Something actually crashed
+        else if (error) {
+            console.error("Critical error during Removelogo operation:", error);
+        }
+
+        // Always restore the backup to ensure UI and data consistency
+
+        // restore/delete image
+        const path = encodeURIComponent(this.item.path);
+        const fileId = model.fileId;
+        let response;
+        if (model.originalMaskData) {
+            // overwrite mask saved by dialogue
+            response = await Request.post(
+                `/removelogoCustomMask/${path}/${fileId}`,
+                { image: model.originalMaskData },
+            );
+            delete model.originalMaskData;
+        } else if (model.hasFilterIndex) {
+            // delete mask
+            response = await Request.delete(
+                `/removelogoImage/${path}/${fileId}`,
+            );
+        }
+        if (response) {
+            const result = await response.json();
+            document.dispatchEvent(
+                new CustomEvent("toast", {
+                    detail: {
+                        message: "Restore backup: " + result.message,
+                        type: STATE_INFO,
+                    },
+                }),
+            );
+        }
+        this.filterGraph = new FilterGraph(JSON.parse(backup));
+        this.saveSettings();
     }
 };
 

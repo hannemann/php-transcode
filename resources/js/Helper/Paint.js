@@ -146,7 +146,9 @@ export default class Paint {
                 if ("function" === typeof closeHandler) {
                     await closeHandler();
                 }
-                document.body.removeChild(paintArea);
+                Paint.paintArea.innerHTML = "";
+                console.log(Paint.canvas);
+                // document.body.removeChild(paintArea);
             },
             saveHandler: function (image, callback) {
                 Paint.save.call(this, saveHandler, image, callback);
@@ -378,6 +380,10 @@ export default class Paint {
      */
     static get canvas() {
         return paintArea.querySelector("canvas");
+    }
+
+    static get paintArea() {
+        return paintArea;
     }
 }
 

@@ -75,7 +75,7 @@ class Removelogo
         return Storage::disk('recordings')->exists($path);
     }
 
-    public static function deleteMasks(string $path): void
+    public static function deleteMask(string $path, string $fileId): void
     {
 
         $glob = implode(
@@ -83,7 +83,7 @@ class Removelogo
             [
                 config('filesystems.disks.recordings.root'),
                 dirname($path),
-                '*logomask.png'
+                $fileId . '.logomask.png'
             ]
         );
         FileFacade::delete(FileFacade::glob($glob));
