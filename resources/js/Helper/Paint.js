@@ -332,6 +332,34 @@ export default class Paint {
         Paint.Painterro.params.onChange();
     }
 
+    static async getColorFromImage(event, imgElement) {
+        console.log(event, imgElement);
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+        canvas.width = imgElement.naturalWidth;
+        canvas.height = imgElement.naturalHeight;
+
+        ctx.drawImage(imgElement, 0, 0);
+
+        const rect = event.currentTarget.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        const x = (event.clientX - rect.left) * scaleX;
+        const y = (event.clientY - rect.top) * scaleY;
+
+        const pixel = ctx.getImageData(x, y, 1, 1).data;
+
+        return (
+            "#" +
+            ((1 << 24) + (pixel[0] << 16) + (pixel[1] << 8) + pixel[2])
+                .toString(16)
+                .slice(1)
+                .toUpperCase()
+        );
+    }
+
     /**
      * wrapper for save handler
      * @param {Function} saveHandler

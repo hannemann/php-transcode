@@ -3,6 +3,7 @@ import { COMBO_BUTTON_CSS } from "@/components/partials";
 import { VTime } from "../../../../Helper/Time";
 import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 import Iconify from "@iconify/iconify/dist/iconify.js";
+import Paint from "../../../../Helper/Paint";
 
 class Fillborders extends VideoEditor {
     video = null;
@@ -29,6 +30,8 @@ class Fillborders extends VideoEditor {
         this.initFillborders = this.initFillborders.bind(this);
         this.handleKey = this.handleKey.bind(this);
         this.handleClick = this.handleClick.bind(this);
+        this.toggleEyeDropperMode = this.toggleEyeDropperMode.bind(this);
+        this.handleEyeDropper = this.handleEyeDropper.bind(this);
         this.handleFromTo = this.handleFromTo.bind(this);
         this.updateFillbordersBox = this.updateFillbordersBox.bind(this);
     }
@@ -60,6 +63,8 @@ class Fillborders extends VideoEditor {
         this.btnTo.addEventListener("click", this.handleFromTo);
         this.btnDelFrom.addEventListener("click", this.handleFromTo);
         this.btnDelTo.addEventListener("click", this.handleFromTo);
+        this.btnEyeDropper.addEventListener("click", this.toggleEyeDropperMode);
+        this.fillbordersImage.addEventListener("click", this.handleEyeDropper);
     }
 
     removeListeners() {
@@ -78,6 +83,14 @@ class Fillborders extends VideoEditor {
             .removeEventListener("click", this.handleFromTo);
         this.btnDelFrom.removeEventListener("click", this.handleFromTo);
         this.btnDelTo.removeEventListener("click", this.handleFromTo);
+        this.btnEyeDropper.removeEventListener(
+            "click",
+            this.toggleEyeDropperMode,
+        );
+        this.fillbordersImage.removeEventListener(
+            "click",
+            this.handleEyeDropper,
+        );
     }
 
     updateFillbordersBox() {
@@ -283,6 +296,15 @@ class Fillborders extends VideoEditor {
             }
             this.updateFillbordersBox();
         });
+    }
+
+    toggleEyeDropperMode() {
+        this.btnEyeDropper.classList.toggle("active");
+    }
+
+    async handleEyeDropper(e) {
+        if (!this.btnEyeDropper.classList.contains("active")) return;
+        this.color = await Paint.getColorFromImage(e, this.image);
     }
 
     get equal() {
@@ -516,6 +538,10 @@ class Fillborders extends VideoEditor {
         return this.shadowRoot.querySelector('[data-ref="btn-del-to"]');
     }
 
+    get btnEyeDropper() {
+        return this.shadowRoot.querySelector('[data-ref="eyedropper"]');
+    }
+
     setDimensions() {
         this.shadowRoot.querySelector('[data-type="top"]').innerText =
             this.fillbordersOffsetTop;
@@ -601,15 +627,29 @@ const STYLES = css`
     :host > theme-button {
         justify-self: end;
     }
-    input[type="color"] {
-        background: var(--clr-bg-100);
-        border: 2px solid var(--clr-bg-200);
+    .color-tools {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
 
-        &:hover {
-            border-color: var(--clr-enlightened);
-            box-shadow:
-                0 0 20px 0 var(--clr-enlightened-glow),
-                0 0 10px 0 inset var(--clr-enlightened-glow);
+        span {
+            flex-grow: 1;
+        }
+
+        button {
+            font-size: 1rem;
+        }
+
+        input[type="color"] {
+            background: var(--clr-bg-100);
+            border: 2px solid var(--clr-bg-200);
+
+            &:hover {
+                border-color: var(--clr-enlightened);
+                box-shadow:
+                    0 0 20px 0 var(--clr-enlightened-glow),
+                    0 0 10px 0 inset var(--clr-enlightened-glow);
+            }
         }
     }
     [data-ref="between-coords"] {
@@ -698,10 +738,15 @@ ${EDITOR_TEMPLATE}
                 <option value="fixed">Fixed</option>
             </combo-button>
         </label>
-        <label>
+        <div class="color-tools">
             <span>Color</span>
+            <button class="icon-stack" data-ref="eyedropper">
+                <span class="iconify inactive" data-icon="mdi-eyedropper-variant"></span>
+                <span class="iconify hover" data-icon="mdi-eyedropper-variant"></span>
+                <span class="iconify active" data-icon="mdi-eyedropper-variant"></span>
+            </button>
             <input type="color" data-ref="color" value="#000000">
-        </label>
+        </div>
         <label>
             <span>Between</span>
             <theme-button data-ref="from">Start</theme-button>
