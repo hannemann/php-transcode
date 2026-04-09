@@ -6,9 +6,6 @@ import { STATE_INFO } from "../../../Toast";
 import { RemoveLogo as Model } from "../../../../Models/Filters/RemoveLogo";
 import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 
-const IMAGE_TYPE_ORIGINAL = "Original";
-const IMAGE_TYPE_MASK = "Mask";
-
 export const alertWhitePixelError = async (percentage) => {
     const message = `${Math.round(percentage)}% is too much white`;
     const m = document.createElement("modal-alert");
@@ -69,7 +66,7 @@ class RemoveLogo extends VideoEditor {
                         "load",
                         () => {
                             console.log("Mask loaded", this.maskThumb.src);
-                            this.btnToggleType.disabled = false;
+                            this.btnToggleMaskType.disabled = false;
                             this.btnEditMask.disabled = false;
                             this.btnSaveMask.disabled = false;
                             this.btnTogglePreview.toggleAttribute(
@@ -100,7 +97,8 @@ class RemoveLogo extends VideoEditor {
         super.bindListeners();
         this.toggleType = this.toggleType.bind(this);
         this.togglePreview = this.togglePreview.bind(this);
-        this.paint = this.paint.bind(this);
+        this.paintOnMask = this.paintOnMask.bind(this);
+        this.paintOnImage = this.paintOnImage.bind(this);
         this.save = this.save.bind(this);
         this.deleteMask = this.deleteMask.bind(this);
         this.handleFromTo = this.handleFromTo.bind(this);
@@ -110,9 +108,10 @@ class RemoveLogo extends VideoEditor {
         super.addListeners();
         document.addEventListener("keydown", this.handleKeyDown);
         document.addEventListener("keyup", this.handleKeyUp);
-        this.btnEditMask.addEventListener("click", this.paint);
-        this.maskThumb.addEventListener("click", this.paint);
-        this.btnToggleType.addEventListener("click", this.toggleType);
+        this.btnEditMask.addEventListener("click", this.paintOnMask);
+        this.btnEditImage.addEventListener("click", this.paintOnImage);
+        this.maskThumb.addEventListener("click", this.paintOnMask);
+        this.btnToggleImageType.addEventListener("click", this.toggleType);
         this.btnTogglePreview.addEventListener("click", this.togglePreview);
         this.btnSaveMask.addEventListener("click", this.save);
         this.btnDeleteMask.addEventListener("click", this.deleteMask);
@@ -133,9 +132,10 @@ class RemoveLogo extends VideoEditor {
         super.removeListeners();
         document.removeEventListener("keydown", this.handleKeyDown);
         document.removeEventListener("keyup", this.handleKeyUp);
-        this.btnEditMask.removeEventListener("click", this.paint);
-        this.maskThumb.removeEventListener("click", this.paint);
-        this.btnToggleType.removeEventListener("click", this.toggleType);
+        this.btnEditMask.removeEventListener("click", this.paintOnMask);
+        this.btnEditImage.removeEventListener("click", this.paintOnImage);
+        this.maskThumb.removeEventListener("click", this.paintOnMask);
+        this.btnToggleImageType.removeEventListener("click", this.toggleType);
         this.btnTogglePreview.removeEventListener("click", this.togglePreview);
         this.btnSaveMask.removeEventListener("click", this.save);
         this.btnDeleteMask.removeEventListener("click", this.deleteMask);
@@ -205,7 +205,7 @@ class RemoveLogo extends VideoEditor {
         this.btnTogglePreview.toggleAttribute("disabled", !this.isSaved);
     }
 
-    paint() {
+    paint(image) {
         Paint.init(
             async (image) => {
                 await saveCustomMask(image, this.path, this.model.fileId);
@@ -224,14 +224,22 @@ class RemoveLogo extends VideoEditor {
                     !this.isSaved,
                 );
             },
-        ).show(this.maskThumb.src);
+        ).show(image.src);
+    }
+
+    paintOnImage() {
+        this.paint(this.image);
+    }
+
+    paintOnMask() {
+        this.paint(this.maskThumb);
     }
 
     toggleType() {
-        if (!this.btnToggleType.classList.contains("active")) {
-            this.btnToggleType.classList.add("active");
+        if (!this.btnToggleImageType.classList.contains("active")) {
+            this.btnToggleImageType.classList.add("active");
         } else {
-            this.btnToggleType.classList.remove("active");
+            this.btnToggleImageType.classList.remove("active");
         }
         this.updateFrameUrl();
     }
@@ -308,7 +316,7 @@ class RemoveLogo extends VideoEditor {
     }
 
     get baseUrl() {
-        return !this.btnToggleType.classList.contains("active")
+        return !this.btnToggleImageType.classList.contains("active")
             ? super.baseUrl
             : `/removelogoImage/${encodeURIComponent(this.path)}?timestamp=`;
     }
@@ -382,8 +390,16 @@ class RemoveLogo extends VideoEditor {
         return this.shadowRoot.querySelector('[data-ref="btn-del-to"]');
     }
 
-    get btnToggleType() {
-        return this.shadowRoot.querySelector('[data-ref="btn-toggle-type"]');
+    get btnToggleImageType() {
+        return this.shadowRoot.querySelector(
+            '[data-ref="btn-toggle-image-type"]',
+        );
+    }
+
+    get btnToggleMaskType() {
+        return this.shadowRoot.querySelector(
+            '[data-ref="btn-toggle-mask-type"]',
+        );
     }
 
     get btnTogglePreview() {
@@ -396,6 +412,10 @@ class RemoveLogo extends VideoEditor {
 
     get btnEditMask() {
         return this.shadowRoot.querySelector('[data-ref="btn-edit-mask"]');
+    }
+
+    get btnEditImage() {
+        return this.shadowRoot.querySelector('[data-ref="btn-edit-image"]');
     }
 
     get btnDeleteMask() {
@@ -434,46 +454,29 @@ const CSS = css`
         white-space: nowrap;
         width: 250px;
 
-        .display-options,
-        .actions {
-            & > div {
-                display: grid;
-                justify-items: end;
-                gap: 0.5rem;
-                grid-auto-rows: min-content;
-            }
-
-            & > span {
-                white-space: initial;
-
-                &.warning {
-                    color: var(--clr-text-warn);
-                }
-            }
-        }
-
-        .preview-btns {
-            grid-template-columns: 1fr 1fr;
-
-            theme-button {
-                width: 100%;
-            }
-        }
-
-        .mask-actions {
-            display: flex;
+        .mask-options > div,
+        .image-options > div {
+            display: grid;
+            justify-items: end;
             gap: 0.5rem;
+            grid-auto-rows: min-content;
+
+            .image-actions,
+            .mask-actions {
+                display: flex;
+                gap: 0.5rem;
+            }
 
             [data-ref^="btn-"] {
                 cursor: pointer;
                 font-size: 1rem;
             }
-        }
 
-        [data-ref="mask-thumb"] {
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            cursor: pointer;
+            [data-ref="mask-thumb"] {
+                width: 100%;
+                aspect-ratio: 16 / 9;
+                cursor: pointer;
+            }
         }
 
         fieldset {
@@ -572,14 +575,53 @@ RemoveLogo.template = html`
                 </div>
             </label>
         </fieldset>
-        <fieldset class="display-options">
+        <fieldset class="image-options">
+            <legend>Image:</legend>
+            <div>
+                <div class="image-actions">
+                    <button
+                        class="icon-stack"
+                        data-ref="btn-toggle-image-type"
+                        title="Toggle Image Type"
+                    >
+                        <span
+                            class="iconify inactive"
+                            data-icon="mdi-toggle-switch-off-outline"
+                        ></span>
+                        <span
+                            class="iconify hover"
+                            data-icon="mdi-toggle-switch-off-outline"
+                        ></span>
+                        <span
+                            class="iconify active"
+                            data-icon="mdi-toggle-switch-outline"
+                        ></span>
+                    </button>
+                    <button
+                        class="icon-stack"
+                        data-ref="btn-edit-image"
+                        title="Edit Image"
+                    >
+                        <span
+                            class="iconify"
+                            data-icon="mdi-pencil-outline"
+                        ></span>
+                        <span
+                            class="iconify hover"
+                            data-icon="mdi-pencil-outline"
+                        ></span>
+                    </button>
+                </div>
+            </div>
+        </fieldset>
+        <fieldset class="mask-options">
             <legend>Logomask:</legend>
             <div>
                 <div class="mask-actions">
                     <button
                         class="icon-stack"
-                        data-ref="btn-toggle-type"
-                        title="Toggle Image Type"
+                        data-ref="btn-toggle-mask-type"
+                        title="Toggle Mask Type"
                         disabled="disabled"
                     >
                         <span
