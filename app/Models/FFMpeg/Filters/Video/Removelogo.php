@@ -35,8 +35,19 @@ class Removelogo
         }
     }
 
-    public static function getFilterString(string $bitmap, array $data, ?string $atTimestamp = ''): string
+    public static function getFilterString(string $bitmap, array $data, ?string $atTimestamp = ''): ?string
     {
+        $hasBetween = $data['between']['from'] && $data['between']['to'];
+        $atSeconds = $atTimestamp ? collect(explode(':', $atTimestamp))
+            ->reduce(VTime::reduceCoord(...), 0) : null;
+
+        if ($atSeconds) {
+            $isActive = !$hasBetween || $data['between']['from'] <= $atSeconds && $data['between']['to'] > $atSeconds;
+            if (!$isActive) {
+                return null;
+            }
+        }
+
         $filter = collect([]);
         $filter->push(sprintf(
             self::TEMPLATE_FILTER,
@@ -47,10 +58,7 @@ class Removelogo
             $from = (float) $data['between']['from'];
             $to = (float) $data['between']['to'];
 
-            if ($atTimestamp) {
-                $atSeconds = collect(explode(':', $atTimestamp))
-                    ->reduce(VTime::reduceCoord(...), 0);
-
+            if ($atSeconds) {
                 $from = max(0, $from - $atSeconds);
                 $to = max(0, $to - $atSeconds);
             }

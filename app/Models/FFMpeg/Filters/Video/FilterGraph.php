@@ -83,7 +83,7 @@ class FilterGraph
             return $this->filters->last();
         });
 
-        return $filters->join(',');
+        return $filters->filter()->join(',');
     }
 
     public function getSettings(): Collection
@@ -99,14 +99,14 @@ class FilterGraph
         return 'bwdif=mode=send_field:parity=auto:deint=all';
     }
 
-    private function getRemoveLogoFilter(array $settings): string
+    private function getRemoveLogoFilter(array $settings): ?string
     {
         $width = $this->width ? $this->width : $settings['w'];
         $height = $this->height ? $this->height : $settings['h'];
         $fileId = $settings['fileId'] ?? '';
 
         return Removelogo::getFilterString(
-            Removelogo::getBitMap($this->disk, $this->path, $settings['timestamp'], $width, $height, $fileId, $this->filters->join(',')),
+            Removelogo::getBitMap($this->disk, $this->path, $settings['timestamp'], $width, $height, $fileId, $this->filters->filter()->join(',')),
             $settings,
             $this->timestamp
         );

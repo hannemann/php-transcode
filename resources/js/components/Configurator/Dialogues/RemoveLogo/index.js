@@ -674,11 +674,15 @@ RemoveLogo.template = html`
                         disabled="disabled"
                     >
                         <span
-                            class="iconify"
+                            class="iconify inactive"
                             data-icon="mdi-eye-outline"
                         ></span>
                         <span
                             class="iconify hover"
+                            data-icon="mdi-eye-outline"
+                        ></span>
+                        <span
+                            class="iconify active"
                             data-icon="mdi-eye-outline"
                         ></span>
                     </button>
