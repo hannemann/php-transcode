@@ -1,3 +1,4 @@
+import { VTime } from "../../../Helper/Time";
 import "../Dialogues/Player";
 
 export const requestPlay = async function () {
@@ -9,6 +10,9 @@ export const requestPlay = async function () {
         d.aspectRatio = this.streams
             .filter((s) => s.codec_type === "video")[0]
             .display_aspect_ratio.replace(":", "/");
+
+        d.duration = new VTime(VTime.calcCut(this.clips.clips)).seconds;
+
         m.dataset.closeButton = "true";
         m.dataset.noFooter = "true";
         m.header = "Player";

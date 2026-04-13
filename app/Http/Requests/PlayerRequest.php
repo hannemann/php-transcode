@@ -11,6 +11,8 @@ class PlayerRequest extends TranscodeRequest
      */
     public function rules()
     {
-        return parent::rules();
+        $rules = parent::rules();
+        $rules['startTime'] = ['nullable', 'regex:/^([0-9]+:)?[0-9]+:[0-9]+:[0-9]+\.[0-9]+$/'];
+        return $rules;
     }
 }

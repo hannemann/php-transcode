@@ -25,6 +25,7 @@ class Hls
     public function stream(string $disk, string $path, array $config)
     {
         $media = File::getMedia($disk, $path);
+        $format = (new h264_vaapi);
         $duration = $media->getFormat()->get('duration');
 
         $streams = collect($media->getStreams());
@@ -41,19 +42,17 @@ class Hls
             ->filter(fn($stream) => $stream->get('codec_type') === 'subtitle')->map(fn($stream) => $stream->get('index'))->values();
         $clips = Settings::getSettings($path)['clips'] ?? [];
 
-        $format = (new h264_vaapi);
-
-        $hasMapping = false;
-        $hasStartTimestamp = false;
+        $isComplexConcat = false;
         $filters = collect([]);
         $complexConcat = new ComplexConcat($config['streams'], $videoStreams, $audioStreams, $subtitleStreams, $clips);
         if ($complexConcat->isActive()) {
-            $filters = $complexConcat->getFilter($filters, $format, $disk, $path);
-            $hasMapping = true;
-            $hasStartTimestamp = true;
+            $startTime = $config['startTime'] ?? '00:00:00.000';
+            $filters = $complexConcat->getFilter($filters, $format, $disk, $path, $startTime);
+            $isComplexConcat = true;
         } else {
+            $startTime = $config['startTime'] ?? ($clips[0]['from'] ?? '00:00:00.000');
             $filters->push('-filter:v');
-            $filterGraph = (string)new FilterGraph($disk, $path);
+            $filterGraph = (string)new FilterGraph($disk, $path, $startTime);
             if ($filterGraph) {
                 $filters->push($filterGraph);
             }
@@ -76,17 +75,13 @@ class Hls
 
         // setzen des timestamps hier geht aber er muss an filterGraph weitergegebn werden und in complexConcat herausgerechnet werden
         // stream 
-        // $args->push('-ss', '00:29:27.979');
+        $args->push('-ss', $startTime);
 
         $args->push('-i', $i);
-        if (!$hasMapping) {
+
+        if (!$isComplexConcat) {
             foreach ($config['streams'] as $stream) {
                 $args->push('-map', '0:' . $stream['id']);
-            }
-        }
-        if (!$hasStartTimestamp) {
-            if ($clips && $clips[0]['from']) {
-                $args->push('-ss', $clips[0]['from']);
             }
         }
 

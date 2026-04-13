@@ -29,7 +29,7 @@ class ComplexConcat
         return count($this->clips) > 1;
     }
 
-    public function getFilter(Collection $cmds, h264_vaapi $format, string $disk, string $path): Collection
+    public function getFilter(Collection $cmds, h264_vaapi $format, string $disk, string $path, ?string $startTime = null): Collection
     {
 
         $tmplVideoFilter = '[0:v:%d]%s,split=%d%s';
@@ -40,10 +40,10 @@ class ComplexConcat
         $isHw = $format && $format instanceof h264_vaapi && $format->accelerationFramework;
 
         $filters = collect(['null']);
-        $filterGraph = (string)new FilterGraph($disk, $path/*, '00:29:27.979'*/);
-        // $timeOffset = collect(explode(':', '00:29:27.979'))
-        //     ->reduce(VTime::reduceCoord(...), 0);
-        $timeOffset = 0;
+        $filterGraph = (string)new FilterGraph($disk, $path, $startTime);
+        $timeOffset = collect(explode(':', $startTime))
+            ->reduce(VTime::reduceCoord(...), 0);
+        // $timeOffset = 0;
         if ($filterGraph) {
             $filters->push($filterGraph);
         }

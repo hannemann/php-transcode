@@ -31,7 +31,8 @@ class Player implements ShouldQueue //, ShouldBeUnique
      *
      * @return void
      */
-    public function __construct(string $disk, string $path, array $config) {
+    public function __construct(string $disk, string $path, array $config)
+    {
         $this->disk = $disk;
         $this->path = $path;
         $this->config = $config;
@@ -54,6 +55,5 @@ class Player implements ShouldQueue //, ShouldBeUnique
      * @param  \Throwable  $exception
      * @return void
      */
-    public function failed(Throwable $exception)
-    {}
+    public function failed(Throwable $exception) {}
 }

@@ -10,7 +10,7 @@ use App\Models\FFMpeg\Player\Hls;
 
 class PlayerController extends Controller
 {
-    public function stream(PlayerRequest $request, string $path):? JsonResponse
+    public function stream(PlayerRequest $request, string $path): ?JsonResponse
     {
         try {
 
