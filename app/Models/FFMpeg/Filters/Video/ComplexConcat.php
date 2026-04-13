@@ -5,6 +5,7 @@ namespace App\Models\FFMpeg\Filters\Video;
 use FFMpeg\Coordinate\TimeCode;
 use App\Models\FFMpeg\Format\Video\h264_vaapi;
 use Illuminate\Support\Collection;
+use App\Models\FFMpeg\Actions\Helper\VTime;
 
 class ComplexConcat
 {
@@ -39,7 +40,10 @@ class ComplexConcat
         $isHw = $format && $format instanceof h264_vaapi && $format->accelerationFramework;
 
         $filters = collect(['null']);
-        $filterGraph = (string)new FilterGraph($disk, $path);
+        $filterGraph = (string)new FilterGraph($disk, $path/*, '00:29:27.979'*/);
+        // $timeOffset = collect(explode(':', '00:29:27.979'))
+        //     ->reduce(VTime::reduceCoord(...), 0);
+        $timeOffset = 0;
         if ($filterGraph) {
             $filters->push($filterGraph);
         }
@@ -48,33 +52,33 @@ class ComplexConcat
         $items = [];
         $streamIds = $this->getStreamIds();
 
-        $filterInputs = collect($this->clips)->keys()->map(function(int $key) use ($streamIds) {
-            return collect($streamIds['video'])->map(function(int $id) use ($key) {
+        $filterInputs = collect($this->clips)->keys()->map(function (int $key) use ($streamIds) {
+            return collect($streamIds['video'])->map(function (int $id) use ($key) {
                 return '[filter_v_' . $key . '_' . $id . ']';
             })->join('');
         })->join('');
 
-        foreach($streamIds['video'] as $id) {
+        foreach ($streamIds['video'] as $id) {
             $items[] = sprintf($tmplVideoFilter, $id, $filters->join(','), count($this->clips) * count($streamIds['video']), $filterInputs);
         }
 
         $parts = [];
         $n = 0;
-        foreach($this->clips as $key => $clip) {
+        foreach ($this->clips as $key => $clip) {
 
-            $from = TimeCode::fromString($clip['from'])->toSeconds() + (float)('0' . substr($clip['from'], strpos($clip['from'], '.')));
-            $to = TimeCode::fromString($clip['to'])->toSeconds() + (float)('0' . substr($clip['to'], strpos($clip['to'], '.')));
+            $from = TimeCode::fromString($clip['from'])->toSeconds() + (float)('0' . substr($clip['from'], strpos($clip['from'], '.'))) - $timeOffset;
+            $to = TimeCode::fromString($clip['to'])->toSeconds() + (float)('0' . substr($clip['to'], strpos($clip['to'], '.'))) - $timeOffset;
 
-            foreach($streamIds['video'] as $id) {
+            foreach ($streamIds['video'] as $id) {
                 $streamInId = ($hasFilters ? 'filter_v_' . $key . '_' : '0:v:') . $id;
                 $items[] = sprintf($tmplVideo, $streamInId, $from, $to, $n);
                 $parts[] = sprintf('[v%d]', $n);
             }
-            foreach($streamIds['audio'] as $id) {
+            foreach ($streamIds['audio'] as $id) {
                 $items[] = sprintf($tmplAudio, $id, $from, $to, $n);
                 $parts[] = sprintf('[a%d]', $n);
             }
-            foreach($streamIds['subtitle'] as $id) {
+            foreach ($streamIds['subtitle'] as $id) {
                 $items[] = sprintf($tmplSubtitle, $id, $from, $to, $n);
                 $parts[] = sprintf('[s%d]', $n);
             }
@@ -107,7 +111,6 @@ class ComplexConcat
         $cmds[] = '[out]';
 
         return $cmds;
-
     }
 
     private function getStreamIds(): array
@@ -118,13 +121,13 @@ class ComplexConcat
             'subtitle' => [],
         ];
 
-        $this->video->intersect($this->streamIds)->keys()->each(function($id) use (&$streams) {
+        $this->video->intersect($this->streamIds)->keys()->each(function ($id) use (&$streams) {
             $streams['video'][] = $id;
         });
-        $this->audio->intersect($this->streamIds)->keys()->each(function($id) use (&$streams) {
+        $this->audio->intersect($this->streamIds)->keys()->each(function ($id) use (&$streams) {
             $streams['audio'][] = $id;
         });
-        $this->subtitle->intersect($this->streamIds)->keys()->each(function($id) use (&$streams) {
+        $this->subtitle->intersect($this->streamIds)->keys()->each(function ($id) use (&$streams) {
             $streams['subtitle'][] = $id;
         });
         return $streams;

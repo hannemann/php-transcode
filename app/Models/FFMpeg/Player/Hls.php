@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use App\Models\FFMpeg\Filters\Video\FilterGraph;
 use App\Helper\Settings;
+use App\Models\FFMpeg\Filters\Video\ComplexConcat;
 
 class Hls
 {
@@ -19,47 +20,79 @@ class Hls
 
     const TMP_PATH = 'pvr_toolbox_stream';
 
+    const MP4_INIT_FILE = 'init.mp4';
+
     public function stream(string $disk, string $path, array $config)
     {
         $media = File::getMedia($disk, $path);
         $duration = $media->getFormat()->get('duration');
-        $videoStreams = collect($media->getStreams())
+
+        $streams = collect($media->getStreams());
+
+        $videoStreams = $streams
             ->filter(fn($stream) => $stream->get('codec_type') === 'video');
 
         $frameRate = explode('/', $videoStreams->first()->get('r_frame_rate'))[0];
 
+        $videoStreams = $videoStreams->map(fn($stream) => $stream->get('index'))->values();
+        $audioStreams = collect($media->getStreams())
+            ->filter(fn($stream) => $stream->get('codec_type') === 'audio')->map(fn($stream) => $stream->get('index'))->values();
+        $subtitleStreams = collect($media->getStreams())
+            ->filter(fn($stream) => $stream->get('codec_type') === 'subtitle')->map(fn($stream) => $stream->get('index'))->values();
         $clips = Settings::getSettings($path)['clips'] ?? [];
 
+        $format = (new h264_vaapi);
+
+        $hasMapping = false;
+        $hasStartTimestamp = false;
         $filters = collect([]);
-        $filterGraph = (string)new FilterGraph($disk, $path);
-        if ($filterGraph) {
-            $filters->push($filterGraph);
+        $complexConcat = new ComplexConcat($config['streams'], $videoStreams, $audioStreams, $subtitleStreams, $clips);
+        if ($complexConcat->isActive()) {
+            $filters = $complexConcat->getFilter($filters, $format, $disk, $path);
+            $hasMapping = true;
+            $hasStartTimestamp = true;
+        } else {
+            $filters->push('-filter:v');
+            $filterGraph = (string)new FilterGraph($disk, $path);
+            if ($filterGraph) {
+                $filters->push($filterGraph);
+            }
         }
-        $filters->push('format=nv12');
-        $filters->push('hwupload');
+
+
+
 
         $this->path = $path;
-        $format = (new h264_vaapi);
-        $format->setAccelerationFramework(h264_vaapi::ACCEL_VAAPI);
 
         static::cleanup($disk, $path);
         Storage::disk($disk)->makeDirectory(static::getOutputPath($path));
+        Storage::disk($disk)->makeDirectory(static::getMp4InitPath($path));
 
         $i = $this->getInputFilename($disk, $path);
         $o = dirname($i) . DIRECTORY_SEPARATOR . static::TMP_PATH . DIRECTORY_SEPARATOR;
         $b = implode(DIRECTORY_SEPARATOR, ['stream-segment', dirname($path), static::TMP_PATH]);
         $b = DIRECTORY_SEPARATOR . $b . DIRECTORY_SEPARATOR;
         $args = collect($format->getInitialParameters());
+
+        // setzen des timestamps hier geht aber er muss an filterGraph weitergegebn werden und in complexConcat herausgerechnet werden
+        // stream 
+        // $args->push('-ss', '00:29:27.979');
+
         $args->push('-i', $i);
-        foreach($config['streams'] as $stream) {
-            $args->push('-map', '0:' . $stream['id']);
+        if (!$hasMapping) {
+            foreach ($config['streams'] as $stream) {
+                $args->push('-map', '0:' . $stream['id']);
+            }
         }
-        if ($clips && $clips[0]['from']) {
-            $args->push('-ss', $clips[0]['from']);
+        if (!$hasStartTimestamp) {
+            if ($clips && $clips[0]['from']) {
+                $args->push('-ss', $clips[0]['from']);
+            }
         }
-        $args->push('-filter:v', $filters->join(','));
-        $args->push('-c:v', 'h264_vaapi');
-        $args->push('-qp', '18');
+
+        $args->push(...$filters);
+        $args->push('-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '18');
+        // $args->push('-c:v', 'libsvtav1', '-q', '35');
         $args->push('-c:a', 'aac');
         $args->push('-b:a', '128k');
         $args->push('-ac', '2');
@@ -70,12 +103,20 @@ class Hls
         $args->push('-hls_list_size', '0');
         $args->push('-hls_flags', 'independent_segments');
         $args->push('-hls_base_url', $b);
-        $args->push('-hls_segment_filename', $o . 'hls-%03d.ts');
+        $args->push('-hls_segment_type', 'fmp4');
+        $args->push('-hls_fmp4_init_filename', $b . self::MP4_INIT_FILE);
+        $args->push('-hls_segment_filename', $o . 'hls-%03d.m4s');
         $args->push('-master_pl_name', 'master.m3u8');
         $args->push($o . 'hls.m3u8');
 
-        $bypassErrors = true;
-        FFMpegDriver::create(null, Arr::dot(config('laravel-ffmpeg')))->command($args->all(), $bypassErrors);
+        $bypassErrors = false;
+        $driver = FFMpegDriver::create(null, Arr::dot(config('laravel-ffmpeg')));
+
+        $binary = $driver->getConfiguration()->get('ffmpeg.binaries');
+        $command = collect($args)->prepend($binary)->implode(' ');
+        Log::info($command);
+
+        $driver->command($args->all(), $bypassErrors);
     }
 
     public static function playlist(string $disk, string $path): string
@@ -90,6 +131,9 @@ class Hls
 
     public static function segment(string $disk, string $path)
     {
+        if (Str::contains($path, self::MP4_INIT_FILE)) {
+            $path = dirname($path) . DIRECTORY_SEPARATOR . 'stream-segment' . DIRECTORY_SEPARATOR . $path;
+        }
         return Storage::disk($disk)->get($path);
     }
 
@@ -100,7 +144,7 @@ class Hls
             $driver->command([$pid]);
         }
         $wait = 0;
-        while($wait++ < 10 && static::getProcess()) {
+        while ($wait++ < 10 && static::getProcess()) {
             sleep(1);
         }
 
@@ -135,7 +179,13 @@ class Hls
         return dirname($path) . DIRECTORY_SEPARATOR . static::TMP_PATH;
     }
 
-    private static function getProcess():? string
+    private static function getMp4InitPath(string $path): string
+    {
+        $p = static::getOutputPath($path);
+        return $p . DIRECTORY_SEPARATOR . 'stream-segment' . DIRECTORY_SEPARATOR . $p;
+    }
+
+    private static function getProcess(): ?string
     {
         $driver = PsDriver::load(config('process.binaries.ps'));
         $processList = collect(explode("\n", $driver->command(['-axo', 'pid,command'])));
