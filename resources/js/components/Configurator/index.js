@@ -81,7 +81,7 @@ class TranscodeConfigurator extends HTMLElement {
             .querySelector(".btn-play")
             .addEventListener(
                 "click",
-                this.toolProxy.bind(this, { target: { value: "play:cpu" } }),
+                this.toolProxy.bind(this, { target: { value: "play" } }),
             );
         this.shadowRoot
             .querySelector(".btn-clipper")
@@ -414,6 +414,7 @@ class TranscodeConfigurator extends HTMLElement {
             this.streamsSection.append(formatNode);
 
             const clipsNode = document.createElement(tagClips);
+            clipsNode.configurator = this;
             clipsNode.path = this.item.path;
             clipsNode.videoDuration = this.format.duration;
             this.infoNode.append(clipsNode);

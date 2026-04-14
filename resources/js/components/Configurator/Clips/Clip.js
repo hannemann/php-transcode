@@ -2,6 +2,8 @@ import { DomHelper } from "../../../Helper/Dom";
 import { Iconify } from "@/components/lib";
 import { ICON_STACK_CSS } from "@/components/Icons/Stack.css";
 import CARD_CSS from "../CardCss";
+import { requestPlay } from "../Tools/player";
+import { VTime } from "../../../Helper/Time";
 
 class Clip extends HTMLElement {
     constructor() {
@@ -18,6 +20,7 @@ class Clip extends HTMLElement {
         this.handleRemove = this.handleRemove.bind(this);
         this.handleFocus = this.handleFocus.bind(this);
         this.handleBlur = this.handleBlur.bind(this);
+        this.handlePlay = this.handlePlay.bind(this);
     }
 
     connectedCallback() {
@@ -25,6 +28,7 @@ class Clip extends HTMLElement {
         this.inputTo.value = this.clipData.to;
         this.btnAdd.addEventListener("click", this.handleAdd);
         this.btnRemove.addEventListener("click", this.handleRemove);
+        this.btnPlay.addEventListener("click", this.handlePlay);
         requestAnimationFrame(() => {
             Iconify.scan(this.shadowRoot);
             [this.inputFrom, this.inputTo].forEach((i) => {
@@ -41,6 +45,7 @@ class Clip extends HTMLElement {
     disconnectedCallback() {
         this.btnAdd.removeEventListener("click", this.handleAdd);
         this.btnRemove.removeEventListener("click", this.handleRemove);
+        this.btnPlay.removeEventListener("click", this.handlePlay);
         [this.inputFrom, this.inputTo].forEach((i) => {
             i.removeEventListener("focus", this.handleFocus);
             i.removeEventListener("blur", this.handleBlur);
@@ -89,6 +94,12 @@ class Clip extends HTMLElement {
         );
     }
 
+    handlePlay() {
+        const to = new VTime(this.clipData.to);
+        const start = new VTime(to - 2000).coord;
+        requestPlay.call(this.configurator, start);
+    }
+
     handleKey(e) {
         let prevent = false;
         switch (e.key) {
@@ -130,6 +141,10 @@ class Clip extends HTMLElement {
         return this.shadowRoot.querySelector(".cutpoint");
     }
 
+    get btnPlay() {
+        return this.shadowRoot.querySelector('[data-ref="play"]');
+    }
+
     get btnAdd() {
         return this.shadowRoot.querySelector(".icon-stack.plus");
     }
@@ -163,9 +178,16 @@ const CSS = css`
         align-items: center;
         justify-content: space-between;
         gap: 0.5rem;
-    }
-    .input span {
-        flex-grow: 1;
+
+        & > span {
+            flex-grow: 1;
+            display: flex;
+            align-items: baseline;
+
+            .cutpoint {
+                flex-grow: 1;
+            }
+        }
     }
     .cutpoint {
         font-size: max(10px, 0.75rem);
@@ -212,7 +234,19 @@ Clip.template = html`
                 />
             </div>
             <div>
-                <span>To:<span class="cutpoint"></span></span>
+                <span
+                    >To:<span class="cutpoint"></span>
+                    <div
+                        class="icon-stack"
+                        data-ref="play"
+                        title="Play from 2 seconds before cutpoint"
+                    >
+                        <span class="iconify" data-icon="mdi-play"></span>
+                        <span
+                            class="iconify hover"
+                            data-icon="mdi-play"
+                        ></span></div
+                ></span>
                 <input
                     placeholder="0:0:0.0"
                     name="to"

@@ -10,9 +10,10 @@ class Player extends HTMLElement {
     }
     async connectedCallback() {
         const controller = this.shadowRoot.querySelector("media-controller");
-        // const config = { ...this.config, startTime: "00:29:00.280" };
-        // const config = { ...this.config, startTime: "01:30:20.520" };
-        const config = { ...this.config };
+        const config = {
+            ...this.config,
+            startTime: this.startTime ?? "00:00:00.000",
+        };
         controller.setAttribute("defaultduration", String(this.duration));
         await Request.post(`/stream/${encodeURIComponent(this.path)}`, config);
         requestAnimationFrame(() => {

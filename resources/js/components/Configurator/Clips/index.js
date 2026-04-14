@@ -6,6 +6,7 @@ import "./Clip";
 import sortable from "html5sortable/dist/html5sortable.es";
 import { Request } from "@/components/Request";
 import { VTime } from "../../../Helper/Time";
+import { requestPlay } from "../Tools/player";
 
 const WS_CHANNEL = "Transcode.Clips";
 
@@ -20,6 +21,7 @@ class Clips extends HTMLElement {
         this.valid = true;
         this.bindListener();
         this.btnCopy.addEventListener("click", this);
+        this.btnPlay.addEventListener("click", this.handlePlay);
         this.clipsContainer.addEventListener("sortupdate", this);
         this.mode = "clips";
         this.totalDuration = new VTime(this.videoDuration * 1000).coord;
@@ -30,6 +32,7 @@ class Clips extends HTMLElement {
     disconnectedCallback() {
         this.leaveWebsocket();
         this.btnCopy.removeEventListener("click", this);
+        this.btnPlay.removeEventListener("click", this.handlePlay);
         this.clipsContainer.removeEventListener("sortupdate", this);
     }
 
@@ -76,6 +79,7 @@ class Clips extends HTMLElement {
         this.handleFocus = this.handleFocus.bind(this);
         this.handleBlur = this.handleBlur.bind(this);
         this.handleCopy = this.handleCopy.bind(this);
+        this.handlePlay = this.handlePlay.bind(this);
     }
 
     newClip() {
@@ -124,6 +128,7 @@ class Clips extends HTMLElement {
         clipData.from = from;
         clipData.to = to;
         const clip = document.createElement("transcode-configurator-clip");
+        clip.configurator = this.configurator;
         clip.dataset.id = clipData.id;
         clip.canRemove = this.clips.length > 0;
         // clip.isLast = this.clips.indexOf(clipData) === this.clips.length - 1;
@@ -221,6 +226,14 @@ class Clips extends HTMLElement {
 
     handleBlur() {
         sortable(this.clipsContainer, "enable");
+    }
+
+    handlePlay() {
+        const value = isNaN(this.inputCustomStart.value)
+            ? this.inputCustomStart.value
+            : this.inputCustomStart.value * 1000;
+        const start = new VTime(value).coord || "00:00:00.000";
+        requestPlay.call(this.configurator, start);
     }
 
     getCutpoint(clip) {
@@ -321,6 +334,14 @@ class Clips extends HTMLElement {
     get totalDuration() {
         return this.shadowRoot.querySelector(".duration span").innerText;
     }
+
+    get btnPlay() {
+        return this.shadowRoot.querySelector('[data-ref="play"]');
+    }
+
+    get inputCustomStart() {
+        return this.shadowRoot.querySelector('[data-ref="custom-start"]');
+    }
 }
 
 const CSS = css`
@@ -350,6 +371,19 @@ const CSS = css`
     .clips .duration {
         display: flex;
         gap: 0.5rem;
+
+        .duration-display {
+            flex-grow: 1;
+        }
+
+        .icon-stack {
+            font-size: var(--font-size-200);
+        }
+
+        [data-ref="custom-start"] {
+            width: 12ch;
+            text-align: right;
+        }
     }
 `;
 
@@ -373,7 +407,20 @@ Clips.template = html`
         <div class="clips"></div>
         <div class="duration">
             <h2>Duration:</h2>
-            <span></span>
+            <span class="duration-display"></span>
+            <div
+                class="icon-stack"
+                data-ref="play"
+                title="Play from 2 seconds before cutpoint"
+            >
+                <span class="iconify" data-icon="mdi-play"></span>
+                <span class="iconify hover" data-icon="mdi-play"></span>
+            </div>
+            <input
+                data-ref="custom-start"
+                placeholder="00:00:00.000"
+                pattern="^(([0-9]+:)?[0-9]+:[0-9]+:[0-9]+.[0-9]+|[0-9.]+)$"
+            />
         </div>
     </main>
 `;
