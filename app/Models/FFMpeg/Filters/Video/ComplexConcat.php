@@ -34,19 +34,20 @@ class ComplexConcat
 
         $tmplVideoFilter = '[0:v:%d]%s,split=%d%s';
         $tmplVideo = '[%s]trim=%f:%f,setpts=PTS-STARTPTS[v%d]';
-        $tmplAudio = '[0:a:%d]atrim=%f:%f,asetpts=PTS-STARTPTS[a%d]';
+        $tmplAudioFilter = '[0:a:%d]asplit=%d%s';
+        $tmplAudio = '[%s]atrim=%f:%f,asetpts=PTS-STARTPTS[a%d]';
         $tmplSubtitle = '[0:s:%d]atrim=%f:%f,asetpts=PTS-STARTPTS[s%d]';
 
         $isHw = $format && $format instanceof h264_vaapi && $format->accelerationFramework;
 
         $filters = collect(['null']);
         $filterGraph = (string)new FilterGraph($disk, $path, $startTime);
-        $timeOffset = collect(explode(':', $startTime))
-            ->reduce(VTime::reduceCoord(...), 0);
-        // $timeOffset = 0;
         if ($filterGraph) {
             $filters->push($filterGraph);
         }
+
+        $timeOffset = collect(explode(':', $startTime))
+            ->reduce(VTime::reduceCoord(...), 0);
 
         $hasFilters = $filters->isNotEmpty();
         $items = [];
@@ -62,6 +63,16 @@ class ComplexConcat
             $items[] = sprintf($tmplVideoFilter, $id, $filters->join(','), count($this->clips) * count($streamIds['video']), $filterInputs);
         }
 
+        $filterInputs = collect($this->clips)->keys()->map(function (int $key) use ($streamIds) {
+            return collect($streamIds['audio'])->map(function (int $id) use ($key) {
+                return '[filter_a_' . $key . '_' . $id . ']';
+            })->join('');
+        })->join('');
+
+        foreach ($streamIds['audio'] as $id) {
+            $items[] = sprintf($tmplAudioFilter, $id, count($this->clips) * count($streamIds['audio']), $filterInputs);
+        }
+
         $parts = [];
         $n = 0;
         foreach ($this->clips as $key => $clip) {
@@ -69,13 +80,17 @@ class ComplexConcat
             $from = TimeCode::fromString($clip['from'])->toSeconds() + (float)('0' . substr($clip['from'], strpos($clip['from'], '.'))) - $timeOffset;
             $to = TimeCode::fromString($clip['to'])->toSeconds() + (float)('0' . substr($clip['to'], strpos($clip['to'], '.'))) - $timeOffset;
 
+            $from = max(0, $from);
+            $to = max(0, $to);
+
             foreach ($streamIds['video'] as $id) {
                 $streamInId = ($hasFilters ? 'filter_v_' . $key . '_' : '0:v:') . $id;
                 $items[] = sprintf($tmplVideo, $streamInId, $from, $to, $n);
                 $parts[] = sprintf('[v%d]', $n);
             }
             foreach ($streamIds['audio'] as $id) {
-                $items[] = sprintf($tmplAudio, $id, $from, $to, $n);
+                $streamInId = ($hasFilters ? 'filter_a_' . $key . '_' : '0:a:') . $id;
+                $items[] = sprintf($tmplAudio, $streamInId, $from, $to, $n);
                 $parts[] = sprintf('[a%d]', $n);
             }
             foreach ($streamIds['subtitle'] as $id) {

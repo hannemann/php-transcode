@@ -13,9 +13,16 @@ use Illuminate\Support\Facades\Log;
 use App\Models\FFMpeg\Filters\Video\FilterGraph;
 use App\Helper\Settings;
 use App\Models\FFMpeg\Filters\Video\ComplexConcat;
+use App\Events\FFMpegOut;
+use FFMpeg\Coordinate\TimeCode;
+use Alchemy\BinaryDriver\Listeners\DebugListener;
 
 class Hls
 {
+    private $processOutSecond = 0;
+    private string $pathHash;
+    private float $duration;
+
     private string $path;
 
     const TMP_PATH = 'pvr_toolbox_stream';
@@ -26,7 +33,8 @@ class Hls
     {
         $media = File::getMedia($disk, $path);
         $format = (new h264_vaapi);
-        $duration = $media->getFormat()->get('duration');
+        $this->duration = $media->getFormat()->get('duration');
+        $this->pathHash = sha1($path);
 
         $streams = collect($media->getStreams());
 
@@ -73,11 +81,14 @@ class Hls
         $b = DIRECTORY_SEPARATOR . $b . DIRECTORY_SEPARATOR;
         $args = collect($format->getInitialParameters());
 
-        // setzen des timestamps hier geht aber er muss an filterGraph weitergegebn werden und in complexConcat herausgerechnet werden
-        // stream 
         $args->push('-ss', $startTime);
+        if (isset($config['endTime'])) {
+            $args->push('-to', $config['endTime']);
+        }
 
         $args->push('-i', $i);
+
+        $args->push('-filter_threads', '8');
 
         if (!$isComplexConcat) {
             foreach ($config['streams'] as $stream) {
@@ -86,7 +97,7 @@ class Hls
         }
 
         $args->push(...$filters);
-        $args->push('-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '18');
+        $args->push('-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '18', '-tune', 'zerolatency');
         // $args->push('-c:v', 'libsvtav1', '-q', '35');
         $args->push('-c:a', 'aac');
         $args->push('-b:a', '128k');
@@ -110,6 +121,11 @@ class Hls
         $binary = $driver->getConfiguration()->get('ffmpeg.binaries');
         $command = collect($args)->prepend($binary)->implode(' ');
         Log::info($command);
+
+        $broadcaster = \Closure::fromCallable([$this, 'broadcastProcessOutput']);
+        $listener = new DebugListener();
+        $driver->listen($listener);
+        $driver->on('debug', $broadcaster);
 
         $driver->command($args->all(), $bypassErrors);
     }
@@ -188,5 +204,24 @@ class Hls
             return Str::containsAll($item, ['ffmpeg', static::TMP_PATH, 'hls']);
         });
         return $idx ? explode(' ', trim($processList[$idx]))[0] : null;
+    }
+
+    private function broadcastProcessOutput(string $line): void
+    {
+        $processOutSecond = time();
+        if ($processOutSecond > $this->processOutSecond && strpos($line, '[ERROR] frame=') === 0) {
+            $this->processOutSecond = $processOutSecond;
+            $lines = explode("\r", trim($line));
+            $line = trim(array_pop($lines));
+            $clips = [[
+                'from' => '00:00:00.000',
+                'to' => (string)TimeCode::fromSeconds($this->duration)
+            ]];
+            FFMpegOut::dispatch($this->pathHash, [
+                'line' => str_replace('[ERROR] ', '', $line),
+                'clips' => $clips,
+                'timestamp' => gmdate('Y-m-d\TH:i:s\Z'),
+            ]);
+        }
     }
 }

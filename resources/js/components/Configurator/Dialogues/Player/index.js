@@ -13,6 +13,7 @@ class Player extends HTMLElement {
         const config = {
             ...this.config,
             startTime: this.startTime ?? "00:00:00.000",
+            endTime: this.endTime ?? "00:00:00.000",
         };
         controller.setAttribute("defaultduration", String(this.duration));
         await Request.post(`/stream/${encodeURIComponent(this.path)}`, config);

@@ -97,7 +97,14 @@ class Clip extends HTMLElement {
     handlePlay() {
         const to = new VTime(this.clipData.to);
         const start = new VTime(to - 2000).coord;
-        requestPlay.call(this.configurator, start);
+        let end;
+        const next = this.configurator.clips.clips[this.index + 1];
+        if (next) {
+            end = new VTime(new VTime(next.from) + 10000).coord;
+        } else {
+            end = new VTime(to + 15 * 60 * 1000).coord;
+        }
+        requestPlay.call(this.configurator, start, end);
     }
 
     handleKey(e) {

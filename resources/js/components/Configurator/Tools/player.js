@@ -1,7 +1,7 @@
 import { VTime } from "../../../Helper/Time";
 import "../Dialogues/Player";
 
-export const requestPlay = async function (startTime) {
+export const requestPlay = async function (startTime, endTime) {
     const m = document.createElement("modal-window");
     const d = m.appendChild(document.createElement("dialogue-player"));
     try {
@@ -13,6 +13,7 @@ export const requestPlay = async function (startTime) {
 
         d.duration = new VTime(VTime.calcCut(this.clips.clips)).seconds;
         d.startTime = startTime;
+        d.endTime = endTime;
 
         m.dataset.closeButton = "true";
         m.dataset.noFooter = "true";
