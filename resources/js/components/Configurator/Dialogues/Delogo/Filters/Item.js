@@ -182,6 +182,10 @@ class DelogoItem extends HTMLElement {
     set groupColor(color) {
         this.style.setProperty("--group-color", color);
     }
+
+    set grouped(value) {
+        this.toggleAttribute("data-grouped", value);
+    }
 }
 
 const STYLES = css`
@@ -191,6 +195,7 @@ const STYLES = css`
         border: 2px solid var(--clr-bg-200);
         border-left-color: var(--group-color, var(--clr-bg-200));
         padding-inline: 0.5rem;
+        padding-left: 16px;
         transition-property:
             text-shadow, box-shadow, border-color, background-color;
         transition-timing-function: ease-out;
@@ -199,6 +204,7 @@ const STYLES = css`
         gap: 0.5rem;
         justify-content: space-between;
         align-items: center;
+        position: relative;
 
         span {
             flex-grow: 1;
@@ -223,6 +229,26 @@ const STYLES = css`
         &:host(.incomplete) {
             opacity: 0.8;
         }
+    }
+
+    :host([data-grouped]) {
+        border-left-color: transparent;
+    }
+
+    :host([data-grouped])::before {
+        content: "";
+        position: absolute;
+        left: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--group-color);
+    }
+
+    :host([data-grouped][data-active])::before {
+        background: var(--group-color);
     }
 `;
 

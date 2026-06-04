@@ -105,20 +105,8 @@ class Filter extends HTMLElement {
 
     updateDescription() {
         const clips = this.configurator.clips;
-        const filterGraph = this.configurator.filterGraph;
         let from;
         let to;
-
-        let groupSuffix = "";
-        if (this.filterData.between?.groupId && filterGraph) {
-            const members = filterGraph.filter(
-                (f) =>
-                    f.between?.groupId === this.filterData.between.groupId,
-            ).length;
-            if (members > 1) {
-                groupSuffix = ` [group: ${members}]`;
-            }
-        }
 
         if (this.filterData.between) {
             from = new VTime(this.filterData.between?.from * 1000);
@@ -143,14 +131,14 @@ class Filter extends HTMLElement {
 
         if (this.filterData.filterType === "crop") {
             if (this.filterData.replaceBlackBorders) {
-                return `replace borders${this.filterData.mirror ? " (mirrored)" : ""}${groupSuffix}`;
+                return `replace borders${this.filterData.mirror ? " (mirrored)" : ""}`;
             }
         }
         if (this.filterData.filterType === "scale") {
-            return `${this.filterData.width} x ${this.filterData.height}${groupSuffix}`;
+            return `${this.filterData.width} x ${this.filterData.height}`;
         }
         if (this.filterData.filterType === "removeLogo") {
-            return `${from.toString()} - ${to.toString()}, ${new VTime(this.filterData.timestamp).getCutpoint(clips.clips)}${groupSuffix}`;
+            return `${from.toString()} - ${to.toString()}, ${new VTime(this.filterData.timestamp).getCutpoint(clips.clips)}`;
         }
         if (this.filterData.filterType === "fillborders") {
             return (
@@ -158,11 +146,11 @@ class Filter extends HTMLElement {
                 `Top: ${this.filterData.top}px, ` +
                 `Right: ${this.filterData.right}px, ` +
                 `Bottom: ${this.filterData.bottom}px, ` +
-                `Left: ${this.filterData.left}px${groupSuffix}`
+                `Left: ${this.filterData.left}px`
             );
         }
         if (this.filterData.filterType === "delogo") {
-            return `${from.toString()} - ${to.toString()}, Top: ${this.filterData.y}px, Left: ${this.filterData.x}px, ${this.filterData.w}px x ${this.filterData.h}px${groupSuffix}`;
+            return `${from.toString()} - ${to.toString()}, Top: ${this.filterData.y}px, Left: ${this.filterData.x}px, ${this.filterData.w}px x ${this.filterData.h}px`;
         }
         return "";
     }

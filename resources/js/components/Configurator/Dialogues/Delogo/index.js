@@ -425,17 +425,79 @@ export class DeLogo extends VideoEditor {
     }
 
     /**
-     * copy item
+     * copy item or group
      * @param {Number} idx
      */
     async copyItem(idx) {
         const src = this.configurator.filterGraph[idx];
-        const clone = structuredClone(src);
+        const groupId = src.between?.groupId;
+        const groupMembers =
+            groupId &&
+            this.configurator.filterGraph.filter(
+                (f) =>
+                    f.between?.groupId === groupId &&
+                    f.filterType === Delogo.filterType,
+            );
+
+        if (groupMembers?.length > 1) {
+            await this.#copyGroup(groupMembers);
+        } else {
+            await this.#copySingle(src);
+        }
+    }
+
+    async #copyGroup(members) {
+        const currentMs = this.current;
+        const baseFrom = members.reduce(
+            (min, f) => Math.min(min, f.between.from.milliseconds),
+            Infinity,
+        );
+        const offsets = members.map((f) => ({
+            filter: f,
+            offsetFrom: f.between.from.milliseconds - baseFrom,
+            offsetTo: f.between.to.milliseconds - baseFrom,
+        }));
+
+        const newGroupId = crypto.randomUUID();
+        const insertIndex =
+            this.configurator.filterGraph.getProposedFilterIndex(
+                Delogo.filterType,
+            );
+
+        offsets.forEach(({ filter, offsetFrom, offsetTo }, i) => {
+            const clone = structuredClone(filter);
+            clone.between.from = new VTime(
+                currentMs + offsetFrom,
+            ).seconds;
+            clone.between.to = new VTime(
+                currentMs + offsetTo,
+            ).seconds;
+            clone.between.groupId = newGroupId;
+
+            const dest = new Delogo(insertIndex + i, clone);
+            this.configurator.filterGraph.splice(insertIndex + i, 0, dest);
+        });
+
+        document.addEventListener(
+            "clips-loaded",
+            () => {
+                this.isSaved = true;
+                this.initFilters();
+                this.editItem(this.lastFilterNode.index);
+            },
+            { once: true },
+        );
+
+        await this.configurator.saveSettings();
+    }
+
+    async #copySingle(src) {
         const filterIndex =
             this.configurator.filterGraph.getProposedFilterIndex(
                 Delogo.filterType,
             );
 
+        const clone = structuredClone(src);
         clone.between.from = new VTime(this.current).seconds;
         clone.between.to = new VTime(
             this.current + (src.between.to - src.between.from),
@@ -465,9 +527,16 @@ export class DeLogo extends VideoEditor {
      */
     createItem(item) {
         const node = document.createElement("delogo-filter-item");
-        node.groupColor = this.configurator.filterGraph.getGroupColor(
-            item.between.linkId,
-        );
+        if (item.between?.groupId) {
+            node.groupColor = this.configurator.filterGraph.getGroupColor(
+                item.between.groupId,
+            );
+            node.grouped = true;
+        } else if (item.between?.linkId) {
+            node.groupColor = this.configurator.filterGraph.getGroupColor(
+                item.between.linkId,
+            );
+        }
         node.clipsConfig = this.clipsConfig;
         node.totalDuration = new VTime(this.configurator.clips.totalDuration);
         node.model = item;
