@@ -337,6 +337,9 @@ class RemoveLogo extends VideoEditor {
     }
 
     set from(value) {
+        const groupId = this.model.between?.groupId;
+        const oldFrom = this.model.between?.from?.milliseconds ?? null;
+
         const from = this.model.between.from;
         const to = this.model.between.to;
         const delta = to && from && to > from ? to - from : 0;
@@ -345,6 +348,19 @@ class RemoveLogo extends VideoEditor {
         this.model.between.to = new VTime(
             this.model.between.from + new VTime(delta),
         );
+
+        if (groupId && oldFrom !== null) {
+            const newFrom = this.model.between.from.milliseconds;
+            const deltaMs = newFrom - oldFrom;
+            if (deltaMs !== 0) {
+                this.configurator?.filterGraph?.propagateGroupDelta(
+                    groupId,
+                    this.model,
+                    deltaMs,
+                );
+                document.dispatchEvent(new CustomEvent("clips-updated"));
+            }
+        }
 
         let node = this.shadowRoot.querySelector('span[data-ref="from"]');
         node.dataset.raw = this.model.between.from.milliseconds || "";

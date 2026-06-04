@@ -30,7 +30,7 @@ export class RemoveLogo extends FilterModel {
             w = null,
             h = null,
             timestamp = null,
-            between: { from = null, to = null } = {},
+            between = null,
             fileId = null,
         } = {},
     ) {
@@ -39,7 +39,16 @@ export class RemoveLogo extends FilterModel {
         this.timestamp = timestamp;
         this.w = w;
         this.h = h;
-        this.between = new Enable(from, to);
+        if (between instanceof Enable) {
+            this.between = between;
+        } else {
+            this.between = new Enable(
+                between?.from,
+                between?.to,
+                between?.linkId,
+                between?.groupId,
+            );
+        }
         this.fileId = fileId || crypto.randomUUID();
     }
 

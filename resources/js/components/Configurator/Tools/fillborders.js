@@ -18,6 +18,7 @@ export const requestFillborders = async function (model) {
         d.video.duration = parseFloat(this.format.duration);
 
         d.path = this.item.path;
+        d.configurator = this;
         d.model = model;
         requestAnimationFrame(() => {
             d.markers = this.clips;

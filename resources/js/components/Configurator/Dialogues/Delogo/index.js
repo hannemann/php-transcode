@@ -301,6 +301,9 @@ export class DeLogo extends VideoEditor {
      * set between from value to model and update ui
      */
     setBetweenFrom() {
+        const groupId = this.model.between?.groupId;
+        const oldFrom = this.model.between?.from?.milliseconds ?? null;
+
         const from = this.model.between.from;
         const to = this.model.between.to;
         const delta = to && from && to > from ? to - from : 0;
@@ -309,6 +312,20 @@ export class DeLogo extends VideoEditor {
         this.model.between.to = new VTime(
             this.model.between.from + new VTime(delta),
         );
+
+        if (groupId && oldFrom !== null) {
+            const newFrom = this.model.between.from.milliseconds;
+            const deltaMs = newFrom - oldFrom;
+            if (deltaMs !== 0) {
+                this.configurator?.filterGraph?.propagateGroupDelta(
+                    groupId,
+                    this.model,
+                    deltaMs,
+                );
+                document.dispatchEvent(new CustomEvent("clips-updated"));
+            }
+        }
+
         this.betweenFrom = this.model.between.from?.getCutpoint(
             this.clipsConfig,
         );

@@ -6,6 +6,7 @@ import { Scale } from "./Scale";
 import { Pad } from "./Pad";
 import { RemoveLogo } from "./RemoveLogo";
 import { Enable } from "./Filters/Enable";
+import { VTime } from "../../Helper/Time";
 
 const modelMap = {
     crop: Crop,
@@ -31,6 +32,16 @@ const mapFilterModel = function (item, idx) {
             item.between.linkId,
             item.between.from,
             item.between.to,
+        );
+    }
+
+    // Bei groupId (ohne linkId) eine neue Enable-Instanz mit groupId erzeugen
+    if (item.between && !item.between.linkId && item.between.groupId) {
+        item.between = new Enable(
+            item.between.from,
+            item.between.to,
+            null,
+            item.between.groupId,
         );
     }
 
@@ -137,6 +148,69 @@ export class FilterGraph extends Array {
         // Weise es allen Filtern zu
         filters.forEach((f) => {
             f.between = sharedEnable;
+        });
+    }
+
+    /**
+     * Groups filters with relative timestamps.
+     * When one filter is moved on the timeline, all others shift by the same delta.
+     *
+     * @param {FilterModel[]} filters - The filters to group.
+     */
+    linkEnableRelative(filters) {
+        if (filters.length < 2) return;
+
+        const newGroupId = crypto.randomUUID();
+
+        filters.forEach((f) => {
+            if (f.between) {
+                f.between.groupId = newGroupId;
+            }
+        });
+    }
+
+    /**
+     * Removes a filter from a relative group.
+     *
+     * @param {FilterModel} filter - The filter to ungroup.
+     * @returns {FilterModel} The filter with groupId cleared.
+     */
+    unlinkGroup(filter) {
+        if (!filter.between || !filter.between.groupId) {
+            return filter;
+        }
+        filter.between.groupId = null;
+        return filter;
+    }
+
+    /**
+     * Propagates a time delta (in milliseconds) to all members of a relative group,
+     * excluding the source filter. Updates both from and to values.
+     *
+     * @param {String} groupId - The relative group ID.
+     * @param {FilterModel} sourceFilter - The filter that was moved (excluded from propagation).
+     * @param {Number} deltaMs - The time delta in milliseconds to apply.
+     */
+    propagateGroupDelta(groupId, sourceFilter, deltaMs) {
+        if (!groupId || deltaMs === 0) return;
+
+        this.forEach((f) => {
+            if (
+                f !== sourceFilter &&
+                f.between &&
+                f.between.groupId === groupId
+            ) {
+                if (f.between.from?.milliseconds != null) {
+                    f.between.from = new VTime(
+                        f.between.from.milliseconds + deltaMs,
+                    );
+                }
+                if (f.between.to?.milliseconds != null) {
+                    f.between.to = new VTime(
+                        f.between.to.milliseconds + deltaMs,
+                    );
+                }
+            }
         });
     }
 

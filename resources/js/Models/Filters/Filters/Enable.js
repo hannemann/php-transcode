@@ -12,6 +12,7 @@ export class Enable {
     #from;
     #to;
     linkId = null; // Speichert die Verknüpfungs-ID
+    groupId = null; // Speichert die relative Gruppen-ID
 
     /**
      * Creates a new Enable instance.
@@ -21,10 +22,11 @@ export class Enable {
      * @param {Number|null} [to=null]   - End time in seconds.
      * @param {String|null} [linkId=null] - Optional ID to identify linked filter timings.
      */
-    constructor(from = null, to = null, linkId = null) {
+    constructor(from = null, to = null, linkId = null, groupId = null) {
         this.from = from;
         this.to = to;
         this.linkId = linkId;
+        this.groupId = groupId;
     }
 
     /**
@@ -57,6 +59,7 @@ export class Enable {
             from: this.from.seconds,
             to: this.to.seconds,
             linkId: this.linkId,
+            groupId: this.groupId,
         };
     }
 

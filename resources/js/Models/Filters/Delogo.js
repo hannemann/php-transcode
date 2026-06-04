@@ -35,7 +35,12 @@ export class Delogo extends FilterModel {
         if (between instanceof Enable) {
             this.between = between;
         } else {
-            this.between = new Enable(between?.from, between?.to);
+            this.between = new Enable(
+                between?.from,
+                between?.to,
+                between?.linkId,
+                between?.groupId,
+            );
         }
     }
 
