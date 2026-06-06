@@ -37,7 +37,7 @@ class Thumbnails
 
             for ($i = $startIdx; $i < $endIdx; $i++) {
                 $timestamp = ($duration / $count) * $i;
-                array_push($batchArgs, '-ss', (string)$timestamp, '-i', $fullInputPath);
+                array_push($batchArgs, '-skip_frame', 'nokey', '-ss', (string)$timestamp, '-i', $fullInputPath);
             }
 
             for ($i = $startIdx; $i < $endIdx; $i++) {
