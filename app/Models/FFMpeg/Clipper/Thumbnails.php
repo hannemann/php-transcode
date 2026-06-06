@@ -53,9 +53,9 @@ class Thumbnails
                     '-an',
                     '-sn',
                     '-vf',
-                    'scale=40:30',
+                    'scale=40:30:flags=neighbor',
                     '-q:v',
-                    '10',
+                    '15',
                     $outputPath
                 );
             }
