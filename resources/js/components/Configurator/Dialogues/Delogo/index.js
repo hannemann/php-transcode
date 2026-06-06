@@ -386,11 +386,20 @@ export class DeLogo extends VideoEditor {
      * @param {Number} idx
      * @returns
      */
-    editItem(idx) {
+    async editItem(idx) {
         const item = this.filtersContainer.querySelector(
             `delogo-filter-item[data-index="${idx}"]`,
         );
         if (item.active) {
+            if (!this.configurator.filterGraph.includes(this.model)) {
+                const message = "Save or delete item";
+                const m = document.createElement("modal-alert");
+                m.header = "Cannot stop edit";
+                m.innerText = message;
+                document.body.appendChild(m);
+                await m.alert();
+                return;
+            }
             this.activeDelogoFilter = null;
             this.resetModel();
             this.resetBetween();
@@ -466,12 +475,8 @@ export class DeLogo extends VideoEditor {
 
         offsets.forEach(({ filter, offsetFrom, offsetTo }, i) => {
             const clone = structuredClone(filter);
-            clone.between.from = new VTime(
-                currentMs + offsetFrom,
-            ).seconds;
-            clone.between.to = new VTime(
-                currentMs + offsetTo,
-            ).seconds;
+            clone.between.from = new VTime(currentMs + offsetFrom).seconds;
+            clone.between.to = new VTime(currentMs + offsetTo).seconds;
             clone.between.groupId = newGroupId;
 
             const dest = new Delogo(insertIndex + i, clone);
@@ -551,8 +556,10 @@ export class DeLogo extends VideoEditor {
      */
     showItemTimeRange(index) {
         this.hideItemTimeRange();
-        const delogo = this.configurator.filterGraph[index];
-        if (!delogo) return;
+        const model = this.configurator.filterGraph[index];
+        if (!model) return;
+        // fallback to current model if not saved yet
+        const delogo = model instanceof Delogo ? model : this.model;
         this.itemCoords = delogo.coords;
         this.indicatorRangeByTimestamp = {
             from: delogo.between.from.seconds || 0,

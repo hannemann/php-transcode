@@ -35,7 +35,9 @@ class VideoEditor extends HTMLElement {
             this.addListeners();
             this.initImages();
             this.aspectRatio =
-                this.aspectRatio || this.video.display_aspect_ratio;
+                this.aspectRatio ||
+                this.video.display_aspect_ratio ||
+                `${this.video.width}:${this.video.height}`;
             Iconify.scan(this.shadowRoot);
         });
     }

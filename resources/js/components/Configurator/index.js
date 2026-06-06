@@ -194,7 +194,7 @@ class TranscodeConfigurator extends HTMLElement {
                     confirm = {
                         header: "QP Mismatch",
                         message:
-                            `Chosen QP ${s.config.qp} does not match` +
+                            `Chosen QP ${s.config.qp} does not match ` +
                             `default QP ${defaultQp}. Transcode anyway?`,
                     };
                 }

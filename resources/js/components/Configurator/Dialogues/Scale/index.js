@@ -59,12 +59,12 @@ class Scale extends VideoEditor {
 
     calculateWidth() {
         const [rWidth, rHeight] = this.aspectRatio.split(":");
-        this.width = (this.height / rHeight) * rWidth;
+        this.width = Math.round((this.height / rHeight) * rWidth);
     }
 
     calculateHeight() {
         const [rWidth, rHeight] = this.aspectRatio.split(":");
-        this.height = (this.width / rWidth) * rHeight;
+        this.height = Math.round((this.width / rWidth) * rHeight);
     }
 
     handleWidth(e) {
@@ -78,9 +78,22 @@ class Scale extends VideoEditor {
     }
 
     handleSize(e) {
-        const [rWidth, rHeight] = this.aspectRatio.split(":");
-        this.height = parseInt(e.currentTarget.dataset.height);
-        this.calculateWidth();
+        const presetBtns = [this.btn1080, this.btn720, this.#btn576];
+
+        if (presetBtns.includes(e.currentTarget)) {
+            this.height = parseInt(e.currentTarget.dataset.height);
+            this.calculateWidth();
+        }
+
+        if (this.inputWidth === e.currentTarget) {
+            this.width = parseInt(e.currentTarget.value);
+            this.calculateHeight();
+        }
+
+        if (this.inputHeight === e.currentTarget) {
+            this.height = parseInt(e.currentTarget.value);
+            this.calculateWidth();
+        }
     }
 
     handleAspectRatio(e) {

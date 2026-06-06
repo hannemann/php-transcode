@@ -15,7 +15,9 @@ export const requestScale = async function (model) {
             model = new Scale(null, {
                 width: d.video.width,
                 height: d.video.height,
-                aspect: d.video.display_aspect_ratio,
+                aspect:
+                    d.video.display_aspect_ratio ||
+                    `${d.video.width}:${d.video.height}`,
             });
         }
         d.filterIndex = model.filterIndex;
