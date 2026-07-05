@@ -92,6 +92,14 @@ class VideoEditor extends HTMLElement {
             key: "ArrowRight",
             ctrlKey: 1,
         });
+        this.rew10000 = this.handleNavDown.bind(this, {
+            key: "ArrowLeft",
+            duration: 10000,
+        });
+        this.ffw10000 = this.handleNavDown.bind(this, {
+            key: "ArrowRight",
+            duration: 10000,
+        });
         this.rew1m = this.handleNavDown.bind(this, {
             key: "ArrowDown",
         });
@@ -144,6 +152,9 @@ class VideoEditor extends HTMLElement {
         this.btnRew5000.addEventListener("pointerdown", this.rew5000);
         this.btnFfw5000.addEventListener("pointerdown", this.ffw5000);
 
+        this.btnRew10000.addEventListener("pointerdown", this.rew10000);
+        this.btnFfw10000.addEventListener("pointerdown", this.ffw10000);
+
         this.btnRew1m.addEventListener("pointerdown", this.rew1m);
         this.btnFfw1m.addEventListener("pointerdown", this.ffw1m);
 
@@ -181,6 +192,9 @@ class VideoEditor extends HTMLElement {
 
         this.btnRew5000.removeEventListener("pointerdown", this.rew5000);
         this.btnFfw5000.removeEventListener("pointerdown", this.ffw5000);
+
+        this.btnRew10000.removeEventListener("pointerdown", this.rew10000);
+        this.btnFfw10000.removeEventListener("pointerdown", this.ffw10000);
 
         this.btnRew1m.removeEventListener("pointerdown", this.rew1m);
         this.btnFfw1m.removeEventListener("pointerdown", this.ffw1m);
@@ -540,6 +554,14 @@ class VideoEditor extends HTMLElement {
         return this.parentNode.querySelector(".nav-btns .ffw-5000");
     }
 
+    get btnRew10000() {
+        return this.parentNode.querySelector(".nav-btns .rew-10000");
+    }
+
+    get btnFfw10000() {
+        return this.parentNode.querySelector(".nav-btns .ffw-10000");
+    }
+
     get btnAdd() {
         return this.parentNode.querySelector(".nav-btns .btn-add");
     }
@@ -744,6 +766,12 @@ const BUTTONS_CSS = css`
     div[slot="footer-content"] {
         display: grid;
         gap: 0.25rem;
+        justify-content: center;
+
+        .status {
+            display: flex;
+            justify-content: center;
+        }
 
         .nav-btns {
             display: flex;
@@ -752,10 +780,19 @@ const BUTTONS_CSS = css`
             > div {
                 display: flex;
                 gap: 0.5rem;
+                align-items: center;
+
+                &.vert {
+                    display: grid;
+                    grid-auto-flow: column;
+                    grid-auto-columns: 1fr;
+                    grid-template-rows: repeat(2, 1fr);
+                }
 
                 > div {
                     user-select: none;
                     min-width: 1rem;
+                    height: fit-content;
                     text-align: center;
                     padding: 0.125rem;
                     cursor: pointer;
@@ -799,16 +836,17 @@ let BUTTONS_TEMPLATE = html`<div slot="footer-content">
     </div>
     <div class="nav-btns">
         <div class="clipper-only">
-            <div class="btn-add">+</div>
-        </div>
-        <div class="clipper-only">
             <div class="nav move">Move Marker</div>
         </div>
-        <div>
+        <div class="clipper-only vert">
+            <div class="btn-add">+</div>
+            <div class="btn-remove">-</div>
+        </div>
+        <div class="vert">
             <div class="nav prev-frame">-1f</div>
             <div class="nav next-frame">+1f</div>
         </div>
-        <div>
+        <div class="vert">
             <div class="nav rew-500">-0.5s</div>
             <div class="nav ffw-500">+0.5s</div>
             <div class="nav rew-1000">-1s</div>
@@ -817,17 +855,16 @@ let BUTTONS_TEMPLATE = html`<div slot="footer-content">
             <div class="nav ffw-2000">+2s</div>
             <div class="nav rew-5000">-5s</div>
             <div class="nav ffw-5000">+5s</div>
+            <div class="nav rew-10000">-10s</div>
+            <div class="nav ffw-10000">+10s</div>
         </div>
-        <div>
+        <div class="vert">
             <div class="nav rew-1m">-1m</div>
             <div class="nav ffw-1m">+1m</div>
             <div class="nav rew-5m">-5m</div>
             <div class="nav ffw-5m">+5m</div>
             <div class="nav rew-10m">-10m</div>
             <div class="nav ffw-10m">+10m</div>
-        </div>
-        <div class="clipper-only">
-            <div class="btn-remove">-</div>
         </div>
     </div>
 </div>`;
