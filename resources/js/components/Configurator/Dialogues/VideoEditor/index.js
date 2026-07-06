@@ -31,6 +31,7 @@ class VideoEditor extends HTMLElement {
         this.current = parseInt(this.start * 1000, 10) ?? 0;
         this.duration = new VTime(this.video.duration * 1000);
         this.modeMove = false;
+        this.scrubSlider.step = 1000 / this.fps;
         requestAnimationFrame(() => {
             this.addListeners();
             this.initImages();
@@ -57,6 +58,8 @@ class VideoEditor extends HTMLElement {
         this.handleIndicatorLeave = this.handleIndicatorLeave.bind(this);
         this.setCurrentPosByMarker = this.setCurrentPosByMarker.bind(this);
         this.toggleMoveMode = this.toggleMoveMode.bind(this);
+        this.handleScrubInput = this.handleScrubInput.bind(this);
+        this.handleScrubRelease = this.handleScrubRelease.bind(this);
 
         this.prevFrame = this.handleNavDown.bind(this, { key: "ArrowLeft" });
         this.nextFrame = this.handleNavDown.bind(this, { key: "ArrowRight" });
@@ -163,6 +166,9 @@ class VideoEditor extends HTMLElement {
 
         this.btnRew10m.addEventListener("pointerdown", this.rew10m);
         this.btnFfw10m.addEventListener("pointerdown", this.ffw10m);
+
+        this.scrubSlider.addEventListener("input", this.handleScrubInput);
+        this.scrubSlider.addEventListener("change", this.handleScrubRelease);
     }
 
     removeListeners() {
@@ -204,6 +210,9 @@ class VideoEditor extends HTMLElement {
 
         this.btnRew10m.removeEventListener("pointerdown", this.rew10m);
         this.btnFfw10m.removeEventListener("pointerdown", this.ffw10m);
+
+        this.scrubSlider.removeEventListener("input", this.handleScrubInput);
+        this.scrubSlider.removeEventListener("change", this.handleScrubRelease);
 
         this.indicator.querySelectorAll("markers").forEach((m) => {
             m.removeEventListener("click", this.setCurrentPosByMarker);
@@ -361,10 +370,13 @@ class VideoEditor extends HTMLElement {
     }
 
     handleNavDown(e) {
+        if (this.pInterval) return;
         document.addEventListener("pointerup", this.handleNavUp, {
             once: true,
         });
-        this.pInterval = setInterval(() => this.handleKeyDown(e), 50);
+        this.pInterval = setInterval(() => {
+            this.handleKeyDown(e.fromSlider ? this.buildSliderEvent() : e);
+        }, 50);
     }
 
     handleNavUp() {
@@ -381,6 +393,48 @@ class VideoEditor extends HTMLElement {
         } else {
             delete this.btnMove.dataset.active;
         }
+    }
+
+    calcScrubDuration(value) {
+        const maxDuration = 30000;
+        const rate = 7;
+        const t = Math.abs(value) / maxDuration;
+        return Math.round(
+            maxDuration * (Math.exp(rate * t) - 1) / (Math.exp(rate) - 1),
+        );
+    }
+
+    buildSliderEvent() {
+        const value = parseInt(this.scrubSlider.value);
+        return {
+            key: value >= 0 ? "ArrowRight" : "ArrowLeft",
+            duration: this.calcScrubDuration(value),
+        };
+    }
+
+    handleScrubInput() {
+        this.handleNavDown({ fromSlider: true });
+        this.updateScrubSpeed();
+    }
+
+    updateScrubSpeed() {
+        const value = parseInt(this.scrubSlider.value);
+        if (value === 0) {
+            this.scrubSpeedLabel.innerText = "";
+            return;
+        }
+        const duration = this.calcScrubDuration(value);
+        if (duration < 1000) {
+            const frames = Math.round((duration / 1000) * this.fps);
+            this.scrubSpeedLabel.innerText = `\u00B1${frames}f`;
+        } else {
+            this.scrubSpeedLabel.innerText = `\u00B1${(duration / 1000).toFixed(1)}s`;
+        }
+    }
+
+    handleScrubRelease() {
+        this.scrubSlider.value = 0;
+        this.scrubSpeedLabel.innerText = "";
     }
 
     get clipsConfig() {
@@ -596,6 +650,14 @@ class VideoEditor extends HTMLElement {
 
     get timeDisplay() {
         return this.parentNode.querySelector(".status .time span");
+    }
+
+    get scrubSlider() {
+        return this.parentNode.querySelector(".scrub-slider");
+    }
+
+    get scrubSpeedLabel() {
+        return this.parentNode.querySelector(".scrub-speed");
     }
 }
 
@@ -823,6 +885,38 @@ const BUTTONS_CSS = css`
                 }
             }
         }
+
+        .scrub-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scrub-label {
+            font-size: 0.75rem;
+            color: var(--clr-text-200);
+            min-width: 2.5ch;
+            text-align: center;
+        }
+
+        .scrub-slider {
+            height: 6px;
+            background: var(--clr-bg-200);
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+            flex: 1;
+            max-width: 60rem;
+        }
+
+        .scrub-speed {
+            font-size: 0.75rem;
+            color: var(--clr-text-200);
+            min-width: 6ch;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
     }
 `;
 let BUTTONS_TEMPLATE = html`<div slot="footer-content">
@@ -866,6 +960,28 @@ let BUTTONS_TEMPLATE = html`<div slot="footer-content">
             <div class="nav rew-10m">-10m</div>
             <div class="nav ffw-10m">+10m</div>
         </div>
+    </div>
+    <datalist id="scrub-marks">
+        <option value="-30000" label="-30s"></option>
+        <option value="-20000" label="-20s"></option>
+        <option value="-10000" label="-10s"></option>
+        <option value="0" label="0"></option>
+        <option value="10000" label="10s"></option>
+        <option value="20000" label="20s"></option>
+        <option value="30000" label="30s"></option>
+    </datalist>
+    <div class="scrub-row">
+        <span class="scrub-label">-30s</span>
+        <input
+            type="range"
+            class="scrub-slider"
+            min="-30000"
+            max="30000"
+            value="0"
+            list="scrub-marks"
+        />
+        <span class="scrub-label">+30s</span>
+        <span class="scrub-speed"></span>
     </div>
 </div>`;
 

@@ -19,7 +19,7 @@ const arrow = function (e, back) {
         jump.call(this, back ? idx - 1 : idx + 1);
         return;
     }
-    
+
     if (e.ctrlKey != e.shiftKey) {
         //console.log('2s/5s', e);
         (back ? rwd : ffwd).call(this, e.shiftKey ? 2000 : 5000);
@@ -32,7 +32,7 @@ const arrow = function (e, back) {
         (back ? rwd : ffwd).call(this, e.duration);
         return;
     }
-     
+
     //console.log('1 Frame', 1000 / this.fps, e);
     (back ? rwd : ffwd).call(this, 1000 / this.fps);
 };
@@ -67,36 +67,39 @@ const isClipEnd = function (idx) {
     return idx > -1 && idx % 2 > 0;
 };
 
-export const handleKeyDown = function(e) {
-    const hasChanged =  e.ctrlKey != this.isKeyDown?.ctrlKey
-        || e.shiftKey != this.isKeyDown?.shiftKey
-        || e.altKey != this.isKeyDown?.altKey
-        || e.key != this.isKeyDown?.key;
+export const handleKeyDown = function (e) {
+    const hasChanged =
+        e.ctrlKey != this.isKeyDown?.ctrlKey ||
+        e.shiftKey != this.isKeyDown?.shiftKey ||
+        e.altKey != this.isKeyDown?.altKey ||
+        e.key != this.isKeyDown?.key;
 
     if (this.isKeyDown && !hasChanged) return;
     this.isKeyDown = e;
 
     if (!this.imageLoadHandler) {
-        this.imageLoadHandler = () => this.image.decode().then(() => {
-            setTimeout(() => {
-                delete this.isKeyDown;
-            }, 100);
-        });
-        this.image.addEventListener('load', this.imageLoadHandler);
+        this.imageLoadHandler = () =>
+            this.image.decode().then(() => {
+                setTimeout(() => {
+                    delete this.isKeyDown;
+                }, 100);
+            });
+        this.image.addEventListener("load", this.imageLoadHandler);
     }
     handleKey.call(this, e);
-}
+};
 
-export const handleKeyUp = function() {
-    this.image.removeEventListener('load', this.imageLoadHandler);
+export const handleKeyUp = function () {
+    this.image.removeEventListener("load", this.imageLoadHandler);
     delete this.isKeyDown;
     delete this.imageLoadHandler;
-}
+};
 
 export const handleKey = function (e) {
     clearTimeout(this.updateTimeout);
     let action = false;
-    const updateIndex = (e.altKey || this.modeMove) ? this.raw.indexOf(this.current) : -1;
+    const updateIndex =
+        e.altKey || this.modeMove ? this.raw.indexOf(this.current) : -1;
     switch (e.key) {
         case "ArrowRight":
             arrow.call(this, e);
@@ -140,6 +143,6 @@ const rwd = function (seconds) {
 const ffwd = function (seconds) {
     this.current = Math.min(
         this.duration - 1000 / this.fps,
-        this.current + seconds
+        this.current + seconds,
     );
 };
