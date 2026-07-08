@@ -236,8 +236,8 @@ class VideoEditor extends HTMLElement {
 
     updateTimeDisplay() {
         this.timeDisplay.innerText =
-            `${this.currentTimestamp} (${this.currentTimestampCut})` +
-            ` / ${this.duration.coord}`;
+            `${this.currentTimestampCut} / ${VTime.sumClips(this.clipsConfig)} - ` +
+            `${this.currentTimestamp} / ${this.duration.coord}`;
     }
 
     updateIndicatorPos() {
@@ -290,8 +290,8 @@ class VideoEditor extends HTMLElement {
         );
         const clips = this.clips || this.clipsConfig;
         this.timeDisplay.innerText =
-            `${ts.coord} (${ts.getCutpoint(clips)})` +
-            ` / ${this.duration.coord}`;
+            `${ts.getCutpoint(clips)} / ${VTime.sumClips(this.clipsConfig)} - ` +
+            `${ts.coord} / ${this.duration.coord}`;
     }
 
     handleIndicatorLeave() {
@@ -400,7 +400,7 @@ class VideoEditor extends HTMLElement {
         const rate = 7;
         const t = Math.abs(value) / maxDuration;
         return Math.round(
-            maxDuration * (Math.exp(rate * t) - 1) / (Math.exp(rate) - 1),
+            (maxDuration * (Math.exp(rate * t) - 1)) / (Math.exp(rate) - 1),
         );
     }
 
